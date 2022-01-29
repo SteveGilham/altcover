@@ -5,6 +5,7 @@ open System
 open System.IO
 open System.Reflection
 open AltCover
+open AltCover.Shared
 open System.Diagnostics.CodeAnalysis
 
 module Trace =
@@ -67,6 +68,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Reflection
 open AltCoverFake.DotNet
+open AltCover.Shared
 #endif
 
 [<SuppressMessage("Gendarme.Rules.Exceptions",
@@ -89,7 +91,7 @@ module DotNet =
   let internal setCustomParams common extended current (f: FieldInfo) =
     f.SetValue(
       common,
-      (if f.Name <> "CustomParams@" then
+      (if f.Name != "CustomParams@" then
          f.GetValue current
        else
          extended :> obj)
@@ -98,7 +100,7 @@ module DotNet =
   let internal setCommonParams result common self (f: FieldInfo) =
     f.SetValue(
       result,
-      (if f.Name <> "Common@" then
+      (if f.Name != "Common@" then
          f.GetValue self
        else
          common)

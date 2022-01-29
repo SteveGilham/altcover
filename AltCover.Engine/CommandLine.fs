@@ -15,6 +15,7 @@ open System.Text.RegularExpressions
 open BlackFox.CommandLine
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
+open AltCover.Shared
 
 [<ExcludeFromCodeCoverage>]
 module internal Process =
@@ -132,7 +133,7 @@ module internal Output =
       |> Seq.filter
            (fun p ->
              [ "Message"; "StackTrace" ]
-             |> Seq.exists (fun n -> n = p.Name)
+             |> Seq.exists (fun n -> n == p.Name)
              |> not)
       |> Seq.iter
            (fun p ->
@@ -329,7 +330,7 @@ module internal CommandLine =
       let descape (s: string) = s.Replace(char 0, ';')
 
       let qRegex (s: String) =
-        if s.Substring(0, 1) = "?" then
+        if s.Substring(0, 1) == "?" then
           { Regex = Regex <| s.Substring(1)
             Sense = Include }
         else
@@ -349,12 +350,12 @@ module internal CommandLine =
 
     try
       let before =
-        arguments |> Array.takeWhile (fun x -> x <> "--")
+        arguments |> Array.takeWhile (fun x -> x != "--")
 
       let after =
         arguments
-        |> Seq.skipWhile (fun x -> x <> "--")
-        |> Seq.skipWhile (fun x -> x = "--")
+        |> Seq.skipWhile (fun x -> x != "--")
+        |> Seq.skipWhile (fun x -> x == "--")
         |> Seq.toList
 
       let parse = options.Parse(before)

@@ -7,6 +7,8 @@ open System.Xml
 open System.Xml.Linq
 open System.Diagnostics.CodeAnalysis
 
+open AltCover.Shared
+
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open TaskIO
@@ -210,8 +212,7 @@ type Collect() =
 
   [<SuppressMessage("Microsoft.Naming",
                     "CA1704",
-                    Justification = "'  member val Cobertura = String.Empty with get, set
-' is jargon")>]
+                    Justification = "'Cobertura' is jargon")>]
   member val Cobertura = String.Empty with get, set
 
   member val OutputFile = String.Empty with get, set
@@ -226,10 +227,7 @@ type Collect() =
   member val Verbosity = "Info" with get, set
 
   [<Output>]
-  [<SuppressMessage("Microsoft.Performance",
-                    "CA1822:MarkMembersAsStatic",
-                    Justification = "Instance property needed");
-    SuppressMessage("Gendarme.Rules.Correctness",
+  [<SuppressMessage("Gendarme.Rules.Correctness",
                     "MethodCanBeMadeStaticRule",
                     Justification = "Instance property needed")>]
   member self.Summary = Command.Summary()
@@ -481,8 +479,8 @@ type ContingentCopy() =
 
     // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
 
-    if (self.CopyToOutputDirectory = "Always"
-        || self.CopyToOutputDirectory = "PreserveNewest")
+    if (self.CopyToOutputDirectory == "Always"
+        || self.CopyToOutputDirectory == "PreserveNewest")
        && (relativeDir |> Path.IsPathRooted |> not)
        //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
        && (relativeDir |> String.IsNullOrWhiteSpace |> not)

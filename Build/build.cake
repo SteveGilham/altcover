@@ -1,79 +1,32 @@
-# F# Fake and Cake integration v7.x and up
-
-APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` and `AltCover.Fake.dll` assemblies, which are present in the `AltCover.Api` nuget package
-
-* [Fake integration](#fake-integration)
-* [Cake integration](#cake-integration)
-
-# Fake integration 
-Found in `AltCover.Fake.dll`  
-Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
-
-## To use the Fake `dotnet test` API `Fake.DotNet.DotNet.test`
-Driving `dotnet test` in a Fake script 
-
-In the project(s) to be covered, insert at least
-
-```
-    <PackageReference Include="altcover.api" Version="<whatever>">
-      <IncludeAssets>build;</IncludeAssets>
-    </PackageReference>
-```
-
-with the relevant script fragment (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/33e11d1480e3bb27f710748cbe2f04e589d9a840/Build/targets.fsx#L5694-L5718))
-
-```
-#r "paket:
-nuget Fake.DotNet.Cli >= 5.20.4
-nuget AltCover.Api >= 8.2.833 //"
-
-let ForceTrue = AltCover.DotNet.CLIOptions.Force true 
-
-let p =
-  { AltCover.Primitive.PrepareOptions.Create() with
-      CallContext = [| "[Fact]"; "0" |]
-      AssemblyFilter = [| "xunit" |] }
-
-let prepare = AltCover.AltCover.PrepareOptions.Primitive p
-let c = AltCover.Primitive.CollectOptions.Create()
-let collect = AltCover.AltCover.CollectOptions.Primitive c
-
-open AltCover.Fake.DotNet // extension method WithAltCoverOptions
-Fake.DotNet.DotNet.test
-  (fun to' -> to'.WithAltCoverOptions prepare collect ForceTrue)
-  "dotnettest.fsproj"
-
-```
-
-# Cake integration 
-
-Applies to Cake 1.1 and up (with obsolescence warnings if used with Cake 2.0 or later)
-
-Found in `AltCover.Cake.dll`  
-Detailed API documentation is [presented here](AltCover.Cake/AltCover.Cake-apidoc).
-
-## To use the Cake `dotnet test` API `DotNetCoreTest`
-
-In the project(s) to be covered, insert at least
-
-```
-    <PackageReference Include="altcover.api" Version="<whatever>">
-      <IncludeAssets>build;</IncludeAssets>
-    </PackageReference>
-```
-
-In your `.cake` file include
-
-```
 #addin "nuget:?package=Microsoft.TestPlatform.ObjectModel&Version=16.1.1"
 #addin "nuget:?package=PowerShellStandard.Library&Version=5.1.0"
-#addin "nuget:?package=altcover.api&Version=<whatever>"
+#addin "nuget:file://{0}?package=altcover.api&Version={1}"
 
-```
-the first two needed to silence warnings.
+var target = Argument("target", "Test");
+var configuration = Argument("configuration", "Debug");
+var cakeversion = Argument("cakeversion", "Unknown");
 
-Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/Abstract-apidoc)) e.g. by copying and pasting this for the minimal example
-```
+//////////////////////////////////////////////////////////////////////
+// TASKS
+//////////////////////////////////////////////////////////////////////
+
+Task("Clean")
+    .WithCriteria(c => HasArgument("rebuild"))
+    .Does(() =>
+{
+    CleanDirectory($"../_Binaries/cake_dotnettest/{configuration}+AnyCPU");
+});
+
+Task("Build")
+    .IsDependentOn("Clean")
+    .Does(() =>
+{
+    DotNetCoreBuild("./_DotnetTest/cake_dotnettest.fsproj", new DotNetCoreBuildSettings
+    {
+        Configuration = configuration,
+    });
+});
+
   class TestOptions : AltCover.DotNet.ICLIOptions
   {
     public bool ForceDelete => false;
@@ -89,7 +42,7 @@ Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/A
     public IEnumerable<string> Dependencies => Array.Empty<string>();
     public IEnumerable<string> Keys => Array.Empty<string>();
     public string StrongNameKey => String.Empty;
-    public string Report => String.Empty;
+    public string Report { get; set;}
     public IEnumerable<string> FileFilter => Array.Empty<string>();
     public IEnumerable<string> AssemblyFilter => Array.Empty<string>();
     public IEnumerable<string> AssemblyExcludeFilter => Array.Empty<string>();
@@ -100,7 +53,7 @@ Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/A
     public IEnumerable<string> AttributeTopLevel => Array.Empty<string>();
     public IEnumerable<string> TypeTopLevel => Array.Empty<string>();
     public IEnumerable<string> MethodTopLevel => Array.Empty<string>();
-    public IEnumerable<string> CallContext => Array.Empty<string>();
+    public IEnumerable<string> CallContext => new string[] {"[Fact]", "0"};
     public string ReportFormat => String.Empty;
     public bool InPlace => false;
     public bool Save => false;
@@ -134,13 +87,23 @@ Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/A
     public string SummaryFormat => String.Empty;
     public System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
   }
-```
-changing fixed values to `{ get; set; }` as required; then your test-with-coverage phase looks like
-```
+
+Task("Test")
+    .IsDependentOn("Build")
+    .Does(() =>
 {
-    // do any required customizations here
-    var altcoverSettings = new AltCover.Cake.CoverageSettings {
-        PreparationPhase = new TestPrepareOptions(),
+    using AltCover.Cake;
+
+    var testv = Version();
+    var im = ImportModule();
+    Console.WriteLine("Version = {1} Import = '{2}'", null, testv, im);
+
+    var prep = new TestPrepareOptions();
+
+    prep.Report = "coverage." + cakeversion +".xml";
+
+    var altcoverSettings = new CoverageSettings {
+        PreparationPhase = prep,
         CollectionPhase = new TestCollectOptions(),
         Options = new TestOptions()
     };
@@ -150,8 +113,15 @@ changing fixed values to `{ get; set; }` as required; then your test-with-covera
         NoBuild = true,
     };
 
-    DotNetCoreTest(<project to test>,
+    DotNetCoreTest("./_DotnetTest", 
+                    // this strips down to just the project file name
+                    // losing the relative directory
+                    //"./_DotnetTest/cake_dotnettest.fsproj",
                       testSettings, altcoverSettings);
 });
 
-```
+//////////////////////////////////////////////////////////////////////
+// EXECUTION
+//////////////////////////////////////////////////////////////////////
+
+RunTarget(target);

@@ -7,6 +7,8 @@ open System.Globalization
 open System.Xml
 open System.Xml.Linq
 
+open AltCover.Shared
+
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -339,7 +341,7 @@ module internal PostProcess =
                  (0, x)
                | _ ->
                  (bev
-                  + (if x.GetAttribute("vc") = "0" then
+                  + (if x.GetAttribute("vc") == "0" then
                        0
                      else
                        1),
@@ -507,3 +509,10 @@ module internal PostProcess =
       let bcover = percentCover vb br
       setSummary document.RootElement vs vb vm (Some vc) cover bcover minc maxc
     | _ -> ()
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",  // MethodDefinition
+                            Target = "AltCover.PostProcess/Pipe #2 stage #1 at line 336@337-1::Invoke(AltCover.XmlElementAbstraction)",
+                            Justification = "Compiler generated")>]
+()

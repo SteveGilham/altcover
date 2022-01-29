@@ -156,7 +156,9 @@ module internal Report =
       | AfterMethod _ ->
         if head.IsEmpty then head.Remove()
         tail
-      | AfterModule _ -> tail
+      | AfterModule _ ->
+        Visitor.moduleReport <- head.ToString()
+        tail
       | Finish -> s
       | _ -> s
 

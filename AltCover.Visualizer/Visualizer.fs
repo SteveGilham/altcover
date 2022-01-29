@@ -94,9 +94,6 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA1801:ReviewUnusedParameters",
-                    Justification = "meets an interface")>]
   let private urlHook _ link = Browser.ShowUrl(Uri link)
 #endif
 
@@ -140,45 +137,52 @@ module private Gui =
     handler.aboutVisualizer.WebsiteLabel <-
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")
 
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "Added to classStructureTree'")>]
+  let private prepareTreeLine (handler: Handler) i =
+    let column = new Gtk.TreeViewColumn()
+    let icon = new Gtk.CellRendererPixbuf()
+    column.PackStart(icon, true)
+    let cell = new Gtk.CellRendererText()
+    column.PackEnd(cell, true)
+#if VIS_PERCENT
+    let note = new Gtk.CellRendererText()
+    note.Alignment <- Pango.Alignment.Right
+
+    let font =
+      Persistence.readFont ()
+      |> Pango.FontDescription.FromString
+
+    let copy = note.FontDesc.Copy()
+    copy.Family <- font.Family
+    note.FontDesc <- copy
+    column.PackEnd(note, true)
+#endif
+    handler.classStructureTree.AppendColumn(column)
+    |> ignore
+
+#if !VIS_PERCENT
+    column.AddAttribute(cell, "text", 2 * i)
+    column.AddAttribute(icon, "pixbuf", 1 + (2 * i))
+#else
+    column.AddAttribute(icon, "pixbuf", (3 * i))
+    column.AddAttribute(note, "text", (3 * i) + 1)
+    column.AddAttribute(cell, "text", (3 * i) + 2)
+#endif
+
   let private prepareTreeView (handler: Handler) =
     handler.classStructureTree.HasTooltip <- true
 
-    [| icons.Assembly
-       icons.Namespace
-       icons.Class
-       icons.Method |]
-    |> Seq.iteri
-         (fun i x -> // this line number
-           let column = new Gtk.TreeViewColumn()
-           let icon = new Gtk.CellRendererPixbuf()
-           column.PackStart(icon, true)
-           let cell = new Gtk.CellRendererText()
-           column.PackEnd(cell, true)
-#if VIS_PERCENT
-           let note = new Gtk.CellRendererText()
-           note.Alignment <- Pango.Alignment.Right
+    // logical columns
+    let types =
+      [| icons.Assembly
+         icons.Namespace
+         icons.Class
+         icons.Method |]
 
-           let font =
-             Persistence.readFont ()
-             |> Pango.FontDescription.FromString
-
-           let copy = note.FontDesc.Copy()
-           copy.Family <- font.Family
-           note.FontDesc <- copy
-           column.PackEnd(note, true)
-#endif
-           handler.classStructureTree.AppendColumn(column)
-           |> ignore
-
-#if !VIS_PERCENT
-           column.AddAttribute(cell, "text", 2 * i)
-           column.AddAttribute(icon, "pixbuf", 1 + (2 * i))
-#else
-           column.AddAttribute(icon, "pixbuf", (3 * i))
-           column.AddAttribute(note, "text", (3 * i) + 1)
-           column.AddAttribute(cell, "text", (3 * i) + 2)
-#endif
-           )
+    seq { 0 .. (types.Length - 1) }
+    |> Seq.iter (prepareTreeLine handler)
 
     handler.classStructureTree.Model <-
       new TreeStore(
@@ -270,9 +274,22 @@ module private Gui =
                         Justification = "Compiler generated virtual")>]
       member self.Dispose() = ()
 
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "Added to 'openFileDialog'")>]
+  let private addFilter (openFileDialog: Gtk.IFileChooser) (t: string) =
+    let filter = new FileFilter()
+    let data = t.Split([| '%' |])
+    filter.Name <- data.[0]
+    filter.AddPattern("*." + data.[1])
+    openFileDialog.AddFilter filter
+
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
                     Justification = "Value is returned")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "'openFileDialog' is returned")>]
   let private prepareOpenFileDialog (handler: Handler) =
     let openFileDialog =
       new FileChooserDialog(
@@ -291,14 +308,7 @@ module private Gui =
         .GetResourceString("SelectXml")
         .Split([| '|' |])
 
-    data
-    |> Seq.iter
-         (fun t ->
-           let filter = new FileFilter()
-           let data = t.Split([| '%' |])
-           filter.Name <- data.[0]
-           filter.AddPattern("*." + data.[1])
-           openFileDialog.AddFilter filter)
+    data |> Seq.iter (addFilter openFileDialog)
 
     new FileOpenDialog(openFileDialog)
 #else
@@ -312,9 +322,6 @@ module private Gui =
                     Justification = "It's furniture, not user visible text")>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
-                    Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
   let private prepareOpenFileDialog _ =
     let openFileDialog =
@@ -624,8 +631,9 @@ module private Gui =
           Resource.Format(
             "No source location",
             [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
-                .Text.Replace("<", "&lt;")
-                .Replace(">", "&gt;") ]
+                .Text
+              |> replace ("<", "&lt;")
+              |> replace (">", "&gt;") ]
           )
 
         (handler :> IVisualizerWindow)
@@ -703,8 +711,8 @@ module private Gui =
     tag.Underline <- Pango.Underline.Single
     tt.Add tag |> ignore
 
-    let start = keytext.[1].IndexOf('_')
-    buffer.Text <- keytext.[1].Replace("_", String.Empty)
+    let start = keytext.[1] |> indexOf ('_')
+    buffer.Text <- keytext.[1] |> replace ("_", String.Empty)
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
 
     buffer.ApplyTag(
@@ -766,6 +774,9 @@ module private Gui =
              AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
            ))
 
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "IDisposables are added to other widgets")>]
   let private prepareGui () =
     let handler = initializeHandler ()
     setToolButtons handler
@@ -967,21 +978,16 @@ module private Gui =
     Application.Run()
     0 // needs an int return
 
-#if NET472
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
                             Justification = "Compiler generated")>]
-[<assembly: SuppressMessage("Microsoft.Reliability",
-                            "CA2000:Dispose objects before losing scope",
-                            Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@151.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
-                            Justification = "Added to GUI widget tree")>]
-[<assembly: SuppressMessage("Microsoft.Usage",
-                            "CA2208:InstantiateArgumentExceptionsCorrectly",
-                            Scope = "member",
-                            Target = "AltCover.Persistence.#readCoverageFiles(AltCover.Visualizer.Handler)",
-                            Justification = "Inlined library code")>]
-()
+#if NET472
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",  // MethodDefinition
+                            Target = "AltCover.Gui::prepareOpenFileDialog(a)",
+                            Justification = "Replace overload not available this platform")>]
 #endif
+()

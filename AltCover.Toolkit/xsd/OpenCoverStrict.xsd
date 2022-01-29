@@ -181,6 +181,32 @@
     </xs:complexType>
   </xs:element>
   <xs:complexType name="MethodPoint">
+    <xs:sequence>
+      <xs:element name="Times" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Time" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="time" type="xs:integer" use="required" />
+                <xs:attribute name="vc" type="xs:integer" use="required" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="TrackedMethodRefs" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="TrackedMethodRef" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="uid" type="xs:integer" use="required" />
+                <xs:attribute name="vc" type="xs:integer" use="required" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
     <xs:attribute name="vc" type="xs:integer" use="optional" />
     <xs:attribute name="uspid" type="xs:integer" use="optional" />
     <xs:attribute name="ordinal" type="xs:integer" use="optional" />
@@ -190,32 +216,6 @@
   <xs:complexType name="SequencePoint">
     <xs:complexContent>
       <xs:extension base="MethodPoint">
-        <xs:sequence>
-          <xs:element name="Times" minOccurs="0" maxOccurs="1">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="Time" minOccurs="0" maxOccurs="unbounded">
-                  <xs:complexType>
-                    <xs:attribute name="time" type="xs:integer" use="required" />
-                    <xs:attribute name="vc" type="xs:integer" use="required" />
-                  </xs:complexType>
-                </xs:element>
-              </xs:sequence>
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="TrackedMethodRefs" minOccurs="0" maxOccurs="1">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="TrackedMethodRef" minOccurs="0" maxOccurs="unbounded">
-                  <xs:complexType>
-                    <xs:attribute name="uid" type="xs:integer" use="required" />
-                    <xs:attribute name="vc" type="xs:integer" use="required" />
-                  </xs:complexType>
-                </xs:element>
-              </xs:sequence>
-            </xs:complexType>
-          </xs:element>
-        </xs:sequence>
         <xs:attribute name="sl" type="xs:integer" use="required" />
         <xs:attribute name="sc" type="xs:integer" use="required" />
         <xs:attribute name="el" type="xs:integer" use="required" />

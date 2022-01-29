@@ -8,6 +8,8 @@ open System.IO
 open System.Linq
 open System.Reflection
 
+open AltCover.Shared
+
 open Mono.Cecil
 open Mono.Options
 
@@ -293,11 +295,11 @@ module internal Main =
          (fun x ->
            if CoverageParameters.staticFilter = None then
              CoverageParameters.staticFilter <-
-               if String.IsNullOrWhiteSpace x || x = "+" then
+               if String.IsNullOrWhiteSpace x || x == "+" then
                  Some StaticFilter.AsCovered
-               else if x = "++" then
+               else if x == "++" then
                  Some StaticFilter.NoFilter
-               else if x = "-" then
+               else if x == "-" then
                  Some StaticFilter.Hidden
                else
                  None
@@ -419,14 +421,16 @@ module internal Main =
                String.Empty,
                t
                |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture))
-             ) = "4ebffcaabf10ce6a") // recorder.snk
+             )
+             == "4ebffcaabf10ce6a") // recorder.snk
       |> Option.defaultValue false
 
     let internal screenAssembly (fullName: String) (a: AssemblyDefinition) =
       if a.CustomAttributes
          |> Seq.exists
               (fun a ->
-                a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute")
+                a.AttributeType.FullName
+                == "AltCover.Recorder.InstrumentationAttribute")
          || a.MainModule.AssemblyReferences
             |> Seq.cast<AssemblyNameReference>
             |> Seq.exists checkKey
@@ -637,7 +641,7 @@ module internal Main =
 
     let internal isMSBuild (assembly: Assembly option) =
       assembly
-      |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
+      |> Option.map (fun a -> Path.GetFileName(a.Location) == "MSBuild.dll")
       |> Option.defaultValue false
 
     let internal selectReportGenerator () =

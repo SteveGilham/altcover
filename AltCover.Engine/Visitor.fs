@@ -18,10 +18,12 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open System.Net
 
+open AltCover.Shared
+
 [<Flags>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design",
-                                                  "FlagsShouldNotDefineAZeroValueRule",
-                                                  Justification = "Gives the unset state a name")>]
+[<SuppressMessage("Gendarme.Rules.Design",
+                  "FlagsShouldNotDefineAZeroValueRule",
+                  Justification = "Gives the unset state a name")>]
 type internal Inspections =
   | Ignore = 0
   | Instrument = 1
@@ -323,9 +325,6 @@ module internal CoverageParameters =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA1801:ReviewUnusedParameters",
-                    Justification = "meets an interface")>]
   let private defaultOutputDirectory _ =
     inplaceSelection "__Saved" "__Instrumented"
 
@@ -365,6 +364,9 @@ module internal CoverageParameters =
     else
       "coverage.xml"
 
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Compiler generated")>]
   let internal reportPath () =
     let r =
       canonicalPath (Option.defaultValue (defaultReportPath ()) theReportPath)
@@ -407,21 +409,24 @@ module internal CoverageParameters =
 
   let mutable internal configurationHash: option<String> = None
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                    "UseStringEmptyRule",
-                                                    Justification = "Probably in the 'string' inline")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "UseStringEmptyRule",
+                    Justification = "Probably in the 'string' inline")>]
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Overload not in netstandard2.0")>]
   let private filterString (n: FilterClass) =
     (string n)
       .Replace('\r', ';')
       .Replace('\n', ';')
       .Replace(";;", ";")
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                    "UseStringEmptyRule",
-                                                    Justification = "Probably in the 'string' inline")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Portability",
-                                                    "NewLineLiteralRule",
-                                                    Justification = "Constant string exactly for portability")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "UseStringEmptyRule",
+                    Justification = "Probably in the 'string' inline")>]
+  [<SuppressMessage("Gendarme.Rules.Portability",
+                    "NewLineLiteralRule",
+                    Justification = "Constant string exactly for portability")>]
   let internal makeConfiguration () =
     let components =
       [ "--methodpoint\t" + string methodPoint.Value
@@ -486,6 +491,7 @@ module internal Inspector =
 
 [<RequireQualifiedAccess>]
 module internal Visitor =
+  let mutable internal moduleReport = String.Empty
   let private accumulator = HashSet<AssemblyDefinition>()
   let mutable private pointNumber: int = 0
   let mutable private branchNumber: int = 0
@@ -516,7 +522,7 @@ module internal Visitor =
       let rebase = canonicalDirectory relativeTo
       let canon = canonicalDirectory path
 
-      if canon = rebase then
+      if canon == rebase then
         String.Empty
       else
         let uri = Uri(Uri("file://"), rebase)
@@ -545,7 +551,7 @@ module internal Visitor =
 
     let internal findClosestMatch file (dict: Dictionary<string, string>) =
       dict.Keys
-      |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
+      |> Seq.filter (fun x -> x |> Path.GetFileName == "*")
       |> Seq.map
            (fun x ->
              (x,
@@ -585,9 +591,10 @@ module internal Visitor =
             (fun x a ->
               let fn = a.AttributeType.FullName
 
-              if fn = "Microsoft.FSharp.Core.AbstractClassAttribute" then
+              if fn
+                 == "Microsoft.FSharp.Core.AbstractClassAttribute" then
                 x ||| 1
-              else if fn = "Microsoft.FSharp.Core.SealedAttribute" then
+              else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
                 x ||| 2
               else
                 x)
@@ -612,11 +619,13 @@ module internal Visitor =
                && t.CustomAttributes
                   |> Seq.exists
                        (fun a ->
-                         a.AttributeType.FullName = "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+                         a.AttributeType.FullName
+                         == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
               || m.CustomAttributes
                  |> Seq.exists
                       (fun a ->
-                        a.AttributeType.FullName = "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
+                        a.AttributeType.FullName
+                        == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
       |> Seq.exists (fun f -> f m)
       |> not
 
@@ -778,12 +787,12 @@ module internal Visitor =
                if m.HasCustomAttributes
                   && m.CustomAttributes
                      |> Seq.map (fun a -> a.AttributeType)
-                     |> Seq.tryFind (fun a -> full = a.Name || full = a.FullName)
+                     |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
                      |> Option.isSome then
                  Some n
                else
                  None
-             else if n = name || n = fullname then
+             else if n == name || n == fullname then
                Some n
              else
                None)
@@ -814,7 +823,7 @@ module internal Visitor =
           |> Option.map (fun c -> c.Methods |> Seq.toList)
           |> Option.defaultValue []
         ))
-        |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
+        |> Seq.filter (fun mx -> (mx.Name == stripped) && mx.HasBody)
         |> Seq.toList
 
       match candidates with
@@ -874,7 +883,7 @@ module internal Visitor =
         else
           let stripped = cname.Substring(0, last)
           let tname = target.FullName
-          stripped.Equals(tname)
+          stripped == tname
       else
         false
 
@@ -884,7 +893,7 @@ module internal Visitor =
       else if sameType target.DeclaringType candidate.DeclaringType then
         let cname = candidate.Name
         let tname = target.Name
-        tname.Equals cname
+        tname == cname
       else
         false
 
@@ -907,9 +916,9 @@ module internal Visitor =
 
              sameType t tn)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let private fSharpContainingMethod (t: TypeDefinition) (tx: TypeReference) =
       let candidates =
         t.DeclaringType.Methods.Concat(
@@ -969,7 +978,7 @@ module internal Visitor =
           t
           index
           (fun mx ->
-            (mx.FullName <> m.FullName)
+            (mx.FullName != m.FullName)
             && (methodCallsMethod m mx))
 
       else
@@ -997,7 +1006,7 @@ module internal Visitor =
               index
               // Guard against simple recursion here (mutual will need more work!)
               (fun mx ->
-                (mx.FullName <> m.FullName)
+                (mx.FullName != m.FullName)
                 && (methodCallsMethod m mx
                     || methodConstructsType t mx
                     || methodLoadsMethod m mx))

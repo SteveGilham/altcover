@@ -5,6 +5,8 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
 
+open AltCover.Shared
+
 open Mono.Cecil
 open Mono.Cecil.Rocks
 
@@ -119,7 +121,7 @@ module internal Json =
       |> Option.bind
            (fun a ->
              a.MainModule.GetAllTypes()
-             |> Seq.tryFind (fun t -> t.FullName = cname))
+             |> Seq.tryFind (fun t -> t.FullName == cname))
 
     let md =
       td
@@ -128,8 +130,8 @@ module internal Json =
              t.Methods
              |> Seq.tryFind
                   (fun m ->
-                    m.FullName = mname
-                    || (m.Name = mname
+                    m.FullName == mname
+                    || (m.Name == mname
                         && (let dbg = m.DebugInformation
 
                             dbg.HasSequencePoints
@@ -251,7 +253,7 @@ module internal Json =
                                           (fun m -> m.Descendants("altcover.file".X))
                                      |> Seq.filter
                                           (fun f ->
-                                            f.Attribute(XName.Get "document").Value = doc)
+                                            f.Attribute(XName.Get "document").Value == doc)
                                      |> Seq.tryHead
                                      |> Option.map
                                           (fun f -> f.Attribute(XName.Get "embed").Value)
