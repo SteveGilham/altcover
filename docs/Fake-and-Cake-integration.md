@@ -1,4 +1,4 @@
-# F# Fake and Cake integration v7.x
+# F# Fake and Cake integration v7.x and up
 
 APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` and `AltCover.Fake.dll` assemblies, which are present in the `AltCover.Api` nuget package
 
@@ -9,12 +9,23 @@ APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` 
 Found in `AltCover.Fake.dll`  
 Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
 
-### Example
-Driving `dotnet test` in a Fake script (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3425-L3454))
+## To use the Fake `dotnet test` API `Fake.DotNet.DotNet.test`
+Driving `dotnet test` in a Fake script 
+
+In the project(s) to be covered, insert at least
+
+```
+    <PackageReference Include="altcover.api" Version="<whatever>">
+      <IncludeAssets>build;</IncludeAssets>
+    </PackageReference>
+```
+
+with the relevant script fragment (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/33e11d1480e3bb27f710748cbe2f04e589d9a840/Build/targets.fsx#L5694-L5718))
+
 ```
 #r "paket:
-nuget Fake.DotNet.Cli >= 5.20.3
-nuget AltCover.Api >= 7.0 //"
+nuget Fake.DotNet.Cli >= 5.20.4
+nuget AltCover.Api >= 8.2.833 //"
 
 let ForceTrue = AltCover.DotNet.CLIOptions.Force true 
 
@@ -40,6 +51,16 @@ Applies to Cake 1.1 and up (with obsolescence warnings if used with Cake 2.0 or 
 
 Found in `AltCover.Cake.dll`  
 Detailed API documentation is [presented here](AltCover.Cake/AltCover.Cake-apidoc).
+
+## To use the Cake `dotnet test` API `DotNetCoreTest`
+
+In the project(s) to be covered, insert at least
+
+```
+    <PackageReference Include="altcover.api" Version="<whatever>">
+      <IncludeAssets>build;</IncludeAssets>
+    </PackageReference>
+```
 
 In your `.cake` file include
 
