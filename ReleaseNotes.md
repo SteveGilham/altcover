@@ -3,6 +3,7 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 8.2.8xx (Habu series release 12)
+* [BUGFIX] Fix project file path handling in Cake support
 
 # 8.2.835 (Habu series release 11)
 * [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet

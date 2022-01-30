@@ -141,7 +141,7 @@ namespace AltCover.Cake
       if (coverageSettings == null) throw new ArgumentNullException(nameof(coverageSettings));
 
       testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
-      context.DotNetCoreTest(project.GetFilename().FullPath, testSettings);
+      context.DotNetCoreTest(project.FullPath, testSettings);
     }
   }
 }

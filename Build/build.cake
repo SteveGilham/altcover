@@ -113,10 +113,7 @@ Task("Test")
         NoBuild = true,
     };
 
-    DotNetCoreTest("./_DotnetTest", 
-                    // this strips down to just the project file name
-                    // losing the relative directory
-                    //"./_DotnetTest/cake_dotnettest.fsproj",
+    DotNetCoreTest("./_DotnetTest/cake_dotnettest.fsproj", 
                       testSettings, altcoverSettings);
 });
 
