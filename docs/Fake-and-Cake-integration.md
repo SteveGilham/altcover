@@ -155,3 +155,30 @@ changing fixed values to `{ get; set; }` as required; then your test-with-covera
 });
 
 ```
+
+## To use the Cake2.x `dotnet test` API `DotNetTest`
+
+There isn't a one-stop-shop Cake 2.x alias; instead make the following changes after defining the `CoverageSettings` value (inlining the effect of the alias used for the `DotNetCoreTest` API) :
+
+```
+    // use the Cake 2.0 test settings type
+    var testSettings = new DotNetTestSettings {
+        Configuration = configuration,
+        NoBuild = true,
+    };
+
+    // mix-in the AltCover coverage settings explicitly
+    testSettings.ArgumentCustomization = altcoverSettings.Concatenate(testSettings.ArgumentCustomization);
+
+    // test using the default alias
+    DotNetTest("./_DotnetTest/cake_dotnettest.fsproj", testSettings);
+
+```
+
+As the `AltCover.Cake` assembly still targets Cake 1.1 and netstandard2.0 there will still be warnings like
+```
+The assembly 'AltCover.Cake, Version=8.2.0.0, Culture=neutral, PublicKeyToken=null'
+is referencing an older version of Cake.Core (1.1.0).
+For best compatibility it should target Cake.Core version 2.0.0.
+```
+but there will be no warnings about obsolescent types or methods being used.

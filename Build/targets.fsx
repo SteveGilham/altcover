@@ -5510,9 +5510,16 @@ _Target
                     .Replace("{1}", Version.Value)
             )
 
-            [ " --version 1.3.0"; String.Empty ]
+            let script2= File.ReadAllText("./Build/build2.cake")
+            File.WriteAllText(
+                "./_Cake/build2.cake",
+                script2)
+
+            [ (" --version 1.3.0", "build.cake")
+              (String.Empty, "build.cake")
+              (String.Empty, "build2.cake")]
             |> List.iter
-                (fun cakeversion ->
+                (fun (cakeversion, script) ->
                     try
                         Actions.RunDotnet
                             (fun o' ->
@@ -5539,7 +5546,7 @@ _Target
                         Actions.RunDotnet
                             (withWorkingDirectoryOnly "_Cake")
                             "cake"
-                            ("build.cake --rebuild=true \"--cakeversion="
+                            (script + " --rebuild=true \"--cakeversion="
                              + cv
                              + "\"")
                             "running cake script returned with a non-zero exit code"
@@ -5547,6 +5554,7 @@ _Target
                         let x =
                             Path.getFullName (
                                 "./_Cake/_DotnetTest/coverage."
+                                + script + "."
                                 + cv
                                 + ".net6.0.xml"
                             )
