@@ -120,16 +120,16 @@ module private Gui =
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
 
     handler.aboutVisualizer.Version <-
-      System.AssemblyVersionInformation.AssemblyFileVersion
+      AltCover.AssemblyVersionInformation.AssemblyFileVersion
 
     handler.aboutVisualizer.Copyright <-
       Resource.Format(
         "aboutVisualizer.Copyright",
-        [ System.AssemblyVersionInformation.AssemblyCopyright ]
+        [ AltCover.AssemblyVersionInformation.AssemblyCopyright ]
       )
 
     handler.aboutVisualizer.License <-
-      Resource.Format("License", [ System.AssemblyVersionInformation.AssemblyCopyright ])
+      Resource.Format("License", [ AltCover.AssemblyVersionInformation.AssemblyCopyright ])
 
     handler.aboutVisualizer.Comments <-
       Resource.GetResourceString("aboutVisualizer.Comments")

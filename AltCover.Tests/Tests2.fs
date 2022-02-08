@@ -3159,7 +3159,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let expected = reader'.ReadToEnd()
 
     let version =
-      System.AssemblyVersionInformation.AssemblyVersion
+      AltCover.AssemblyVersionInformation.AssemblyVersion
 
     let transform (s: string) =
       s
@@ -3200,7 +3200,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let expected = reader'.ReadToEnd()
 
     let version =
-      System.AssemblyVersionInformation.AssemblyVersion
+      AltCover.AssemblyVersionInformation.AssemblyVersion
 
     let transform (s: string) =
       s
@@ -3242,7 +3242,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let expected = reader'.ReadToEnd()
 
     let version =
-      System.AssemblyVersionInformation.AssemblyVersion
+      AltCover.AssemblyVersionInformation.AssemblyVersion
 
     let transform (s: string) =
       s

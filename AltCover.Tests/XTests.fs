@@ -870,7 +870,7 @@ module AltCoverXTests =
       <@ (aux
           |> Set.contains (
             "AltCover.Recorder.g/"
-            + System.AssemblyVersionInformation.AssemblyVersion
+            + AltCover.AssemblyVersionInformation.AssemblyVersion
           )) @>
 
     let libraries =
@@ -888,7 +888,7 @@ module AltCoverXTests =
       <@ (lib
           |> Set.contains (
             "AltCover.Recorder.g/"
-            + System.AssemblyVersionInformation.AssemblyVersion
+            + AltCover.AssemblyVersionInformation.AssemblyVersion
           )) @>
 
   [<Test>]
