@@ -504,4 +504,9 @@ module Instance =
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "DeclareEventsExplicitlyRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "<StartupCode$AltCover-Recorder>.$Recorder",
+                            Justification = "Compiler generated doExit@453 and :doUnload@450")>]
 ()
