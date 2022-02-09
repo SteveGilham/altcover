@@ -15,7 +15,7 @@ nuget:
   disable_publish_on_pr: true
 install:
   # SDK version fix
-  - cinst dotnet-sdk --version 6.0.101
+  - cinst dotnet-sdk --version 6.0.102
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
