@@ -153,12 +153,18 @@ printfn "Using dotnet version %s" dotnetVersion
 let dotnetInfo =
     DotNet.exec (fun o -> dotnetOptions (o.WithRedirectOutput true)) "" "--info"
 
-let MSBuildPath =
+let dotnetSdkPath =
     dotnetInfo.Results
     |> Seq.filter (fun x -> x.IsError |> not)
     |> Seq.map (fun x -> x.Message)
     |> Seq.tryFind (fun x -> x.Contains "Base Path:")
-    |> Option.map (fun x -> Path.Combine(x.Replace("Base Path:", "").TrimStart(), "MSBuild.dll"))
+    |> Option.map (fun x -> x.Replace("Base Path:", "").TrimStart())
+
+let refdir = dotnetSdkPath
+             |> Option.map(fun path -> path @@ "ref")
+
+let MSBuildPath = dotnetSdkPath
+                  |> Option.map(fun path -> path @@ "MSBuild.dll")
 
 printfn "MSBuildPath = %A" MSBuildPath
 
@@ -1186,9 +1192,6 @@ _Target
                           gendarmeRules
                           [ "-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed" ] ]
 
-        let refdir =
-            @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO generate
-
         // net20 targets
         [ ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
@@ -1231,7 +1234,7 @@ _Target
            [],
            defaultRules)
           (dixon,
-           refdir,
+           Option.get refdir,
            [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
              "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
@@ -1240,29 +1243,29 @@ _Target
            [],
            defaultRules)
           (dixon,
-           refdir,
+           Option.get refdir,
            [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
              // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll" // same as net472
              "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ],
            [],
            minimalRules)
           (dixon,
-           refdir,
+           Option.get refdir,
            [ "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll"
            [],
            minimalRules)
           //          (dixon, // new platform
-//           refdir,
+//           Option.get refdir,
 //           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // Avalonia
 //             //  GetReaderForFile returned an unexpected HResult: 0x80004005. // same at net472 if built thus
 //             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ], [], defaultRules)
           (dixon,
-           refdir,
+           Option.get refdir,
            [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
            [],
            defaultCSharpRules)
           (dixon,
-           refdir,
+           Option.get refdir,
            [ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
              "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
@@ -1270,7 +1273,7 @@ _Target
            [],
            defaultRules)
           (dixon,
-           refdir,
+           Option.get refdir,
            [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
            [],
            List.concat [ defaultRules
@@ -1344,7 +1347,7 @@ _Target
                 { FxCop.Params.Create() with
                       WorkingDirectory = "."
                       ToolPath = Option.get dixon
-                      PlatformDirectory = refdir
+                      PlatformDirectory = Option.get refdir
                       DependencyDirectories =
                           [ nugetCache
                             @@ "fsharp.core/6.0.1/lib/netstandard2.0"
