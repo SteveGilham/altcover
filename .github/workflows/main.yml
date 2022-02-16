@@ -19,7 +19,7 @@ jobs:
         fetch-depth: 2
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.102'
+        dotnet-version: '6.0.200'
     - name: Tools
       run: dotnet tool restore
     - name: Setup
@@ -47,7 +47,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.102'
+        dotnet-version: '6.0.200'
     - name: Tools
       run: dotnet tool restore
     - name: Setup
