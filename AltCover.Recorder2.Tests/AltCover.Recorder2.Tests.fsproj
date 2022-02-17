@@ -31,11 +31,11 @@
   <ItemGroup />
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1">
       <PrivateAssets>all</PrivateAssets>
@@ -46,7 +46,7 @@
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Update="FSharp.Core" Version="6.0.1">
+    <PackageReference Update="FSharp.Core" Version="6.0.3">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />

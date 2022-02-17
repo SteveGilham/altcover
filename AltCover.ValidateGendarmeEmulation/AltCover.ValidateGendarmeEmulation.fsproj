@@ -49,7 +49,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -60,7 +60,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -70,7 +70,7 @@
   
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="6.0.1">
+    <PackageReference Update="FSharp.Core" Version="6.0.3">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
