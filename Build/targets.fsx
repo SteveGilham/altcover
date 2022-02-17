@@ -7517,6 +7517,12 @@ _Target
 let resetColours _ =
     Console.ForegroundColor <- consoleBefore |> fst
     Console.BackgroundColor <- consoleBefore |> snd
+    (!! "internalTrace*.log")
+    |> Seq.iter Shell.rm
+    (!! "nunit-agent_*.log")
+    |> Seq.iter Shell.rm    
+    
+_Target "None" ignore
 
 Target.description "ResetConsoleColours"
 Target.createFinal "ResetConsoleColours" resetColours
