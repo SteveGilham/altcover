@@ -1912,18 +1912,18 @@ module AltCoverTests =
         Some "Module::F1" //*//System.Void Sample6.Module/F1@17::.ctor()
         Some "Module::F1" //*//System.Void Sample6.Module/F1@17::Invoke()
         Some "Module::F1" //*//System.Void Sample6.Module/F1@17::.cctor()
-        Some "fetchUrlAsync@25-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@25-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)"
-        Some "fetchUrlAsync@23-3::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@23-3::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)"
-        Some "fetchUrlAsync@23-2::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@23-2::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)"
-        Some "fetchUrlAsync@22-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@22-1::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)"
-        Some "fetchUrlAsync@22-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-6::.ctor(Microsoft.FSharp.Control.FSharpAsync`1<System.Net.WebResponse>,Microsoft.FSharp.Core.FSharpFunc`2<System.Net.WebResponse,Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit>>)"
-        Some "fetchUrlAsync@22-1::Invoke" //"Microsoft.FSharp.Control.AsyncReturn Sample6.Module/fetchUrlAsync@23-6::Invoke(Microsoft.FSharp.Control.AsyncActivation`1<Microsoft.FSharp.Core.Unit>)"
-        Some "fetchUrlAsync@21::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@21::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)"
+        Some "fetchUrlAsync@27-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@27-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)"
+        Some "fetchUrlAsync@25-3::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@25-3::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)"
+        Some "fetchUrlAsync@25-2::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@25-2::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)"
+        Some "fetchUrlAsync@24-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@24-1::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)"
+        Some "fetchUrlAsync@24-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-6::.ctor(Microsoft.FSharp.Control.FSharpAsync`1<System.Net.WebResponse>,Microsoft.FSharp.Core.FSharpFunc`2<System.Net.WebResponse,Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit>>)"
+        Some "fetchUrlAsync@24-1::Invoke" //"Microsoft.FSharp.Control.AsyncReturn Sample6.Module/fetchUrlAsync@23-6::Invoke(Microsoft.FSharp.Control.AsyncActivation`1<Microsoft.FSharp.Core.Unit>)"
+        Some "fetchUrlAsync@23::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@23::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)"
         Some "Module::F2" //*//"System.Void Sample6.Module/fetchUrlAsync@21::.ctor()"
         Some "Module::F2" //*//"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)"
         Some "Module::F2" ] //*//"System.Void Sample6.Module/fetchUrlAsync@21::.cctor()"
@@ -4022,7 +4022,7 @@ module AltCoverTests =
                       "Sample6.Module.F2"
                       "Sample6.Module+FII@12T.Invoke"
                       "Sample6.Module+FI@11T.Invoke"
-                      "Sample6.Module+F1@17.Invoke" ] @>
+                      "Sample6.Module+F1@19.Invoke" ] @>
 
       CoverageParameters.topLevel.Clear()
       CoverageParameters.nameFilters.Clear()
