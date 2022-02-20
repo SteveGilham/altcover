@@ -1,4 +1,4 @@
-#if RUNNER
+﻿#if RUNNER
 namespace AltCover.Fake
 
 open System
@@ -45,7 +45,8 @@ type Command private () =
   // Finds the tool from within the .nuget package
   [<SuppressMessage("Microsoft.Design", "CA1062", Justification = "Idiomatic F#")>]
   static member ToolPath toolType =
-    let here = Assembly.GetExecutingAssembly().Location
+    let here =
+      Assembly.GetExecutingAssembly().Location
 
     let root =
       Path.Combine(Path.GetDirectoryName here, "../..")
@@ -141,13 +142,15 @@ module DotNet =
         .GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (setCustomParams common extended self.Common)
 
-      let testOptionsConstructor = self.GetType().GetConstructors().[0]
+      let testOptionsConstructor =
+        self.GetType().GetConstructors().[0]
 
       let args' =
         testOptionsConstructor.GetParameters()
         |> Array.map activate
 
-      let result = testOptionsConstructor.Invoke(args')
+      let result =
+        testOptionsConstructor.Invoke(args')
 
       self
         .GetType()

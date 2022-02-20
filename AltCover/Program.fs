@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -42,7 +42,8 @@ module EntryPoint =
 
       match first with
       | Select "TargetsPath" _ ->
-        let here = Assembly.GetExecutingAssembly().Location
+        let here =
+          Assembly.GetExecutingAssembly().Location
 
         let targets =
           Path.Combine(

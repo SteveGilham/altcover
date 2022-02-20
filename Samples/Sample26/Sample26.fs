@@ -1,4 +1,4 @@
-namespace N
+﻿namespace N
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 open System
 open System.Reflection
@@ -12,7 +12,8 @@ do ()
 
 module M =
   let monitor tuple =
-    let (a, b) = AltCover.Monitor.TryGetVisitTotals()
+    let (a, b) =
+      AltCover.Monitor.TryGetVisitTotals()
 
     if a then
       let code = b.Code

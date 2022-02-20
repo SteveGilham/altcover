@@ -1,4 +1,4 @@
-// script relative paths to the Mono.Cecil and Mono.Options assemblies
+﻿// script relative paths to the Mono.Cecil and Mono.Options assemblies
 #I "../packages/Mono.Cecil.0.10.1/lib/net40"
 #I "../packages/Mono.Options.Signed.0.2.3/lib/net45"
 #r "Mono.Cecil"
@@ -44,13 +44,11 @@ let rest =
 
 // The meat of the script starts here ---------------------------------
 // load files
-let stream =
-    new FileStream(keyName.Value, FileMode.Open, FileAccess.Read)
+let stream = new FileStream(keyName.Value, FileMode.Open, FileAccess.Read)
 
 let key = StrongNameKeyPair(stream)
 
-let definition =
-    AssemblyDefinition.ReadAssembly(assemblyName.Value)
+let definition = AssemblyDefinition.ReadAssembly(assemblyName.Value)
 
 // Do what CorFlags /32BIT+ /Force does if required
 if cor32plus.Value then

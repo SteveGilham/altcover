@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 
@@ -301,17 +301,17 @@ module VisualizerMain =
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
                             "DoNotDecreaseVisibilityRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
                             "DoNotDecreaseVisibilityRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
                             Justification = "Generated code")>]
 ()

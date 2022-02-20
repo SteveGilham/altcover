@@ -213,12 +213,11 @@ module
     let result = Lines()
 
     j.Object
-    |> Seq.iter
-         (fun kvp ->
-           let _, i = Int32.TryParse kvp.Key
+    |> Seq.iter (fun kvp ->
+      let _, i = Int32.TryParse kvp.Key
 
-           if i > 0 then
-             result.[i] <- kvp.Value.Number |> Math.Round |> int)
+      if i > 0 then
+        result.[i] <- kvp.Value.Number |> Math.Round |> int)
 
     result
 
@@ -231,11 +230,8 @@ module
     let o = j.Object
 
     let tid =
-      valueFromKey
-        o
-        "TId"
-        (System.Nullable())
-        (fun t -> t.Number |> Math.Round |> int |> Nullable<int>)
+      valueFromKey o "TId" (System.Nullable()) (fun t ->
+        t.Number |> Math.Round |> int |> Nullable<int>)
 
     { Lines = valueFromKey o "Lines" (Lines()) linesFromJsonValue
       Branches = valueFromKey o "Branches" (Branches()) branchesFromJsonValue
@@ -447,7 +443,7 @@ module
       s
 
   let private slugs =
-    { 0 .. 14 }
+    { 0..14 }
     |> Seq.map (fun i -> (i, String(' ', i)))
     |> Map.ofSeq
 
@@ -790,38 +786,34 @@ module
     name
     fileId
     =
-    tryGetValueOrDefault
-      table
-      name
-      (fun () ->
-        let m2 =
-          XElement(
-            XName.Get "Method",
-            XAttribute(XName.Get "visited", false),
-            XAttribute(XName.Get "cyclomaticComplexity", 1),
-            XAttribute(XName.Get "sequenceCoverage", 0),
-            XAttribute(XName.Get "branchCoverage", 0),
-            XAttribute(XName.Get "isConstructor", false),
-            XAttribute(XName.Get "isStatic", false),
-            XAttribute(XName.Get "isGetter", false),
-            XAttribute(XName.Get "isSetter", false)
-          )
+    tryGetValueOrDefault table name (fun () ->
+      let m2 =
+        XElement(
+          XName.Get "Method",
+          XAttribute(XName.Get "visited", false),
+          XAttribute(XName.Get "cyclomaticComplexity", 1),
+          XAttribute(XName.Get "sequenceCoverage", 0),
+          XAttribute(XName.Get "branchCoverage", 0),
+          XAttribute(XName.Get "isConstructor", false),
+          XAttribute(XName.Get "isStatic", false),
+          XAttribute(XName.Get "isGetter", false),
+          XAttribute(XName.Get "isSetter", false)
+        )
 
-        let sd = buildSummary m2
+      let sd = buildSummary m2
 
-        [ "MetadataToken", "0"; "Name", name ]
-        |> Seq.iter
-             (fun (name, value) ->
-               let x = XElement(XName.Get name)
-               x.Value <- value
-               m2.Add x)
+      [ "MetadataToken", "0"; "Name", name ]
+      |> Seq.iter (fun (name, value) ->
+        let x = XElement(XName.Get name)
+        x.Value <- value
+        m2.Add x)
 
-        let f =
-          XElement(XName.Get "FileRef", XAttribute(XName.Get "uid", fileId))
+      let f =
+        XElement(XName.Get "FileRef", XAttribute(XName.Get "uid", fileId))
 
-        m2.Add f
-        item.Add m2
-        m2)
+      m2.Add f
+      item.Add m2
+      m2)
 
   let internal makeSummary (nb: int) (vb: int) (ns: int) (vs: int) (sd: XElement) =
     sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(
@@ -862,20 +854,20 @@ module
     let sp =
       m.Descendants("SequencePoints".X)
       |> Seq.tryHead
-      |> Option.defaultWith
-           (fun () ->
-             let tmp = XElement(XName.Get "SequencePoints")
-             m.Add tmp
-             tmp)
+      |> Option.defaultWith (fun () ->
+        let tmp =
+          XElement(XName.Get "SequencePoints")
+
+        m.Add tmp
+        tmp)
 
     let bp =
       m.Descendants("BranchPoints".X)
       |> Seq.tryHead
-      |> Option.defaultWith
-           (fun () ->
-             let tmp = XElement(XName.Get "BranchPoints")
-             m.Add tmp
-             tmp)
+      |> Option.defaultWith (fun () ->
+        let tmp = XElement(XName.Get "BranchPoints")
+        m.Add tmp
+        tmp)
 
     let value = method.Value
     let bec = Dictionary<int, int>()
@@ -883,96 +875,96 @@ module
 
     if value.Branches.IsNotNull then
       value.Branches
-      |> Seq.iter
-           (fun b ->
-             let _, old = bec.TryGetValue b.Line
-             bec.[b.Line] <- old + 1
+      |> Seq.iter (fun b ->
+        let _, old = bec.TryGetValue b.Line
+        bec.[b.Line] <- old + 1
 
-             if b.Hits > 0 then
-               let _, old = bev.TryGetValue b.Line
-               bev.[b.Line] <- old + 1
+        if b.Hits > 0 then
+          let _, old = bev.TryGetValue b.Line
+          bev.[b.Line] <- old + 1
 
-             let bx =
-               XElement(
-                 XName.Get "BranchPoint",
-                 XAttribute(XName.Get "vc", b.Hits),
-                 XAttribute(XName.Get "sl", b.Line),
-                 XAttribute(XName.Get "uspid", b.Id),
-                 XAttribute(XName.Get "ordinal", b.Ordinal),
-                 XAttribute(XName.Get "offset", b.Offset),
-                 XAttribute(XName.Get "path", b.Path),
-                 XAttribute(XName.Get "fileid", fileId)
-               )
+        let bx =
+          XElement(
+            XName.Get "BranchPoint",
+            XAttribute(XName.Get "vc", b.Hits),
+            XAttribute(XName.Get "sl", b.Line),
+            XAttribute(XName.Get "uspid", b.Id),
+            XAttribute(XName.Get "ordinal", b.Ordinal),
+            XAttribute(XName.Get "offset", b.Offset),
+            XAttribute(XName.Get "path", b.Path),
+            XAttribute(XName.Get "fileid", fileId)
+          )
 
-             bp.Add bx)
+        bp.Add bx)
 
       let targets =
         value.Branches
         |> Seq.groupBy (fun b -> b.Line)
-        |> Seq.sumBy
-             (fun (_, x) ->
-               x
-               |> Seq.distinctBy (fun bx -> bx.EndOffset)
-               |> Seq.length)
+        |> Seq.sumBy (fun (_, x) ->
+          x
+          |> Seq.distinctBy (fun bx -> bx.EndOffset)
+          |> Seq.length)
 
       m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets)
         .ToString(CultureInfo.InvariantCulture)
 
     if value.SeqPnts.IsNotNull then
       value.SeqPnts
-      |> Seq.iter
-           (fun s ->
-             let _, bec2 = bec.TryGetValue s.SL
-             bec.[s.SL] <- 0
-             let _, bev2 = bev.TryGetValue s.SL
-             bev.[s.SL] <- 0
+      |> Seq.iter (fun s ->
+        let _, bec2 = bec.TryGetValue s.SL
+        bec.[s.SL] <- 0
+        let _, bev2 = bev.TryGetValue s.SL
+        bev.[s.SL] <- 0
 
-             let sx =
-               XElement(
-                 XName.Get "SequencePoint",
-                 XAttribute(XName.Get "vc", s.VC),
-                 XAttribute(XName.Get "offset", s.Offset),
-                 XAttribute(XName.Get "sl", s.SL),
-                 XAttribute(XName.Get "sc", s.SC),
-                 XAttribute(XName.Get "el", s.EL),
-                 XAttribute(XName.Get "ec", s.EC),
-                 XAttribute(XName.Get "uspid", s.Id),
-                 XAttribute(XName.Get "bec", bec2),
-                 XAttribute(XName.Get "bev", bev2),
-                 XAttribute(XName.Get "fileid", fileId)
-               )
+        let sx =
+          XElement(
+            XName.Get "SequencePoint",
+            XAttribute(XName.Get "vc", s.VC),
+            XAttribute(XName.Get "offset", s.Offset),
+            XAttribute(XName.Get "sl", s.SL),
+            XAttribute(XName.Get "sc", s.SC),
+            XAttribute(XName.Get "el", s.EL),
+            XAttribute(XName.Get "ec", s.EC),
+            XAttribute(XName.Get "uspid", s.Id),
+            XAttribute(XName.Get "bec", bec2),
+            XAttribute(XName.Get "bev", bev2),
+            XAttribute(XName.Get "fileid", fileId)
+          )
 
-             sp.Add sx)
+        sp.Add sx)
     else
       value.Lines
-      |> Seq.iteri
-           (fun i l ->
-             let k = l.Key
-             let _, bec2 = bec.TryGetValue k
-             bec.[k] <- 0
-             let _, bev2 = bev.TryGetValue k
-             bev.[k] <- 0
+      |> Seq.iteri (fun i l ->
+        let k = l.Key
+        let _, bec2 = bec.TryGetValue k
+        bec.[k] <- 0
+        let _, bev2 = bev.TryGetValue k
+        bev.[k] <- 0
 
-             let sx =
-               XElement(
-                 XName.Get "SequencePoint",
-                 XAttribute(XName.Get "vc", l.Value),
-                 XAttribute(XName.Get "offset", i),
-                 XAttribute(XName.Get "sl", k),
-                 XAttribute(XName.Get "sc", 1),
-                 XAttribute(XName.Get "el", k),
-                 XAttribute(XName.Get "ec", 2),
-                 XAttribute(XName.Get "uspid", i),
-                 XAttribute(XName.Get "bec", bec2),
-                 XAttribute(XName.Get "bev", bev2),
-                 XAttribute(XName.Get "fileid", fileId)
-               )
+        let sx =
+          XElement(
+            XName.Get "SequencePoint",
+            XAttribute(XName.Get "vc", l.Value),
+            XAttribute(XName.Get "offset", i),
+            XAttribute(XName.Get "sl", k),
+            XAttribute(XName.Get "sc", 1),
+            XAttribute(XName.Get "el", k),
+            XAttribute(XName.Get "ec", 2),
+            XAttribute(XName.Get "uspid", i),
+            XAttribute(XName.Get "bec", bec2),
+            XAttribute(XName.Get "bev", bev2),
+            XAttribute(XName.Get "fileid", fileId)
+          )
 
-             sp.Add sx)
+        sp.Add sx)
 
     // recompute points
-    let sd = m.Descendants("Summary".X) |> Seq.head
-    let branches = bp.Descendants("BranchPoint".X)
+    let sd =
+      m.Descendants("Summary".X) |> Seq.head
+
+    let branches =
+      bp.Descendants("BranchPoint".X)
+
     let nb = branches |> Seq.length
 
     let vb =
@@ -980,7 +972,9 @@ module
       |> Seq.filter (fun x -> x.Attribute("vc".X).Value != "0")
       |> Seq.length
 
-    let points = sp.Descendants("SequencePoint".X)
+    let points =
+      sp.Descendants("SequencePoint".X)
+
     let ns = points |> Seq.length
 
     let vs =
@@ -992,13 +986,12 @@ module
       let mp =
         m.Descendants("MethodPoint".X)
         |> Seq.tryHead
-        |> Option.defaultWith
-             (fun () ->
-               let tmp =
-                 XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", "0"))
+        |> Option.defaultWith (fun () ->
+          let tmp =
+            XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", "0"))
 
-               m.Add tmp
-               tmp)
+          m.Add tmp
+          tmp)
 
       let mvc =
         points // not Seq.max as that exposes repeated calls to enumerator.Current when bootstrapping
@@ -1059,31 +1052,27 @@ module
     (classes: Classes)
     =
     classes
-    |> Seq.iteri
-         (fun i kvp ->
-           let name = kvp.Key
+    |> Seq.iteri (fun i kvp ->
+      let name = kvp.Key
 
-           let item =
-             tryGetValueOrDefault
-               table
-               name
-               (fun () ->
-                 XElement(
-                   XName.Get "Class",
-                   summaryElement (),
-                   XElement(XName.Get "FullName", name),
-                   XElement(XName.Get "Methods")
-                 ))
+      let item =
+        tryGetValueOrDefault table name (fun () ->
+          XElement(
+            XName.Get "Class",
+            summaryElement (),
+            XElement(XName.Get "FullName", name),
+            XElement(XName.Get "Methods")
+          ))
 
-           let next =
-             item.Elements(XName.Get "Methods") |> Seq.head
+      let next =
+        item.Elements(XName.Get "Methods") |> Seq.head
 
-           methodsToXml fileId next methodtable kvp.Value
+      methodsToXml fileId next methodtable kvp.Value
 
-           let sd =
-             item.Descendants("Summary".X) |> Seq.head
+      let sd =
+        item.Descendants("Summary".X) |> Seq.head
 
-           summarize sd item "Method")
+      summarize sd item "Method")
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
@@ -1100,42 +1089,43 @@ module
 
     [ "ModulePath", key
       "ModuleName", (key |> Path.GetFileNameWithoutExtension) ]
-    |> Seq.iter
-         (fun (name, value) ->
-           let x = XElement(XName.Get name)
-           x.Value <- value
-           m.Add x)
+    |> Seq.iter (fun (name, value) ->
+      let x = XElement(XName.Get name)
+      x.Value <- value
+      m.Add x)
 
     let files = XElement(XName.Get "Files")
     m.Add files
     let classes = XElement(XName.Get "Classes")
     m.Add classes
-    let classTable = Dictionary<string, XElement>()
-    let methodTable = Dictionary<string, XElement>()
+
+    let classTable =
+      Dictionary<string, XElement>()
+
+    let methodTable =
+      Dictionary<string, XElement>()
 
     documents
-    |> Seq.iter
-         (fun kvp ->
-           let name = kvp.Key
+    |> Seq.iter (fun kvp ->
+      let name = kvp.Key
 
-           let i =
-             tryGetValueOrDefault indexTable name (fun () -> 1 + indexTable.Count)
+      let i =
+        tryGetValueOrDefault indexTable name (fun () -> 1 + indexTable.Count)
 
-           let item =
-             XElement(
-               XName.Get "File",
-               XAttribute(XName.Get "uid", i),
-               XAttribute(XName.Get "fullPath", name)
-             )
+      let item =
+        XElement(
+          XName.Get "File",
+          XAttribute(XName.Get "uid", i),
+          XAttribute(XName.Get "fullPath", name)
+        )
 
-           kvp.Value
-           |> Seq.tryFind (fun kvp -> kvp.Key == "\u00ABAltCover.embed\u00BB")
-           |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
-           |> Option.iter
-                (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
+      kvp.Value
+      |> Seq.tryFind (fun kvp -> kvp.Key == "\u00ABAltCover.embed\u00BB")
+      |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
+      |> Option.iter (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
 
-           files.Add item
-           classesToXml i classTable methodTable kvp.Value)
+      files.Add item
+      classesToXml i classTable methodTable kvp.Value)
 
     classTable
     |> Seq.filter (fun kvp -> kvp.Key |> Seq.head <> '\u00AB')
@@ -1163,10 +1153,9 @@ module
     let fileRefs = Dictionary<string, int>()
 
     modules
-    |> Seq.iter
-         (fun kvp ->
-           documentsToXml fileRefs kvp.Key kvp.Value
-           |> mroot.Add)
+    |> Seq.iter (fun kvp ->
+      documentsToXml fileRefs kvp.Key kvp.Value
+      |> mroot.Add)
 
     summarize sd root "Module"
 
@@ -1193,56 +1182,53 @@ module
                     Justification = "AvoidSpeculativeGenerality too")>]
   let internal orderXml (x: XDocument) =
     x.Descendants(XName.Get "SequencePoints")
-    |> Seq.iter
-         (fun sps ->
-           let original = sps.Elements() |> Seq.toList
-           sps.RemoveAll()
+    |> Seq.iter (fun sps ->
+      let original = sps.Elements() |> Seq.toList
+      sps.RemoveAll()
 
-           original
-           |> Seq.sortBy
-                (fun sp ->
-                  let offset = sp.Attribute(XName.Get "fileid")
+      original
+      |> Seq.sortBy (fun sp ->
+        let offset =
+          sp.Attribute(XName.Get "fileid")
 
-                  let topword =
-                    offset
-                    |> Option.ofObj
-                    |> Option.map (fun x -> x.Value |> Int64.TryParse |> snd)
-                    |> Option.defaultValue 0L
+        let topword =
+          offset
+          |> Option.ofObj
+          |> Option.map (fun x -> x.Value |> Int64.TryParse |> snd)
+          |> Option.defaultValue 0L
 
-                  let sl =
-                    sp.Attribute(XName.Get "sl").Value
-                    |> Int32.TryParse
-                    |> snd
+        let sl =
+          sp.Attribute(XName.Get "sl").Value
+          |> Int32.TryParse
+          |> snd
 
-                  let sc =
-                    sp.Attribute(XName.Get "sc").Value
-                    |> Int32.TryParse
-                    |> snd
+        let sc =
+          sp.Attribute(XName.Get "sc").Value
+          |> Int32.TryParse
+          |> snd
 
-                  (topword <<< 32) + int64 ((sl <<< 16) + sc))
-           |> sps.Add)
+        (topword <<< 32) + int64 ((sl <<< 16) + sc))
+      |> sps.Add)
 
     x.Descendants(XName.Get "BranchPoints")
-    |> Seq.iter
-         (fun bps ->
-           let original = bps.Elements() |> Seq.toList
-           bps.RemoveAll()
+    |> Seq.iter (fun bps ->
+      let original = bps.Elements() |> Seq.toList
+      bps.RemoveAll()
 
-           original
-           |> Seq.sortBy
-                (fun bp ->
-                  let sl =
-                    bp.Attribute(XName.Get "sl").Value
-                    |> Int32.TryParse
-                    |> snd
+      original
+      |> Seq.sortBy (fun bp ->
+        let sl =
+          bp.Attribute(XName.Get "sl").Value
+          |> Int32.TryParse
+          |> snd
 
-                  let offset =
-                    bp.Attribute(XName.Get "ordinal").Value
-                    |> Int32.TryParse
-                    |> snd
+        let offset =
+          bp.Attribute(XName.Get "ordinal").Value
+          |> Int32.TryParse
+          |> snd
 
-                  (sl <<< 16) + offset)
-           |> bps.Add)
+        (sl <<< 16) + offset)
+      |> bps.Add)
 
     x
 #endif
@@ -1303,8 +1289,11 @@ module
           Track = m.Track }
 
     let getMethodRecord (s: JsonContext) (doc: string) (record: Cil.Document) =
-      let visibleMethodName = s.VisibleMethod.FullName
-      let visibleTypeName = s.VisibleMethod.DeclaringType.FullName
+      let visibleMethodName =
+        s.VisibleMethod.FullName
+
+      let visibleTypeName =
+        s.VisibleMethod.DeclaringType.FullName
 
       let classes =
         match s.Documents.TryGetValue doc with
@@ -1337,27 +1326,26 @@ module
     let visitMethodPoint (s: JsonContext) (e: StatementEntry) =
       if e.Interesting then
         e.SeqPnt
-        |> Option.iter
-             (fun codeSegment ->
-               let doc =
-                 codeSegment.Document.Url
-                 |> Visitor.sourceLinkMapping
+        |> Option.iter (fun codeSegment ->
+          let doc =
+            codeSegment.Document.Url
+            |> Visitor.sourceLinkMapping
 
-               let mplus =
-                 getMethodRecord s doc codeSegment.Document
+          let mplus =
+            getMethodRecord s doc codeSegment.Document
 
-               mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
+          mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
 
-               mplus.SeqPnts.Add
-                 { VC = int e.DefaultVisitCount
-                   SL = codeSegment.StartLine
-                   SC = codeSegment.StartColumn
-                   EL = codeSegment.EndLine
-                   EC = codeSegment.EndColumn
-                   Offset = codeSegment.Offset
-                   Id = e.Uid
-                   Times = null
-                   Tracks = null })
+          mplus.SeqPnts.Add
+            { VC = int e.DefaultVisitCount
+              SL = codeSegment.StartLine
+              SC = codeSegment.StartColumn
+              EL = codeSegment.EndLine
+              EC = codeSegment.EndColumn
+              Offset = codeSegment.Offset
+              Id = e.Uid
+              Times = null
+              Tracks = null })
 
       s
 

@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
@@ -48,43 +48,41 @@ module AltCoverXTests =
     test' <@ rcount = ecount @> ("Mismatch at depth " + depth.ToString())
 
     Seq.zip result expected
-    |> Seq.iter
-         (fun (r: XElement, e: XElement) ->
-           test <@ r.Name = e.Name @>
-           let ra = r.Attributes()
-           let ea = e.Attributes()
+    |> Seq.iter (fun (r: XElement, e: XElement) ->
+      test <@ r.Name = e.Name @>
+      let ra = r.Attributes()
+      let ea = e.Attributes()
 
-           Seq.zip ra ea
-           |> Seq.iter
-                (fun (a1: XAttribute, a2: XAttribute) ->
-                  test <@ a1.Name = a2.Name @>
+      Seq.zip ra ea
+      |> Seq.iter (fun (a1: XAttribute, a2: XAttribute) ->
+        test <@ a1.Name = a2.Name @>
 
-                  match a1.Name.ToString() with
-                  | "profilerVersion"
-                  | "driverVersion"
-                  | "moduleId"
-                  | "metadataToken"
-                  | "startTime"
-                  | "measureTime" -> ()
-                  | "document" ->
-                    test'
-                      <@ a1
-                        .Value
-                        .Replace("\\", "/")
-                        .EndsWith(a2.Value.Replace("\\", "/")) @>
-                      (a1.Name.ToString()
-                       + " : "
-                       + r.ToString()
-                       + " -> document")
-                  | "visitcount" ->
-                    let expected = Maybe zero "0" a2.Value
-                    test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
-                  | _ ->
-                    test'
-                      <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
-                      (r.ToString() + " -> " + a1.Name.ToString()))
+        match a1.Name.ToString() with
+        | "profilerVersion"
+        | "driverVersion"
+        | "moduleId"
+        | "metadataToken"
+        | "startTime"
+        | "measureTime" -> ()
+        | "document" ->
+          test'
+            <@ a1
+              .Value
+              .Replace("\\", "/")
+              .EndsWith(a2.Value.Replace("\\", "/")) @>
+            (a1.Name.ToString()
+             + " : "
+             + r.ToString()
+             + " -> document")
+        | "visitcount" ->
+          let expected = Maybe zero "0" a2.Value
+          test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+        | _ ->
+          test'
+            <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
+            (r.ToString() + " -> " + a1.Name.ToString()))
 
-           RecursiveValidate(r.Elements()) (e.Elements()) (depth + 1) zero)
+      RecursiveValidate(r.Elements()) (e.Elements()) (depth + 1) zero)
 
   let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let xn name = XName.Get(name)
@@ -92,14 +90,13 @@ module AltCoverXTests =
 
     let expected =
       expected'
-      |> Seq.filter
-           (fun (el: XElement) ->
-             el.Name.LocalName <> "Module"
-             || expectSkipped
-             || "skippedDueTo"
-                |> xn
-                |> el.Attributes
-                |> Seq.isEmpty)
+      |> Seq.filter (fun (el: XElement) ->
+        el.Name.LocalName <> "Module"
+        || expectSkipped
+        || "skippedDueTo"
+           |> xn
+           |> el.Attributes
+           |> Seq.isEmpty)
       |> Seq.toList
 
     let ecount = expected |> Seq.length
@@ -114,62 +111,58 @@ module AltCoverXTests =
        + (result |> Seq.toList).ToString())
 
     Seq.zip result expected
-    |> Seq.iter
-         (fun (r: XElement, e: XElement) ->
-           test <@ r.Name = e.Name @>
-           let ra = r.Attributes()
-           let ea = e.Attributes()
+    |> Seq.iter (fun (r: XElement, e: XElement) ->
+      test <@ r.Name = e.Name @>
+      let ra = r.Attributes()
+      let ea = e.Attributes()
 
-           Seq.zip ra ea
-           |> Seq.iter
-                (fun (a1: XAttribute, a2: XAttribute) ->
-                  test <@ a1.Name = a2.Name @>
+      Seq.zip ra ea
+      |> Seq.iter (fun (a1: XAttribute, a2: XAttribute) ->
+        test <@ a1.Name = a2.Name @>
 
-                  match a1.Name.ToString() with
-                  | "bev"
-                  | "visited"
-                  | "visitedSequencePoints"
-                  | "visitedBranchPoints"
-                  | "visitedClasses"
-                  | "visitedMethods"
-                  | "sequenceCoverage"
-                  | "branchCoverage"
-                  | "uspid"
-                  | "minCrapScore"
-                  | "maxCrapScore"
-                  | "crapScore"
-                  | "hash" -> ()
-                  | "fullPath" ->
-                    test'
-                      <@ a1
-                        .Value
-                        .Replace("\\", "/")
-                        .Replace("altcover", "AltCover")
-                        .Replace("Samples/", String.Empty)
-                        .EndsWith(
-                          a2
-                            .Value
-                            .Replace("\\", "/")
-                            .Replace("altcover", "AltCover")
-                        ) @>
-                      (a1.Name.ToString()
-                       + " : "
-                       + r.ToString()
-                       + " -> document")
-                  | "vc" ->
-                    let expected = Maybe zero "0" a2.Value
-                    test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
-                  | _ ->
-                    test'
-                      <@ a1.Value = a2.Value @>
-                      (r.ToString() + " -> " + a1.Name.ToString()))
+        match a1.Name.ToString() with
+        | "bev"
+        | "visited"
+        | "visitedSequencePoints"
+        | "visitedBranchPoints"
+        | "visitedClasses"
+        | "visitedMethods"
+        | "sequenceCoverage"
+        | "branchCoverage"
+        | "uspid"
+        | "minCrapScore"
+        | "maxCrapScore"
+        | "crapScore"
+        | "hash" -> ()
+        | "fullPath" ->
+          test'
+            <@ a1
+              .Value
+              .Replace("\\", "/")
+              .Replace("altcover", "AltCover")
+              .Replace("Samples/", String.Empty)
+              .EndsWith(
+                a2
+                  .Value
+                  .Replace("\\", "/")
+                  .Replace("altcover", "AltCover")
+              ) @>
+            (a1.Name.ToString()
+             + " : "
+             + r.ToString()
+             + " -> document")
+        | "vc" ->
+          let expected = Maybe zero "0" a2.Value
+          test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+        | _ ->
+          test' <@ a1.Value = a2.Value @> (r.ToString() + " -> " + a1.Name.ToString()))
 
-           RecursiveValidateOpenCover
-             (r.Elements())
-             (e.Elements())
-             (depth + 1)
-             zero
-             expectSkipped)
+      RecursiveValidateOpenCover
+        (r.Elements())
+        (e.Elements())
+        (depth + 1)
+        zero
+        expectSkipped)
 
   [<Test>]
   let CollectOptionsCanBeValidated () =
@@ -205,7 +198,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidated () =
-    let here = Assembly.GetExecutingAssembly().Location
+    let here =
+      Assembly.GetExecutingAssembly().Location
 
     let t =
       { TypeSafe.Thresholds.Create() with
@@ -220,7 +214,9 @@ module AltCoverXTests =
           SummaryFormat = TypeSafe.BPlus
           Executable = TypeSafe.Tool "dotnet" }
 
-    let instance = AltCover.CollectOptions.TypeSafe subject
+    let instance =
+      AltCover.CollectOptions.TypeSafe subject
+
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
 
     let scan = instance.Validate(false)
@@ -274,7 +270,9 @@ module AltCoverXTests =
   [<Test>]
   let CollectOptionsCanBeValidatedWithErrors () =
     CommandLine.error <- []
-    let subject = Primitive.CollectOptions.Create()
+
+    let subject =
+      Primitive.CollectOptions.Create()
 
     let scan =
       (AltCover.CollectOptions.Primitive subject)
@@ -284,7 +282,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidatedWithErrors () =
-    let subject = TypeSafe.CollectOptions.Create()
+    let subject =
+      TypeSafe.CollectOptions.Create()
 
     let scan =
       (AltCover.CollectOptions.TypeSafe subject)
@@ -300,7 +299,9 @@ module AltCoverXTests =
       { Primitive.CollectOptions.Create() with
           RecorderDirectory = Guid.NewGuid().ToString() }
 
-    let instance = AltCover.CollectOptions.Primitive test
+    let instance =
+      AltCover.CollectOptions.Primitive test
+
     let scan = instance.Validate(true)
 
     test' <@ scan.Length = 2 @>
@@ -353,7 +354,9 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
     let rendered = instance |> Args.prepare
-    let location = Assembly.GetExecutingAssembly().Location
+
+    let location =
+      Assembly.GetExecutingAssembly().Location
 
     test
       <@ rendered = [ "-i"
@@ -436,12 +439,16 @@ module AltCoverXTests =
           InPlace = TypeSafe.Set
           PathFilter = TypeSafe.Unfiltered.Join [| TypeSafe.Raw "ok" |] }
 
-    let instance = AltCover.PrepareOptions.TypeSafe subject
+    let instance =
+      AltCover.PrepareOptions.TypeSafe subject
+
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
 
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
-    let location = Assembly.GetExecutingAssembly().Location
+
+    let location =
+      Assembly.GetExecutingAssembly().Location
 
     test
       <@ instance |> Args.prepare = [ "-i"
@@ -511,7 +518,9 @@ module AltCoverXTests =
         .Validate()
 
     test <@ scan.Length = 0 @>
-    let location = Assembly.GetExecutingAssembly().Location
+
+    let location =
+      Assembly.GetExecutingAssembly().Location
 
     test
       <@ (AltCover.PrepareOptions.TypeSafe subject)
@@ -566,8 +575,7 @@ module AltCoverXTests =
   [<Test>]
   let PrepareOptionsCanBeValidatedWithNulls () =
     let subject =
-      { Primitive.PrepareOptions.Create() with
-          CallContext = null }
+      { Primitive.PrepareOptions.Create() with CallContext = null }
 
     let scan =
       (AltCover.PrepareOptions.Primitive subject)
@@ -639,7 +647,9 @@ module AltCoverXTests =
 
   [<Test>]
   let NullListsAreEmpty () =
-    let subject = Args.itemList String.Empty null
+    let subject =
+      Args.itemList String.Empty null
+
     test <@ subject |> List.isEmpty @>
 
   [<Test>]
@@ -660,7 +670,9 @@ module AltCoverXTests =
     let path =
       Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
 
-    let key0 = Path.Combine(here, "Build/SelfTest.snk")
+    let key0 =
+      Path.Combine(here, "Build/SelfTest.snk")
+
     let input = path
     let key = key0
     let unique = Guid.NewGuid().ToString()
@@ -684,8 +696,12 @@ module AltCoverXTests =
       CoverageParameters.theInputDirectories
       |> Seq.toList
 
-    let reportSaved = CoverageParameters.theReportPath
-    let keySaved = CoverageParameters.defaultStrongNameKey
+    let reportSaved =
+      CoverageParameters.theReportPath
+
+    let keySaved =
+      CoverageParameters.defaultStrongNameKey
+
     let saved = (Console.Out, Console.Error)
     Main.init ()
     let save2 = (Output.info, Output.error)
@@ -752,10 +768,16 @@ module AltCoverXTests =
           .Replace("\\", "/") = ((canonicalDirectory input).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
-      use stream = new FileStream(key, FileMode.Open)
+
+      use stream =
+        new FileStream(key, FileMode.Open)
+
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
-      let snk = StrongNameKeyData.Make(buffer.ToArray())
+
+      let snk =
+        StrongNameKeyData.Make(buffer.ToArray())
+
       test <@ (CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk)) @>
       test <@ CoverageParameters.keys.Count = 2 @>
 
@@ -784,16 +806,14 @@ module AltCoverXTests =
       let actualFiles =
         Directory.GetFiles(output)
         |> Seq.map Path.GetFileName
-        |> Seq.filter
-             (fun f ->
-               f.EndsWith(".tmp", StringComparison.Ordinal)
-               |> not)
+        |> Seq.filter (fun f ->
+          f.EndsWith(".tmp", StringComparison.Ordinal)
+          |> not)
         |> Seq.filter (fun f -> Path.GetFileNameWithoutExtension f <> "testhost")
-        |> Seq.filter
-             (fun f ->
-               (Path.GetFileNameWithoutExtension f)
-                 .StartsWith("Microsoft.", StringComparison.Ordinal)
-               |> not)
+        |> Seq.filter (fun f ->
+          (Path.GetFileNameWithoutExtension f)
+            .StartsWith("Microsoft.", StringComparison.Ordinal)
+          |> not)
         |> Seq.sortBy (fun f -> f.ToUpperInvariant())
         |> Seq.toList
 
@@ -927,8 +947,12 @@ module AltCoverXTests =
       CoverageParameters.theInputDirectories
       |> Seq.toList
 
-    let reportSaved = CoverageParameters.theReportPath
-    let keySaved = CoverageParameters.defaultStrongNameKey
+    let reportSaved =
+      CoverageParameters.theReportPath
+
+    let keySaved =
+      CoverageParameters.defaultStrongNameKey
+
     let saved = (Console.Out, Console.Error)
     let save2 = (Output.info, Output.error)
     Main.init ()
@@ -958,7 +982,9 @@ module AltCoverXTests =
       let result = Main.I.doInstrumentation args
       test' <@ result = 0 @> <| stderr.ToString()
       test <@ stderr.ToString() |> Seq.isEmpty @>
-      let subjectAssembly = Path.Combine(path, "Sample1.exe")
+
+      let subjectAssembly =
+        Path.Combine(path, "Sample1.exe")
 
       let expected =
         "Creating folder "
@@ -989,10 +1015,16 @@ module AltCoverXTests =
           .Replace("\\", "/") = ((canonicalDirectory path).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
-      use stream = new FileStream(key, FileMode.Open)
+
+      use stream =
+        new FileStream(key, FileMode.Open)
+
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
-      let snk = StrongNameKeyData.Make(buffer.ToArray())
+
+      let snk =
+        StrongNameKeyData.Make(buffer.ToArray())
+
       test <@ CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk) @>
       test <@ CoverageParameters.keys.Count = 2 @>
 
@@ -1050,7 +1082,8 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    use recstream = AltCoverTests2.recorderStream ()
+    use recstream =
+      AltCoverTests2.recorderStream ()
 
     use recdef =
       Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
@@ -1087,7 +1120,10 @@ module AltCoverXTests =
         Instrument.I.instrumentationVisitor input visited
 
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
-      let created = Path.Combine(output, "Sample4.dll")
+
+      let created =
+        Path.Combine(output, "Sample4.dll")
+
       test' <@ File.Exists created @> (created + " not found")
 
     finally
@@ -1096,14 +1132,17 @@ module AltCoverXTests =
   [<Test>]
   let AfterAssemblyCommitsThatAssemblyForMono () =
     // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
+    let where =
+      Assembly.GetExecutingAssembly().Location
+
     let path = monoSample1path
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    use recstream = AltCoverTests2.recorderStream ()
+    use recstream =
+      AltCoverTests2.recorderStream ()
 
     use recdef =
       Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
@@ -1140,7 +1179,10 @@ module AltCoverXTests =
         Instrument.I.instrumentationVisitor input visited
 
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
-      let created = Path.Combine(output, "Sample1.exe")
+
+      let created =
+        Path.Combine(output, "Sample1.exe")
+
       test' <@ File.Exists created @> (created + " not found")
 
     finally
@@ -1149,7 +1191,8 @@ module AltCoverXTests =
 
   [<Test>]
   let FinishCommitsTheRecordingAssembly () =
-    let where = Assembly.GetExecutingAssembly().Location
+    let where =
+      Assembly.GetExecutingAssembly().Location
 
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
@@ -1174,14 +1217,16 @@ module AltCoverXTests =
       CoverageParameters.theOutputDirectories.Add output
 
       let input =
-        { InstrumentContext.Build [] with
-            RecordingAssembly = def }
+        { InstrumentContext.Build [] with RecordingAssembly = def }
 
       let result =
         Instrument.I.instrumentationVisitor input Finish
 
       test <@ result.RecordingAssembly |> isNull @>
-      let created = Path.Combine(output, "Sample3.dll")
+
+      let created =
+        Path.Combine(output, "Sample3.dll")
+
       test' <@ File.Exists created @> (created + " not found")
 
     finally
@@ -1257,7 +1302,8 @@ module AltCoverXTests =
 
       try
 #if !NET472
-        let assembly = alc.LoadFromAssemblyPath(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+        let assembly =
+          alc.LoadFromAssemblyPath(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
 #else
         let assembly = Assembly.LoadFrom(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
 #endif
@@ -1318,7 +1364,9 @@ module AltCoverXTests =
             .GetExecutingAssembly()
             .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
-        let updated = Instrument.I.prepareAssembly from
+        let updated =
+          Instrument.I.prepareAssembly from
+
         Instrument.I.writeAssembly updated create
       finally
         CoverageParameters.theReportFormat <- None
@@ -1327,8 +1375,12 @@ module AltCoverXTests =
     let save1 = Runner.J.getPayload
     let save2 = Runner.J.getMonitor
     let save3 = Runner.J.doReport
-    let codedreport = "coverage.xml" |> Path.GetFullPath
-    let alternate = "not-coverage.xml" |> Path.GetFullPath
+
+    let codedreport =
+      "coverage.xml" |> Path.GetFullPath
+
+    let alternate =
+      "not-coverage.xml" |> Path.GetFullPath
 
     try
       Runner.J.recorderName <- "AltCover.Recorder.g.dll"
@@ -1394,7 +1446,9 @@ module AltCoverXTests =
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMono () =
-    let visitor, documentSource = Report.reportGenerator ()
+    let visitor, documentSource =
+      Report.reportGenerator ()
+
     let path = monoSample1path
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
@@ -1426,7 +1480,9 @@ module AltCoverXTests =
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle () =
-    let visitor, documentSource = OpenCover.reportGenerator ()
+    let visitor, documentSource =
+      OpenCover.reportGenerator ()
+
     let path = monoSample1path
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
@@ -1445,8 +1501,8 @@ module AltCoverXTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
 
       use stream =
         Assembly

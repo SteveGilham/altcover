@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -82,7 +82,8 @@ type internal Threshold =
       AltCrap = 0uy }
 
   static member Create(x: string) =
-    let chars = x.ToUpperInvariant() |> Seq.toList
+    let chars =
+      x.ToUpperInvariant() |> Seq.toList
 
     let rec partition data result =
       match data with
@@ -154,14 +155,27 @@ type internal Threshold =
 
 module internal Runner =
 
-  let mutable internal recordingDirectory: Option<string> = None
-  let mutable internal workingDirectory: Option<string> = None
-  let internal executable: Option<string> ref = ref None
+  let mutable internal recordingDirectory: Option<string> =
+    None
+
+  let mutable internal workingDirectory: Option<string> =
+    None
+
+  let internal executable: Option<string> ref =
+    ref None
+
   let internal collect = ref false // ddFlag
-  let mutable internal threshold: Threshold option = None
-  let mutable internal output: Option<string> = None
+
+  let mutable internal threshold: Threshold option =
+    None
+
+  let mutable internal output: Option<string> =
+    None
+
   let internal summary = StringBuilder()
-  let mutable internal summaryFormat = SummaryFormat.Default
+
+  let mutable internal summaryFormat =
+    SummaryFormat.Default
 
   let internal init () =
     CommandLine.verbosity <- 0
@@ -247,10 +261,9 @@ module internal Runner =
 
       let vclasses =
         classes
-        |> Seq.filter
-             (fun (_, ms) ->
-               ms
-               |> Seq.exists (fun m -> m.Descendants("seqpnt".X) |> Seq.exists isVisited))
+        |> Seq.filter (fun (_, ms) ->
+          ms
+          |> Seq.exists (fun m -> m.Descendants("seqpnt".X) |> Seq.exists isVisited))
         |> Seq.length
 
       let vmethods =
@@ -330,10 +343,9 @@ module internal Runner =
 
       let vclasses =
         classes
-        |> Seq.filter
-             (fun c ->
-               c.Descendants("Method".X)
-               |> Seq.exists (fun m -> m.Attribute("visited".X).Value == "true"))
+        |> Seq.filter (fun c ->
+          c.Descendants("Method".X)
+          |> Seq.exists (fun m -> m.Attribute("visited".X).Value == "true"))
         |> Seq.length
 
       let nc = classes.Length
@@ -406,9 +418,11 @@ module internal Runner =
           if nc == "0" then
             "n/a"
           else
-            let vc1 = vc |> Int32.TryParse |> snd |> float
+            let vc1 =
+              vc |> Int32.TryParse |> snd |> float
 
-            let nc1 = nc |> Int32.TryParse |> snd |> float
+            let nc1 =
+              nc |> Int32.TryParse |> snd |> float
 
             Math
               .Round(vc1 * 100.0 / nc1, 2)
@@ -430,17 +444,16 @@ module internal Runner =
       writeTC coverTC "S" statements.Visited
 
       l
-      |> Seq.iter
-           (fun f ->
-             let tag =
-               match f with
-               | R -> "R"
-               | B -> "B"
-               | _ -> String.Empty
+      |> Seq.iter (fun f ->
+        let tag =
+          match f with
+          | R -> "R"
+          | B -> "B"
+          | _ -> String.Empty
 
-             if tag |> String.IsNullOrEmpty |> not then
-               writeTC totalTC tag branches.Number
-               writeTC coverTC tag branches.Visited)
+        if tag |> String.IsNullOrEmpty |> not then
+          writeTC totalTC tag branches.Number
+          writeTC coverTC tag branches.Visited)
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
@@ -484,7 +497,8 @@ module internal Runner =
           (Some "branchCoverage")
           "VisitedBranches"
 
-      let crap = summary.Attribute("maxCrapScore".X)
+      let crap =
+        summary.Attribute("maxCrapScore".X)
 
       let crapvalue =
         crap
@@ -502,7 +516,8 @@ module internal Runner =
 
       if go || extra then write String.Empty
 
-      let (altmcovered, altcrapvalue) = altSummary go extra report
+      let (altmcovered, altcrapvalue) =
+        altSummary go extra report
 
       if l |> Seq.contains B || l |> Seq.contains R then
         allTC l classes methods statements branches
@@ -561,57 +576,59 @@ module internal Runner =
       let mutable nb = 0
 
       json.Values
-      |> Seq.iter
-           (fun modul ->
-             let mutable cn = []
-             let mutable cv = []
+      |> Seq.iter (fun modul ->
+        let mutable cn = []
+        let mutable cv = []
 
-             modul.Values
-             |> Seq.iter
-                  (fun doc ->
-                    doc
-                    |> Seq.iter
-                         (fun cnv ->
-                           let mutable visited = false
-                           cn <- cnv.Key :: cn
+        modul.Values
+        |> Seq.iter (fun doc ->
+          doc
+          |> Seq.iter (fun cnv ->
+            let mutable visited = false
+            cn <- cnv.Key :: cn
 
-                           cnv.Value.Values
-                           |> Seq.iter
-                                (fun m ->
-                                  nb <- nb + m.Branches.Count
+            cnv.Value.Values
+            |> Seq.iter (fun m ->
+              nb <- nb + m.Branches.Count
 
-                                  let b =
-                                    m.Branches
-                                    |> Seq.filter (fun branch -> branch.Hits > 0)
-                                    |> Seq.length
+              let b =
+                m.Branches
+                |> Seq.filter (fun branch -> branch.Hits > 0)
+                |> Seq.length
 
-                                  vb <- vb + b
-                                  visited <- visited || b > 0
+              vb <- vb + b
+              visited <- visited || b > 0
 
-                                  ns <- ns + m.Lines.Count
+              ns <- ns + m.Lines.Count
 
-                                  let s =
-                                    m.Lines
-                                    |> Seq.filter (fun line -> line.Value > 0)
-                                    |> Seq.length
+              let s =
+                m.Lines
+                |> Seq.filter (fun line -> line.Value > 0)
+                |> Seq.length
 
-                                  vs <- vs + s
-                                  visited <- visited || s > 0
+              vs <- vs + s
+              visited <- visited || s > 0
 
-                                  nm <- nm + 1
-                                  vm <- vm.Increment(s > 0 || b > 0))
+              nm <- nm + 1
+              vm <- vm.Increment(s > 0 || b > 0))
 
-                           if visited then cv <- cnv.Key :: cv)
+            if visited then cv <- cnv.Key :: cv)
 
-                    )
+        )
 
-             vc <- vc + (cv |> Seq.distinct |> Seq.length)
-             nc <- nc + (cn |> Seq.distinct |> Seq.length))
+        vc <- vc + (cv |> Seq.distinct |> Seq.length)
+        nc <- nc + (cn |> Seq.distinct |> Seq.length))
 
       summarise go vc nc "VisitedClasses" |> ignore
-      let mcovered = summarise go vm nm "VisitedMethods"
-      let covered = summarise go vs ns "VisitedPoints"
-      let bcovered = summarise go vb nb "VisitedBranches"
+
+      let mcovered =
+        summarise go vm nm "VisitedMethods"
+
+      let covered =
+        summarise go vs ns "VisitedPoints"
+
+      let bcovered =
+        summarise go vb nb "VisitedBranches"
 
       let extra =
         summaryFormat = Default || l |> Seq.contains C
@@ -627,17 +644,16 @@ module internal Runner =
         writeTC coverTC "S" vs
 
         l
-        |> Seq.iter
-             (fun f ->
-               let tag =
-                 match f with
-                 | R -> "R"
-                 | B -> "B"
-                 | _ -> String.Empty
+        |> Seq.iter (fun f ->
+          let tag =
+            match f with
+            | R -> "R"
+            | B -> "B"
+            | _ -> String.Empty
 
-               if tag |> String.IsNullOrEmpty |> not then
-                 writeTC totalTC tag nb
-                 writeTC coverTC tag vb)
+          if tag |> String.IsNullOrEmpty |> not then
+            writeTC totalTC tag nb
+            writeTC coverTC tag vb)
 
       [ covered
         bcovered
@@ -715,11 +731,10 @@ module internal Runner =
 
           List.zip found funs
           |> List.filter (fst >> fst)
-          |> List.map
-               (fun (c, (f, x, y)) ->
-                 match c |> snd |> f with
-                 | Some q -> Some(q, x, y)
-                 | None -> None)
+          |> List.map (fun (c, (f, x, y)) ->
+            match c |> snd |> f with
+            | Some q -> Some(q, x, y)
+            | None -> None)
           |> List.filter Option.isSome
           |> List.map Option.get
           |> List.filter (fun (a, _, _) -> a >= 0)
@@ -909,7 +924,8 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUncalledPrivateCodeRule",
                       Justification = "Unit test accessor")>]
-    let mutable internal recorderName = "AltCover.Recorder.g.dll"
+    let mutable internal recorderName =
+      "AltCover.Recorder.g.dll"
 
     [<SuppressMessage("Gendarme.Rules.Correctness",
                       "EnsureLocalDisposalRule",
@@ -983,7 +999,8 @@ module internal Runner =
                use results =
                  new DeflateStream(fileStream, CompressionMode.Decompress)
 
-               use formatter = new System.IO.BinaryReader(results)
+               use formatter =
+                 new System.IO.BinaryReader(results)
 
                let rec sink hitcount =
                  let hit =
@@ -1090,7 +1107,9 @@ module internal Runner =
                if after > before then
                  let delta = after - before
                  let interval = timer.Elapsed
-                 let rate = (float delta) / interval.TotalSeconds
+
+                 let rate =
+                   (float delta) / interval.TotalSeconds
 
                  CommandLine.writeResourceWithFormatItems
                    "%d visits recorded in %A (%A visits/sec)"
@@ -1142,24 +1161,22 @@ module internal Runner =
         |> Seq.choose id
         |> Seq.countBy id
         |> Seq.sortBy fst
-        |> Seq.iter
-             (fun (t, n) ->
-               let inner =
-                 pt.OwnerDocument.CreateElement(innername)
+        |> Seq.iter (fun (t, n) ->
+          let inner =
+            pt.OwnerDocument.CreateElement(innername)
 
-               inner |> outer.AppendChild |> ignore
-               inner.SetAttribute(attribute, t.ToString())
-               inner.SetAttribute("vc", sprintf "%d" n))
+          inner |> outer.AppendChild |> ignore
+          inner.SetAttribute(attribute, t.ToString())
+          inner.SetAttribute("vc", sprintf "%d" n))
 
     let internal extractTracks tracks =
       tracks
-      |> Seq.map
-           (fun t ->
-             match t with
-             | Time x -> (Some x, None)
-             | Both b -> (Some b.Time, Some b.Call)
-             | Call y -> (None, Some y)
-             | _ -> (None, None))
+      |> Seq.map (fun t ->
+        match t with
+        | Time x -> (Some x, None)
+        | Both b -> (Some b.Time, Some b.Call)
+        | Call y -> (None, Some y)
+        | _ -> (None, None))
       |> Seq.toList
       |> List.unzip
 
@@ -1178,31 +1195,33 @@ module internal Runner =
       =
       if m.TId.IsNotNull then
         let tidValue = m.TId.Value
-        let e1, entries = hits.TryGetValue Track.Entry
+
+        let e1, entries =
+          hits.TryGetValue Track.Entry
 
         if e1 then
-          let e2, entrypoint = entries.TryGetValue tidValue
+          let e2, entrypoint =
+            entries.TryGetValue tidValue
 
           if e2 then
             entrypoint.Tracks
-            |> Seq.iter
-                 (fun t ->
-                   match t with
-                   | Time tx -> tx |> NativeJson.fromTracking |> m.Entry.Add
-                   | _ -> ())
+            |> Seq.iter (fun t ->
+              match t with
+              | Time tx -> tx |> NativeJson.fromTracking |> m.Entry.Add
+              | _ -> ())
 
         let e3, exits = hits.TryGetValue Track.Exit
 
         if e3 then
-          let e4, exitpoint = exits.TryGetValue tidValue
+          let e4, exitpoint =
+            exits.TryGetValue tidValue
 
           if e4 then
             exitpoint.Tracks
-            |> Seq.iter
-                 (fun t ->
-                   match t with
-                   | Time tx -> tx |> NativeJson.fromTracking |> m.Exit.Add
-                   | _ -> ())
+            |> Seq.iter (fun t ->
+              match t with
+              | Time tx -> tx |> NativeJson.fromTracking |> m.Exit.Add
+              | _ -> ())
 
       let fillTracks tracks calls =
         let ntrack =
@@ -1230,21 +1249,22 @@ module internal Runner =
 
       let sps =
         m.SeqPnts
-        |> Seq.map
-             (fun sp ->
-               let b, count = visits.TryGetValue sp.Id
+        |> Seq.map (fun sp ->
+          let b, count = visits.TryGetValue sp.Id
 
-               if b then
-                 let (times', calls') = extractTracks count.Tracks
-                 let times = times' |> Seq.choose id
-                 let calls = calls' |> Seq.choose id
+          if b then
+            let (times', calls') =
+              extractTracks count.Tracks
 
-                 { sp with
-                     VC = (int <| count.Total()) + Math.Max(0, sp.VC)
-                     Tracks = fillTracks sp.Tracks calls
-                     Times = fillTimes sp.Times times }
-               else
-                 sp)
+            let times = times' |> Seq.choose id
+            let calls = calls' |> Seq.choose id
+
+            { sp with
+                VC = (int <| count.Total()) + Math.Max(0, sp.VC)
+                Tracks = fillTracks sp.Tracks calls
+                Times = fillTimes sp.Times times }
+          else
+            sp)
         |> Seq.toList
 
       m.SeqPnts.Clear()
@@ -1252,22 +1272,23 @@ module internal Runner =
 
       let bps =
         m.Branches
-        |> Seq.map
-             (fun bp ->
-               let b, count =
-                 visits.TryGetValue(bp.Id ||| Counter.branchFlag)
+        |> Seq.map (fun bp ->
+          let b, count =
+            visits.TryGetValue(bp.Id ||| Counter.branchFlag)
 
-               if b then
-                 let (times', calls') = extractTracks count.Tracks
-                 let times = times' |> Seq.choose id
-                 let calls = calls' |> Seq.choose id
+          if b then
+            let (times', calls') =
+              extractTracks count.Tracks
 
-                 { bp with
-                     Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
-                     Tracks = fillTracks bp.Tracks calls
-                     Times = fillTimes bp.Times times }
-               else
-                 bp)
+            let times = times' |> Seq.choose id
+            let calls = calls' |> Seq.choose id
+
+            { bp with
+                Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
+                Tracks = fillTracks bp.Tracks calls
+                Times = fillTimes bp.Times times }
+          else
+            bp)
         |> Seq.toList
 
       m.Branches.Clear()
@@ -1302,18 +1323,18 @@ module internal Runner =
 
       // do magic here
       json
-      |> Seq.iter
-           (fun kvp ->
-             let key = kvp.Key
-             let b, visits = hits.TryGetValue key
+      |> Seq.iter (fun kvp ->
+        let key = kvp.Key
+        let b, visits = hits.TryGetValue key
 
-             if b then
-               kvp.Value.Values
-               |> Seq.collect (fun doc -> doc.Values)
-               |> Seq.collect (fun c -> c.Values)
-               |> Seq.iter (updateNativeJsonMethod hits visits))
+        if b then
+          kvp.Value.Values
+          |> Seq.collect (fun doc -> doc.Values)
+          |> Seq.collect (fun c -> c.Values)
+          |> Seq.iter (updateNativeJsonMethod hits visits))
 
-      let encoded = NativeJson.serializeToUtf8Bytes json
+      let encoded =
+        NativeJson.serializeToUtf8Bytes json
 
       if Option.isSome output then
         use outputFile =
@@ -1340,7 +1361,8 @@ module internal Runner =
       report
       =
       let reporter (arg: string option) =
-        let (container, file) = Zip.openUpdate report
+        let (container, file) =
+          Zip.openUpdate report
 
         try
           if format = ReportFormat.NativeJson
@@ -1367,17 +1389,20 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUncalledPrivateCodeRule",
                       Justification = "Unit test accessor")>]
-    let mutable internal getPayload = payloadBase
+    let mutable internal getPayload =
+      payloadBase
 
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUncalledPrivateCodeRule",
                       Justification = "Unit test accessor")>]
-    let mutable internal getMonitor = monitorBase
+    let mutable internal getMonitor =
+      monitorBase
 
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUncalledPrivateCodeRule",
                       Justification = "Unit test accessor")>]
-    let mutable internal doReport = writeReportBase
+    let mutable internal doReport =
+      writeReportBase
 
     let internal doSummaries (document: DocumentType) (format: ReportFormat) result =
       let (code, t, f) =
@@ -1440,8 +1465,12 @@ module internal Runner =
               Dictionary<string, Dictionary<int, PointVisit>>()
 
             let payload = J.getPayload
-            let result = J.getMonitor hits report payload rest
-            let delta = J.doReport hits format report output
+
+            let result =
+              J.getMonitor hits report payload rest
+
+            let delta =
+              J.doReport hits format report output
 
             CommandLine.writeResourceWithFormatItems
               "Coverage statistics flushing took {0:N} seconds"
@@ -1457,7 +1486,9 @@ module internal Runner =
             )
             |> Seq.iter File.Delete
 
-            let document = DocumentType.LoadReport format report
+            let document =
+              DocumentType.LoadReport format report
+
             J.doSummaries document format result)
           255
           true

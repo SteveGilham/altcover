@@ -82,10 +82,9 @@ module CoverageFileTree =
   let private cover (navigator: XPathNavigator seq) =
     let points =
       navigator
-      |> Seq.collect
-           (fun n ->
-             n.SelectDescendants("seqpnt", String.Empty, false)
-             |> Seq.cast<XPathNavigator>)
+      |> Seq.collect (fun n ->
+        n.SelectDescendants("seqpnt", String.Empty, false)
+        |> Seq.cast<XPathNavigator>)
 
     coverPoints points
 
@@ -202,21 +201,20 @@ module CoverageFileTree =
         let sources =
           x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
           |> Seq.cast<XPathNavigator>
-          |> Seq.map
-               (fun s ->
-                 let d = s.GetAttribute("document", String.Empty)
+          |> Seq.map (fun s ->
+            let d =
+              s.GetAttribute("document", String.Empty)
 
-                 let state =
-                   { (d |> getFileName) with
-                       Navigator = s }
-                 // get any embed and tweak state and icon accordingly
-                 match GuiCommon.Embed s d with
-                 | None -> state
-                 | Some _ ->
-                   { state with
-                       Exists = true
-                       Stale = false
-                       Icon = environment.Icons.Source })
+            let state =
+              { (d |> getFileName) with Navigator = s }
+            // get any embed and tweak state and icon accordingly
+            match GuiCommon.Embed s d with
+            | None -> state
+            | Some _ ->
+              { state with
+                  Exists = true
+                  Stale = false
+                  Icon = environment.Icons.Source })
           |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
           |> Seq.sortBy (fun s -> s.FileName |> upcase)
           |> Seq.toList
@@ -282,35 +280,33 @@ module CoverageFileTree =
               None
 
           sources
-          |> List.iter
-               (fun s ->
-                 let srow =
-                   environment.AddLeafNode
-                     newrow
-                     (if s.Stale then
-                        environment.Icons.SourceDated
-                      else
-                        icon)
+          |> List.iter (fun s ->
+            let srow =
+              environment.AddLeafNode
+                newrow
+                (if s.Stale then
+                   environment.Icons.SourceDated
+                 else
+                   icon)
 #if VIS_PERCENT
-                     (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
-                      |> Seq.cast<XPathNavigator>
-                      |> Seq.filter
-                           (fun n ->
-                             n.GetAttribute("document", String.Empty) = s.FullName)
-                      |> coverPoints
-                      |> coverText)
+                (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
+                 |> Seq.cast<XPathNavigator>
+                 |> Seq.filter (fun n ->
+                   n.GetAttribute("document", String.Empty) = s.FullName)
+                 |> coverPoints
+                 |> coverText)
 #else
-                     String.Empty
+                String.Empty
 #endif
-                     s.FileName
-                     (if s.Exists then
-                        None
-                      else
-                        Some
-                        <| Resource.Format("FileNotFound", [| s.FullName |]))
+                s.FileName
+                (if s.Exists then
+                   None
+                 else
+                   Some
+                   <| Resource.Format("FileNotFound", [| s.FullName |]))
 
-                 if s.Exists && (not s.Stale) then
-                   environment.Map srow s.Navigator)
+            if s.Exists && (not s.Stale) then
+              environment.Map srow s.Navigator)
 
       if special <> MethodType.Normal then
 #if VIS_PERCENT
@@ -343,21 +339,20 @@ module CoverageFileTree =
 
     let orderMethods array =
       array
-      |> Array.sortInPlaceWith
-           (fun ((l, (lb: MethodType)), _) ((r, rb), _) ->
-             let sort1 =
-               String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+      |> Array.sortInPlaceWith (fun ((l, (lb: MethodType)), _) ((r, rb), _) ->
+        let sort1 =
+          String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
 
-             let sort2 =
-               if sort1 = 0 then
-                 String.Compare(l, r, StringComparison.Ordinal)
-               else
-                 sort1
+        let sort2 =
+          if sort1 = 0 then
+            String.Compare(l, r, StringComparison.Ordinal)
+          else
+            sort1
 
-             if sort2 = 0 then
-               lb.CompareTo rb
-             else
-               sort2)
+        if sort2 = 0 then
+          lb.CompareTo rb
+        else
+          sort2)
 
     let applyMethods array =
       array |> Array.iter (applyToModel model)
@@ -418,7 +413,8 @@ module CoverageFileTree =
       |> Seq.groupBy (fun x -> x.ClassName)
       |> Seq.toList
 
-    let classnames = classlist |> Seq.map fst |> Set.ofSeq
+    let classnames =
+      classlist |> Seq.map fst |> Set.ofSeq
 
     let modularize =
       let contains (s: String) c =
@@ -426,8 +422,8 @@ module CoverageFileTree =
 
       classnames
       |> Seq.filter (fun cn -> contains cn "+" || contains cn "/")
-      |> Seq.map
-           (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
+      |> Seq.map (fun cn ->
+        cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
       |> Seq.distinct
       |> Seq.filter (fun mn -> classnames |> Set.contains mn |> not)
       |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
@@ -498,23 +494,24 @@ module CoverageFileTree =
     let methods =
       node.SelectChildren("method", String.Empty)
       |> Seq.cast<XPathNavigator>
-      |> Seq.map
-           (fun m ->
-             let classfullname = m.GetAttribute("class", String.Empty)
-             let lastdot = classfullname.LastIndexOf('.')
+      |> Seq.map (fun m ->
+        let classfullname =
+          m.GetAttribute("class", String.Empty)
 
-             { Navigator = m
-               NameSpace =
-                 if lastdot < 0 then
-                   String.Empty
-                 else
-                   classfullname.Substring(0, lastdot)
-               ClassName =
-                 if lastdot < 0 then
-                   classfullname
-                 else
-                   classfullname.Substring(1 + lastdot)
-               Name = m.GetAttribute("name", String.Empty) })
+        let lastdot = classfullname.LastIndexOf('.')
+
+        { Navigator = m
+          NameSpace =
+            if lastdot < 0 then
+              String.Empty
+            else
+              classfullname.Substring(0, lastdot)
+          ClassName =
+            if lastdot < 0 then
+              classfullname
+            else
+              classfullname.Substring(1 + lastdot)
+          Name = m.GetAttribute("name", String.Empty) })
       |> Seq.groupBy (fun x -> x.NameSpace)
       |> Seq.sortBy fst
 
@@ -528,7 +525,8 @@ module CoverageFileTree =
       Messages.InvalidCoverageFileMessage environment.Display failed
       environment.UpdateMRUFailure current
     | Right coverage ->
-      let navigator = coverage.Document.CreateNavigator()
+      let navigator =
+        coverage.Document.CreateNavigator()
 
       // check if coverage is newer that the source files
       let sourceFiles =
@@ -594,13 +592,12 @@ module CoverageFileTree =
         |> Seq.cast<XPathNavigator>
 
       assemblies
-      |> Seq.map
-           (fun node ->
-             (node,
-              node
-                .GetAttribute("assemblyIdentity", String.Empty)
-                .Split(',')
-              |> Seq.head))
+      |> Seq.map (fun node ->
+        (node,
+         node
+           .GetAttribute("assemblyIdentity", String.Empty)
+           .Split(',')
+         |> Seq.head))
       |> Seq.sortBy snd
       |> Seq.iter (applyToModel model)
 

@@ -1,4 +1,4 @@
-namespace Sample17
+﻿namespace Sample17
 
 type Close =
   | Neither

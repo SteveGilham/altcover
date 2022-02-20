@@ -28,10 +28,7 @@ module AltCoverCommand =
   let internal setExecutable tool collect =
     match collect with
     | AltCover.Primitive p -> AltCover.Primitive { p with Executable = tool }
-    | AltCover.TypeSafe t ->
-      AltCover.TypeSafe
-        { t with
-            Executable = TypeSafe.Tool tool }
+    | AltCover.TypeSafe t -> AltCover.TypeSafe { t with Executable = TypeSafe.Tool tool }
     | AltCover.Abstract a ->
       let copy: Primitive.CollectOptions =
         { RecorderDirectory = a.RecorderDirectory
@@ -268,7 +265,8 @@ module AltCoverCommand =
                                                     Justification = "Generic types are implicit")>]
 
   let internal runCore options modifyCommand =
-    use __ = Trace.traceTask "AltCover" String.Empty
+    use __ =
+      Trace.traceTask "AltCover" String.Empty
 
     let command =
       (composeCommandLine options) |> modifyCommand

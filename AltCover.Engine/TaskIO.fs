@@ -15,8 +15,7 @@ module internal TaskIO =
 
   let internal logToStore =
     AltCover.LoggingOptions.Primitive
-      { Primitive.LoggingOptions.Create() with
-          Info = writeToStore }
+      { Primitive.LoggingOptions.Create() with Info = writeToStore }
 
   let internal getStringValue s =
     writeToStore String.Empty
@@ -25,7 +24,8 @@ module internal TaskIO =
     store
 
   let internal colourize name =
-    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
+    let ok, colour =
+      Enum.TryParse<ConsoleColor>(name, true)
 
     if ok then
       Console.ForegroundColor <- colour

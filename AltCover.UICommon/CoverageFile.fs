@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -72,67 +72,68 @@ module Transformer =
       |> Seq.toList
 
     document.Descendants(XName.Get "class")
-    |> Seq.iter
-         (fun x ->
-           let name = x.Attribute(XName.Get "filename")
-           let value = name.Value
+    |> Seq.iter (fun x ->
+      let name = x.Attribute(XName.Get "filename")
+      let value = name.Value
 
-           let fixup =
-             sources
-             |> Seq.map
-                  (fun s ->
-                    let p1 = Path.Combine(s, value)
-                    Path.GetFullPath p1)
-             |> Seq.tryFind File.Exists
+      let fixup =
+        sources
+        |> Seq.map (fun s ->
+          let p1 = Path.Combine(s, value)
+          Path.GetFullPath p1)
+        |> Seq.tryFind File.Exists
 
-           fixup |> Option.iter (fun f -> name.Value <- f))
+      fixup |> Option.iter (fun f -> name.Value <- f))
 
     // interpret branches
     document.Descendants(XName.Get "line")
-    |> Seq.filter
-         (fun x ->
-           x
-             .Attribute(
-               XName.Get "condition-coverage"
-             )
-             .IsNotNull)
-    |> Seq.iter
-         (fun x ->
-           let line = x.Attribute(XName.Get "number").Value
+    |> Seq.filter (fun x ->
+      x
+        .Attribute(
+          XName.Get "condition-coverage"
+        )
+        .IsNotNull)
+    |> Seq.iter (fun x ->
+      let line =
+        x.Attribute(XName.Get "number").Value
 
-           let coverage =
-             x.Attribute(XName.Get "condition-coverage").Value
+      let coverage =
+        x.Attribute(XName.Get "condition-coverage").Value
 
-           let start = Math.Max(0, coverage.IndexOf('(')) + 1
+      let start =
+        Math.Max(0, coverage.IndexOf('(')) + 1
 
-           let mid =
-             Math.Max(0, coverage.IndexOf('/', start)) + 1
+      let mid =
+        Math.Max(0, coverage.IndexOf('/', start)) + 1
 
-           let finish = Math.Max(0, coverage.IndexOf(')', mid))
+      let finish =
+        Math.Max(0, coverage.IndexOf(')', mid))
 
-           let first =
-             coverage.Substring(start, (mid - start) - 1)
-             |> Int32.TryParse
-             |> snd
+      let first =
+        coverage.Substring(start, (mid - start) - 1)
+        |> Int32.TryParse
+        |> snd
 
-           let second =
-             coverage.Substring(mid, finish - mid)
-             |> Int32.TryParse
-             |> snd
+      let second =
+        coverage.Substring(mid, finish - mid)
+        |> Int32.TryParse
+        |> snd
 
-           { 1 .. second }
-           |> Seq.iteri
-                (fun i _ ->
-                  let vc = if i < first then "1" else "0"
 
-                  let branch =
-                    XElement(
-                      XName.Get "branch",
-                      XAttribute(XName.Get "number", line),
-                      XAttribute(XName.Get "visitcount", vc)
-                    )
 
-                  x.AddAfterSelf(branch)))
+      { 1..second
+      }
+      |> Seq.iteri (fun i _ ->
+        let vc = if i < first then "1" else "0"
+
+        let branch =
+          XElement(
+            XName.Get "branch",
+            XAttribute(XName.Get "number", line),
+            XAttribute(XName.Get "visitcount", vc)
+          )
+
+        x.AddAfterSelf(branch)))
 
     let report =
       transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl"
@@ -168,17 +169,15 @@ module Transformer =
     // Fix for column-defective OpenCover
     let lineOnly =
       fixedup.Descendants(XName.Get "seqpnt")
-      |> Seq.forall
-           (fun s ->
-             let columns =
-               (s.Attribute(XName.Get "column").Value,
-                s.Attribute(XName.Get "endcolumn").Value)
+      |> Seq.forall (fun s ->
+        let columns =
+          (s.Attribute(XName.Get "column").Value, s.Attribute(XName.Get "endcolumn").Value)
 
-             s.Attribute(XName.Get "line").Value
-             == s.Attribute(XName.Get "endline").Value
-             && (columns = ("1", "2")
-                 || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
-                 columns = ("0", "0"))) // For OpenCover on C++/CLI
+        s.Attribute(XName.Get "line").Value
+        == s.Attribute(XName.Get "endline").Value
+        && (columns = ("1", "2")
+            || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+            columns = ("0", "0"))) // For OpenCover on C++/CLI
 
     if lineOnly then
       fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))

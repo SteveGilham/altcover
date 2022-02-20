@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open System
 open System.IO
@@ -9,7 +9,10 @@ open AltCover.Local
 module MonitorTests =
 
   let coverageXml () =
-    [ Path.Combine(AltCover.SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
+    [ Path.Combine(
+        AltCover.SolutionRoot.location,
+        "_Reports/MonitorTestWithAltCoverCore.xml"
+      ),
       (239, 0) // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
@@ -23,7 +26,9 @@ module MonitorTests =
   [<Test>]
   let ShouldCountOpenCoverTotals () =
     use stream =
-      System.Reflection.Assembly
+      System
+        .Reflection
+        .Assembly
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.Monitor.Tests.HandRolledMonoCoverage.xml")
 
@@ -44,7 +49,8 @@ module MonitorTests =
     let code = b.Code
     let branch = b.Branch
 
-    let doc = XDocument.Load(() |> coverageXml |> fst)
+    let doc =
+      XDocument.Load(() |> coverageXml |> fst)
 
     let seqpnt =
       doc.Descendants(XName.Get("seqpnt")) |> Seq.length
@@ -53,10 +59,9 @@ module MonitorTests =
       (doc.Descendants(XName.Get("SequencePoint"))
        |> Seq.length)
       + (doc.Descendants(XName.Get("Method"))
-         |> Seq.filter
-              (fun x ->
-                Seq.isEmpty
-                <| x.Descendants(XName.Get("SequencePoint")))
+         |> Seq.filter (fun x ->
+           Seq.isEmpty
+           <| x.Descendants(XName.Get("SequencePoint")))
          |> Seq.length)
 
     let eBranch =

@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Diagnostics.CodeAnalysis

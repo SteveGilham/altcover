@@ -1,4 +1,4 @@
-namespace Sample30
+﻿namespace Sample30
 
 open System.Threading.Tasks
 open Xunit
@@ -56,9 +56,9 @@ module Tests =
     finally
       printfn "Done"
 
-    //public IEnumerable<int> Yielder()
-    //{
-    //  yield return 1;
-    //  yield return 2;
-    //  yield return 3;
-    //}
+//public IEnumerable<int> Yielder()
+//{
+//  yield return 1;
+//  yield return 2;
+//  yield return 3;
+//}

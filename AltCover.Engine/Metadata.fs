@@ -29,7 +29,9 @@ module internal Metadata =
     crushed
 
   let internal getCompressedSource (embed: EmbeddedSourceDebugInformation) =
-    let datamake = Maybe embed.Compress squash id
+    let datamake =
+      Maybe embed.Compress squash id
+
     let data = datamake embed.Content
     Convert.ToBase64String data
 

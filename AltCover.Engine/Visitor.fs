@@ -1,4 +1,4 @@
-// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
+﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage.Counter/Coverage.Counter.csproj
 
 namespace AltCover
@@ -270,11 +270,19 @@ module internal CoverageParameters =
 
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
-  let internal trackingNames = new List<String>()
-  let internal topLevel = new List<FilterClass>()
-  let internal nameFilters = new List<FilterClass>()
 
-  let mutable internal staticFilter: StaticFilter option = None
+  let internal trackingNames =
+    new List<String>()
+
+  let internal topLevel =
+    new List<FilterClass>()
+
+  let internal nameFilters =
+    new List<FilterClass>()
+
+  let mutable internal staticFilter: StaticFilter option =
+    None
+
   let internal showGenerated = ref false
 
   let generationFilter =
@@ -308,7 +316,9 @@ module internal CoverageParameters =
     else
       OpCodes.Ldc_I4_0
 
-  let internal theInputDirectories = List<string>()
+  let internal theInputDirectories =
+    List<string>()
+
   let private defaultInputDirectory = "."
 
   let internal inputDirectories () =
@@ -320,7 +330,8 @@ module internal CoverageParameters =
 
   let internal inplaceSelection a b = if inplace.Value then a else b
 
-  let internal theOutputDirectories = List<string>()
+  let internal theOutputDirectories =
+    List<string>()
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
@@ -344,16 +355,24 @@ module internal CoverageParameters =
   let internal sourceDirectories () =
     (inplaceSelection outputDirectories inputDirectories) ()
 
-  let mutable internal theReportPath: Option<string> = None
+  let mutable internal theReportPath: Option<string> =
+    None
+
   let internal zipReport = ref false // ddFlag
-  let mutable internal theInterval: Option<int> = None
+
+  let mutable internal theInterval: Option<int> =
+    None
+
   let internal defaultInterval = 0
 
   let internal interval () =
     (Option.defaultValue defaultInterval theInterval)
 
-  let mutable internal theReportFormat: Option<ReportFormat> = None
-  let mutable internal coverstyle = CoverStyle.All
+  let mutable internal theReportFormat: Option<ReportFormat> =
+    None
+
+  let mutable internal coverstyle =
+    CoverStyle.All
 
   let internal reportKind () =
     (Option.defaultValue ReportFormat.OpenCover theReportFormat)
@@ -371,7 +390,8 @@ module internal CoverageParameters =
     let r =
       canonicalPath (Option.defaultValue (defaultReportPath ()) theReportPath)
 
-    let suffix = (Path.GetExtension r).ToUpperInvariant()
+    let suffix =
+      (Path.GetExtension r).ToUpperInvariant()
 
     match (suffix, reportKind ()) with
     | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
@@ -399,15 +419,21 @@ module internal CoverageParameters =
 
   let withBranches () = reportFormat () <> ReportFormat.NCover
 
-  let mutable internal defaultStrongNameKey: option<StrongNameKeyData> = None
-  let mutable internal recorderStrongNameKey: option<StrongNameKeyData> = None
-  let internal keys = new Dictionary<UInt64, KeyRecord>()
+  let mutable internal defaultStrongNameKey: option<StrongNameKeyData> =
+    None
+
+  let mutable internal recorderStrongNameKey: option<StrongNameKeyData> =
+    None
+
+  let internal keys =
+    new Dictionary<UInt64, KeyRecord>()
 
   let internal add (key: StrongNameKeyData) =
     let index = KeyStore.keyToIndex key
     keys.[index] <- KeyStore.keyToRecord key
 
-  let mutable internal configurationHash: option<String> = None
+  let mutable internal configurationHash: option<String> =
+    None
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "UseStringEmptyRule",
@@ -491,12 +517,18 @@ module internal Inspector =
 
 [<RequireQualifiedAccess>]
 module internal Visitor =
-  let mutable internal moduleReport = String.Empty
-  let private accumulator = HashSet<AssemblyDefinition>()
+  let mutable internal moduleReport =
+    String.Empty
+
+  let private accumulator =
+    HashSet<AssemblyDefinition>()
+
   let mutable private pointNumber: int = 0
   let mutable private branchNumber: int = 0
   let mutable private methodNumber: int = 0
-  let mutable internal sourceLinkDocuments: Dictionary<string, string> option = None
+
+  let mutable internal sourceLinkDocuments: Dictionary<string, string> option =
+    None
 
   let internal zeroPoints () =
     pointNumber <- 0
@@ -510,7 +542,8 @@ module internal Visitor =
         |> FilterRegex.Exclude
         |> FilterClass.Build FilterScope.Method ]
 
-    let internal mask = ~~~Inspections.Instrument
+    let internal mask =
+      ~~~Inspections.Instrument
 
     let internal updateInspection before x =
       (before &&& mask)
@@ -552,12 +585,11 @@ module internal Visitor =
     let internal findClosestMatch file (dict: Dictionary<string, string>) =
       dict.Keys
       |> Seq.filter (fun x -> x |> Path.GetFileName == "*")
-      |> Seq.map
-           (fun x ->
-             (x,
-              getRelativeDirectoryPath
-                (x |> Path.GetDirectoryName)
-                (file |> Path.GetDirectoryName)))
+      |> Seq.map (fun x ->
+        (x,
+         getRelativeDirectoryPath
+           (x |> Path.GetDirectoryName)
+           (file |> Path.GetDirectoryName)))
       |> Seq.filter (fun (x, r) -> r.IndexOf("..", StringComparison.Ordinal) < 0)
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead
@@ -578,9 +610,12 @@ module internal Visitor =
             .Combine(relative, Path.GetFileName(file))
             .Replace('\\', '/')
 
-        let url = dict.[best].Replace("*", replacement)
+        let url =
+          dict.[best].Replace("*", replacement)
 
-        let map = if Uri(url) |> exists then url else file
+        let map =
+          if Uri(url) |> exists then url else file
+
         dict.Add(file, map)
         map
       | _ -> file
@@ -617,15 +652,13 @@ module internal Visitor =
           m.IsConstructor
           && ((t.IsNested
                && t.CustomAttributes
-                  |> Seq.exists
-                       (fun a ->
-                         a.AttributeType.FullName
-                         == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+                  |> Seq.exists (fun a ->
+                    a.AttributeType.FullName
+                    == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
               || m.CustomAttributes
-                 |> Seq.exists
-                      (fun a ->
-                        a.AttributeType.FullName
-                        == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
+                 |> Seq.exists (fun a ->
+                   a.AttributeType.FullName
+                   == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
       |> Seq.exists (fun f -> f m)
       |> not
 
@@ -634,35 +667,34 @@ module internal Visitor =
       (buildSequence: Node -> seq<Node>)
       =
       paths
-      |> Seq.collect
-           (fun path ->
-             let makeInspection x =
-               x |> accumulator.Add |> ignore
+      |> Seq.collect (fun path ->
+        let makeInspection x =
+          x |> accumulator.Add |> ignore
 
-               // can't delay reading symbols any more
-               ProgramDatabase.readSymbols x
+          // can't delay reading symbols any more
+          ProgramDatabase.readSymbols x
 
-               // Reject completely if filtered here
-               let inspection = x.IsIncluded
+          // Reject completely if filtered here
+          let inspection = x.IsIncluded
 
-               let included =
-                 inspection
-                 ||| if inspection = Inspections.Instrument
-                        && CoverageParameters.isTracking () then
-                       Inspections.Track
-                     else
-                       Inspections.Ignore
+          let included =
+            inspection
+            ||| if inspection = Inspections.Instrument
+                   && CoverageParameters.isTracking () then
+                  Inspections.Track
+                else
+                  Inspections.Ignore
 
-               Assembly
-                 { Assembly = x
-                   Inspection = included
-                   Destinations = path.Destinations
-                   Identity = path.Identity }
+          Assembly
+            { Assembly = x
+              Inspection = included
+              Destinations = path.Destinations
+              Identity = path.Identity }
 
-             path.AssemblyPath
-             |> (AssemblyDefinition.ReadAssembly
-                 >> makeInspection
-                 >> buildSequence))
+        path.AssemblyPath
+        |> (AssemblyDefinition.ReadAssembly
+            >> makeInspection
+            >> buildSequence))
 
     let private visitAssembly
       (a: AssemblyDefinition)
@@ -687,10 +719,9 @@ module internal Visitor =
 
     let internal selectAutomatic items exemption =
       if items
-         |> Seq.exists
-              (fun t' ->
-                (CoverageParameters.generationFilter
-                 |> Seq.exists (Filter.``match`` t'))) then
+         |> Seq.exists (fun t' ->
+           (CoverageParameters.generationFilter
+            |> Seq.exists (Filter.``match`` t'))) then
         Exemption.Automatic
       else
         exemption
@@ -707,25 +738,22 @@ module internal Visitor =
       sourceLinkDocuments <-
         Some x.Module
         |> Option.filter (fun _ -> CoverageParameters.sourcelink.Value)
-        |> Option.bind
-             (fun x ->
-               x.CustomDebugInformations
-               |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
-        |> Option.map
-             (fun i ->
-               let c =
-                 (i :?> SourceLinkDebugInformation).Content
+        |> Option.bind (fun x ->
+          x.CustomDebugInformations
+          |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
+        |> Option.map (fun i ->
+          let c =
+            (i :?> SourceLinkDebugInformation).Content
 
-               JsonValue.Parse(c).Object.["documents"]
-                 .Object.ToDictionary((fun kv -> kv.Key), (fun kv -> kv.Value.String)))
+          JsonValue.Parse(c).Object.["documents"]
+            .Object.ToDictionary((fun kv -> kv.Key), (fun kv -> kv.Value.String)))
 
       [ x ]
       |> Seq.takeWhile (fun _ -> x.Inspection <> Inspections.Ignore)
-      |> Seq.collect
-           (fun x ->
-             x.Module.GetAllTypes()
-             |> Seq.cast<TypeDefinition>
-             |> Seq.filter stripInterfaces)
+      |> Seq.collect (fun x ->
+        x.Module.GetAllTypes()
+        |> Seq.cast<TypeDefinition>
+        |> Seq.filter stripInterfaces)
       |> Seq.collect (
         (fun t ->
           let types =
@@ -773,36 +801,34 @@ module internal Visitor =
         + name
 
       CoverageParameters.trackingNames
-      |> Seq.map
-           (fun n ->
-             if n.Chars(0) = '[' then
-               let stripped = n.Trim([| '['; ']' |])
+      |> Seq.map (fun n ->
+        if n.Chars(0) = '[' then
+          let stripped = n.Trim([| '['; ']' |])
 
-               let full =
-                 if stripped.EndsWith("Attribute", StringComparison.Ordinal) then
-                   stripped
-                 else
-                   stripped + "Attribute"
+          let full =
+            if stripped.EndsWith("Attribute", StringComparison.Ordinal) then
+              stripped
+            else
+              stripped + "Attribute"
 
-               if m.HasCustomAttributes
-                  && m.CustomAttributes
-                     |> Seq.map (fun a -> a.AttributeType)
-                     |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
-                     |> Option.isSome then
-                 Some n
-               else
-                 None
-             else if n == name || n == fullname then
-               Some n
-             else
-               None)
+          if m.HasCustomAttributes
+             && m.CustomAttributes
+                |> Seq.map (fun a -> a.AttributeType)
+                |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
+                |> Option.isSome then
+            Some n
+          else
+            None
+        else if n == name || n == fullname then
+          Some n
+        else
+          None)
       |> Seq.choose id
       |> Seq.tryFind (fun _ -> true)
-      |> Option.map
-           (fun n ->
-             let id = methodNumber + 1
-             methodNumber <- id
-             (id, n))
+      |> Option.map (fun n ->
+        let id = methodNumber + 1
+        methodNumber <- id
+        (id, n))
 
     let private cSharpContainingMethod
       (name: string)
@@ -834,34 +860,30 @@ module internal Visitor =
         let sibs =
           ct.DeclaringType // Hope we don't have to generalise this
           |> Option.ofObj
-          |> Option.map
-               (fun c ->
-                 c.NestedTypes
-                 |> Seq.filter
-                      (fun t -> t.Name.IndexOf(tag, StringComparison.Ordinal) >= 0)
-                 |> Seq.collect (fun t -> t.Methods)
-                 |> Seq.filter (fun m -> m.HasBody))
+          |> Option.map (fun c ->
+            c.NestedTypes
+            |> Seq.filter (fun t -> t.Name.IndexOf(tag, StringComparison.Ordinal) >= 0)
+            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.filter (fun m -> m.HasBody))
           |> Option.defaultValue ([] |> Seq.ofList)
 
         let peers =
           methods
-          |> Seq.filter
-               (fun mx ->
-                 (mx.Name.IndexOf(tag, StringComparison.Ordinal)
-                  >= 0)
-                 && mx.HasBody)
+          |> Seq.filter (fun mx ->
+            (mx.Name.IndexOf(tag, StringComparison.Ordinal)
+             >= 0)
+            && mx.HasBody)
 
         let children =
           ct.NestedTypes
           |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
           |> Seq.collect (fun tx -> tx.Methods)
-          |> Seq.filter
-               (fun mx ->
-                 mx.HasBody
-                 && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
-                     >= 0
-                     || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
-                        >= 0))
+          |> Seq.filter (fun mx ->
+            mx.HasBody
+            && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
+                >= 0
+                || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
+                   >= 0))
 
         candidates
           .Concat(sibs)
@@ -900,21 +922,20 @@ module internal Visitor =
     let internal methodConstructsType (t: TypeReference) (m: MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
-      |> Seq.exists
-           (fun i ->
-             let tn =
-               (i.Operand :?> MethodReference).DeclaringType
+      |> Seq.exists (fun i ->
+        let tn =
+          (i.Operand :?> MethodReference).DeclaringType
 
-             sameType t tn)
+        sameType t tn)
 
     let internal methodLoadsType (t: TypeReference) (m: MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldsfld)
-      |> Seq.exists
-           (fun i ->
-             let tn = (i.Operand :?> FieldReference).FieldType
+      |> Seq.exists (fun i ->
+        let tn =
+          (i.Operand :?> FieldReference).FieldType
 
-             sameType t tn)
+        sameType t tn)
 
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidUnnecessarySpecializationRule",
@@ -929,26 +950,23 @@ module internal Visitor =
         |> Seq.filter (fun m -> m.HasBody)
 
       candidates
-      |> Seq.tryFind
-           (fun c ->
-             (methodConstructsType tx c)
-             || (methodLoadsType tx c))
+      |> Seq.tryFind (fun c ->
+        (methodConstructsType tx c)
+        || (methodLoadsType tx c))
 
     let internal methodCallsMethod (t: MethodReference) (m: MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Call)
-      |> Seq.exists
-           (fun i ->
-             let tn = (i.Operand :?> MethodReference)
-             sameFunction t tn)
+      |> Seq.exists (fun i ->
+        let tn = (i.Operand :?> MethodReference)
+        sameFunction t tn)
 
     let internal methodLoadsMethod (t: MethodReference) (m: MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldftn)
-      |> Seq.exists
-           (fun i ->
-             let tn = (i.Operand :?> MethodReference)
-             sameFunction t tn)
+      |> Seq.exists (fun i ->
+        let tn = (i.Operand :?> MethodReference)
+        sameFunction t tn)
 
     let internal containingMethod (m: MethodDefinition) =
       let mname = m.Name
@@ -959,11 +977,10 @@ module internal Visitor =
         let mutable nesting = 0
 
         s
-        |> Seq.takeWhile
-             (fun c ->
-               if c = '<' then nesting <- nesting + 1
-               if c = '>' then nesting <- nesting - 1
-               nesting > 0)
+        |> Seq.takeWhile (fun c ->
+          if c = '<' then nesting <- nesting + 1
+          if c = '>' then nesting <- nesting - 1
+          nesting > 0)
         |> Seq.length
 
       if
@@ -973,13 +990,9 @@ module internal Visitor =
         let index =
           (indexOfMatchingClosingAngleBracket mname) - 1
 
-        cSharpContainingMethod
-          mname
-          t
-          index
-          (fun mx ->
-            (mx.FullName != m.FullName)
-            && (methodCallsMethod m mx))
+        cSharpContainingMethod mname t index (fun mx ->
+          (mx.FullName != m.FullName)
+          && (methodCallsMethod m mx))
 
       else
         let n = t.Name
@@ -1014,11 +1027,10 @@ module internal Visitor =
           let tx =
             if n.EndsWith("T", StringComparison.Ordinal) then
               match t.Methods
-                    |> Seq.tryFind
-                         (fun m ->
-                           m.IsConstructor
-                           && m.HasParameters
-                           && (m.Parameters.Count = 1))
+                    |> Seq.tryFind (fun m ->
+                      m.IsConstructor
+                      && m.HasParameters
+                      && (m.Parameters.Count = 1))
                     |> Option.map (fun m -> m.Parameters |> Seq.head)
                 with
               | None -> t :> TypeReference
@@ -1061,43 +1073,38 @@ module internal Visitor =
     let private visitType (t: TypeEntry) (buildSequence: Node -> seq<Node>) =
       t.Type.Methods
       |> Seq.cast
-      |> Seq.filter
-           (fun (m: MethodDefinition) ->
-             not m.IsAbstract
-             && not m.IsRuntime
-             && not m.IsPInvokeImpl
-             && m.HasBody)
-      |> Seq.map
-           (fun m ->
-             let key =
-               if significant m then
-                 StaticFilter.NoFilter
-               else
-                 match CoverageParameters.staticFilter with
-                 | None -> StaticFilter.Hidden
-                 | Some f -> f
+      |> Seq.filter (fun (m: MethodDefinition) ->
+        not m.IsAbstract
+        && not m.IsRuntime
+        && not m.IsPInvokeImpl
+        && m.HasBody)
+      |> Seq.map (fun m ->
+        let key =
+          if significant m then
+            StaticFilter.NoFilter
+          else
+            match CoverageParameters.staticFilter with
+            | None -> StaticFilter.Hidden
+            | Some f -> f
 
-             (m, key))
+        (m, key))
       |> Seq.filter (fun (m, k) -> k <> StaticFilter.Hidden)
-      |> Seq.map
-           (fun (m, k) ->
-             let methods = containingMethods m
-             let top = methods |> Seq.last
+      |> Seq.map (fun (m, k) ->
+        let methods = containingMethods m
+        let top = methods |> Seq.last
 
-             let topped =
-               methods
-               |> List.takeWhile
-                    (fun x ->
-                      CoverageParameters.topLevel
-                      |> Seq.exists (Filter.``match`` x)
-                      |> not)
+        let topped =
+          methods
+          |> List.takeWhile (fun x ->
+            CoverageParameters.topLevel
+            |> Seq.exists (Filter.``match`` x)
+            |> not)
 
-             (m, k, topped, top))
+        (m, k, topped, top))
       // Skip nested methods when in method-point mode
-      |> Seq.filter
-           (fun (_, _, methods, _) ->
-             CoverageParameters.methodPoint.Value |> not
-             || methods |> List.tail |> List.isEmpty)
+      |> Seq.filter (fun (_, _, methods, _) ->
+        CoverageParameters.methodPoint.Value |> not
+        || methods |> List.tail |> List.isEmpty)
       |> Seq.collect (
         (fun (m, k, methods, top) ->
           let visitcount =
@@ -1138,10 +1145,9 @@ module internal Visitor =
       (instructions: Instruction seq)
       =
       instructions
-      |> Seq.map
-           (fun i ->
-             let seq = dbg.GetSequencePoint i
-             fakeSequencePoint genuine seq i)
+      |> Seq.map (fun i ->
+        let seq = dbg.GetSequencePoint i
+        fakeSequencePoint genuine seq i)
       |> Seq.tryFind isSequencePoint
 
     let internal findSequencePoint
@@ -1185,8 +1191,12 @@ module internal Visitor =
 
     let internal includedSequencePoint dbg (toNext: Instruction list) toJump =
       let places = List.concat [ toNext; toJump ]
-      let start = places |> (boundaryOfList List.minBy)
-      let finish = places |> (boundaryOfList List.maxBy)
+
+      let start =
+        places |> (boundaryOfList List.minBy)
+
+      let finish =
+        places |> (boundaryOfList List.maxBy)
 
       let range =
         Seq.unfold
@@ -1243,46 +1253,42 @@ module internal Visitor =
         let mutable path = 0
 
         bs
-        |> Seq.map
-             (fun b ->
-               { b with
-                   Target =
-                     b.Target
-                     |> List.takeWhile
-                          (fun i ->
-                            let o = i.Offset
+        |> Seq.map (fun b ->
+          { b with
+              Target =
+                b.Target
+                |> List.takeWhile (fun i ->
+                  let o = i.Offset
 
-                            o > lastOffset
-                            || o < b.SequencePoint.Offset
-                            || i.OpCode.FlowControl = FlowControl.Return
-                            || i.OpCode.FlowControl = FlowControl.Break
-                            || i.OpCode.FlowControl = FlowControl.Throw
-                            || i.OpCode.FlowControl = FlowControl.Branch) }) // more??
+                  o > lastOffset
+                  || o < b.SequencePoint.Offset
+                  || i.OpCode.FlowControl = FlowControl.Return
+                  || i.OpCode.FlowControl = FlowControl.Break
+                  || i.OpCode.FlowControl = FlowControl.Throw
+                  || i.OpCode.FlowControl = FlowControl.Branch) }) // more??
         |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
         |> Seq.map (
           snd
           >> (fun bg ->
             bg
-            |> Seq.mapi
-                 (fun i bx ->
-                   { bx with
-                       Representative =
-                         if i = 0 && bx.Target |> Seq.isEmpty |> not then
-                           Reporting.Representative
-                         else
-                           Reporting.Contributing }))
+            |> Seq.mapi (fun i bx ->
+              { bx with
+                  Representative =
+                    if i = 0 && bx.Target |> Seq.isEmpty |> not then
+                      Reporting.Representative
+                    else
+                      Reporting.Contributing }))
         )
         |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
-        |> Seq.mapi
-             (fun i b ->
-               if i = 0 then path <- 0
+        |> Seq.mapi (fun i b ->
+          if i = 0 then path <- 0
 
-               if (b |> Seq.head).Representative = Reporting.Representative then
-                 let p = path
-                 path <- path + 1
-                 b |> Seq.map (fun bx -> { bx with Path = p })
-               else
-                 b)
+          if (b |> Seq.head).Representative = Reporting.Representative then
+            let p = path
+            path <- path + 1
+            b |> Seq.map (fun bx -> { bx with Path = p })
+          else
+            b)
       //let demoteSingletons l = // TODO revisit
       //  let x = l |> Seq.length > 1
       //  l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative
@@ -1294,18 +1300,14 @@ module internal Visitor =
       |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
       |> Seq.map selectRepresentatives // >> demoteSingletons)
       |> Seq.collect id
-      |> Seq.map
-           (fun bs ->
-             bs
-             |> if (bs |> Seq.head).Representative = Reporting.Representative then
-                  let i = uid
-                  uid <- uid + 1
-                  Seq.map (fun bx -> { bx with Uid = i + branchNumber })
-                else
-                  Seq.map
-                    (fun bx ->
-                      { bx with
-                          Representative = Reporting.None }))
+      |> Seq.map (fun bs ->
+        bs
+        |> if (bs |> Seq.head).Representative = Reporting.Representative then
+             let i = uid
+             uid <- uid + 1
+             Seq.map (fun bx -> { bx with Uid = i + branchNumber })
+           else
+             Seq.map (fun bx -> { bx with Representative = Reporting.None }))
       |> Seq.collect id
       |> Seq.sortBy (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
 
@@ -1334,82 +1336,79 @@ module internal Visitor =
       [ rawInstructions |> Seq.cast ]
       |> Seq.filter (fun _ -> dbg.IsNotNull)
       |> Seq.concat
-      |> Seq.filter
-           (fun (i: Instruction) ->
-             i.OpCode.FlowControl = FlowControl.Cond_Branch
-             && (i |> generated |> not))
-      |> Seq.map
-           (fun (i: Instruction) ->
-             getJumps dbg i // if two or more jumps go between the same two places, coalesce them
-             |> List.groupBy (fun (_, _, o, _) -> o)
-             |> List.map
-                  (fun (_, records) ->
-                    let (from, target, _, _) = Seq.head records
+      |> Seq.filter (fun (i: Instruction) ->
+        i.OpCode.FlowControl = FlowControl.Cond_Branch
+        && (i |> generated |> not))
+      |> Seq.map (fun (i: Instruction) ->
+        getJumps dbg i // if two or more jumps go between the same two places, coalesce them
+        |> List.groupBy (fun (_, _, o, _) -> o)
+        |> List.map (fun (_, records) ->
+          let (from, target, _, _) = Seq.head records
 
-                    (from,
-                     target,
-                     records
-                     |> List.map (fun (_, _, _, n) -> n)
-                     |> List.sort))
-             |> List.sortBy (fun (_, _, l) -> l.Head)
-             |> indexList)
-      |> Seq.filter
-           (fun l ->
-             CoverageParameters.coalesceBranches.Value
-             || l.Length > 1) // TODO revisit
+          (from,
+           target,
+           records
+           |> List.map (fun (_, _, _, n) -> n)
+           |> List.sort))
+        |> List.sortBy (fun (_, _, l) -> l.Head)
+        |> indexList)
+      |> Seq.filter (fun l ->
+        CoverageParameters.coalesceBranches.Value
+        || l.Length > 1) // TODO revisit
       |> Seq.collect id
-      |> Seq.mapi
-           (fun i (path, (from, target, indexes)) ->
-             Seq.unfold
-               (fun (state: Cil.Instruction) ->
-                 state
-                 |> Option.ofObj
-                 |> Option.map (fun state' -> (state', state'.Previous)))
-               from
-             |> (findSequencePoint dbg)
-             |> Option.map
-                  (fun context ->
-                    { Start = from
-                      SequencePoint = context
-                      Indexes = indexes
-                      Uid = makeDefault (i + branchNumber)
-                      Path = makeDefault path
-                      Offset = from.Offset
-                      Target = target
-                      Included = interesting
-                      VisitCount = vc
-                      Representative =
-                        if CoverageParameters.coalesceBranches.Value then
-                          Reporting.Contributing
-                        else
-                          Reporting.Representative
-                      Key = i }))
+      |> Seq.mapi (fun i (path, (from, target, indexes)) ->
+        Seq.unfold
+          (fun (state: Cil.Instruction) ->
+            state
+            |> Option.ofObj
+            |> Option.map (fun state' -> (state', state'.Previous)))
+          from
+        |> (findSequencePoint dbg)
+        |> Option.map (fun context ->
+          { Start = from
+            SequencePoint = context
+            Indexes = indexes
+            Uid = makeDefault (i + branchNumber)
+            Path = makeDefault path
+            Offset = from.Offset
+            Target = target
+            Included = interesting
+            VisitCount = vc
+            Representative =
+              if CoverageParameters.coalesceBranches.Value then
+                Reporting.Contributing
+              else
+                Reporting.Representative
+            Key = i }))
       |> Seq.choose id
       |> processBranches
       |> Seq.map BranchPoint
       |> Seq.toList
 
     let private visitMethod (m: MethodEntry) =
-      let rawInstructions = m.Method.Body.Instructions
+      let rawInstructions =
+        m.Method.Body.Instructions
+
       let dbg = m.Method.DebugInformation
 
       let instructions =
         [ rawInstructions |> Seq.cast ]
         |> Seq.filter (fun _ -> dbg.IsNotNull)
         |> Seq.concat
-        |> Seq.filter
-             (fun (x: Instruction) ->
-               if dbg.HasSequencePoints then
-                 let s = dbg.GetSequencePoint x
-                 s.IsNotNull && (s.IsHidden |> not)
-               else
-                 false)
+        |> Seq.filter (fun (x: Instruction) ->
+          if dbg.HasSequencePoints then
+            let s = dbg.GetSequencePoint x
+            s.IsNotNull && (s.IsHidden |> not)
+          else
+            false)
         |> Seq.toList
 
       let number = instructions.Length
       let point = pointNumber
       pointNumber <- point + number
-      let interesting = m.Inspection.IsInstrumented
+
+      let interesting =
+        m.Inspection.IsInstrumented
 
       let wanted i (s: SequencePoint) =
         i && (s.Document.Url.IsIncluded).IsInstrumented
@@ -1425,30 +1424,28 @@ module internal Visitor =
         if methodPointOnly () then
           rawInstructions
           |> Seq.take 1
-          |> Seq.map
-               (fun i ->
-                 MethodPoint
-                   { Instruction = i
-                     SeqPnt =
-                       dbg.GetSequencePoint(i)
-                       |> Option.ofObj
-                       |> Option.filter (fun _ -> CoverageParameters.methodPoint.Value)
-                       |> Option.map SeqPnt.Build
-                     Uid = m.Method.MetadataToken.ToInt32()
-                     Interesting = interesting
-                     DefaultVisitCount = m.DefaultVisitCount })
+          |> Seq.map (fun i ->
+            MethodPoint
+              { Instruction = i
+                SeqPnt =
+                  dbg.GetSequencePoint(i)
+                  |> Option.ofObj
+                  |> Option.filter (fun _ -> CoverageParameters.methodPoint.Value)
+                  |> Option.map SeqPnt.Build
+                Uid = m.Method.MetadataToken.ToInt32()
+                Interesting = interesting
+                DefaultVisitCount = m.DefaultVisitCount })
         else
           instructions.OrderByDescending(fun (x: Instruction) -> x.Offset)
-          |> Seq.mapi
-               (fun i x ->
-                 let s = dbg.GetSequencePoint(x)
+          |> Seq.mapi (fun i x ->
+            let s = dbg.GetSequencePoint(x)
 
-                 MethodPoint
-                   { Instruction = x
-                     SeqPnt = s |> SeqPnt.Build |> Some
-                     Uid = i + point
-                     Interesting = wanted interesting s
-                     DefaultVisitCount = m.DefaultVisitCount })
+            MethodPoint
+              { Instruction = x
+                SeqPnt = s |> SeqPnt.Build |> Some
+                Uid = i + point
+                Interesting = wanted interesting s
+                DefaultVisitCount = m.DefaultVisitCount })
 
       let includeBranches () =
         instructions.Any()

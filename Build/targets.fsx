@@ -1,4 +1,4 @@
-// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
+﻿// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
 
 open System
 open System.Diagnostics.Tracing

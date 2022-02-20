@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -28,18 +28,19 @@ module internal Gendarme =
       (ins: Cil.Instruction)
       (targets: System.Collections.Generic.HashSet<Cil.Instruction>)
       =
-      let cases = ins.Operand :?> Cil.Instruction []
+      let cases =
+        ins.Operand :?> Cil.Instruction []
 
       cases
-      |> Seq.iter
-           (fun target ->
-             if target <> ins.Next then
-               target |> targets.Add |> ignore)
+      |> Seq.iter (fun target ->
+        if target <> ins.Next then
+          target |> targets.Add |> ignore)
       // add 'default' branch (if one exists)
       let next = ins.Next
 
       if next.OpCode.FlowControl = FlowControl.Branch then
-        let operand = next.Operand :?> Cil.Instruction
+        let operand =
+          next.Operand :?> Cil.Instruction
 
         match cases
               |> Seq.head
@@ -55,7 +56,8 @@ module internal Gendarme =
       // have unconditional branches preceded by non-loads
       // However, ILSpy doesn't decompile a release-build return <ternary> properly
       // so I'm not going to try to figure that one out on top of this
-      let index = int (Option.defaultValue Code.Nop code)
+      let index =
+        int (Option.defaultValue Code.Nop code)
 
       (mask |> Seq.skip (index >>> 6) |> Seq.head
        &&& (1UL <<< (index &&& 63))
@@ -74,17 +76,16 @@ module internal Gendarme =
                | FlowControl.Branch ->
                  c
                  + (Option.ofObj i.Previous
-                    |> Option.map
-                         (fun (previous: Instruction) ->
-                           do
-                             if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
-                               match previous.Operand with
-                               | :? Cil.Instruction as branch ->
-                                 if targets.Contains branch then
-                                   i |> targets.Add |> ignore
-                               | _ -> ()
+                    |> Option.map (fun (previous: Instruction) ->
+                      do
+                        if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
+                          match previous.Operand with
+                          | :? Cil.Instruction as branch ->
+                            if targets.Contains branch then
+                              i |> targets.Add |> ignore
+                          | _ -> ()
 
-                           previous.OpCode.Code)
+                      previous.OpCode.Code)
                     |> ``detect ternary pattern``)
                | FlowControl.Cond_Branch ->
                  if i.OpCode = OpCodes.Switch then
@@ -95,14 +96,13 @@ module internal Gendarme =
 
                    c
                    + (Option.ofObj branch.Previous
-                      |> Option.filter
-                           (fun (previous: Instruction) ->
-                             let pp = previous.Previous
-                             // !previous.Previous.Is (Code.Switch)
-                             // where Is(i, code) => i != null && i.OpCode.Code == code
-                             (pp |> isNull
-                              || pp.OpCode.Code <> OpCodes.Switch.Code)
-                             && branch |> targets.Contains |> not)
+                      |> Option.filter (fun (previous: Instruction) ->
+                        let pp = previous.Previous
+                        // !previous.Previous.Is (Code.Switch)
+                        // where Is(i, code) => i != null && i.OpCode.Code == code
+                        (pp |> isNull
+                         || pp.OpCode.Code <> OpCodes.Switch.Code)
+                        && branch |> targets.Contains |> not)
                       |> Option.map (fun _ -> 1)
                       |> Option.defaultValue 0)
                | _ -> c)

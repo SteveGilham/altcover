@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics
@@ -109,11 +109,20 @@ type internal UsageInfo =
     Options2: OptionSet }
 
 module internal Output =
-  let mutable internal info: String -> unit = ignore
-  let mutable internal warn: String -> unit = ignore
-  let mutable internal echo: String -> unit = ignore
-  let mutable internal error: String -> unit = ignore
-  let mutable internal usage: UsageInfo -> unit = ignore
+  let mutable internal info: String -> unit =
+    ignore
+
+  let mutable internal warn: String -> unit =
+    ignore
+
+  let mutable internal echo: String -> unit =
+    ignore
+
+  let mutable internal error: String -> unit =
+    ignore
+
+  let mutable internal usage: UsageInfo -> unit =
+    ignore
 
   let internal warnOn x = if x then warn else info
 
@@ -130,18 +139,16 @@ module internal Output =
       ex.ToString() |> writer.WriteLine
 
       ex.GetType().GetProperties()
-      |> Seq.filter
-           (fun p ->
-             [ "Message"; "StackTrace" ]
-             |> Seq.exists (fun n -> n == p.Name)
-             |> not)
-      |> Seq.iter
-           (fun p ->
-             (padding + p.Name + " = ") |> writer.WriteLine
+      |> Seq.filter (fun p ->
+        [ "Message"; "StackTrace" ]
+        |> Seq.exists (fun n -> n == p.Name)
+        |> not)
+      |> Seq.iter (fun p ->
+        (padding + p.Name + " = ") |> writer.WriteLine
 
-             match p.GetValue(ex) with
-             | :? Exception as exx -> logException ("  " + padding) exx
-             | v -> v |> sprintf "%A" |> writer.WriteLine)
+        match p.GetValue(ex) with
+        | :? Exception as exx -> logException ("  " + padding) exx
+        | v -> v |> sprintf "%A" |> writer.WriteLine)
 
     logException String.Empty e
 
@@ -150,7 +157,10 @@ module internal CommandLine =
   let mutable internal verbosity = 0
   let mutable internal help = false
   let mutable internal error: string list = []
-  let mutable internal exceptions: Exception list = []
+
+  let mutable internal exceptions: Exception list =
+    []
+
   let internal dropReturnCode = ref false // ddFlag
 
   let internal resources =
@@ -177,7 +187,8 @@ module internal CommandLine =
       finally
         Console.ForegroundColor <- original
 
-    let internal enquotes = Map.empty |> Map.add "Windows_NT" "\""
+    let internal enquotes =
+      Map.empty |> Map.add "Windows_NT" "\""
 
     let internal write (writer: TextWriter) colour data =
       if not (String.IsNullOrEmpty(data)) then
@@ -200,7 +211,8 @@ module internal CommandLine =
         |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
         |> Option.defaultValue String.Empty
 
-      let enquoted = quote + cmd.Trim([| '"'; ''' |]) + quote
+      let enquoted =
+        quote + cmd.Trim([| '"'; ''' |]) + quote
 
       Format.Local("CommandLine", enquoted, args)
       |> Output.info
@@ -432,7 +444,8 @@ module internal CommandLine =
     match rest |> Seq.toList with
     | [] -> 0
     | cmd :: t ->
-      let args = t |> CmdLine.fromSeq |> CmdLine.toString
+      let args =
+        t |> CmdLine.fromSeq |> CmdLine.toString
 
       let cmd' =
         [ cmd ] |> CmdLine.fromSeq |> CmdLine.toString
@@ -463,8 +476,8 @@ module internal CommandLine =
         (fun () ->
           let blob = File.ReadAllBytes x
 
-          I.transformCryptographicException
-            (fun () -> (blob |> StrongNameKeyData.Make, true)))
+          I.transformCryptographicException (fun () ->
+            (blob |> StrongNameKeyData.Make, true)))
         (StrongNameKeyData.Empty(), false)
         false
     else
@@ -473,9 +486,11 @@ module internal CommandLine =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
                                                     "AvoidMethodWithUnusedGenericTypeRule",
                                                     Justification = "Delegation = first class functions")>]
-  let internal doPathOperation = I.doPathOperation
+  let internal doPathOperation =
+    I.doPathOperation
 
-  let internal findAssemblyName = I.findAssemblyName
+  let internal findAssemblyName =
+    I.findAssemblyName
 
   let internal validateDirectory dir x =
     I.validateFileSystemEntity Directory.Exists I.dnf dir x
@@ -501,28 +516,26 @@ module internal CommandLine =
     I.write Console.Out Console.ForegroundColor line
 
   let internal usageBase u =
-    I.writeColoured
-      Console.Error
-      ConsoleColor.Yellow
-      (fun w ->
-        w.WriteLine(resources.GetString u.Intro)
-        u.Options.WriteOptionDescriptions(w)
+    I.writeColoured Console.Error ConsoleColor.Yellow (fun w ->
+      w.WriteLine(resources.GetString u.Intro)
+      u.Options.WriteOptionDescriptions(w)
 
-        if u.Options.Any() && u.Options2.Any() then
-          w.WriteLine(resources.GetString "orbinder")
-
-        if u.Options2.Any() then
-          w.WriteLine("  Runner")
-          u.Options2.WriteOptionDescriptions(w)
-
+      if u.Options.Any() && u.Options2.Any() then
         w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "ImportModule")
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "Version")
-        w.WriteLine(resources.GetString "orglobal")
-        w.WriteLine(resources.GetString "TargetsPath"))
 
-  let internal writeResource = resources.GetString >> Output.info
+      if u.Options2.Any() then
+        w.WriteLine("  Runner")
+        u.Options2.WriteOptionDescriptions(w)
+
+      w.WriteLine(resources.GetString "orbinder")
+      w.WriteLine(resources.GetString "ImportModule")
+      w.WriteLine(resources.GetString "orbinder")
+      w.WriteLine(resources.GetString "Version")
+      w.WriteLine(resources.GetString "orglobal")
+      w.WriteLine(resources.GetString "TargetsPath"))
+
+  let internal writeResource =
+    resources.GetString >> Output.info
 
   let internal writeResourceWithFormatItems s x warn =
     Format.Local(s, x) |> (Output.warnOn warn)

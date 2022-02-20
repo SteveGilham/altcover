@@ -1,4 +1,4 @@
-namespace Sample27
+﻿namespace Sample27
 
 open Xunit
 open Swensen.Unquote
@@ -26,9 +26,9 @@ module Tests =
       test <@ AddSynch(1, 1) = result @>
     }
 
-    //public IEnumerable<int> Yielder()
-    //{
-    //  yield return 1;
-    //  yield return 2;
-    //  yield return 3;
-    //}
+//public IEnumerable<int> Yielder()
+//{
+//  yield return 1;
+//  yield return 2;
+//  yield return 3;
+//}

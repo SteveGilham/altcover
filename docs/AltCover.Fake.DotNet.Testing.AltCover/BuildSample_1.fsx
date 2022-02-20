@@ -1,4 +1,4 @@
-#r "paket:
+﻿#r "paket:
 nuget AltCover.Fake >= 7.0 //"
 
 let prep =

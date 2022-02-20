@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -662,7 +662,8 @@ type ConvertFromCoverageJsonCommand() =
       if self.ParameterSetName == "FromFile" then
         self.Json <- File.ReadAllText self.InputFile
 
-      let rewrite = AltCover.OpenCover.JsonToXml self.Json
+      let rewrite =
+        AltCover.OpenCover.JsonToXml self.Json
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace

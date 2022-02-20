@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -31,26 +31,24 @@ module private Gui =
       "fileOpenMenu"
       "aboutVisualizer" ]
 #if !NET472
-    |> List.iter
-         (fun name ->
-           use b =
-             new Builder(
-               System
-                 .Reflection
-                 .Assembly
-                 .GetExecutingAssembly()
-                 .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
-               name
-             )
+    |> List.iter (fun name ->
+      use b =
+        new Builder(
+          System
+            .Reflection
+            .Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
+          name
+        )
 
-           b.Autoconnect handler)
+      b.Autoconnect handler)
 #else
-    |> List.iter
-         (fun name ->
-           use xml =
-             new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
+    |> List.iter (fun name ->
+      use xml =
+        new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
 
-           xml.Autoconnect(handler))
+      xml.Autoconnect(handler))
 #endif
 
     handler.coverageFiles <- []
@@ -60,10 +58,9 @@ module private Gui =
   let private setDefaultText (h: Handler) =
     [ (h.codeView.Buffer, 100)
       (h.lineView.Buffer, 7) ]
-    |> Seq.iter
-         (fun (b, n) ->
-           b.Text <- String(' ', n)
-           b.ApplyTag("baseline", b.StartIter, b.EndIter))
+    |> Seq.iter (fun (b, n) ->
+      b.Text <- String(' ', n)
+      b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
   // Fill in the menu from the memory cache
   let private populateMenu (handler: Handler) =
@@ -106,12 +103,11 @@ module private Gui =
     LinkButton.SetUriHook(urlHook) |> ignore
 
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
-    |> Seq.iter
-         (fun w ->
-           let t = Resource.GetResourceString w.Label
+    |> Seq.iter (fun w ->
+      let t = Resource.GetResourceString w.Label
 
-           if t |> String.IsNullOrWhiteSpace |> not then
-             w.Label <- t)
+      if t |> String.IsNullOrWhiteSpace |> not then
+        w.Label <- t)
 #endif
 
     handler.aboutVisualizer.Title <- Resource.GetResourceString("aboutVisualizer.Title")
@@ -129,7 +125,10 @@ module private Gui =
       )
 
     handler.aboutVisualizer.License <-
-      Resource.Format("License", [ AltCover.AssemblyVersionInformation.AssemblyCopyright ])
+      Resource.Format(
+        "License",
+        [ AltCover.AssemblyVersionInformation.AssemblyCopyright ]
+      )
 
     handler.aboutVisualizer.Comments <-
       Resource.GetResourceString("aboutVisualizer.Comments")
@@ -365,10 +364,9 @@ module private Gui =
 #endif
 
         tip
-        |> Option.iter
-             (fun text ->
-               let path = context.Model.GetPath(newrow)
-               handler.classStructureTree.Data.Add(path, text))
+        |> Option.iter (fun text ->
+          let path = context.Model.GetPath(newrow)
+          handler.classStructureTree.Data.Add(path, text))
 
         { context with Row = newrow }
 
@@ -430,7 +428,8 @@ module private Gui =
     (handler: Handler)
     (openFileDialogFactory: OpenFileDialogFactory)
     =
-    use openFileDialog = openFileDialogFactory handler
+    use openFileDialog =
+      openFileDialogFactory handler
 
     let makeSelection (ofd: FileOpenDialog) x =
 
@@ -453,10 +452,9 @@ module private Gui =
     handler.openButton.Clicked
     |> Event.map (makeSelection openFileDialog)
     |> Event.choose id
-    |> Event.map
-         (fun info ->
-           handler.justOpened <- info.FullName
-           -1)
+    |> Event.map (fun info ->
+      handler.justOpened <- info.FullName
+      -1)
 
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
@@ -492,19 +490,20 @@ module private Gui =
                     Justification = "IDisposables are added to the TextView")>]
   let private markBranches (root: XPathNavigator) (lineView: TextView) (file: Source) =
     let buff = lineView.Buffer
-    let branches = HandlerCommon.TagBranches root file
+
+    let branches =
+      HandlerCommon.TagBranches root file
 
     for l in 1 .. buff.LineCount do
       let image = new Image()
 
       let pix =
-        HandlerCommon.IconForBranches
-          icons
-          branches
-          l
-          (fun text -> image.TooltipText <- text)
+        HandlerCommon.IconForBranches icons branches l (fun text ->
+          image.TooltipText <- text)
 
-      let mutable i = buff.GetIterAtLineOffset(l - 1, 7)
+      let mutable i =
+        buff.GetIterAtLineOffset(l - 1, 7)
+
       let a = new TextChildAnchor()
       buff.InsertChildAnchor(&i, a)
       image.Pixbuf <- pix
@@ -522,7 +521,9 @@ module private Gui =
       else
         buff.GetIterAtLineOffset(n.Line - 1, Math.Max(Math.Min(n.Column, chars) - 1, 0))
 
-    let endline = buff.GetIterAtLine(n.EndLine - 1)
+    let endline =
+      buff.GetIterAtLine(n.EndLine - 1)
+
     let endchars = endline.CharsInLine
 
     // coverlet-like case w/o column data
@@ -562,11 +563,13 @@ module private Gui =
 
     tags
     |> HandlerCommon.TagLines "visited" "notVisited"
-    |> List.iter
-         (fun (l, tag) ->
-           let start = buff2.GetIterAtLine(l - 1)
-           let finish = buff2.GetIterAtLineOffset(l - 1, 7)
-           buff2.ApplyTag(tag, start, finish))
+    |> List.iter (fun (l, tag) ->
+      let start = buff2.GetIterAtLine(l - 1)
+
+      let finish =
+        buff2.GetIterAtLineOffset(l - 1, 7)
+
+      buff2.ApplyTag(tag, start, finish))
 
   let internal lineHeights (h: Handler) =
     let v = h.codeView
@@ -594,7 +597,9 @@ module private Gui =
     let lines = v.Buffer.LineCount
 
     let pages = va.Upper / va.PageSize // total document size
-    let ``lines per page`` = (float lines) / pages
+
+    let ``lines per page`` =
+      (float lines) / pages
 
     let pagedepth =
       float (h.activeRow - 1) / ``lines per page``
@@ -606,14 +611,14 @@ module private Gui =
       else
         0.0
 
-    Handler.InvokeOnGuiThread
-      (fun () ->
-        balanceLines h
-        va.Value <- adjust)
+    Handler.InvokeOnGuiThread (fun () ->
+      balanceLines h
+      va.Value <- adjust)
 
 #if !NET472
   // fsharplint:disable-next-line RedundantNewKeyword
-  let latch = new Threading.ManualResetEvent false
+  let latch =
+    new Threading.ManualResetEvent false
 #endif
 
   let private onRowActivated (handler: Handler) (activation: RowActivatedArgs) =
@@ -655,11 +660,10 @@ module private Gui =
           )
 
         [ handler.codeView; handler.lineView ]
-        |> Seq.iter
-             (fun v ->
-               v.PixelsAboveLines <- 0
-               v.PixelsInsideWrap <- 0
-               v.PixelsBelowLines <- 0)
+        |> Seq.iter (fun v ->
+          v.PixelsAboveLines <- 0
+          v.PixelsInsideWrap <- 0
+          v.PixelsBelowLines <- 0)
 
         [ buff; buff2 ]
         |> List.iter (fun b -> b.ApplyTag("baseline", b.StartIter, b.EndIter))
@@ -759,20 +763,19 @@ module private Gui =
 
     h.fileOpenMenu.AllChildren
     |> Seq.cast<MenuItem>
-    |> Seq.iteri
-         (fun n (i: MenuItem) ->
-           let c = ((n + 1) % 10) |> char
+    |> Seq.iteri (fun n (i: MenuItem) ->
+      let c = ((n + 1) % 10) |> char
 
-           let key =
-             Keyval.FromName(String [| '0' + c |])
-             |> int
-             |> enum<Gdk.Key>
+      let key =
+        Keyval.FromName(String [| '0' + c |])
+        |> int
+        |> enum<Gdk.Key>
 
-           i.AddAccelerator(
-             "activate",
-             g,
-             AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
-           ))
+      i.AddAccelerator(
+        "activate",
+        g,
+        AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
+      ))
 
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
@@ -791,13 +794,12 @@ module private Gui =
 #if NET472
     let whiteSmoke = Color(245uy, 245uy, 245uy)
 
-    seq { 0 .. 4 }
-    |> Seq.iter
-         (fun i ->
-           let state = i |> enum
-           handler.viewport1.ModifyBg(state, whiteSmoke)
-           handler.codeView.ModifyBase(state, whiteSmoke)
-           handler.codeView.ModifyBg(state, whiteSmoke))
+    seq { 0..4 }
+    |> Seq.iter (fun i ->
+      let state = i |> enum
+      handler.viewport1.ModifyBg(state, whiteSmoke)
+      handler.codeView.ModifyBase(state, whiteSmoke)
+      handler.codeView.ModifyBg(state, whiteSmoke))
 #else
     let prov = new CssProvider()
 
@@ -823,12 +825,11 @@ module private Gui =
     handler.refreshButton.Sensitive <- false
 
     handler.exitButton.Clicked
-    |> Event.add
-         (fun _ ->
-           if Persistence.save then
-             Persistence.saveGeometry handler.mainWindow
+    |> Event.add (fun _ ->
+      if Persistence.save then
+        Persistence.saveGeometry handler.mainWindow
 
-           Application.Quit())
+      Application.Quit())
     // Initialize graphics and begin
     let vicon = icons.VIcon
     handler.mainWindow.Icon <- vicon
@@ -862,19 +863,18 @@ module private Gui =
     let handler = prepareGui ()
 
     handler.classStructureTree.QueryTooltip
-    |> Event.add
-         (fun (x: QueryTooltipArgs) ->
-           let tip = x.Tooltip
-           x.RetVal <- null
-           let mutable path: TreePath = null
+    |> Event.add (fun (x: QueryTooltipArgs) ->
+      let tip = x.Tooltip
+      x.RetVal <- null
+      let mutable path: TreePath = null
 
-           if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path) then
-             let table = handler.classStructureTree.Data
+      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path) then
+        let table = handler.classStructureTree.Data
 
-             if table.ContainsKey path then
-               let text = table.[path] :?> string
-               tip.Text <- text
-               x.RetVal <- true) // <== magic happens here
+        if table.ContainsKey path then
+          let text = table.[path] :?> string
+          tip.Text <- text
+          x.RetVal <- true) // <== magic happens here
 
 #if !NET472
     handler.codeView.Drawn
@@ -887,19 +887,17 @@ module private Gui =
 #endif
 
     handler.mainWindow.DeleteEvent
-    |> Event.add
-         (fun args ->
-           if Persistence.save then
-             Persistence.saveGeometry handler.mainWindow
+    |> Event.add (fun args ->
+      if Persistence.save then
+        Persistence.saveGeometry handler.mainWindow
 
-           Application.Quit()
-           args.RetVal <- true)
+      Application.Quit()
+      args.RetVal <- true)
 
     handler.showAboutButton.Clicked
-    |> Event.add
-         (fun args ->
-           ignore <| handler.aboutVisualizer.Run()
-           handler.aboutVisualizer.Hide())
+    |> Event.add (fun args ->
+      ignore <| handler.aboutVisualizer.Run()
+      handler.aboutVisualizer.Hide())
     // The Open event
     let click =
       handleOpenClicked handler prepareOpenFileDialog
@@ -911,7 +909,8 @@ module private Gui =
       |> Seq.mapi (fun n (i: MenuItem) -> i.Activated |> Event.map (fun _ -> n))
 
     // The sum of all these events -- we have explicitly selected a file
-    let fileSelection = select |> Seq.fold Event.merge click
+    let fileSelection =
+      select |> Seq.fold Event.merge click
 
     let updateMRU (h: Handler) path add =
       HandlerCommon.UpdateCoverageFiles h path add
@@ -928,48 +927,48 @@ module private Gui =
     |> Event.add (doSelected handler updateMRU)
 
     handler.fontButton.Clicked
-    |> Event.add
-         (fun x ->
-           let format = Resource.GetResourceString "SelectFont"
+    |> Event.add (fun x ->
+      let format =
+        Resource.GetResourceString "SelectFont"
 #if !NET472
-           use selector =
-             new FontChooserDialog(format, handler.mainWindow)
+      use selector =
+        new FontChooserDialog(format, handler.mainWindow)
 
-           selector.Font <- Persistence.readFont ()
+      selector.Font <- Persistence.readFont ()
 
-           if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
-             let font = selector.Font
+      if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+        let font = selector.Font
 #else
-           use selector = new FontSelectionDialog(format)
+      use selector =
+        new FontSelectionDialog(format)
 
-           selector.SetFontName(Persistence.readFont ())
-           |> ignore
+      selector.SetFontName(Persistence.readFont ())
+      |> ignore
 
-           if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
-             let font = selector.FontName
+      if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+        let font = selector.FontName
 #endif
 
-             Persistence.saveFont (font)
+        Persistence.saveFont (font)
 
-             [ handler.codeView; handler.lineView ]
-             |> Seq.iter
-                  (fun v ->
-                    v.Buffer.TagTable.Foreach(fun tag -> tag.Font <- font)
-                    v.PixelsAboveLines <- 0
-                    v.PixelsBelowLines <- 0)
+        [ handler.codeView; handler.lineView ]
+        |> Seq.iter (fun v ->
+          v.Buffer.TagTable.Foreach(fun tag -> tag.Font <- font)
+          v.PixelsAboveLines <- 0
+          v.PixelsBelowLines <- 0)
 
-             handler.viewport1.QueueDraw()
+        handler.viewport1.QueueDraw()
 
-             async {
-               Threading.Thread.Sleep(300)
-               Handler.InvokeOnGuiThread(fun () -> balanceLines handler)
-             }
-             |> Async.Start
+        async {
+          Threading.Thread.Sleep(300)
+          Handler.InvokeOnGuiThread(fun () -> balanceLines handler)
+        }
+        |> Async.Start
 
 #if !NET472
-           ) // implicit Dispose()
+    ) // implicit Dispose()
 #else
-           selector.Destroy())
+      selector.Destroy())
 #endif
     // Tree selection events and such
     handler.classStructureTree.RowActivated

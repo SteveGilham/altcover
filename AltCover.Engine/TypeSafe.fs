@@ -1,4 +1,4 @@
-#if RUNNER
+﻿#if RUNNER
 namespace AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
