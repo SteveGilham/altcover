@@ -606,6 +606,6 @@ module CoverageFileTree =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.CoverageFileTree/step@119::Invoke(System.String,System.Int32)",
+                            Target = "AltCover.CoverageFileTree/step@118::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
 ()

@@ -1253,6 +1253,6 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 764@765::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 747@748::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

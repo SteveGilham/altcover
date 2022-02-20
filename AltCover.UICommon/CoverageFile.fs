@@ -344,7 +344,7 @@ module Extensions =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/transformFromCobertura@100-2::Invoke(System.Xml.Linq.XElement)",
+                            Target = "AltCover.Transformer/transformFromCobertura@96-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",

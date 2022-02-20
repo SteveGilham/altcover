@@ -717,6 +717,6 @@ module internal OpenCover =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.OpenCover/handleOrdinals@434-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Target = "AltCover.OpenCover/handleOrdinals@443-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler generated")>]
 ()

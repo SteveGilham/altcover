@@ -777,6 +777,6 @@ type MainWindow() as this =
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 522@523::Invoke(Microsoft.FSharp.Core.Unit)",
+                            Target = "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 531@532::Invoke(Microsoft.FSharp.Core.Unit)",
                             Justification = "Local of type 'Task`1' is not disposed of. Hmm.")>]
 ()

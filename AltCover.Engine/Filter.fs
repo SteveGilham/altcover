@@ -272,12 +272,12 @@ module internal Filter =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
                             MessageId = "System.String.Replace(System.String,System.String)",
-                            Target = "AltCover.Filter/I/Pipe #1 stage #2 at line 189@190::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Target = "AltCover.Filter/I/Pipe #1 stage #2 at line 185@185::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No suitable overload in netstandard2.0/net472")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
                             MessageId = "System.String.Replace(System.String,System.String)",
-                            Target = "AltCover.Filter/I/Pipe #2 stage #2 at line 201@202::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Target = "AltCover.Filter/I/Pipe #2 stage #2 at line 196@196::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No suitable overload in netstandard2.0/net472")>]
 ()
