@@ -7,7 +7,8 @@ $types | % {
       $path = $_
       $lines = Get-Content $path
       if ($lines) 
-      { $trimmed = [String]::Join("`r`n", $lines)
+      { $lines = $lines | % { $_.TrimEnd() }
+        $trimmed = [String]::Join("`r`n", $lines)
         [System.IO.File]::WriteAllText($path, $trimmed, [System.Text.Encoding]::UTF8) }
     }
   }
