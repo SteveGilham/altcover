@@ -1282,6 +1282,26 @@ _Target "FxCop" (fun _ ->
             dumpSuppressions "_Reports/FxCopReport.xml"
             reraise ())
 
+    let dd =
+      let xml = "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+                |> Path.getFullName
+                |> XDocument.Load
+      xml.Descendants(XName.Get("PackageReference"))
+      |> Seq.map (fun x -> let attr = x.Attributes()
+                           let name = (attr                            
+                                       |> Seq.find(fun a -> match a.Name.LocalName.ToLowerInvariant() with
+                                                            | "include"
+                                                            | "update" -> true
+                                                            | _ -> false)).Value.ToLowerInvariant()
+                           let vers = (attr                            
+                                       |> Seq.find(fun a -> match a.Name.LocalName.ToLowerInvariant() with
+                                                            | "version" -> true
+                                                            | _ -> false)).Value.ToLowerInvariant()
+                           nugetCache
+                           @@ (name + "/" + vers + "/lib/netstandard2.0"))
+      |> Seq.filter Directory.Exists
+      |> Seq.toList
+
     try
         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
         |> FxCop.run
@@ -1289,10 +1309,7 @@ _Target "FxCop" (fun _ ->
                 WorkingDirectory = "."
                 ToolPath = Option.get dixon
                 PlatformDirectory = Option.get refdir
-                DependencyDirectories =
-                    [ fsharpCore
-                      nugetCache
-                      @@ "powershellstandard.library/5.1.0/lib/netstandard2.0" ]
+                DependencyDirectories = dd
                 UseGAC = true
                 Verbose = false
                 ReportFileName = "_Reports/FxCopReport.xml"
