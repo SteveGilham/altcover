@@ -1157,6 +1157,10 @@ _Target "FxCop" (fun _ ->
             dumpSuppressions "_Reports/FxCopReport.xml"
             reraise ())
 
+    // TODO scrape from projects
+    let fsharpCore =  nugetCache
+                      @@ "fsharp.core/6.0.3/lib/netstandard2.0"
+
     [ (fxcop,  // framework targets
        String.Empty,
        (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
@@ -1241,8 +1245,7 @@ _Target "FxCop" (fun _ ->
                           @@ "fake.dotnet.cli/5.21.0/lib/netstandard2.0"
                           nugetCache
                           @@ "fake.dotnet.msbuild/5.21.0/lib/netstandard2.0"
-                          nugetCache
-                          @@ "fsharp.core/6.0.3/lib/netstandard2.0"
+                          fsharpCore
                           nugetCache
                           @@ "gdksharp/3.24.24.34/lib/netstandard2.0"
                           nugetCache
@@ -1287,8 +1290,7 @@ _Target "FxCop" (fun _ ->
                 ToolPath = Option.get dixon
                 PlatformDirectory = Option.get refdir
                 DependencyDirectories =
-                    [ nugetCache
-                      @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                    [ fsharpCore
                       nugetCache
                       @@ "powershellstandard.library/5.1.0/lib/netstandard2.0" ]
                 UseGAC = true
