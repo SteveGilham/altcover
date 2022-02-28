@@ -1242,7 +1242,7 @@ _Target "FxCop" (fun _ ->
                           nugetCache
                           @@ "fake.dotnet.msbuild/5.21.0/lib/netstandard2.0"
                           nugetCache
-                          @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                          @@ "fsharp.core/6.0.3/lib/netstandard2.0"
                           nugetCache
                           @@ "gdksharp/3.24.24.34/lib/netstandard2.0"
                           nugetCache
