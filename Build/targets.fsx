@@ -348,6 +348,7 @@ let dotnetAltcover86 =
 
 let frameworkAltcover = Fake.DotNet.ToolType.CreateFullFramework()
 
+// breaks fantomas 4.6.5
 let defaultTestOptions fwk common (o: DotNet.TestOptions) =
     { o.WithCommon(
           (fun o2 ->
@@ -1158,39 +1159,46 @@ _Target "FxCop" (fun _ ->
             reraise ())
 
     // scrape from projects
-    let dd = 
-        [ 
-         "./AltCover/AltCover.fsproj" 
-         "./AltCover.Cake/AltCover.Cake.csproj"
-         "./AltCover.DataCollector/AltCover.DataCollector.csproj" 
-         "./AltCover.DotNet/AltCover.DotNet.fsproj"
-         "./AltCover.Engine/AltCover.Engine.fsproj"
-         "./AltCover.Fake/AltCover.Fake.fsproj"
-         "./AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj"
-         "./AltCover.FontSupport/AltCover.FontSupport.csproj"
-         "./AltCover.Monitor/AltCover.Monitor.csproj"
-         "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
-         "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
-         "./AltCover.UICommon/AltCover.UICommon.fsproj"
-         "./AltCover.Visualizer/AltCover.Visualizer.fsproj"
-        ]
-        |> List.collect (fun p -> 
-                let xml = p
-                          |> Path.getFullName
-                          |> XDocument.Load
-                xml.Descendants(XName.Get("PackageReference"))
-                |> Seq.map (fun x -> let attr = x.Attributes()
-                                     let name = (attr                            
-                                                 |> Seq.find(fun a -> match a.Name.LocalName.ToLowerInvariant() with
-                                                                         | "include"
-                                                                         | "update" -> true
-                                                                         | _ -> false)).Value.ToLowerInvariant()
-                                     let vers = (attr                            
-                                                 |> Seq.find(fun a -> match a.Name.LocalName.ToLowerInvariant() with
-                                                                         | "version" -> true
-                                                                         | _ -> false)).Value.ToLowerInvariant()
-                                     (name, vers))
-                |> Seq.toList)
+    let dd =
+        [ "./AltCover/AltCover.fsproj"
+          "./AltCover.Cake/AltCover.Cake.csproj"
+          "./AltCover.DataCollector/AltCover.DataCollector.csproj"
+          "./AltCover.DotNet/AltCover.DotNet.fsproj"
+          "./AltCover.Engine/AltCover.Engine.fsproj"
+          "./AltCover.Fake/AltCover.Fake.fsproj"
+          "./AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj"
+          "./AltCover.FontSupport/AltCover.FontSupport.csproj"
+          "./AltCover.Monitor/AltCover.Monitor.csproj"
+          "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+          "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
+          "./AltCover.UICommon/AltCover.UICommon.fsproj"
+          "./AltCover.Visualizer/AltCover.Visualizer.fsproj" ]
+        |> List.collect (fun p ->
+            let xml = p |> Path.getFullName |> XDocument.Load
+
+            xml.Descendants(XName.Get("PackageReference"))
+            |> Seq.map (fun x ->
+                let attr = x.Attributes()
+
+                let name =
+                    (attr
+                     |> Seq.find (fun a ->
+                         match a.Name.LocalName.ToLowerInvariant() with
+                         | "include"
+                         | "update" -> true
+                         | _ -> false))
+                        .Value.ToLowerInvariant()
+
+                let vers =
+                    (attr
+                     |> Seq.find (fun a ->
+                         match a.Name.LocalName.ToLowerInvariant() with
+                         | "version" -> true
+                         | _ -> false))
+                        .Value.ToLowerInvariant()
+
+                (name, vers))
+            |> Seq.toList)
         |> List.distinct
         |> Map.ofSeq
 
@@ -1264,44 +1272,85 @@ _Target "FxCop" (fun _ ->
                     DependencyDirectories =
                         [ "./ThirdParty/gtk-sharp2"
                           nugetCache
-                          @@ "blackfox.commandline/" + (dd.Item "blackfox.commandline") + "/lib/netstandard2.0"
+                          @@ "blackfox.commandline/"
+                             + (dd.Item "blackfox.commandline")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "cake.common/" + (dd.Item "cake.common") + "/lib/netstandard2.0"
-                          nugetCache @@ "cake.core/" + (dd.Item "cake.core") + "/lib/netstandard2.0"
+                          @@ "cake.common/"
+                             + (dd.Item "cake.common")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.core.environment/" + (dd.Item "fake.core.environment") + "/lib/netstandard2.0"
+                          @@ "cake.core/"
+                             + (dd.Item "cake.core")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.core.process/" + (dd.Item "fake.core.process") + "/lib/netstandard2.0"
+                          @@ "fake.core.environment/"
+                             + (dd.Item "fake.core.environment")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.core.trace/" + (dd.Item "fake.core.trace") + "/lib/netstandard2.0"
+                          @@ "fake.core.process/"
+                             + (dd.Item "fake.core.process")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.dotnet.cli/" + (dd.Item "fake.dotnet.cli") + "/lib/netstandard2.0"
+                          @@ "fake.core.trace/"
+                             + (dd.Item "fake.core.trace")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.dotnet.msbuild/" + (dd.Item "fake.dotnet.cli") + "/lib/netstandard2.0"
+                          @@ "fake.dotnet.cli/"
+                             + (dd.Item "fake.dotnet.cli")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fsharp.core/" + (dd.Item "fsharp.core") + "/lib/netstandard2.0"
+                          @@ "fake.dotnet.msbuild/"
+                             + (dd.Item "fake.dotnet.cli")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "gdksharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
+                          @@ "fsharp.core/"
+                             + (dd.Item "fsharp.core")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "glibsharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
+                          @@ "gdksharp/"
+                             + (dd.Item "gtksharp")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "gtksharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
+                          @@ "glibsharp/"
+                             + (dd.Item "gtksharp")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "mono.cecil/" + (dd.Item "mono.cecil") + "/lib/netstandard2.0"
+                          @@ "gtksharp/"
+                             + (dd.Item "gtksharp")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "mono.options/" + (dd.Item "mono.options") + "/lib/netstandard2.0"
+                          @@ "mono.cecil/"
+                             + (dd.Item "mono.cecil")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "microsoft.build.framework/" + (dd.Item "microsoft.build.utilities.core") + "/lib/netstandard2.0"
+                          @@ "mono.options/"
+                             + (dd.Item "mono.options")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "microsoft.build.utilities.core/" + (dd.Item "microsoft.build.utilities.core") + "/lib/netstandard2.0"
+                          @@ "microsoft.build.framework/"
+                             + (dd.Item "microsoft.build.utilities.core")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "microsoft.testplatform.objectmodel/" + (dd.Item "microsoft.testplatform.objectmodel") + "/lib/netstandard1.5"
+                          @@ "microsoft.build.utilities.core/"
+                             + (dd.Item "microsoft.build.utilities.core")
+                             + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "microsoft.netframework.referenceassemblies.net472/" + (dd.Item "microsoft.netframework.referenceassemblies.net472") + "/build/.NETFramework/v4.7.2"
+                          @@ "microsoft.testplatform.objectmodel/"
+                             + (dd.Item "microsoft.testplatform.objectmodel")
+                             + "/lib/netstandard1.5"
                           nugetCache
-                          @@ "pangosharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
+                          @@ "microsoft.netframework.referenceassemblies.net472/"
+                             + (dd.Item "microsoft.netframework.referenceassemblies.net472")
+                             + "/build/.NETFramework/v4.7.2"
                           nugetCache
-                          @@ "powershellstandard.library/" + (dd.Item "powershellstandard.library") + "/lib/netstandard2.0" ]
+                          @@ "pangosharp/"
+                             + (dd.Item "gtksharp")
+                             + "/lib/netstandard2.0"
+                          nugetCache
+                          @@ "powershellstandard.library/"
+                             + (dd.Item "powershellstandard.library")
+                             + "/lib/netstandard2.0" ]
                     ToolPath = Option.get tool
                     PlatformDirectory = platform
                     UseGAC = true
@@ -1317,24 +1366,36 @@ _Target "FxCop" (fun _ ->
             reraise ())
 
     let dd =
-      let xml = "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
-                |> Path.getFullName
-                |> XDocument.Load
-      xml.Descendants(XName.Get("PackageReference"))
-      |> Seq.map (fun x -> let attr = x.Attributes()
-                           let name = (attr                            
-                                       |> Seq.find(fun a -> match a.Name.LocalName.ToLowerInvariant() with
-                                                            | "include"
-                                                            | "update" -> true
-                                                            | _ -> false)).Value.ToLowerInvariant()
-                           let vers = (attr                            
-                                       |> Seq.find(fun a -> match a.Name.LocalName.ToLowerInvariant() with
-                                                            | "version" -> true
-                                                            | _ -> false)).Value.ToLowerInvariant()
-                           nugetCache
-                           @@ (name + "/" + vers + "/lib/netstandard2.0"))
-      |> Seq.filter Directory.Exists
-      |> Seq.toList
+        let xml =
+            "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+            |> Path.getFullName
+            |> XDocument.Load
+
+        xml.Descendants(XName.Get("PackageReference"))
+        |> Seq.map (fun x ->
+            let attr = x.Attributes()
+
+            let name =
+                (attr
+                 |> Seq.find (fun a ->
+                     match a.Name.LocalName.ToLowerInvariant() with
+                     | "include"
+                     | "update" -> true
+                     | _ -> false))
+                    .Value.ToLowerInvariant()
+
+            let vers =
+                (attr
+                 |> Seq.find (fun a ->
+                     match a.Name.LocalName.ToLowerInvariant() with
+                     | "version" -> true
+                     | _ -> false))
+                    .Value.ToLowerInvariant()
+
+            nugetCache
+            @@ (name + "/" + vers + "/lib/netstandard2.0"))
+        |> Seq.filter Directory.Exists
+        |> Seq.toList
 
     try
         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
