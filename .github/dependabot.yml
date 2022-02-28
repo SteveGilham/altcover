@@ -4,3 +4,7 @@ updates:
     directory: "/" # search in .github/workflows under root `/`
     schedule:
       interval: "weekly" # check for action update every week
+  - package-ecosystem: "nuget"   # Enable version updates for nuget 
+    directory: "/Build"
+    schedule:
+      interval: "daily"  # Check the nuget registry for updates every day (weekdays) schedule: 
