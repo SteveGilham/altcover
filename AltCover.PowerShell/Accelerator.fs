@@ -162,6 +162,7 @@ type AddAcceleratorCommand() =
                   Justification = "No valid input to accept")>]
 type GetAcceleratorCommand() =
   inherit PSCmdlet()
+
   /// <summary>
   /// <para type="description">List current accelerator to type mappings</para>
   /// </summary>

@@ -2601,7 +2601,7 @@ module AltCoverTests =
         |> Seq.filter Visitor.I.stripInterfaces
         |> Seq.map (fun t ->
           let flag =
-            Maybe(t.Name <> "Program") Inspections.Instrument Inspections.Ignore
+            Maybe (t.Name <> "Program") Inspections.Instrument Inspections.Ignore
 
           let node =
             Node.Type

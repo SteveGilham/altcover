@@ -82,7 +82,7 @@ module AltCoverXTests =
             <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
             (r.ToString() + " -> " + a1.Name.ToString()))
 
-      RecursiveValidate(r.Elements()) (e.Elements()) (depth + 1) zero)
+      RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 
   let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let xn name = XName.Get(name)
@@ -1060,7 +1060,7 @@ module AltCoverXTests =
         match DocumentType.LoadReport ReportFormat.OpenCover report with
         | XML x -> x
 
-      RecursiveValidate(recordedXml.Elements()) (expectedXml.Elements()) 0 true
+      RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theInputDirectories.Clear()

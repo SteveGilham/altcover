@@ -3661,7 +3661,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let p = c0.GetParameters().Length
 
       let o =
-        c0.Invoke(Maybe(p = 0) null [| sink |])
+        c0.Invoke(Maybe (p = 0) null [| sink |])
 
       let invoke = t.GetMethod("Invoke")
 

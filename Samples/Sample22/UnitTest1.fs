@@ -78,7 +78,12 @@ let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
         test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
       | _ -> test' <@ a1.Value = a2.Value @> (r.ToString() + " -> " + a1.Name.ToString()))
 
-    RecursiveValidateOpenCover(r.Elements()) (e.Elements()) (depth + 1) zero expectSkipped)
+    RecursiveValidateOpenCover
+      (r.Elements())
+      (e.Elements())
+      (depth + 1)
+      zero
+      expectSkipped)
 
 [<Test>]
 let Test1 () = Assert.Pass()

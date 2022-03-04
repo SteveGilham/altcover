@@ -119,8 +119,6 @@ module Transformer =
         |> Int32.TryParse
         |> snd
 
-
-
       { 1..second
       }
       |> Seq.iteri (fun i _ ->
@@ -312,7 +310,7 @@ type CoverageFile =
     | :? IOException as e -> Left { Fault = e; File = file }
 
   static member LoadCoverageFile(file: FileInfo) =
-    CoverageFile.ToCoverageFile(fun x -> Transformer.defaultHelper) file
+    CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 

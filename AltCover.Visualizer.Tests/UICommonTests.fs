@@ -13,7 +13,8 @@ module VisualizerTests =
 
   [<Test>]
   let AugmentNullableDetectNulls () =
-    let input = [ "string"; null; "another string" ]
+    let input =
+      [ "string"; null; "another string" ]
 
     let nulls =
       input |> List.map (fun x -> x.IsNotNull |> not)

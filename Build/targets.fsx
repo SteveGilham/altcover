@@ -351,14 +351,12 @@ let frameworkAltcover = Fake.DotNet.ToolType.CreateFullFramework()
 // breaks fantomas 4.6.5
 let defaultTestOptions fwk common (o: DotNet.TestOptions) =
     { o.WithCommon(
-          (fun o2 ->
-              { o2 with
-                    Verbosity = Some DotNet.Verbosity.Normal })
+          (fun o2 -> { o2 with Verbosity = Some DotNet.Verbosity.Normal })
           >> common
       ) with
-          NoBuild = true
-          Framework = fwk // Some "net6.0"
-          Configuration = DotNet.BuildConfiguration.Debug }
+        NoBuild = true
+        Framework = fwk // Some "net6.0"
+        Configuration = DotNet.BuildConfiguration.Debug }
 
 let defaultDotNetTestCommandLine fwk project =
     AltCoverCommand.buildDotNetTestCommandLine (defaultTestOptions fwk dotnetOptions) project
@@ -1456,7 +1454,7 @@ _Target "UnitTest" (fun _ ->
              + "/tools/coveralls.net.exe")
             |> Path.getFullName
 
-        Actions.Run(coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ]) "Coveralls upload failed"
+        Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ]) "Coveralls upload failed"
 
     printfn "Dump uncovered lines"
 
@@ -1518,7 +1516,7 @@ _Target "JustRecorderUnitTest" (fun _ ->
               "--result=./_Reports/JustRecorderUnitTestReport.xml"
               Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll" ]
 
-        Actions.Run(nunitConsole, ".", recArgs) "Recorder NUnit failed"
+        Actions.Run (nunitConsole, ".", recArgs) "Recorder NUnit failed"
 
         let rec2Args =
             [ "--noheader"
@@ -1526,7 +1524,7 @@ _Target "JustRecorderUnitTest" (fun _ ->
               "--result=./_Reports/JustRecorder2UnitTestReport.xml"
               Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll" ]
 
-        Actions.Run(nunitConsole, ".", rec2Args) "Recorder NUnit failed"
+        Actions.Run (nunitConsole, ".", rec2Args) "Recorder NUnit failed"
 
     with
     | x ->
@@ -1549,7 +1547,7 @@ _Target "JustUnitTest" (fun _ ->
               Path.getFullName
                   "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
 
-        Actions.Run(nunitConsole, ".", baseArgs) "Main NUnit failed"
+        Actions.Run (nunitConsole, ".", baseArgs) "Main NUnit failed"
 
         let recArgs =
             [ "--noheader"
@@ -1557,7 +1555,7 @@ _Target "JustUnitTest" (fun _ ->
               "--result=./_Reports/RecorderUnitTestReport.xml"
               Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll" ]
 
-        Actions.Run(nunitConsole, ".", recArgs) "Recorder NUnit failed"
+        Actions.Run (nunitConsole, ".", recArgs) "Recorder NUnit failed"
 
         let rec2Args =
             [ "--noheader"
@@ -1565,7 +1563,7 @@ _Target "JustUnitTest" (fun _ ->
               "--result=./_Reports/Recorder2UnitTestReport.xml"
               Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll" ]
 
-        Actions.Run(nunitConsole, ".", rec2Args) "Recorder NUnit failed"
+        Actions.Run (nunitConsole, ".", rec2Args) "Recorder NUnit failed"
 
     with
     | x ->
@@ -1954,7 +1952,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
               //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
               Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
 
-        Actions.Run(nunitConsole, ".", baseArgs) "Main NUnit failed"
+        Actions.Run (nunitConsole, ".", baseArgs) "Main NUnit failed"
     with
     | x ->
         printfn "UnitTestWithAltCover caught %A" x
@@ -2003,7 +2001,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
           Path.getFullName
               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll" ]
 
-    Actions.Run(nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
+    Actions.Run (nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
 
     printfn "Instrument the net472 Recorder tests"
 
@@ -2040,7 +2038,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
           Path.getFullName
               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__Recorder472TestWithAltCover/AltCover.Recorder.Tests.dll" ]
 
-    Actions.Run(nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
+    Actions.Run (nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
 
     ReportGenerator.generateReports
         (fun p ->
@@ -3057,7 +3055,7 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
         WorkingDirectory = "." }
     |> AltCoverCommand.run
 
-    Actions.Run(o @@ "/Sample1.exe", o, []) "Instrumented .exe failed"
+    Actions.Run (o @@ "/Sample1.exe", o, []) "Instrumented .exe failed"
     Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet")
 
 _Target "CSharpDotNetWithDotNet" (fun _ ->
@@ -3165,7 +3163,7 @@ _Target "RecordResumeTest" (fun _ ->
 
     let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
 
-    Actions.Run(testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
+    Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
 
     do
         use coverageFile =
@@ -3267,7 +3265,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
 
     let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
 
-    Actions.Run(testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTrackingTest 2"
+    Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTrackingTest 2"
 
     do
         use coverageFile =
@@ -4322,7 +4320,7 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
         WorkingDirectory = unpack }
     |> AltCoverCommand.run
 
-    Actions.Run(o @@ "Sample1.exe", o, []) "Instrumented .exe failed"
+    Actions.Run (o @@ "Sample1.exe", o, []) "Instrumented .exe failed"
     Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet")
 
 _Target "ReleaseDotNetWithDotNet" (fun _ ->
@@ -6152,7 +6150,7 @@ _Target "DotnetTestIntegration" (fun _ ->
         DotNet.test
             (fun to' ->
                 { ((to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue37"))
-                    .WithAltCoverOptions
+                      .WithAltCoverOptions
                        pp4
                        cc0
                        ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
@@ -6667,7 +6665,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
              + Version.Value)
             "Installed"
 
-        Actions.RunDotnet(fun o' -> { dotnetOptions o' with WorkingDirectory = working }) "tool" ("list -g ") "Checked"
+        Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working }) "tool" ("list -g ") "Checked"
 
         set <- true
 
@@ -6691,7 +6689,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
         let before = Actions.ticksNow ()
 
-        Actions.Run("altcover", ".", [ "TargetsPath" ]) "altcover target"
+        Actions.Run ("altcover", ".", [ "TargetsPath" ]) "altcover target"
 
         let prep =
             AltCover.PrepareOptions.Primitive(
