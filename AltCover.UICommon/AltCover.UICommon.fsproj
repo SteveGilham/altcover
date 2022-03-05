@@ -34,7 +34,8 @@
     <EmbeddedResource Include="Font.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Method.png" />
-    <EmbeddedResource Include="MethodDated_16x.png" />
+    <EmbeddedResource Include="MethodStale.png" />
+    <EmbeddedResource Include="MethodMissing.png" />
     <EmbeddedResource Include="MethodWarning.png" />
     <EmbeddedResource Include="MissingFile.png" />
     <EmbeddedResource Include="Module.png" />
@@ -47,11 +48,10 @@
     <EmbeddedResource Include="Refresh.png" />
     <EmbeddedResource Include="Refresh_greyThin.png" />
     <EmbeddedResource Include="Report.png" />
-    <EmbeddedResource Include="ReportDated_16x.png" />
+    <EmbeddedResource Include="ReportStale.png" />
     <EmbeddedResource Include="ReportWarning.png" />
     <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Resource.resx" />
-    <EmbeddedResource Include="SourcelessMethod_16x.png" />
     <EmbeddedResource Include="StatusError.png" />
     <EmbeddedResource Include="StatusError_32.png" />
     <EmbeddedResource Include="StatusInformation.png" />
@@ -59,7 +59,7 @@
     <EmbeddedResource Include="StatusWarning.png" />
     <EmbeddedResource Include="StatusWarning_32.png" />
     <EmbeddedResource Include="TextFile.png" />
-    <EmbeddedResource Include="TextFileDated_16x.png" />
+    <EmbeddedResource Include="TextFileStale.png" />
     <EmbeddedResource Include="TextFileWeb.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VisualStudioToolsAboutBox.png" />

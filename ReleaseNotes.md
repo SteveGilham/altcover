@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 8.2.8xx (Habu series release 12)
 * [BUGFIX] Fix project file path handling in Cake support
+* Use VS2022 icons in the Visualizer
 
 # 8.2.835 (Habu series release 11)
 * [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet

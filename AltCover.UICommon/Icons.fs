@@ -25,7 +25,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Report = makeIcon "Report"
 
   member self.ReportDated =
-    makeIcon "ReportDated_16x"
+    makeIcon "ReportStale"
 
   member self.ReportWarning =
     makeIcon "ReportWarning"
@@ -43,14 +43,14 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Method = makeIcon "Method"
 
   member self.MethodDated =
-    makeIcon "MethodDated_16x"
+    makeIcon "MethodStale"
 
   member self.MethodMissingSource =
     makeIcon "MethodWarning"
 
   member self.MethodNoSource =
-    makeIcon "SourcelessMethod_16x"
-  // actually 16x16
+    makeIcon "MissingMethod"
+
   member self.Branched =
     makeIcon "BranchFork_grn"
 
@@ -72,7 +72,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Source = makeIcon "TextFile"
 
   member self.SourceDated =
-    makeIcon "TextFileDated_16x"
+    makeIcon "TextFileStale"
 
   member self.SourceLink =
     makeIcon "TextFileWeb"
