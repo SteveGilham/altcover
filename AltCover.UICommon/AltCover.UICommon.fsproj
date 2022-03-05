@@ -51,16 +51,16 @@
     <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="SourcelessMethod_16x.png" />
-    <EmbeddedResource Include="StatusCriticalError_16x.png" />
+    <EmbeddedResource Include="StatusError.png" />
     <EmbeddedResource Include="StatusCriticalError_32x.png" />
-    <EmbeddedResource Include="StatusInformation_16x.png" />
+    <EmbeddedResource Include="StatusInformation.png" />
     <EmbeddedResource Include="StatusInformation_32x.png" />
     <EmbeddedResource Include="StatusWarning.png" />
     <EmbeddedResource Include="StatusWarning_32x.png" />
     <EmbeddedResource Include="TextFile.png" />
     <EmbeddedResource Include="TextFileDated_16x.png" />
     <EmbeddedResource Include="TextFileMissing_16x.png" />
-    <EmbeddedResource Include="TextFileWeb_16x.png" />
+    <EmbeddedResource Include="TextFileWeb.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VisualStudioToolsAboutBox.png" />
   </ItemGroup>

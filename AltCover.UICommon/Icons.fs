@@ -75,7 +75,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "TextFileDated_16x"
 
   member self.SourceLink =
-    makeIcon "TextFileWeb_16x"
+    makeIcon "TextFileWeb"
 
   member self.NoSource =
     makeIcon "TextFileMissing_16x"
