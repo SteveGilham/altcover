@@ -30,7 +30,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.ReportWarning =
     makeIcon "ReportWarning_16x"
 
-  member self.Assembly = makeIcon "Assembly_16x"
+  member self.Assembly = makeIcon "Assembly"
   member self.Event = makeIcon "Event_16x"
 
   member self.Namespace =
@@ -52,15 +52,15 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "SourcelessMethod_16x"
   // actually 16x16
   member self.Branched =
-    makeIcon "Branch_12x_16x_grn"
+    makeIcon "BranchFork_grn"
 
   member self.Branch =
-    makeIcon "Branch_12x_16x_ylw"
+    makeIcon "BranchFork_ylw"
 
   member self.RedBranch =
-    makeIcon "Branch_12x_16x_red"
+    makeIcon "BranchFork_red"
 
-  member self.Blank = makeIcon "Blank_12x_16x"
+  member self.Blank = makeIcon "Blank"
 
   member self.TreeExpand =
     makeIcon "ExpandRight_16x"

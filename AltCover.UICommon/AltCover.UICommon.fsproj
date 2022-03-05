@@ -16,11 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assembly_16x.png" />
-    <EmbeddedResource Include="Blank_12x_16x.png" />
-    <EmbeddedResource Include="Branch_12x_16x_red.png" />
-    <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
-    <EmbeddedResource Include="Branch_12x_16x_grn.png" />
+    <EmbeddedResource Include="Assembly.png" />
+    <EmbeddedResource Include="Blank.png" />
+    <EmbeddedResource Include="BranchFork_red.png" />
+    <EmbeddedResource Include="BranchFork_ylw.png" />
+    <EmbeddedResource Include="BranchFork_grn.png" />
     <EmbeddedResource Include="Class_16x.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\Cobertura.xsd" Link="Cobertura.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\CoberturaToNCoverEx.xsl" Link="CoberturaToNCoverEx.xsl" />
