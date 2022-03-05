@@ -90,12 +90,12 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "Refresh_greyThin"
   // Use https://www.iloveimg.com/resize-image/resize-svg and https://svgtopng.com/
   member self.Info =
-    makeIcon "StatusInformation_32x" // 16x Unchanged @ 2019
+    makeIcon "StatusInformation_32"
 
-  member self.Warn = makeIcon "StatusWarning_32x" // 16x Unchanged @ 2019
+  member self.Warn = makeIcon "StatusWarning_32"
 
   member self.Error =
-    makeIcon "StatusCriticalError_32x"
+    makeIcon "StatusError_32"
 
   member self.Open = makeIcon "OpenFile"
   member self.Font = makeIcon "Font"

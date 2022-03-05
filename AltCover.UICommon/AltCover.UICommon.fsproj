@@ -53,11 +53,11 @@
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="SourcelessMethod_16x.png" />
     <EmbeddedResource Include="StatusError.png" />
-    <EmbeddedResource Include="StatusCriticalError_32x.png" />
+    <EmbeddedResource Include="StatusError_32.png" />
     <EmbeddedResource Include="StatusInformation.png" />
-    <EmbeddedResource Include="StatusInformation_32x.png" />
+    <EmbeddedResource Include="StatusInformation_32.png" />
     <EmbeddedResource Include="StatusWarning.png" />
-    <EmbeddedResource Include="StatusWarning_32x.png" />
+    <EmbeddedResource Include="StatusWarning_32.png" />
     <EmbeddedResource Include="TextFile.png" />
     <EmbeddedResource Include="TextFileDated_16x.png" />
     <EmbeddedResource Include="TextFileWeb.png" />

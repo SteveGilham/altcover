@@ -82,7 +82,7 @@
       <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
         <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Image Name="Status" Source="resm:AltCover.UICommon.StatusCriticalError_32x.png?assembly=AltCover.UICommon" Stretch="None" />
+          <Image Name="Status" Source="resm:AltCover.UICommon.StatusError_32.png?assembly=AltCover.UICommon" Stretch="None" />
           <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
                    TextWrapping="NoWrap"
                    AcceptsReturn="true"
