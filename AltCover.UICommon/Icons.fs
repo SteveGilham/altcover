@@ -34,19 +34,19 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Event = makeIcon "Event"
 
   member self.Namespace =
-    makeIcon "Namespace_16x"
+    makeIcon "Namespace"
 
-  member self.Module = makeIcon "Module_16x"
+  member self.Module = makeIcon "Module"
   member self.Effect = makeIcon "Effect"
   member self.Class = makeIcon "Class"
   member self.Property = makeIcon "Property_16x"
-  member self.Method = makeIcon "Method_16x"
+  member self.Method = makeIcon "Method"
 
   member self.MethodDated =
     makeIcon "MethodDated_16x"
 
   member self.MethodMissingSource =
-    makeIcon "MethodWarning_16x"
+    makeIcon "MethodWarning"
 
   member self.MethodNoSource =
     makeIcon "SourcelessMethod_16x"
