@@ -347,6 +347,6 @@ module Extensions =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/lineOnly@172::Invoke(System.Xml.Linq.XElement)",
+                            Target = "AltCover.Transformer/lineOnly@170::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()
