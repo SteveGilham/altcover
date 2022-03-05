@@ -36,6 +36,7 @@
     <EmbeddedResource Include="Method.png" />
     <EmbeddedResource Include="MethodDated_16x.png" />
     <EmbeddedResource Include="MethodWarning.png" />
+    <EmbeddedResource Include="MissingFile.png" />
     <EmbeddedResource Include="Module.png" />
     <EmbeddedResource Include="Namespace.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCoverEmbedded.xsd" Link="NCoverEmbedded.xsd" />
@@ -59,7 +60,6 @@
     <EmbeddedResource Include="StatusWarning_32x.png" />
     <EmbeddedResource Include="TextFile.png" />
     <EmbeddedResource Include="TextFileDated_16x.png" />
-    <EmbeddedResource Include="TextFileMissing_16x.png" />
     <EmbeddedResource Include="TextFileWeb.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VisualStudioToolsAboutBox.png" />

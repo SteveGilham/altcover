@@ -78,7 +78,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "TextFileWeb"
 
   member self.NoSource =
-    makeIcon "TextFileMissing_16x"
+    makeIcon "MissingFile"
 
   member self.MRUInactive =
     makeIcon "ExpandDown_lightGrey"

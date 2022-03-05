@@ -17,7 +17,7 @@
         <MenuItem Name="Open">
           <MenuItem.Header>
             <StackPanel>
-              <Image Source="resm:AltCover.UICommon.OpenFile_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <Image Source="resm:AltCover.UICommon.OpenFile.png?assembly=AltCover.UICommon"  Stretch="None" />
               <AccessText Name="OpenText" Text="" />
             </StackPanel>
           </MenuItem.Header>
@@ -25,7 +25,7 @@
         <MenuItem Name="List" IsEnabled="False">
           <MenuItem.Header>
             <StackPanel>
-              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandDown_lightGray_16x.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
+              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandDown_lightGray.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
             </StackPanel>
           </MenuItem.Header>
           <MenuItem Header="0"></MenuItem>
@@ -42,7 +42,7 @@
         <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
           <MenuItem.Header>
             <StackPanel>
-              <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin.png?assembly=AltCover.UICommon"  Stretch="None" />
               <AccessText Name="RefreshText" Text="" HorizontalAlignment="Center" />
             </StackPanel>
           </MenuItem.Header>
@@ -50,7 +50,7 @@
         <MenuItem Name="Font" MinWidth="80" IsVisible="false">
           <MenuItem.Header>
             <StackPanel>
-              <Image Source="resm:AltCover.UICommon.Font_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <Image Source="resm:AltCover.UICommon.Font.png?assembly=AltCover.UICommon"  Stretch="None" />
               <AccessText Name="FontText" Text="" HorizontalAlignment="Center" />
             </StackPanel>
           </MenuItem.Header>
@@ -63,7 +63,7 @@
         <MenuItem Name="ShowAbout" MinWidth="80">
           <MenuItem.Header>
             <StackPanel>
-              <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <Image Source="resm:AltCover.UICommon.VisualStudioToolsAboutBox.png?assembly=AltCover.UICommon"  Stretch="None" />
               <AccessText Name="ShowAboutText" Text="" HorizontalAlignment="Center" />
             </StackPanel>
           </MenuItem.Header>
@@ -71,7 +71,7 @@
         <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
           <MenuItem.Header>
             <StackPanel>
-              <Image Source="resm:AltCover.UICommon.Exit_16x.png?assembly=AltCover.UICommon" Stretch="None" />
+              <Image Source="resm:AltCover.UICommon.Exit.png?assembly=AltCover.UICommon" Stretch="None" />
               <AccessText Name="ExitText" Text="" HorizontalAlignment="Center" />
             </StackPanel>
           </MenuItem.Header>
