@@ -348,7 +348,6 @@ let dotnetAltcover86 =
 
 let frameworkAltcover = Fake.DotNet.ToolType.CreateFullFramework()
 
-// breaks fantomas 4.6.5
 let defaultTestOptions fwk common (o: DotNet.TestOptions) =
     { o.WithCommon(
           (fun o2 -> { o2 with Verbosity = Some DotNet.Verbosity.Normal })
