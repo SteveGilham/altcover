@@ -31,14 +31,14 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "ReportWarning_16x"
 
   member self.Assembly = makeIcon "Assembly"
-  member self.Event = makeIcon "Event_16x"
+  member self.Event = makeIcon "Event"
 
   member self.Namespace =
     makeIcon "Namespace_16x"
 
   member self.Module = makeIcon "Module_16x"
-  member self.Effect = makeIcon "Effect_16x" // TODO -- why are exceptions detected as such?
-  member self.Class = makeIcon "Class_16x"
+  member self.Effect = makeIcon "Effect"
+  member self.Class = makeIcon "Class"
   member self.Property = makeIcon "Property_16x"
   member self.Method = makeIcon "Method_16x"
 
@@ -63,12 +63,12 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Blank = makeIcon "Blank"
 
   member self.TreeExpand =
-    makeIcon "ExpandRight_16x"
+    makeIcon "ExpandRight"
 
   member self.TreeCollapse =
-    makeIcon "ExpandDown_16x"
+    makeIcon "ExpandDown"
 
-  member self.MRU = makeIcon "ExpandDown_16x"
+  member self.MRU = makeIcon "ExpandDown"
   member self.Source = makeIcon "TextFile_16x"
 
   member self.SourceDated =
@@ -81,7 +81,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "TextFileMissing_16x"
 
   member self.MRUInactive =
-    makeIcon "ExpandDown_lightGray_16x"
+    makeIcon "ExpandDown_lightGrey"
 
   member self.RefreshActive =
     makeIcon "Refresh_16x"
@@ -98,12 +98,12 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "StatusCriticalError_32x"
 
   member self.Open = makeIcon "OpenFile_16x"
-  member self.Font = makeIcon "Font_16x"
+  member self.Font = makeIcon "Font"
 
   member self.ShowAbout =
     makeIcon "VSTAAbout_16x"
 
-  member self.Exit = makeIcon "Exit_16x"
+  member self.Exit = makeIcon "Exit"
   member self.Logo = makeIcon "logo"
 
   member self.VIcon =

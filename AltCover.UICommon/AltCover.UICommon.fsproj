@@ -21,17 +21,17 @@
     <EmbeddedResource Include="BranchFork_red.png" />
     <EmbeddedResource Include="BranchFork_ylw.png" />
     <EmbeddedResource Include="BranchFork_grn.png" />
-    <EmbeddedResource Include="Class_16x.png" />
+    <EmbeddedResource Include="Class.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\Cobertura.xsd" Link="Cobertura.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\CoberturaToNCoverEx.xsl" Link="CoberturaToNCoverEx.xsl" />
     <EmbeddedResource Include="config.xsd" />
-    <EmbeddedResource Include="Effect_16x.png" />
-    <EmbeddedResource Include="Event_16x.png" />
-    <EmbeddedResource Include="Exit_16x.png" />
-    <EmbeddedResource Include="ExpandDown_16x.png" />
-    <EmbeddedResource Include="ExpandDown_lightGray_16x.png" />
-    <EmbeddedResource Include="ExpandRight_16x.png" />
-    <EmbeddedResource Include="Font_16x.png" />
+    <EmbeddedResource Include="Effect.png" />
+    <EmbeddedResource Include="Event.png" />
+    <EmbeddedResource Include="Exit.png" />
+    <EmbeddedResource Include="ExpandDown.png" />
+    <EmbeddedResource Include="ExpandDown_lightGrey.png" />
+    <EmbeddedResource Include="ExpandRight.png" />
+    <EmbeddedResource Include="Font.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Method_16x.png" />
     <EmbeddedResource Include="MethodDated_16x.png" />
