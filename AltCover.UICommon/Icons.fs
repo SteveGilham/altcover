@@ -22,13 +22,13 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   //with
   //| x -> System.InvalidOperationException(name, x) |> raise
 
-  member self.Report = makeIcon "Report_16x"
+  member self.Report = makeIcon "Report"
 
   member self.ReportDated =
     makeIcon "ReportDated_16x"
 
   member self.ReportWarning =
-    makeIcon "ReportWarning_16x"
+    makeIcon "ReportWarning"
 
   member self.Assembly = makeIcon "Assembly"
   member self.Event = makeIcon "Event"
@@ -39,7 +39,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Module = makeIcon "Module"
   member self.Effect = makeIcon "Effect"
   member self.Class = makeIcon "Class"
-  member self.Property = makeIcon "Property_16x"
+  member self.Property = makeIcon "Property"
   member self.Method = makeIcon "Method"
 
   member self.MethodDated =
@@ -69,7 +69,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "ExpandDown"
 
   member self.MRU = makeIcon "ExpandDown"
-  member self.Source = makeIcon "TextFile_16x"
+  member self.Source = makeIcon "TextFile"
 
   member self.SourceDated =
     makeIcon "TextFileDated_16x"
@@ -84,10 +84,10 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "ExpandDown_lightGrey"
 
   member self.RefreshActive =
-    makeIcon "Refresh_16x"
+    makeIcon "Refresh"
 
   member self.Refresh =
-    makeIcon "Refresh_greyThin_16x"
+    makeIcon "Refresh_greyThin"
   // Use https://www.iloveimg.com/resize-image/resize-svg and https://svgtopng.com/
   member self.Info =
     makeIcon "StatusInformation_32x" // 16x Unchanged @ 2019
@@ -97,11 +97,11 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Error =
     makeIcon "StatusCriticalError_32x"
 
-  member self.Open = makeIcon "OpenFile_16x"
+  member self.Open = makeIcon "OpenFile"
   member self.Font = makeIcon "Font"
 
   member self.ShowAbout =
-    makeIcon "VSTAAbout_16x"
+    makeIcon "VisualStudioToolsAboutBox"
 
   member self.Exit = makeIcon "Exit"
   member self.Logo = makeIcon "logo"

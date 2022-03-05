@@ -39,15 +39,15 @@
     <EmbeddedResource Include="Module.png" />
     <EmbeddedResource Include="Namespace.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCoverEmbedded.xsd" Link="NCoverEmbedded.xsd" />
-    <EmbeddedResource Include="OpenFile_16x.png" />
+    <EmbeddedResource Include="OpenFile.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
-    <EmbeddedResource Include="Property_16x.png" />
-    <EmbeddedResource Include="Refresh_16x.png" />
-    <EmbeddedResource Include="Refresh_greyThin_16x.png" />
-    <EmbeddedResource Include="Report_16x.png" />
+    <EmbeddedResource Include="Property.png" />
+    <EmbeddedResource Include="Refresh.png" />
+    <EmbeddedResource Include="Refresh_greyThin.png" />
+    <EmbeddedResource Include="Report.png" />
     <EmbeddedResource Include="ReportDated_16x.png" />
-    <EmbeddedResource Include="ReportWarning_16x.png" />
+    <EmbeddedResource Include="ReportWarning.png" />
     <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="SourcelessMethod_16x.png" />
@@ -57,12 +57,12 @@
     <EmbeddedResource Include="StatusInformation_32x.png" />
     <EmbeddedResource Include="StatusWarning.png" />
     <EmbeddedResource Include="StatusWarning_32x.png" />
-    <EmbeddedResource Include="TextFile_16x.png" />
+    <EmbeddedResource Include="TextFile.png" />
     <EmbeddedResource Include="TextFileDated_16x.png" />
     <EmbeddedResource Include="TextFileMissing_16x.png" />
     <EmbeddedResource Include="TextFileWeb_16x.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
-    <EmbeddedResource Include="VSTAAbout_16x.png" />
+    <EmbeddedResource Include="VisualStudioToolsAboutBox.png" />
   </ItemGroup>
 
   <ItemGroup>
