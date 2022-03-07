@@ -32,7 +32,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.13" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="1.0.0" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
   </ItemGroup>
 

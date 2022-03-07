@@ -29,7 +29,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0">
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.1">
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
   </ItemGroup>

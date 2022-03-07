@@ -65,7 +65,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.13" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="1.0.0" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   
   <ItemGroup>
