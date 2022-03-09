@@ -145,18 +145,14 @@ module internal PostProcess =
     (sp: XmlElementAbstraction seq)
     =
     mp
-    |> Seq.iter
-         (fun m ->
-           m.SetNSAttribute
-             "type"
-             "http://www.w3.org/2001/XMLSchema-instance"
-             "SequencePoint"
-           |> ignore
+    |> Seq.iter (fun m ->
+      m.SetNSAttribute "type" "http://www.w3.org/2001/XMLSchema-instance" "SequencePoint"
+      |> ignore
 
-           sp
-           |> Seq.take 1
-           |> Seq.collect (fun p -> p.Attributes)
-           |> Seq.iter (fun a -> m.SetAttribute a.Name a.Value))
+      sp
+      |> Seq.take 1
+      |> Seq.collect (fun p -> p.Attributes)
+      |> Seq.iter (fun a -> m.SetAttribute a.Name a.Value))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
@@ -183,27 +179,26 @@ module internal PostProcess =
       |> Seq.map (fun m -> m.InnerText)
       |> Seq.head
 
-    let vc = (lookUpVisitsByToken token dict).Total()
+    let vc =
+      (lookUpVisitsByToken token dict).Total()
 
     mp
-    |> Seq.iter
-         (fun m ->
-           m.SetAttribute "vc" (vc.ToString(CultureInfo.InvariantCulture))
-           m.SetAttribute "uspid" token
-           m.SetAttribute "ordinal" "0"
-           m.SetAttribute "offset" "0")
+    |> Seq.iter (fun m ->
+      m.SetAttribute "vc" (vc.ToString(CultureInfo.InvariantCulture))
+      m.SetAttribute "uspid" token
+      m.SetAttribute "ordinal" "0"
+      m.SetAttribute "offset" "0")
 
   let visitCount (nodes: XmlElementAbstraction seq) =
     nodes
-    |> Seq.filter
-         (fun s ->
-           Int64.TryParse(
-             s.GetAttribute("vc"),
-             NumberStyles.Integer,
-             CultureInfo.InvariantCulture
-           )
-           |> snd
-           <> 0L)
+    |> Seq.filter (fun s ->
+      Int64.TryParse(
+        s.GetAttribute("vc"),
+        NumberStyles.Integer,
+        CultureInfo.InvariantCulture
+      )
+      |> snd
+      <> 0L)
     |> Seq.length
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
@@ -220,25 +215,23 @@ module internal PostProcess =
     (attribute: string)
     =
     document.RootElement.GetElementsByTagName "TrackedMethod"
-    |> Seq.iter
-         (fun xel ->
-           let (ok, index) =
-             xel.GetAttribute("uid") |> Int32.TryParse
+    |> Seq.iter (fun xel ->
+      let (ok, index) =
+        xel.GetAttribute("uid") |> Int32.TryParse
 
-           if ok && tracks.ContainsKey index then
-             let times =
-               tracks.[index].Tracks
-               |> Seq.map
-                    (fun t ->
-                      match t with
-                      | Time tx -> sprintf "%d" tx
-                      | _ -> String.Empty) // never happens
-               |> Seq.filter (fun s -> s.Length > 0)
+      if ok && tracks.ContainsKey index then
+        let times =
+          tracks.[index].Tracks
+          |> Seq.map (fun t ->
+            match t with
+            | Time tx -> sprintf "%d" tx
+            | _ -> String.Empty) // never happens
+          |> Seq.filter (fun s -> s.Length > 0)
 
-             let attrVal = String.Join(";", times)
+        let attrVal = String.Join(";", times)
 
-             if attrVal.Length > 0 then
-               xel.SetAttribute attribute attrVal)
+        if attrVal.Length > 0 then
+          xel.SetAttribute attribute attrVal)
 
   let internal action
     orderAttr
@@ -284,43 +277,43 @@ module internal PostProcess =
         =
         x.GetElementsByTagName("Summary")
         |> Seq.tryHead
-        |> Option.iter
-             (fun s ->
-               let minc =
-                 (if minCrap = Double.MaxValue then
-                    0.0
-                  else
-                    minCrap)
-                 |> scoreToString
+        |> Option.iter (fun s ->
+          let minc =
+            (if minCrap = Double.MaxValue then
+               0.0
+             else
+               minCrap)
+            |> scoreToString
 
-               let maxc =
-                 (if maxCrap = Double.MinValue then
-                    0.0
-                  else
-                    maxCrap)
-                 |> scoreToString
+          let maxc =
+            (if maxCrap = Double.MinValue then
+               0.0
+             else
+               maxCrap)
+            |> scoreToString
 
-               s.SetAttribute "visitedSequencePoints" (sprintf "%d" pointVisits)
-               s.SetAttribute "visitedBranchPoints" (sprintf "%d" branchVisits)
-               s.SetAttribute "visitedMethods" (sprintf "%d" methodVisits)
+          s.SetAttribute "visitedSequencePoints" (sprintf "%d" pointVisits)
+          s.SetAttribute "visitedBranchPoints" (sprintf "%d" branchVisits)
+          s.SetAttribute "visitedMethods" (sprintf "%d" methodVisits)
 
-               classVisits
-               |> Option.iter (
-                 (sprintf "%d")
-                 >> (s.SetAttribute "visitedClasses")
-               )
+          classVisits
+          |> Option.iter (
+            (sprintf "%d")
+            >> (s.SetAttribute "visitedClasses")
+          )
 
-               s.SetAttribute "branchCoverage" brcover
-               s.SetAttribute "sequenceCoverage" ptcover
-               s.SetAttribute "minCrapScore" minc
-               s.SetAttribute "maxCrapScore" maxc)
+          s.SetAttribute "branchCoverage" brcover
+          s.SetAttribute "sequenceCoverage" ptcover
+          s.SetAttribute "minCrapScore" minc
+          s.SetAttribute "maxCrapScore" maxc)
 
       let computeBranchExitCount
         (anchor: XmlElementAbstraction)
         (sp: XmlElementAbstraction list)
         bp
         =
-        let tail = anchor.CreateElement("SequencePoint")
+        let tail =
+          anchor.CreateElement("SequencePoint")
 
         tail.SetAttribute
           orderAttr
@@ -358,7 +351,8 @@ module internal PostProcess =
           if forceVisited then
             100.0
           else
-            let cover = stringToScore method "sequenceCoverage"
+            let cover =
+              stringToScore method "sequenceCoverage"
 
             if cover > 0.0 then
               cover
@@ -395,7 +389,8 @@ module internal PostProcess =
         let rawCount = bp |> List.length
 
         // inconsistent name to shut Gendarme up
-        let numBranches = rawCount + Math.Sign(count + rawCount)
+        let numBranches =
+          rawCount + Math.Sign(count + rawCount)
 
         if count > 0 then
           copyFillMethodPoint mp sp
@@ -418,7 +413,10 @@ module internal PostProcess =
 
         // zero visits still need to fill in CRAP score
         let cover = percentCover pointVisits count
-        let bcover = percentCover branchVisits numBranches
+
+        let bcover =
+          percentCover branchVisits numBranches
+
         method.SetAttribute "sequenceCoverage" cover
         method.SetAttribute "branchCoverage" bcover
         let raw = crapScore (mVisits > count) method
@@ -513,6 +511,6 @@ module internal PostProcess =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.PostProcess/Pipe #2 stage #1 at line 336@337-1::Invoke(AltCover.XmlElementAbstraction)",
+                            Target = "AltCover.PostProcess/Pipe #2 stage #1 at line 329@330-1::Invoke(AltCover.XmlElementAbstraction)",
                             Justification = "Compiler generated")>]
 ()

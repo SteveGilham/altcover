@@ -1,4 +1,4 @@
-namespace Sample6
+﻿namespace Sample6
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 open System
 open System.IO
@@ -13,7 +13,9 @@ module Module =
         match lii with
         | [] -> acc
         | x :: xs -> FII xs (aux acc)
+
       FII li 0
+
     l |> List.map (fun i -> (string i).Length)
 
   let F2 l =
@@ -26,6 +28,7 @@ module Module =
         let html = reader.ReadToEnd()
         printfn "finished downloading %s" url
       }
+
     l
     |> List.map fetchUrlAsync // make a list of async tasks
     |> Async.Parallel // set up the tasks to run in parallel

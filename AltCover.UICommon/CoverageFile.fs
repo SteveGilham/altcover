@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -72,67 +72,66 @@ module Transformer =
       |> Seq.toList
 
     document.Descendants(XName.Get "class")
-    |> Seq.iter
-         (fun x ->
-           let name = x.Attribute(XName.Get "filename")
-           let value = name.Value
+    |> Seq.iter (fun x ->
+      let name = x.Attribute(XName.Get "filename")
+      let value = name.Value
 
-           let fixup =
-             sources
-             |> Seq.map
-                  (fun s ->
-                    let p1 = Path.Combine(s, value)
-                    Path.GetFullPath p1)
-             |> Seq.tryFind File.Exists
+      let fixup =
+        sources
+        |> Seq.map (fun s ->
+          let p1 = Path.Combine(s, value)
+          Path.GetFullPath p1)
+        |> Seq.tryFind File.Exists
 
-           fixup |> Option.iter (fun f -> name.Value <- f))
+      fixup |> Option.iter (fun f -> name.Value <- f))
 
     // interpret branches
     document.Descendants(XName.Get "line")
-    |> Seq.filter
-         (fun x ->
-           x
-             .Attribute(
-               XName.Get "condition-coverage"
-             )
-             .IsNotNull)
-    |> Seq.iter
-         (fun x ->
-           let line = x.Attribute(XName.Get "number").Value
+    |> Seq.filter (fun x ->
+      x
+        .Attribute(
+          XName.Get "condition-coverage"
+        )
+        .IsNotNull)
+    |> Seq.iter (fun x ->
+      let line =
+        x.Attribute(XName.Get "number").Value
 
-           let coverage =
-             x.Attribute(XName.Get "condition-coverage").Value
+      let coverage =
+        x.Attribute(XName.Get "condition-coverage").Value
 
-           let start = Math.Max(0, coverage.IndexOf('(')) + 1
+      let start =
+        Math.Max(0, coverage.IndexOf('(')) + 1
 
-           let mid =
-             Math.Max(0, coverage.IndexOf('/', start)) + 1
+      let mid =
+        Math.Max(0, coverage.IndexOf('/', start)) + 1
 
-           let finish = Math.Max(0, coverage.IndexOf(')', mid))
+      let finish =
+        Math.Max(0, coverage.IndexOf(')', mid))
 
-           let first =
-             coverage.Substring(start, (mid - start) - 1)
-             |> Int32.TryParse
-             |> snd
+      let first =
+        coverage.Substring(start, (mid - start) - 1)
+        |> Int32.TryParse
+        |> snd
 
-           let second =
-             coverage.Substring(mid, finish - mid)
-             |> Int32.TryParse
-             |> snd
+      let second =
+        coverage.Substring(mid, finish - mid)
+        |> Int32.TryParse
+        |> snd
 
-           { 1 .. second }
-           |> Seq.iteri
-                (fun i _ ->
-                  let vc = if i < first then "1" else "0"
+      { 1..second
+      }
+      |> Seq.iteri (fun i _ ->
+        let vc = if i < first then "1" else "0"
 
-                  let branch =
-                    XElement(
-                      XName.Get "branch",
-                      XAttribute(XName.Get "number", line),
-                      XAttribute(XName.Get "visitcount", vc)
-                    )
+        let branch =
+          XElement(
+            XName.Get "branch",
+            XAttribute(XName.Get "number", line),
+            XAttribute(XName.Get "visitcount", vc)
+          )
 
-                  x.AddAfterSelf(branch)))
+        x.AddAfterSelf(branch)))
 
     let report =
       transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl"
@@ -168,17 +167,15 @@ module Transformer =
     // Fix for column-defective OpenCover
     let lineOnly =
       fixedup.Descendants(XName.Get "seqpnt")
-      |> Seq.forall
-           (fun s ->
-             let columns =
-               (s.Attribute(XName.Get "column").Value,
-                s.Attribute(XName.Get "endcolumn").Value)
+      |> Seq.forall (fun s ->
+        let columns =
+          (s.Attribute(XName.Get "column").Value, s.Attribute(XName.Get "endcolumn").Value)
 
-             s.Attribute(XName.Get "line").Value
-             == s.Attribute(XName.Get "endline").Value
-             && (columns = ("1", "2")
-                 || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
-                 columns = ("0", "0"))) // For OpenCover on C++/CLI
+        s.Attribute(XName.Get "line").Value
+        == s.Attribute(XName.Get "endline").Value
+        && (columns = ("1", "2")
+            || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+            columns = ("0", "0"))) // For OpenCover on C++/CLI
 
     if lineOnly then
       fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
@@ -313,7 +310,7 @@ type CoverageFile =
     | :? IOException as e -> Left { Fault = e; File = file }
 
   static member LoadCoverageFile(file: FileInfo) =
-    CoverageFile.ToCoverageFile(fun x -> Transformer.defaultHelper) file
+    CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 
@@ -345,11 +342,11 @@ module Extensions =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/transformFromCobertura@100-2::Invoke(System.Xml.Linq.XElement)",
+                            Target = "AltCover.Transformer/transformFromCobertura@96-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/lineOnly@172::Invoke(System.Xml.Linq.XElement)",
+                            Target = "AltCover.Transformer/lineOnly@170::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()

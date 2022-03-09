@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Xml.Linq
@@ -71,22 +71,20 @@ module internal Report =
       // embed support <altcover.file document="{@fullPath}" embed="{@altcover.embed}" />
       moduleDef.Module
       |> ProgramDatabase.getModuleDocuments
-      |> Seq.iter
-           (fun d ->
-             let key = d.Url |> Visitor.sourceLinkMapping
+      |> Seq.iter (fun d ->
+        let key = d.Url |> Visitor.sourceLinkMapping
 
-             d
-             |> Metadata.getSource
-             |> Option.iter
-                  (fun s ->
-                    let x =
-                      XElement(
-                        "altcover.file".X,
-                        XAttribute("document".X, key),
-                        XAttribute("embed".X, s)
-                      )
+        d
+        |> Metadata.getSource
+        |> Option.iter (fun s ->
+          let x =
+            XElement(
+              "altcover.file".X,
+              XAttribute("document".X, key),
+              XAttribute("embed".X, s)
+            )
 
-                    element.Add x))
+          element.Add x))
 
       element :: s
 
@@ -144,9 +142,11 @@ module internal Report =
       s
 
     let reportVisitor (s: list<XElement>) (node: Node) =
-      let head = if List.isEmpty s then null else s.Head
+      let head =
+        if List.isEmpty s then null else s.Head
 
-      let tail = if List.isEmpty s then [] else s.Tail
+      let tail =
+        if List.isEmpty s then [] else s.Tail
 
       match node with
       | Start _ -> startVisit s

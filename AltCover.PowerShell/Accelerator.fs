@@ -72,12 +72,11 @@ type AddAcceleratorCommand() =
     if self.Mapping |> isNull |> not then
       self.Mapping
       |> Seq.cast<DictionaryEntry>
-      |> Seq.map
-           (fun x ->
-             (x.Key.ToString(),
-              match x.Value with
-              | :? Type as t -> t
-              | other -> other.GetType()))
+      |> Seq.map (fun x ->
+        (x.Key.ToString(),
+         match x.Value with
+         | :? Type as t -> t
+         | other -> other.GetType()))
       |> Seq.distinctBy snd
       |> Seq.iter (fun (k, v) -> self.TypeMap.Add(k, v))
 
@@ -95,7 +94,8 @@ type AddAcceleratorCommand() =
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")
 
-    let adder = acceleratorsType.GetMethod("Add")
+    let adder =
+      acceleratorsType.GetMethod("Add")
 
     if self.Accelerator.IsPresent then
       self.TypeMap.Add("accelerators", acceleratorsType)
@@ -114,15 +114,14 @@ type AddAcceleratorCommand() =
       String.Join(
         "; ",
         finalmap
-        |> Seq.filter
-             (fun kv ->
-               (((self.Accelerator.IsPresent
-                  && kv.Key = "accelerators"
-                  && kv.Value = acceleratorsType)
-                 || (self.XDocument.IsPresent
-                     && kv.Key = "xdoc"
-                     && kv.Value = typeof<System.Xml.Linq.XDocument>))
-                |> not))
+        |> Seq.filter (fun kv ->
+          (((self.Accelerator.IsPresent
+             && kv.Key = "accelerators"
+             && kv.Value = acceleratorsType)
+            || (self.XDocument.IsPresent
+                && kv.Key = "xdoc"
+                && kv.Value = typeof<System.Xml.Linq.XDocument>))
+           |> not))
         |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key kv.Value.FullName)
       )
 
@@ -145,10 +144,9 @@ type AddAcceleratorCommand() =
         )
     then
       finalmap
-      |> Seq.iter
-           (fun kv ->
-             adder.Invoke(null, [| kv.Key :> obj; kv.Value :> obj |])
-             |> ignore)
+      |> Seq.iter (fun kv ->
+        adder.Invoke(null, [| kv.Key :> obj; kv.Value :> obj |])
+        |> ignore)
 
 /// <summary>
 /// <para type="synopsis">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
@@ -164,6 +162,7 @@ type AddAcceleratorCommand() =
                   Justification = "No valid input to accept")>]
 type GetAcceleratorCommand() =
   inherit PSCmdlet()
+
   /// <summary>
   /// <para type="description">List current accelerator to type mappings</para>
   /// </summary>
@@ -178,7 +177,8 @@ type GetAcceleratorCommand() =
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")
 
-    let finder = acceleratorsType.GetProperty("Get")
+    let finder =
+      acceleratorsType.GetProperty("Get")
 
     let result = Hashtable()
 

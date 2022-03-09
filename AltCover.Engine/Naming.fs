@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 
@@ -78,7 +78,8 @@ module internal Naming =
       else
         String.Empty
 
-    let return' = I.fullTypeRefName def.ReturnType
+    let return' =
+      I.fullTypeRefName def.ReturnType
 
     String.Join(
       String.Empty,

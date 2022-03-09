@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open System
 open System.IO
@@ -16,7 +16,7 @@ module Rocks =
            |> Seq.toList))
 
 module ValidateGendarmeEmulation =
-  let importantItems (n, e, r) = Maybe(r <> e) (Some(n, e, r)) None
+  let importantItems (n, e, r) = Maybe (r <> e) (Some(n, e, r)) None
 
   let stringify x =
     match x with
@@ -138,11 +138,10 @@ module ValidateGendarmeEmulation =
 
     let output =
       ([ r; l ]
-       |> List.map
-            (fun e ->
-              match e with
-              | Right b -> b.ToString().ToUpperInvariant()
-              | Left i -> String(i.ToString() |> Seq.rev |> Seq.toArray)))
+       |> List.map (fun e ->
+         match e with
+         | Right b -> b.ToString().ToUpperInvariant()
+         | Left i -> String(i.ToString() |> Seq.rev |> Seq.toArray)))
         .Split
 
     test <@ output = ("TRUE", [ "32" ]) @>

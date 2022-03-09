@@ -2,9 +2,14 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.836 (Habu series release 12)
+* [BUGFIX] Fix project file path handling in Cake support
+* [BUGFIX] Improve heuristic to recognise (and ignore)  state-machine injected branches in `async` methods; this may cause subtle changes, up or down, in branch detection for other generated code ("hidden" sequence points) contexts with branches
+* Use VS2022 icons in the Visualizer
+
 # 8.2.835 (Habu series release 11)
 * [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet
-* [BUGFIX] Fix blocking ussue in Cake support; and add operational test
+* [BUGFIX] Fix blocking issue in Cake support; and add operational test
 * Move Fake.Build support to 5.21 as minimum; updating other supporting libraries
 
 # 8.2.833 (Habu series release 10)

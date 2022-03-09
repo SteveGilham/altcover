@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open System
 open System.Reflection
@@ -6,19 +6,20 @@ open Xunit
 
 open Swensen.Unquote
 
-[<assembly:AssemblyVersionAttribute("1.0.0.0")>]
-[<assembly:AssemblyFileVersionAttribute("1.0.0.0")>]
+[<assembly: AssemblyVersionAttribute("1.0.0.0")>]
+[<assembly: AssemblyFileVersionAttribute("1.0.0.0")>]
 do ()
 
 module M =
   type Thing =
-    { Thing : string }
-    member this.Bytes() = System.Text.Encoding.UTF8.GetBytes(this.Thing)
+    { Thing: string }
+    member this.Bytes() =
+      System.Text.Encoding.UTF8.GetBytes(this.Thing)
 
   let makeThing s = { Thing = s }
 
   [<Fact>]
-  let testMakeThing() =
+  let testMakeThing () =
     test <@ (makeThing "s").Thing = "s" @>
     test <@ (makeThing "aeiou").Bytes().Length = 5 @>
 
@@ -37,7 +38,8 @@ module DU =
         | Bop t -> Bar(string t)
         // New cases go in here
         | _ -> this
-      with _ -> Bar "none"
+      with
+      | _ -> Bar "none"
 
     member this.MyBar = this.AsBar
 
@@ -48,35 +50,43 @@ module DU =
   let returnBar v = Bar v
 
   [<Fact; System.CodeDom.Compiler.GeneratedCodeAttribute("Not really", "0.0")>]
-  let testMakeUnion() =
+  let testMakeUnion () =
     test <@ returnFoo 10 = Foo 10 @>
     test <@ returnBar "s" = Bar "s" @>
     test <@ (Foo 10).AsBar() = Bar "10" @>
 
   let LineSpanning1 a =
-    if a > 0
-    then "positive"
-    else "non-positive"
+    if a > 0 then
+      "positive"
+    else
+      "non-positive"
 
   let LineSpanning2 a =
     a
-    |> Seq.mapi (fun i j -> if j > 0
-                            then i
-                            else 0)
+    |> Seq.mapi (fun i j -> if j > 0 then i else 0)
     |> Seq.filter (fun i -> i % 2 = 0)
     |> Seq.sum
 
-  let LineSpanning3 a =
-    "intro " +
-    a.ToString() +
-    " outro"
+  let LineSpanning3 a = "intro " + a.ToString() + " outro"
 
-  let Multiples (a:float) (b:float) (c:float) =
+  let Multiples (a: float) (b: float) (c: float) =
     let compute a' b' discr' =
-      ((discr' - b')/(2.0 * a'), (-1.0 * (discr' + b'))/(2.0 * a'))
-    let bs = printfn "%A" b;b * b
-    let spread = printfn "%A %A" a c; 4.0 * a * c
-    let discr = if bs < spread then failwith "no real roots" else Math.Sqrt (bs - spread)
+      ((discr' - b') / (2.0 * a'), (-1.0 * (discr' + b')) / (2.0 * a'))
+
+    let bs =
+      printfn "%A" b
+      b * b
+
+    let spread =
+      printfn "%A %A" a c
+      4.0 * a * c
+
+    let discr =
+      if bs < spread then
+        failwith "no real roots"
+      else
+        Math.Sqrt(bs - spread)
+
     compute a b discr
 
 #if !NET472

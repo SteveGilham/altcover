@@ -130,6 +130,9 @@ namespace AltCover.Cake
     [SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")]
+    [SuppressMessage("Microsoft.Design", 
+      "CA1011:ConsiderPassingBaseTypesAsParameters",
+      Justification = "The Cake.Core.IO.FilePath won't be any other Cake.Core.IO.Path subclass")]
     public static void DotNetCoreTest(
                 this ICakeContext context,
                 FilePath project,
@@ -141,7 +144,7 @@ namespace AltCover.Cake
       if (coverageSettings == null) throw new ArgumentNullException(nameof(coverageSettings));
 
       testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
-      context.DotNetCoreTest(project.GetFilename().FullPath, testSettings);
+      context.DotNetCoreTest(project.FullPath, testSettings);
     }
   }
 }

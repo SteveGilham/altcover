@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
@@ -38,8 +38,8 @@ module AltCoverUsage =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -58,8 +58,8 @@ module AltCoverRunnerTests =
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
-    Assert.Throws<NotSupportedException>
-      (fun () -> ignore (ReportFormat.NativeJson |> Counter.I.xmlByFormat))
+    Assert.Throws<NotSupportedException> (fun () ->
+      ignore (ReportFormat.NativeJson |> Counter.I.xmlByFormat))
     |> ignore
 
   [<Test>]
@@ -90,7 +90,10 @@ module AltCoverRunnerTests =
   let JunkUspidGivesNegativeIndex () =
     runnerInit ()
     let key = " "
-    let index = Counter.I.findIndexFromUspid 0 key
+
+    let index =
+      Counter.I.findIndexFromUspid 0 key
+
     test <@ index < 0 @>
 
   [<Test>]
@@ -122,7 +125,10 @@ module AltCoverRunnerTests =
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
-    let v2 = Counter.addVisit visits key 23 payload
+
+    let v2 =
+      Counter.addVisit visits key 23 payload
+
     Assert.That(v2, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -143,7 +149,10 @@ module AltCoverRunnerTests =
     let key = " "
     let v3 = Counter.addVisit visits key 23 Null
     Assert.That(v3, Is.EqualTo 1)
-    let v4 = Counter.addVisit visits "key" 42 Null
+
+    let v4 =
+      Counter.addVisit visits "key" 42 Null
+
     Assert.That(visits.Count, Is.EqualTo 2)
     Assert.That(v4, Is.EqualTo 1)
 
@@ -195,7 +204,10 @@ module AltCoverRunnerTests =
     let payload = Time DateTime.UtcNow.Ticks
     let v9 = Counter.addVisit visits key 23 Null
     Assert.That(v9, Is.EqualTo 1)
-    let v10 = Counter.addVisit visits key 23 payload
+
+    let v10 =
+      Counter.addVisit visits key 23 payload
+
     Assert.That(v10, Is.EqualTo 1)
     let x = visits.[key].[23]
     Assert.That(x.Count, Is.EqualTo 1)
@@ -211,11 +223,12 @@ module AltCoverRunnerTests =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find
-         (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+    |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
   let internal init n l =
-    let tmp = { PointVisit.Create() with Count = n }
+    let tmp =
+      { PointVisit.Create() with Count = n }
+
     tmp.Tracks.AddRange l
     tmp
 
@@ -240,10 +253,10 @@ module AltCoverRunnerTests =
     worker.Position <- 0L
     let payload = Dictionary<int, PointVisit>()
 
-    [ 0 .. 9 ]
+    [ 0..9 ]
     |> Seq.iter (fun i -> payload.[10 - i] <- init (int64 (i + 1)) [])
 
-    [ 11 .. 12 ]
+    [ 11..12 ]
     |> Seq.iter (fun i -> payload.[i ||| Counter.branchFlag] <- init (int64 (i - 10)) [])
 
     let item =
@@ -334,7 +347,7 @@ module AltCoverRunnerTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
+      [ 0..9 ]
       |> Seq.iter (fun i -> payload.[i] <- init (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
@@ -436,7 +449,7 @@ module AltCoverRunnerTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
+      [ 0..9 ]
       |> Seq.iter (fun i -> payload.[i] <- init (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
@@ -537,8 +550,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -585,8 +598,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -662,7 +675,8 @@ module AltCoverRunnerTests =
           Options = empty
           Options2 = options }
 
-      let result = stderr.ToString().Replace("\r\n", "\n")
+      let result =
+        stderr.ToString().Replace("\r\n", "\n")
 
       let expected =
         "Error - usage is:\n"
@@ -771,10 +785,9 @@ module AltCoverRunnerTests =
 
     let optionNames =
       options
-      |> Seq.map
-           (fun o ->
-             (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
-               .ToLowerInvariant())
+      |> Seq.map (fun o ->
+        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+          .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -787,10 +800,9 @@ module AltCoverRunnerTests =
 
     let optionNames =
       options
-      |> Seq.map
-           (fun o ->
-             (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
-               .ToLowerInvariant())
+      |> Seq.map (fun o ->
+        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+          .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -844,7 +856,8 @@ module AltCoverRunnerTests =
       Primitive.CollectOptions.Create()
       |> AltCover.CollectOptions.Primitive
 
-    let commandFragments = Args.buildCollect args
+    let commandFragments =
+      Args.buildCollect args
 
     // adds Runner and the trailing command line arguments
     Assert.That(
@@ -985,17 +998,15 @@ module AltCoverRunnerTests =
       Assert.That(x, Is.EqualTo "HelpText")
       Assert.That(y, Is.SameAs options)
     // a "not sticky" test
-    lock
-      Runner.executable
-      (fun () ->
-        Runner.executable.Value <- None
+    lock Runner.executable (fun () ->
+      Runner.executable.Value <- None
 
-        match CommandLine.parseCommandLine [| "/x"; "x" |] options
-              |> CommandLine.processHelpOption
-          with
-        | Right (x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty))
+      match CommandLine.parseCommandLine [| "/x"; "x" |] options
+            |> CommandLine.processHelpOption
+        with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty))
 
   [<Test>]
   let ParsingErrorHelpGivesHelp () =
@@ -1019,99 +1030,91 @@ module AltCoverRunnerTests =
       Assert.That(x, Is.EqualTo "UsageError")
       Assert.That(y, Is.SameAs options)
     // a "not sticky" test
-    lock
-      Runner.executable
-      (fun () ->
-        Runner.executable.Value <- None
+    lock Runner.executable (fun () ->
+      Runner.executable.Value <- None
 
-        match CommandLine.parseCommandLine [| "/x"; "x" |] options
-              |> CommandLine.processHelpOption
-          with
-        | Right (x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty))
+      match CommandLine.parseCommandLine [| "/x"; "x" |] options
+            |> CommandLine.processHelpOption
+        with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty))
 
   [<Test>]
   let ParsingExeGivesExe () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- None
-          let options = Runner.declareOptions ()
-          let unique = "some exe"
-          let input = [| "-x"; unique |]
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- None
+        let options = Runner.declareOptions ()
+        let unique = "some exe"
+        let input = [| "-x"; unique |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Right (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.Empty)
+        match parse with
+        | Right (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
 
-          match Runner.executable.Value with
-          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
-        finally
-          Runner.executable.Value <- None)
+        match Runner.executable.Value with
+        | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+      finally
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ParsingMultipleExeGivesFailure () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- None
-          let options = Runner.declareOptions ()
-          let unique = Guid.NewGuid().ToString()
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- None
+        let options = Runner.declareOptions ()
+        let unique = Guid.NewGuid().ToString()
 
-          let input =
-            [| "-x"
-               unique
-               "/x"
-               unique.Replace("-", "+") |]
+        let input =
+          [| "-x"
+             unique
+             "/x"
+             unique.Replace("-", "+") |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
 
-            Assert.That(
-              CommandLine.error |> Seq.head,
-              Is.EqualTo "--executable : specify this only once"
-            )
-        finally
-          Runner.executable.Value <- None)
+          Assert.That(
+            CommandLine.error |> Seq.head,
+            Is.EqualTo "--executable : specify this only once"
+          )
+      finally
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ParsingNoExeGivesFailure () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- None
-          let options = Runner.declareOptions ()
-          let blank = " "
-          let input = [| "-x"; blank |]
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- None
+        let options = Runner.declareOptions ()
+        let blank = " "
+        let input = [| "-x"; blank |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.executable.Value <- None)
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ParsingWorkerGivesWorker () =
@@ -1350,94 +1353,88 @@ module AltCoverRunnerTests =
   let ParsingLcovGivesLcov () =
     Runner.init ()
 
-    lock
-      LCov.path
-      (fun () ->
-        try
-          LCov.path.Value <- None
-          Runner.I.initSummary ()
+    lock LCov.path (fun () ->
+      try
+        LCov.path.Value <- None
+        Runner.I.initSummary ()
 
-          let options = Runner.declareOptions ()
-          let unique = "some exe"
-          let input = [| "-l"; unique |]
+        let options = Runner.declareOptions ()
+        let unique = "some exe"
+        let input = [| "-l"; unique |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Right (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.Empty)
+        match parse with
+        | Right (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
 
-          match LCov.path.Value with
-          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+        match LCov.path.Value with
+        | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
 
-          Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
-        finally
-          Runner.I.initSummary ()
-          LCov.path.Value <- None)
+        Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
+      finally
+        Runner.I.initSummary ()
+        LCov.path.Value <- None)
 
   [<Test>]
   let ParsingMultipleLcovGivesFailure () =
     Runner.init ()
 
-    lock
-      LCov.path
-      (fun () ->
-        try
-          LCov.path.Value <- None
-          Runner.I.initSummary ()
+    lock LCov.path (fun () ->
+      try
+        LCov.path.Value <- None
+        Runner.I.initSummary ()
 
-          let options = Runner.declareOptions ()
-          let unique = Guid.NewGuid().ToString()
+        let options = Runner.declareOptions ()
+        let unique = Guid.NewGuid().ToString()
 
-          let input =
-            [| "-l"
-               unique
-               "/l"
-               unique.Replace("-", "+") |]
+        let input =
+          [| "-l"
+             unique
+             "/l"
+             unique.Replace("-", "+") |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
 
-            Assert.That(
-              CommandLine.error |> Seq.head,
-              Is.EqualTo "--lcovReport : specify this only once"
-            )
-        finally
-          Runner.I.initSummary ()
-          LCov.path.Value <- None)
+          Assert.That(
+            CommandLine.error |> Seq.head,
+            Is.EqualTo "--lcovReport : specify this only once"
+          )
+      finally
+        Runner.I.initSummary ()
+        LCov.path.Value <- None)
 
   [<Test>]
   let ParsingNoLcovGivesFailure () =
     Runner.init ()
 
-    lock
-      LCov.path
-      (fun () ->
-        try
-          LCov.path.Value <- None
-          Runner.I.initSummary ()
+    lock LCov.path (fun () ->
+      try
+        LCov.path.Value <- None
+        Runner.I.initSummary ()
 
-          let options = Runner.declareOptions ()
-          let blank = " "
-          let input = [| "-l"; blank |]
+        let options = Runner.declareOptions ()
+        let blank = " "
+        let input = [| "-l"; blank |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.I.initSummary ()
-          LCov.path.Value <- None)
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.I.initSummary ()
+        LCov.path.Value <- None)
 
   [<Test>]
   let ParsingThresholdGivesThreshold () =
@@ -1478,7 +1475,9 @@ module AltCoverRunnerTests =
     try
       Runner.threshold <- None
       let options = Runner.declareOptions ()
-      let input = [| "-t"; "M57C42S16B7AM14AC101" |]
+
+      let input =
+        [| "-t"; "M57C42S16B7AM14AC101" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -1510,7 +1509,9 @@ module AltCoverRunnerTests =
     try
       Runner.threshold <- None
       let options = Runner.declareOptions ()
-      let input = [| "-t"; "M100C255S100B100AM100AC255" |]
+
+      let input =
+        [| "-t"; "M100C255S100B100AM100AC255" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -1766,94 +1767,88 @@ module AltCoverRunnerTests =
   let ParsingCoberturaGivesCobertura () =
     Runner.init ()
 
-    lock
-      Cobertura.path
-      (fun () ->
-        try
-          Cobertura.path.Value <- None
-          Runner.I.initSummary ()
+    lock Cobertura.path (fun () ->
+      try
+        Cobertura.path.Value <- None
+        Runner.I.initSummary ()
 
-          let options = Runner.declareOptions ()
-          let unique = "some exe"
-          let input = [| "-c"; unique |]
+        let options = Runner.declareOptions ()
+        let unique = "some exe"
+        let input = [| "-c"; unique |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Right (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.Empty)
+        match parse with
+        | Right (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
 
-          match Cobertura.path.Value with
-          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+        match Cobertura.path.Value with
+        | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
 
-          Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
-        finally
-          Runner.I.initSummary ()
-          Cobertura.path.Value <- None)
+        Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
+      finally
+        Runner.I.initSummary ()
+        Cobertura.path.Value <- None)
 
   [<Test>]
   let ParsingMultipleCoberturaGivesFailure () =
     Runner.init ()
 
-    lock
-      Cobertura.path
-      (fun () ->
-        try
-          Cobertura.path.Value <- None
-          Runner.I.initSummary ()
+    lock Cobertura.path (fun () ->
+      try
+        Cobertura.path.Value <- None
+        Runner.I.initSummary ()
 
-          let options = Runner.declareOptions ()
-          let unique = Guid.NewGuid().ToString()
+        let options = Runner.declareOptions ()
+        let unique = Guid.NewGuid().ToString()
 
-          let input =
-            [| "-c"
-               unique
-               "/c"
-               unique.Replace("-", "+") |]
+        let input =
+          [| "-c"
+             unique
+             "/c"
+             unique.Replace("-", "+") |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
 
-            Assert.That(
-              CommandLine.error |> Seq.head,
-              Is.EqualTo "--cobertura : specify this only once"
-            )
-        finally
-          Runner.I.initSummary ()
-          Cobertura.path.Value <- None)
+          Assert.That(
+            CommandLine.error |> Seq.head,
+            Is.EqualTo "--cobertura : specify this only once"
+          )
+      finally
+        Runner.I.initSummary ()
+        Cobertura.path.Value <- None)
 
   [<Test>]
   let ParsingNoCoberturaGivesFailure () =
     Runner.init ()
 
-    lock
-      Cobertura.path
-      (fun () ->
-        try
-          Cobertura.path.Value <- None
-          Runner.I.initSummary ()
+    lock Cobertura.path (fun () ->
+      try
+        Cobertura.path.Value <- None
+        Runner.I.initSummary ()
 
-          let options = Runner.declareOptions ()
-          let blank = " "
-          let input = [| "-c"; blank |]
+        let options = Runner.declareOptions ()
+        let blank = " "
+        let input = [| "-c"; blank |]
 
-          let parse =
-            CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.I.initSummary ()
-          Cobertura.path.Value <- None)
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.I.initSummary ()
+        Cobertura.path.Value <- None)
 
   [<Test>]
   let ParsingOutputGivesOutput () =
@@ -2023,69 +2018,62 @@ module AltCoverRunnerTests =
       (":O", Many [ O ])
       (":CCC", Many [ C ])
       (":OCRNBOC", N) ]
-    |> List.iter
-         (fun (a, v) ->
-           lock
-             Runner.summaryFormat
-             (fun () ->
-               Runner.summaryFormat <- Default
-               let options = Runner.declareOptions ()
-               let input = [| "--teamcity" + a |]
+    |> List.iter (fun (a, v) ->
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Default
+        let options = Runner.declareOptions ()
+        let input = [| "--teamcity" + a |]
 
-               let parse =
-                 CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-               match parse with
-               | Right (x, y) ->
-                 Assert.That(y, Is.SameAs options)
-                 Assert.That(x, Is.Empty)
+        match parse with
+        | Right (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
 
-               match Runner.summaryFormat with
-               | x when v = x -> ()))
+        match Runner.summaryFormat with
+        | x when v = x -> ()))
 
   [<Test>]
   let ParsingMultipleTCGivesFailure () =
     Runner.init ()
 
-    lock
-      Runner.summaryFormat
-      (fun () ->
-        Runner.summaryFormat <- Default
-        let options = Runner.declareOptions ()
-        let input = [| "--teamcity"; "--teamcity" |]
+    lock Runner.summaryFormat (fun () ->
+      Runner.summaryFormat <- Default
+      let options = Runner.declareOptions ()
+      let input = [| "--teamcity"; "--teamcity" |]
 
-        let parse =
-          CommandLine.parseCommandLine input options
+      let parse =
+        CommandLine.parseCommandLine input options
 
-        match parse with
-        | Left (x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
+      match parse with
+      | Left (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
 
-          Assert.That(
-            CommandLine.error |> Seq.head,
-            Is.EqualTo "--summary : specify this only once"
-          ))
+        Assert.That(
+          CommandLine.error |> Seq.head,
+          Is.EqualTo "--summary : specify this only once"
+        ))
 
   [<Test>]
   let ParsingBadTCGivesFailure () =
     Runner.init ()
 
-    lock
-      Runner.summaryFormat
-      (fun () ->
-        Runner.summaryFormat <- Default
-        let options = Runner.declareOptions ()
-        let blank = " "
-        let input = [| "--teamcity:junk" |]
+    lock Runner.summaryFormat (fun () ->
+      Runner.summaryFormat <- Default
+      let options = Runner.declareOptions ()
+      let blank = " "
+      let input = [| "--teamcity:junk" |]
 
-        let parse =
-          CommandLine.parseCommandLine input options
+      let parse =
+        CommandLine.parseCommandLine input options
 
-        match parse with
-        | Left (x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError"))
+      match parse with
+      | Left (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError"))
 
   [<Test>]
   let ParsingQuietWorks () =
@@ -2151,88 +2139,82 @@ module AltCoverRunnerTests =
   let ShouldRequireExe () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- None
-          let options = Runner.declareOptions ()
-          let parse = Runner.J.requireExe (Right([], options))
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- None
+        let options = Runner.declareOptions ()
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.executable.Value <- None)
+        let parse =
+          Runner.J.requireExe (Right([], options))
+
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldAcceptExe () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- Some "xxx"
-          let options = Runner.declareOptions ()
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- Some "xxx"
+        let options = Runner.declareOptions ()
 
-          let parse =
-            Runner.J.requireExe (Right([ "b" ], options))
+        let parse =
+          Runner.J.requireExe (Right([ "b" ], options))
 
-          match parse with
-          | Right (x :: y, z) ->
-            Assert.That(z, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "xxx")
-            Assert.That(y, Is.EquivalentTo [ "b" ])
-        finally
-          Runner.executable.Value <- None)
+        match parse with
+        | Right (x :: y, z) ->
+          Assert.That(z, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "xxx")
+          Assert.That(y, Is.EquivalentTo [ "b" ])
+      finally
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldRequireCollectIfNotExe () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- None
-          Runner.collect.Value <- true
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- None
+        Runner.collect.Value <- true
 
-          let options = Runner.declareOptions ()
+        let options = Runner.declareOptions ()
 
-          let parse =
-            Runner.J.requireExe (Right([ "a"; "b" ], options))
+        let parse =
+          Runner.J.requireExe (Right([ "a"; "b" ], options))
 
-          match parse with
-          | Right ([], z) -> Assert.That(z, Is.SameAs options)
-        finally
-          Runner.collect.Value <- false
-          Runner.executable.Value <- None)
+        match parse with
+        | Right ([], z) -> Assert.That(z, Is.SameAs options)
+      finally
+        Runner.collect.Value <- false
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldRejectExeIfCollect () =
     Runner.init ()
 
-    lock
-      Runner.executable
-      (fun () ->
-        try
-          Runner.executable.Value <- Some "xxx"
-          Runner.collect.Value <- true
+    lock Runner.executable (fun () ->
+      try
+        Runner.executable.Value <- Some "xxx"
+        Runner.collect.Value <- true
 
-          let options = Runner.declareOptions ()
+        let options = Runner.declareOptions ()
 
-          let parse =
-            Runner.J.requireExe (Right([ "b" ], options))
+        let parse =
+          Runner.J.requireExe (Right([ "b" ], options))
 
-          match parse with
-          | Left (x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.collect.Value <- false
-          Runner.executable.Value <- None)
+        match parse with
+        | Left (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.collect.Value <- false
+        Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldRequireWorker () =
@@ -2329,16 +2311,17 @@ module AltCoverRunnerTests =
             Assembly
               .GetExecutingAssembly()
               .GetManifestResourceNames()
-            |> Seq.find
-                 (fun n ->
-                   n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+            |> Seq.find (fun n ->
+              n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
 
           use frombytes =
             Assembly
               .GetExecutingAssembly()
               .GetManifestResourceStream(recorder)
 
-          use libstream = new FileStream(create, FileMode.Create)
+          use libstream =
+            new FileStream(create, FileMode.Create)
+
           frombytes.CopyTo libstream
 
       let options = Runner.declareOptions ()
@@ -2357,7 +2340,8 @@ module AltCoverRunnerTests =
     let where =
       Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 #if NET472
-    let path = Path.Combine(where, "Sample12.exe")
+    let path =
+      Path.Combine(where, "Sample12.exe")
 #else
     let path =
       Path.Combine(
@@ -2513,7 +2497,9 @@ module AltCoverRunnerTests =
         main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
 
       Assert.That(returnCode, Is.EqualTo 255)
-      let result = stderr.ToString().Replace("\r\n", "\n")
+
+      let result =
+        stderr.ToString().Replace("\r\n", "\n")
 
       let expected =
         "\"RuNN\" \"-r\" \""
@@ -2557,66 +2543,66 @@ module AltCoverRunnerTests =
 
     let save = Runner.J.recorderName
 
-    lock
-      synchronized
-      (fun () ->
-        try
-          let where =
-            Path.Combine(here, Guid.NewGuid().ToString())
+    lock synchronized (fun () ->
+      try
+        let where =
+          Path.Combine(here, Guid.NewGuid().ToString())
 
-          Directory.CreateDirectory(where) |> ignore
-          Runner.recordingDirectory <- Some where
+        Directory.CreateDirectory(where) |> ignore
+        Runner.recordingDirectory <- Some where
 
-          let create =
-            Path.Combine(where, "AltCover.Recorder.dll")
+        let create =
+          Path.Combine(where, "AltCover.Recorder.dll")
 
-          if create |> File.Exists |> not then
-            do
-              let recorder =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceNames()
-                |> Seq.find
-                     (fun n ->
-                       n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+        if create |> File.Exists |> not then
+          do
+            let recorder =
+              Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceNames()
+              |> Seq.find (fun n ->
+                n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
 
-              use frombytes =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream(recorder)
+            use frombytes =
+              Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceStream(recorder)
 
-              use libstream = new FileStream(create, FileMode.Create)
-              frombytes.CopyTo libstream
+            use libstream =
+              new FileStream(create, FileMode.Create)
 
-          Runner.recordingDirectory <- Some where
-          Runner.J.recorderName <- "AltCover.Recorder.dll"
+            frombytes.CopyTo libstream
 
-          let instance = Runner.J.recorderInstance () |> snd
+        Runner.recordingDirectory <- Some where
+        Runner.J.recorderName <- "AltCover.Recorder.dll"
 
-          Assert.That(
-            instance.FullName,
-            Is.EqualTo "AltCover.Recorder.Instance",
-            "should be the instance"
-          )
+        let instance =
+          Runner.J.recorderInstance () |> snd
 
-          let token =
-            (Runner.J.getMethod instance "get_Token")
-            |> Runner.J.getFirstOperandAsString
+        Assert.That(
+          instance.FullName,
+          Is.EqualTo "AltCover.Recorder.Instance",
+          "should be the instance"
+        )
 
-          Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
+        let token =
+          (Runner.J.getMethod instance "get_Token")
+          |> Runner.J.getFirstOperandAsString
 
-          let report =
-            (Runner.J.getMethod instance "get_ReportFile")
-            |> Runner.J.getFirstOperandAsString
+        Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
 
-          Assert.That(
-            report,
-            Is.EqualTo "Coverage.Default.xml",
-            "should be default coverage file"
-          )
-        finally
-          Runner.recordingDirectory <- None
-          Runner.J.recorderName <- save)
+        let report =
+          (Runner.J.getMethod instance "get_ReportFile")
+          |> Runner.J.getFirstOperandAsString
+
+        Assert.That(
+          report,
+          Is.EqualTo "Coverage.Default.xml",
+          "should be default coverage file"
+        )
+      finally
+        Runner.recordingDirectory <- None
+        Runner.J.recorderName <- save)
 
   [<Test>]
   let ShouldProcessPayload () =
@@ -2739,24 +2725,22 @@ module AltCoverRunnerTests =
 
       let hits = List<string * int * Track>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter
-           (fun i ->
-             for j = 1 to i + 1 do
-               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
-               ignore j)
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          ignore j)
 
       let counts =
         Dictionary<string, Dictionary<int, PointVisit>>()
 
       hits
-      |> Seq.iter
-           (fun (moduleId, hitPointId, hit) ->
-             if counts.ContainsKey moduleId |> not then
-               counts.Add(moduleId, Dictionary<int, PointVisit>())
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-             AltCover.Counter.addVisit counts moduleId hitPointId hit
-             |> ignore)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
 
       // degenerate case
       Assert.That(junkfile |> File.Exists |> not)
@@ -2863,24 +2847,22 @@ module AltCoverRunnerTests =
 
       let hits = List<string * int * Track>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter
-           (fun i ->
-             for j = 1 to i + 1 do
-               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
-               ignore j)
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
+          ignore j)
 
       let counts =
         Dictionary<string, Dictionary<int, PointVisit>>()
 
       hits
-      |> Seq.iter
-           (fun (moduleId, hitPointId, hit) ->
-             if counts.ContainsKey moduleId |> not then
-               counts.Add(moduleId, Dictionary<int, PointVisit>())
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-             AltCover.Counter.addVisit counts moduleId hitPointId hit
-             |> ignore)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
       let pv = PointVisit.Create()
@@ -2901,7 +2883,9 @@ module AltCoverRunnerTests =
       |> ignore
 
       let jsonText =
-        use worker' = new FileStream(junkFile, FileMode.Open)
+        use worker' =
+          new FileStream(junkFile, FileMode.Open)
+
         use reader = new StreamReader(worker')
         reader.ReadToEnd()
       // saved.WriteLine jsonText  // NOT printfn "%s" jsonText
@@ -2910,9 +2894,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n ->
-               n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
 
       use stream =
         Assembly
@@ -2984,24 +2967,22 @@ module AltCoverRunnerTests =
 
       let hits = List<string * int * Track>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter
-           (fun i ->
-             for j = 1 to i + 1 do
-               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
-               ignore j)
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          ignore j)
 
       let counts =
         Dictionary<string, Dictionary<int, PointVisit>>()
 
       hits
-      |> Seq.iter
-           (fun (moduleId, hitPointId, hit) ->
-             if counts.ContainsKey moduleId |> not then
-               counts.Add(moduleId, Dictionary<int, PointVisit>())
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-             AltCover.Counter.addVisit counts moduleId hitPointId hit
-             |> ignore)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
 
       // degenerate case 1
       Assert.That(junkfile |> File.Exists |> not)
@@ -3059,7 +3040,9 @@ module AltCoverRunnerTests =
       Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None
       |> ignore
 
-      let (container, worker) = Zip.openUpdate reportFile
+      let (container, worker) =
+        Zip.openUpdate reportFile
+
       use worker' = worker
       use container' = container
       let after = XmlDocument()
@@ -3138,24 +3121,22 @@ module AltCoverRunnerTests =
 
       let hits = List<string * int * Track>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter
-           (fun i ->
-             for j = 1 to i + 1 do
-               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
-               ignore j)
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
+          ignore j)
 
       let counts =
         Dictionary<string, Dictionary<int, PointVisit>>()
 
       hits
-      |> Seq.iter
-           (fun (moduleId, hitPointId, hit) ->
-             if counts.ContainsKey moduleId |> not then
-               counts.Add(moduleId, Dictionary<int, PointVisit>())
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-             AltCover.Counter.addVisit counts moduleId hitPointId hit
-             |> ignore)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
       let pv = PointVisit.Create()
@@ -3186,7 +3167,9 @@ module AltCoverRunnerTests =
       Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile None
       |> ignore
 
-      let (container, worker) = Zip.openUpdate reportFile
+      let (container, worker) =
+        Zip.openUpdate reportFile
+
       use container' = container
 
       let jsonText =
@@ -3198,9 +3181,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n ->
-               n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
 
       use stream =
         Assembly
@@ -3283,12 +3265,11 @@ module AltCoverRunnerTests =
           use formatter = new BinaryWriter(sink)
 
           l
-          |> List.mapi
-               (fun i x ->
-                 formatter.Write x
-                 formatter.Write i
-                 formatter.Write 0uy
-                 x)
+          |> List.mapi (fun i x ->
+            formatter.Write x
+            formatter.Write i
+            formatter.Write 0uy
+            x)
           |> List.length)
         [ "a"; "b"; String.Empty; "c" ]
 
@@ -3345,12 +3326,11 @@ module AltCoverRunnerTests =
         use formatter = new BinaryWriter(sink)
 
         l
-        |> List.mapi
-             (fun i x ->
-               formatter.Write x
-               formatter.Write i
-               formatter.Write 0uy
-               x)
+        |> List.mapi (fun i x ->
+          formatter.Write x
+          formatter.Write i
+          formatter.Write 0uy
+          x)
         |> List.length
 
       let test =
@@ -3412,10 +3392,9 @@ module AltCoverRunnerTests =
           use pipe = XmlWriter.Create(sink, settings)
 
           l
-          |> List.mapi
-               (fun i x ->
-                 formatter.WriteObject(pipe, (x, i, Null, DateTime.UtcNow))
-                 x)
+          |> List.mapi (fun i x ->
+            formatter.WriteObject(pipe, (x, i, Null, DateTime.UtcNow))
+            x)
           |> List.length)
         [ "a"; "b"; String.Empty; "c" ]
 
@@ -3475,78 +3454,91 @@ module AltCoverRunnerTests =
 
           l
           |> List.zip payloads
-          |> List.mapi
-               (fun i (y, x) ->
-                 formatter.Write x
-                 formatter.Write i
+          |> List.mapi (fun i (y, x) ->
+            formatter.Write x
+            formatter.Write i
 
-                 match y with
-                 | Null -> formatter.Write(Tag.Null |> byte)
-                 | Time t ->
-                   formatter.Write(Tag.Time |> byte)
-                   formatter.Write(t)
-                 | Call t ->
-                   formatter.Write(Tag.Call |> byte)
-                   formatter.Write(t)
-                 | Both b ->
-                   formatter.Write(Tag.Both |> byte)
-                   formatter.Write(b.Time)
-                   formatter.Write(b.Call)
-                 | Table t ->
-                   formatter.Write(Tag.Table |> byte)
+            match y with
+            | Null -> formatter.Write(Tag.Null |> byte)
+            | Time t ->
+              formatter.Write(Tag.Time |> byte)
+              formatter.Write(t)
+            | Call t ->
+              formatter.Write(Tag.Call |> byte)
+              formatter.Write(t)
+            | Both b ->
+              formatter.Write(Tag.Both |> byte)
+              formatter.Write(b.Time)
+              formatter.Write(b.Call)
+            | Table t ->
+              formatter.Write(Tag.Table |> byte)
 
-                   t.Keys
-                   |> Seq.iter
-                        (fun m ->
-                          formatter.Write m
-                          formatter.Write t.[m].Keys.Count
+              t.Keys
+              |> Seq.iter (fun m ->
+                formatter.Write m
+                formatter.Write t.[m].Keys.Count
 
-                          t.[m].Keys
-                          |> Seq.iter
-                               (fun p ->
-                                 formatter.Write p
-                                 let v = t.[m].[p]
-                                 formatter.Write v.Count
+                t.[m].Keys
+                |> Seq.iter (fun p ->
+                  formatter.Write p
+                  let v = t.[m].[p]
+                  formatter.Write v.Count
 
-                                 v.Tracks
-                                 |> Seq.iter
-                                      (fun tx ->
-                                        match tx with
-                                        | Time t ->
-                                          formatter.Write(Tag.Time |> byte)
-                                          formatter.Write(t)
-                                        | Call t ->
-                                          formatter.Write(Tag.Call |> byte)
-                                          formatter.Write(t)
-                                        | Both b ->
-                                          formatter.Write(Tag.Both |> byte)
-                                          formatter.Write(b.Time)
-                                          formatter.Write(b.Call)
-                                        //| _ -> tx |> (sprintf "%A") |> Assert.Fail
-                                        )
+                  v.Tracks
+                  |> Seq.iter (fun tx ->
+                    match tx with
+                    | Time t ->
+                      formatter.Write(Tag.Time |> byte)
+                      formatter.Write(t)
+                    | Call t ->
+                      formatter.Write(Tag.Call |> byte)
+                      formatter.Write(t)
+                    | Both b ->
+                      formatter.Write(Tag.Both |> byte)
+                      formatter.Write(b.Time)
+                      formatter.Write(b.Call)
+                  //| _ -> tx |> (sprintf "%A") |> Assert.Fail
+                  )
 
-                                 formatter.Write(Tag.Null |> byte)))
+                  formatter.Write(Tag.Null |> byte)))
 
-                   formatter.Write String.Empty
+              formatter.Write String.Empty
 
-                 x)
+            x)
           |> List.length)
         inputs
 
     let expected =
       Dictionary<string, Dictionary<int, int64 * Track list>>()
 
-    let a = Dictionary<int, int64 * Track list>()
+    let a =
+      Dictionary<int, int64 * Track list>()
+
     a.Add(1, (1L, []))
-    let b = Dictionary<int, int64 * Track list>()
+
+    let b =
+      Dictionary<int, int64 * Track list>()
+
     b.Add(2, (0L, [ Call 17 ]))
-    let c = Dictionary<int, int64 * Track list>()
+
+    let c =
+      Dictionary<int, int64 * Track list>()
+
     c.Add(3, (0L, [ Time 23L ]))
-    let d = Dictionary<int, int64 * Track list>()
+
+    let d =
+      Dictionary<int, int64 * Track list>()
+
     d.Add(4, (0L, [ Both { Time = 5L; Call = 42 } ]))
-    let e = Dictionary<int, int64 * Track list>()
+
+    let e =
+      Dictionary<int, int64 * Track list>()
+
     e.Add(6, (0L, [ Call 5 ]))
-    let f = Dictionary<int, int64 * Track list>()
+
+    let f =
+      Dictionary<int, int64 * Track list>()
+
     f.Add(3, (42L, payloads0 |> List.tail))
 
     expected.Add("a", a)
@@ -3563,16 +3555,16 @@ module AltCoverRunnerTests =
       Dictionary<string, Dictionary<int, int64 * Track list>>()
 
     counts.Keys
-    |> Seq.iter
-         (fun k ->
-           let inner = Dictionary<int, int64 * Track list>()
-           result.Add(k, inner)
+    |> Seq.iter (fun k ->
+      let inner =
+        Dictionary<int, int64 * Track list>()
 
-           counts.[k].Keys
-           |> Seq.iter
-                (fun k2 ->
-                  let v = counts.[k].[k2]
-                  inner.Add(k2, (v.Count, v.Tracks |> Seq.toList))))
+      result.Add(k, inner)
+
+      counts.[k].Keys
+      |> Seq.iter (fun k2 ->
+        let v = counts.[k].[k2]
+        inner.Add(k2, (v.Count, v.Tracks |> Seq.toList))))
 
     Assert.That(result, Is.EquivalentTo expected)
 
@@ -3733,22 +3725,20 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visitedBranchPoints", "0")
-           el.SetAttribute("branchCoverage", "0")
-           el.SetAttribute("visitedSequencePoints", "0")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("visitedClasses", "0")
-           el.SetAttribute("visitedMethods", "0"))
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visitedBranchPoints", "0")
+      el.SetAttribute("branchCoverage", "0")
+      el.SetAttribute("visitedSequencePoints", "0")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("visitedClasses", "0")
+      el.SetAttribute("visitedMethods", "0"))
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visited", "false")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("branchCoverage", "0"))
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visited", "false")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("branchCoverage", "0"))
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
@@ -3774,8 +3764,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -3788,22 +3778,20 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visitedBranchPoints", "0")
-           el.SetAttribute("branchCoverage", "0")
-           el.SetAttribute("visitedSequencePoints", "0")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("visitedClasses", "0")
-           el.SetAttribute("visitedMethods", "0"))
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visitedBranchPoints", "0")
+      el.SetAttribute("branchCoverage", "0")
+      el.SetAttribute("visitedSequencePoints", "0")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("visitedClasses", "0")
+      el.SetAttribute("visitedMethods", "0"))
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visited", "false")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("branchCoverage", "0"))
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visited", "false")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("branchCoverage", "0"))
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
@@ -3846,25 +3834,23 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visitedSequencePoints", "0")
-           el.SetAttribute("sequenceCoverage", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visitedSequencePoints", "0")
+      el.SetAttribute("sequenceCoverage", "0")
 
-           if el.GetAttribute("maxCrapScore") = "2.11" then
-             el.SetAttribute("maxCrapScore", "2.15")
+      if el.GetAttribute("maxCrapScore") = "2.11" then
+        el.SetAttribute("maxCrapScore", "2.15")
 
-           if el.GetAttribute("minCrapScore") = "2.11" then
-             el.SetAttribute("minCrapScore", "2.15"))
+      if el.GetAttribute("minCrapScore") = "2.11" then
+        el.SetAttribute("minCrapScore", "2.15"))
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("sequenceCoverage", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("sequenceCoverage", "0")
 
-           if el.GetAttribute("crapScore") = "2.11" then
-             el.SetAttribute("crapScore", "2.15"))
+      if el.GetAttribute("crapScore") = "2.11" then
+        el.SetAttribute("crapScore", "2.15"))
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
@@ -3881,33 +3867,31 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visitedBranchPoints", "0")
-           el.SetAttribute("branchCoverage", "0")
-           el.SetAttribute("visitedSequencePoints", "0")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("visitedClasses", "0")
-           el.SetAttribute("visitedMethods", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visitedBranchPoints", "0")
+      el.SetAttribute("branchCoverage", "0")
+      el.SetAttribute("visitedSequencePoints", "0")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("visitedClasses", "0")
+      el.SetAttribute("visitedMethods", "0")
 
-           if el.GetAttribute "minCrapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             el.SetAttribute("minCrapScore", "0")
-             el.SetAttribute("maxCrapScore", "0"))
+      if el.GetAttribute "minCrapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        el.SetAttribute("minCrapScore", "0")
+        el.SetAttribute("maxCrapScore", "0"))
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visited", "false")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("branchCoverage", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visited", "false")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("branchCoverage", "0")
 
-           if el.GetAttribute "crapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             el.SetAttribute("crapScore", "0"))
+      if el.GetAttribute "crapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        el.SetAttribute("crapScore", "0"))
 
     let empty =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -3932,25 +3916,23 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visitedSequencePoints", "0")
-           el.SetAttribute("sequenceCoverage", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visitedSequencePoints", "0")
+      el.SetAttribute("sequenceCoverage", "0")
 
-           if el.GetAttribute("minCrapScore") = "2.11" then
-             el.SetAttribute("minCrapScore", "2.15")
+      if el.GetAttribute("minCrapScore") = "2.11" then
+        el.SetAttribute("minCrapScore", "2.15")
 
-           if el.GetAttribute("maxCrapScore") = "2.11" then
-             el.SetAttribute("maxCrapScore", "2.15"))
+      if el.GetAttribute("maxCrapScore") = "2.11" then
+        el.SetAttribute("maxCrapScore", "2.15"))
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("sequenceCoverage", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("sequenceCoverage", "0")
 
-           if el.GetAttribute("crapScore") = "2.11" then
-             el.SetAttribute("crapScore", "2.15"))
+      if el.GetAttribute("crapScore") = "2.11" then
+        el.SetAttribute("crapScore", "2.15"))
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
@@ -3969,33 +3951,31 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visitedBranchPoints", "0")
-           el.SetAttribute("branchCoverage", "0")
-           el.SetAttribute("visitedSequencePoints", "0")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("visitedClasses", "0")
-           el.SetAttribute("visitedMethods", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visitedBranchPoints", "0")
+      el.SetAttribute("branchCoverage", "0")
+      el.SetAttribute("visitedSequencePoints", "0")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("visitedClasses", "0")
+      el.SetAttribute("visitedMethods", "0")
 
-           if el.GetAttribute "minCrapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             el.SetAttribute("minCrapScore", "0")
-             el.SetAttribute("maxCrapScore", "0"))
+      if el.GetAttribute "minCrapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        el.SetAttribute("minCrapScore", "0")
+        el.SetAttribute("maxCrapScore", "0"))
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter
-         (fun el ->
-           el.SetAttribute("visited", "false")
-           el.SetAttribute("sequenceCoverage", "0")
-           el.SetAttribute("branchCoverage", "0")
+    |> Seq.iter (fun el ->
+      el.SetAttribute("visited", "false")
+      el.SetAttribute("sequenceCoverage", "0")
+      el.SetAttribute("branchCoverage", "0")
 
-           if el.GetAttribute "crapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             el.SetAttribute("crapScore", "0"))
+      if el.GetAttribute "crapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        el.SetAttribute("crapScore", "0"))
 
     let empty =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -4012,8 +3992,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -4025,24 +4005,22 @@ module AltCoverRunnerTests =
     let getAttribute (x: XElement) n = x.Attribute(XName.Get n).Value
 
     after.Descendants(XName.Get "Summary")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "visitedSequencePoints" "0"
-           setAttribute el "sequenceCoverage" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "visitedSequencePoints" "0"
+      setAttribute el "sequenceCoverage" "0"
 
-           if getAttribute el "minCrapScore" = "2.11" then
-             setAttribute el "minCrapScore" "2.15"
+      if getAttribute el "minCrapScore" = "2.11" then
+        setAttribute el "minCrapScore" "2.15"
 
-           if getAttribute el "maxCrapScore" = "2.11" then
-             setAttribute el "maxCrapScore" "2.15")
+      if getAttribute el "maxCrapScore" = "2.11" then
+        setAttribute el "maxCrapScore" "2.15")
 
     after.Descendants(XName.Get "Method")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "sequenceCoverage" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "sequenceCoverage" "0"
 
-           if getAttribute el "crapScore" = "2.11" then
-             setAttribute el "crapScore" "2.15")
+      if getAttribute el "crapScore" = "2.11" then
+        setAttribute el "crapScore" "2.15")
 
     after.Descendants(XName.Get "SequencePoint")
     |> Seq.toList
@@ -4059,32 +4037,30 @@ module AltCoverRunnerTests =
       |> XDocument.Parse
 
     after.Descendants(XName.Get "Summary")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "visitedBranchPoints" "0"
-           setAttribute el "branchCoverage" "0"
-           setAttribute el "visitedSequencePoints" "0"
-           setAttribute el "sequenceCoverage" "0"
-           setAttribute el "visitedClasses" "0"
-           setAttribute el "visitedMethods" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "visitedBranchPoints" "0"
+      setAttribute el "branchCoverage" "0"
+      setAttribute el "visitedSequencePoints" "0"
+      setAttribute el "sequenceCoverage" "0"
+      setAttribute el "visitedClasses" "0"
+      setAttribute el "visitedMethods" "0"
 
-           if getAttribute el "minCrapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             setAttribute el "minCrapScore" "0"
-             setAttribute el "maxCrapScore" "0")
+      if getAttribute el "minCrapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        setAttribute el "minCrapScore" "0"
+        setAttribute el "maxCrapScore" "0")
 
     after.Descendants(XName.Get "Method")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "visited" "false"
-           setAttribute el "sequenceCoverage" "0"
-           setAttribute el "branchCoverage" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "visited" "false"
+      setAttribute el "sequenceCoverage" "0"
+      setAttribute el "branchCoverage" "0"
 
-           if getAttribute el "crapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             setAttribute el "crapScore" "0")
+      if getAttribute el "crapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        setAttribute el "crapScore" "0")
 
     let counts =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -4123,30 +4099,28 @@ module AltCoverRunnerTests =
     Runner.summary.Clear() |> ignore
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Default
-          let task = Collect()
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Default
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (XML report) ReportFormat.NCover 0
+        let r =
+          Runner.I.standardSummary (XML report) ReportFormat.NCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          let expected =
-            "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
+        let expected =
+          "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
 
-          Assert.That(builder.ToString(), Is.EqualTo expected)
+        Assert.That(builder.ToString(), Is.EqualTo expected)
 
-          let collected =
-            task
-              .Summary
-              .Replace("\r", String.Empty)
-              .Replace("\n", "|")
+        let collected =
+          task
+            .Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
 
-          Assert.That(collected, Is.EqualTo expected))
+        Assert.That(collected, Is.EqualTo expected))
     finally
       resetInfo ()
 
@@ -4161,31 +4135,29 @@ module AltCoverRunnerTests =
     Runner.summary.Clear() |> ignore
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- B
-          let task = Collect()
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- B
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (XML report) ReportFormat.NCover 0
+        let r =
+          Runner.I.standardSummary (XML report) ReportFormat.NCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          let expected =
-            "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
+        let expected =
+          "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
 
-          let result = builder.ToString()
-          Assert.That(result, Is.EqualTo expected, result)
+        let result = builder.ToString()
+        Assert.That(result, Is.EqualTo expected, result)
 
-          let collected =
-            task
-              .Summary
-              .Replace("\r", String.Empty)
-              .Replace("\n", "|")
+        let collected =
+          task
+            .Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
 
-          Assert.That(collected, Is.EqualTo expected, collected))
+        Assert.That(collected, Is.EqualTo expected, collected))
     finally
       resetInfo ()
 
@@ -4200,31 +4172,29 @@ module AltCoverRunnerTests =
     Runner.summary.Clear() |> ignore
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Many [ B; O; C ]
-          let task = Collect()
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Many [ B; O; C ]
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (XML report) ReportFormat.NCover 0
+        let r =
+          Runner.I.standardSummary (XML report) ReportFormat.NCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          let expected =
-            "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
+        let expected =
+          "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
 
-          let result = builder.ToString()
-          Assert.That(result, Is.EqualTo expected, result)
+        let result = builder.ToString()
+        Assert.That(result, Is.EqualTo expected, result)
 
-          let collected =
-            task
-              .Summary
-              .Replace("\r", String.Empty)
-              .Replace("\n", "|")
+        let collected =
+          task
+            .Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
 
-          Assert.That(collected, Is.EqualTo expected, collected))
+        Assert.That(collected, Is.EqualTo expected, collected))
     finally
       resetInfo ()
 
@@ -4250,36 +4220,34 @@ module AltCoverRunnerTests =
     let builder = System.Text.StringBuilder()
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Many [ R; O; C ]
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Many [ R; O; C ]
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            try
-              Runner.threshold <-
-                Some
-                  { Statements = 25uy
-                    Branches = 0uy
-                    Methods = 0uy
-                    Crap = 0uy
-                    AltMethods = 0uy
-                    AltCrap = 0uy }
+        let r =
+          try
+            Runner.threshold <-
+              Some
+                { Statements = 25uy
+                  Branches = 0uy
+                  Methods = 0uy
+                  Crap = 0uy
+                  AltMethods = 0uy
+                  AltCrap = 0uy }
 
-              Runner.I.standardSummary (XML baseline) ReportFormat.NCover 42
-            finally
-              Runner.threshold <- None
-          // 80% coverage > threshold so expect return code coming in
-          Assert.That(r, Is.EqualTo(42, 0, String.Empty))
+            Runner.I.standardSummary (XML baseline) ReportFormat.NCover 42
+          finally
+            Runner.threshold <- None
+        // 80% coverage > threshold so expect return code coming in
+        Assert.That(r, Is.EqualTo(42, 0, String.Empty))
 
-          Assert.That(
-            builder.ToString(),
-            Is.EqualTo(
-              "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|"
-            )
-          ))
+        Assert.That(
+          builder.ToString(),
+          Is.EqualTo(
+            "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|"
+          )
+        ))
     finally
       resetInfo ()
 
@@ -4302,26 +4270,24 @@ module AltCoverRunnerTests =
     let builder = System.Text.StringBuilder()
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Default
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Default
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
+        let r =
+          Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          Assert.That(
-            builder.ToString(),
-            Is.EqualTo(
-              "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
-              + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
-              + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-              + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"
-            )
-          ))
+        Assert.That(
+          builder.ToString(),
+          Is.EqualTo(
+            "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
+            + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
+            + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+            + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"
+          )
+        ))
     finally
       resetInfo ()
 
@@ -4344,30 +4310,28 @@ module AltCoverRunnerTests =
     let builder = System.Text.StringBuilder()
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- B
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- B
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
+        let r =
+          Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          Assert.That(
-            builder.ToString(),
-            Is.EqualTo(
-              "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
-            )
-          ))
+        Assert.That(
+          builder.ToString(),
+          Is.EqualTo(
+            "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+          )
+        ))
     finally
       resetInfo ()
 
@@ -4390,34 +4354,32 @@ module AltCoverRunnerTests =
     let builder = System.Text.StringBuilder()
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Many [ R; O; C ]
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Many [ R; O; C ]
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
+        let r =
+          Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          Assert.That(
-            builder.ToString(),
-            Is.EqualTo(
-              "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
-              + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
-              + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-              + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|"
-              + "##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|"
-            )
-          ))
+        Assert.That(
+          builder.ToString(),
+          Is.EqualTo(
+            "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
+            + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
+            + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+            + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|"
+            + "##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|"
+          )
+        ))
     finally
       resetInfo ()
 
@@ -4432,8 +4394,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -4444,19 +4406,13 @@ module AltCoverRunnerTests =
 
     let thresholds =
       [ Threshold.Default()
-        { Threshold.Default() with
-            Statements = 75uy }
-        { Threshold.Default() with
-            Branches = 70uy }
-        { Threshold.Default() with
-            Methods = 100uy }
-        { Threshold.Default() with
-            AltMethods = 100uy }
+        { Threshold.Default() with Statements = 75uy }
+        { Threshold.Default() with Branches = 70uy }
+        { Threshold.Default() with Methods = 100uy }
+        { Threshold.Default() with AltMethods = 100uy }
         { Threshold.Default() with Crap = 1uy }
-        { Threshold.Default() with
-            AltCrap = 1uy }
-        { Threshold.Default() with
-            Crap = 255uy }
+        { Threshold.Default() with AltCrap = 1uy }
+        { Threshold.Default() with Crap = 255uy }
         { Threshold.Default() with
             Statements = 75uy
             Branches = 70uy }
@@ -4477,38 +4433,35 @@ module AltCoverRunnerTests =
         (50, 100, "AltMethods") ]
 
     List.zip thresholds results
-    |> List.iter
-         (fun (threshold, expected) ->
-           try
-             lock
-               Runner.summaryFormat
-               (fun () ->
-                 Runner.summaryFormat <- Many [ B; O; C ]
-                 let builder = System.Text.StringBuilder()
-                 Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+    |> List.iter (fun (threshold, expected) ->
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ B; O; C ]
+          let builder = System.Text.StringBuilder()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-                 let r =
-                   try
-                     Runner.threshold <- Some threshold
-                     Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
-                   finally
-                     Runner.threshold <- None
-                 // 70% coverage < threshold so expect shortfall
-                 Assert.That(r, Is.EqualTo expected)
+          let r =
+            try
+              Runner.threshold <- Some threshold
+              Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
+            finally
+              Runner.threshold <- None
+          // 70% coverage < threshold so expect shortfall
+          Assert.That(r, Is.EqualTo expected)
 
-                 Assert.That(
-                   builder.ToString(),
-                   Is.EqualTo(
-                     "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
-                     + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|Maximum CRAP score 2.11||"
-                     + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-                     + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|Alternative maximum CRAP score 2.11|"
-                     + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
-                     + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|"
-                   )
-                 ))
-           finally
-             resetInfo ())
+          Assert.That(
+            builder.ToString(),
+            Is.EqualTo(
+              "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+              + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|Maximum CRAP score 2.11||"
+              + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+              + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|Alternative maximum CRAP score 2.11|"
+              + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+              + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|"
+            )
+          ))
+      finally
+        resetInfo ())
 
   [<Test>]
   let OpenCoverShouldGeneratePlausiblePartialSummary () =
@@ -4521,8 +4474,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -4540,88 +4493,85 @@ module AltCoverRunnerTests =
         N ]
 
     summary
-    |> List.iter
-         (fun summary ->
-           try
-             lock
-               Runner.summaryFormat
-               (fun () ->
-                 Runner.summaryFormat <- summary
-                 let l = SummaryFormat.ToList summary
-                 let builder = System.Text.StringBuilder()
-                 Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+    |> List.iter (fun summary ->
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- summary
+          let l = SummaryFormat.ToList summary
+          let builder = System.Text.StringBuilder()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-                 let r =
-                   try
-                     Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
-                   finally
-                     Runner.threshold <- None
+          let r =
+            try
+              Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
+            finally
+              Runner.threshold <- None
 
-                 let elementO =
-                   if l |> List.contains O then
-                     "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
-                     + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|"
-                   else
-                     String.Empty
+          let elementO =
+            if l |> List.contains O then
+              "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+              + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|"
+            else
+              String.Empty
 
-                 let elementC =
-                   if l |> List.contains C then
-                     "Maximum CRAP score 2.11|"
-                   else
-                     String.Empty
+          let elementC =
+            if l |> List.contains C then
+              "Maximum CRAP score 2.11|"
+            else
+              String.Empty
 
-                 let elementOC =
-                   if l |> List.contains O || l |> List.contains C then
-                     "|==== Alternative Results (includes all methods including those without corresponding source) ====|"
-                   else
-                     String.Empty
+          let elementOC =
+            if l |> List.contains O || l |> List.contains C then
+              "|==== Alternative Results (includes all methods including those without corresponding source) ====|"
+            else
+              String.Empty
 
-                 let elementAltO =
-                   if l |> List.contains O then
-                     "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
-                   else
-                     String.Empty
+          let elementAltO =
+            if l |> List.contains O then
+              "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+            else
+              String.Empty
 
-                 let elementAltC =
-                   if l |> List.contains C then
-                     "Alternative maximum CRAP score 2.11|"
-                   else
-                     String.Empty
+          let elementAltC =
+            if l |> List.contains C then
+              "Alternative maximum CRAP score 2.11|"
+            else
+              String.Empty
 
-                 let elementBR =
-                   if l |> List.contains B || l |> List.contains R then
-                     "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
-                   else
-                     String.Empty
+          let elementBR =
+            if l |> List.contains B || l |> List.contains R then
+              "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+            else
+              String.Empty
 
-                 let elementB =
-                   if l |> List.contains B then
-                     "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|"
-                   else
-                     String.Empty
+          let elementB =
+            if l |> List.contains B then
+              "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|"
+            else
+              String.Empty
 
-                 let elementR =
-                   if l |> List.contains R then
-                     "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='2']|"
-                   else
-                     String.Empty
+          let elementR =
+            if l |> List.contains R then
+              "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='2']|"
+            else
+              String.Empty
 
-                 Assert.That(
-                   builder.ToString(),
-                   Is.EqualTo(
-                     elementO
-                     + elementC
-                     + elementOC
-                     + elementAltO
-                     + elementAltC
-                     + elementBR
-                     + elementB
-                     + elementR
-                   ),
-                   sprintf "%A" summary
-                 ))
-           finally
-             resetInfo ())
+          Assert.That(
+            builder.ToString(),
+            Is.EqualTo(
+              elementO
+              + elementC
+              + elementOC
+              + elementAltO
+              + elementAltC
+              + elementBR
+              + elementB
+              + elementR
+            ),
+            sprintf "%A" summary
+          ))
+      finally
+        resetInfo ())
 
   [<Test>]
   let EmptyJsonGeneratesExpectedSummary () =
@@ -4638,30 +4588,28 @@ module AltCoverRunnerTests =
     Runner.summary.Clear() |> ignore
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Default
-          let task = Collect()
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Default
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+        let r =
+          Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          let expected =
-            "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||"
-          //printfn "%s" <| builder.ToString()
-          Assert.That(builder.ToString(), Is.EqualTo expected)
+        let expected =
+          "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||"
+        //printfn "%s" <| builder.ToString()
+        Assert.That(builder.ToString(), Is.EqualTo expected)
 
-          let collected =
-            task
-              .Summary
-              .Replace("\r", String.Empty)
-              .Replace("\n", "|")
+        let collected =
+          task
+            .Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
 
-          Assert.That(collected, Is.EqualTo expected))
+        Assert.That(collected, Is.EqualTo expected))
     finally
       resetInfo ()
 
@@ -4680,32 +4628,30 @@ module AltCoverRunnerTests =
     Runner.summary.Clear() |> ignore
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- B
-          let task = Collect()
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- B
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+        let r =
+          Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          let expected =
-            "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+        let expected =
+          "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
 
-          let result = builder.ToString()
-          //printfn "%s" result
-          Assert.That(result, Is.EqualTo expected, result)
+        let result = builder.ToString()
+        //printfn "%s" result
+        Assert.That(result, Is.EqualTo expected, result)
 
-          let collected =
-            task
-              .Summary
-              .Replace("\r", String.Empty)
-              .Replace("\n", "|")
+        let collected =
+          task
+            .Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
 
-          Assert.That(collected, Is.EqualTo expected, collected))
+        Assert.That(collected, Is.EqualTo expected, collected))
     finally
       resetInfo ()
 
@@ -4724,32 +4670,30 @@ module AltCoverRunnerTests =
     Runner.summary.Clear() |> ignore
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Many [ B; O; C ]
-          let task = Collect()
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Many [ B; O; C ]
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+        let r =
+          Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
 
-          Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
 
-          let expected =
-            "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+        let expected =
+          "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
 
-          let result = builder.ToString()
-          //printfn "%s" result
-          Assert.That(result, Is.EqualTo expected, result)
+        let result = builder.ToString()
+        //printfn "%s" result
+        Assert.That(result, Is.EqualTo expected, result)
 
-          let collected =
-            task
-              .Summary
-              .Replace("\r", String.Empty)
-              .Replace("\n", "|")
+        let collected =
+          task
+            .Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
 
-          Assert.That(collected, Is.EqualTo expected, collected))
+        Assert.That(collected, Is.EqualTo expected, collected))
     finally
       resetInfo ()
 
@@ -4779,38 +4723,36 @@ module AltCoverRunnerTests =
     let builder = System.Text.StringBuilder()
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Many [ R; O; C ]
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Many [ R; O; C ]
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            try
-              Runner.threshold <-
-                Some
-                  { Statements = 25uy
-                    Branches = 0uy
-                    Methods = 0uy
-                    Crap = 0uy
-                    AltMethods = 0uy
-                    AltCrap = 0uy }
+        let r =
+          try
+            Runner.threshold <-
+              Some
+                { Statements = 25uy
+                  Branches = 0uy
+                  Methods = 0uy
+                  Crap = 0uy
+                  AltMethods = 0uy
+                  AltCrap = 0uy }
 
-              Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
-            finally
-              Runner.threshold <- None
-          //printfn "%s" <| builder.ToString()
+            Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
+          finally
+            Runner.threshold <- None
+        //printfn "%s" <| builder.ToString()
 
-          // 60% coverage > threshold so expect return code coming in
-          Assert.That(r, Is.EqualTo(42, 0, String.Empty))
+        // 60% coverage > threshold so expect return code coming in
+        Assert.That(r, Is.EqualTo(42, 0, String.Empty))
 
-          Assert.That(
-            builder.ToString(),
-            Is.EqualTo(
-              "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 6 of 10 (60)|Visited Branches 0 of 0 (n/a)|"
-              + "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|"
-            )
-          ))
+        Assert.That(
+          builder.ToString(),
+          Is.EqualTo(
+            "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 6 of 10 (60)|Visited Branches 0 of 0 (n/a)|"
+            + "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|"
+          )
+        ))
     finally
       resetInfo ()
 
@@ -4825,9 +4767,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n ->
-             n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -4842,38 +4783,36 @@ module AltCoverRunnerTests =
     let builder = System.Text.StringBuilder()
 
     try
-      lock
-        Runner.summaryFormat
-        (fun () ->
-          Runner.summaryFormat <- Many [ R; O; C ]
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Many [ R; O; C ]
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
 
-          let r =
-            try
-              Runner.threshold <-
-                Some
-                  { Statements = 25uy
-                    Branches = 0uy
-                    Methods = 0uy
-                    Crap = 0uy
-                    AltMethods = 0uy
-                    AltCrap = 0uy }
+        let r =
+          try
+            Runner.threshold <-
+              Some
+                { Statements = 20uy
+                  Branches = 0uy
+                  Methods = 0uy
+                  Crap = 0uy
+                  AltMethods = 0uy
+                  AltCrap = 0uy }
 
-              Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
-            finally
-              Runner.threshold <- None
-          //printfn "%s" <| builder.ToString()
+            Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
+          finally
+            Runner.threshold <- None
+        //printfn "%s" <| builder.ToString()
 
-          // 60% coverage > threshold so expect return code coming in
-          Assert.That(r, Is.EqualTo(42, 0, String.Empty))
+        // 23.81% coverage > threshold so expect return code coming in
+        Assert.That(r, Is.EqualTo(42, 0, String.Empty))
 
-          Assert.That(
-            builder.ToString(),
-            Is.EqualTo(
-              "Visited Classes 4 of 6 (66.67)|Visited Methods 5 of 10 (50)|Visited Points 5 of 20 (25)|Visited Branches 5 of 10 (50)|"
-              + "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='4']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='20']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='5']|"
-            )
-          ))
+        Assert.That(
+          builder.ToString(),
+          Is.EqualTo(
+            "Visited Classes 4 of 6 (66.67)|Visited Methods 5 of 10 (50)|Visited Points 5 of 21 (23.81)|Visited Branches 5 of 10 (50)|"
+            + "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='4']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='21']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='5']|"
+          )
+        ))
     finally
       resetInfo ()
 
@@ -4897,8 +4836,13 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addLCovSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
-      let r = summarize Unknown ReportFormat.NCover 0
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
+
+      let r =
+        summarize Unknown ReportFormat.NCover 0
+
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       Assert.That(unique |> File.Exists |> not)
     finally
@@ -4912,8 +4856,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -4938,7 +4882,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addLCovSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (XML baseline) ReportFormat.OpenCover 0
@@ -4982,8 +4928,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5009,7 +4955,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addLCovSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (XML baseline) ReportFormat.OpenCover 0
@@ -5021,8 +4969,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5120,8 +5068,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5156,8 +5103,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("NCoverWithPartials.lcov", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("NCoverWithPartials.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5292,8 +5239,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5362,8 +5309,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5406,10 +5353,9 @@ module AltCoverRunnerTests =
     let excluded = XName.Get "excluded"
 
     baseline.Descendants()
-    |> Seq.iter
-         (fun x ->
-           if x.Attribute(excluded).IsNotNull then
-             x.SetAttributeValue(excluded, "false"))
+    |> Seq.iter (fun x ->
+      if x.Attribute(excluded).IsNotNull then
+        x.SetAttributeValue(excluded, "false"))
 
     let unique =
       Path.Combine(
@@ -5472,35 +5418,32 @@ module AltCoverRunnerTests =
       [ ("m", [ 3; 2; 1 ])
         ("a", [ 4; 9; 7 ])
         ("z", [ 3; 5 ]) ]
-      |> List.map
-           (fun (x, y) ->
-             (x,
-              y
-              |> List.map (
-                sprintf "<x><seqpnt line=\"%d\" /></x>"
-                >> load
-                >> (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
-                >> (fun m -> (m, m.Descendants(XName.Get "seqpnt")))
-              )
-              |> List.toSeq))
+      |> List.map (fun (x, y) ->
+        (x,
+         y
+         |> List.map (
+           sprintf "<x><seqpnt line=\"%d\" /></x>"
+           >> load
+           >> (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+           >> (fun m -> (m, m.Descendants(XName.Get "seqpnt")))
+         )
+         |> List.toSeq))
       |> List.toSeq
 
     let result =
       LCov.I.multiSortByNameAndPartialStartLine input
-      |> Seq.map
-           (fun (f, ms) ->
-             (f,
-              ms
-              |> Seq.map
-                   (fun (m, l) ->
-                     m
-                       .ToString()
-                       .Replace("\r", String.Empty)
-                       .Replace("\n", String.Empty)
-                       .Replace("  <", "<")
-                     + "|"
-                     + String.Join("|", l |> Seq.map string))
-              |> Seq.toList))
+      |> Seq.map (fun (f, ms) ->
+        (f,
+         ms
+         |> Seq.map (fun (m, l) ->
+           m
+             .ToString()
+             .Replace("\r", String.Empty)
+             .Replace("\n", String.Empty)
+             .Replace("  <", "<")
+           + "|"
+           + String.Join("|", l |> Seq.map string))
+         |> Seq.toList))
       |> Seq.toList
 
     Assert.That(
@@ -5561,8 +5504,13 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
-      let r = summarize Unknown ReportFormat.NCover 0
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
+
+      let r =
+        summarize Unknown ReportFormat.NCover 0
+
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       Assert.That(unique |> File.Exists |> not)
     finally
@@ -5601,7 +5549,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
@@ -5656,8 +5606,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5683,7 +5632,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
@@ -5703,8 +5654,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("NCoverWithPartials.cob.xml", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("NCoverWithPartials.cob.xml", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5765,7 +5716,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
@@ -5785,8 +5738,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("Sample5.ncover.cobertura", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("Sample5.ncover.cobertura", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5821,8 +5774,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5850,7 +5803,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (JSON baseline) ReportFormat.NativeJson 0
@@ -5870,9 +5825,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n ->
-               n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5935,7 +5889,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (JSON baseline) ReportFormat.NativeJson 0
@@ -5955,9 +5911,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n ->
-               n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -6032,7 +5987,9 @@ module AltCoverRunnerTests =
 
     try
       Runner.I.addCoberturaSummary ()
-      let summarize = Runner.I.summaries |> Seq.head
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
 
       let r =
         summarize (JSON baseline) ReportFormat.NativeJson 0
@@ -6052,8 +6009,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -6123,8 +6080,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal))
 
     use stream2 =
       Assembly
@@ -6203,8 +6159,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("JsonWithPartialsToRawXml.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("JsonWithPartialsToRawXml.xml", StringComparison.Ordinal))
 
     use stream2 =
       Assembly
@@ -6259,10 +6215,9 @@ module AltCoverRunnerTests =
     let excluded = XName.Get "excluded"
 
     baseline.Descendants()
-    |> Seq.iter
-         (fun x ->
-           if x.Attribute(excluded).IsNotNull then
-             x.SetAttributeValue(excluded, "false"))
+    |> Seq.iter (fun x ->
+      if x.Attribute(excluded).IsNotNull then
+        x.SetAttributeValue(excluded, "false"))
 
     let unique =
       Path.Combine(
@@ -6297,8 +6252,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n -> n.EndsWith("NCoverBugFix.cobertura", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("NCoverBugFix.cobertura", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -6415,8 +6370,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -6457,9 +6412,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find
-             (fun n ->
-               n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
+        |> Seq.find (fun n ->
+          n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
 
       use stream2 =
         Assembly

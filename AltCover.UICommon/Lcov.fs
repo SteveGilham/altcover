@@ -43,30 +43,29 @@ module internal Lcov =
 
     m
     |> Seq.map snd
-    |> Seq.filter
-         (fun r ->
-           match r with
-           | SF name ->
-             let fn = Path.GetFileNameWithoutExtension name
+    |> Seq.filter (fun r ->
+      match r with
+      | SF name ->
+        let fn =
+          Path.GetFileNameWithoutExtension name
 
-             [| XAttribute(XName.Get "moduleId", fn)
-                XAttribute(XName.Get "name", fn)
-                XAttribute(XName.Get "assembly", name)
-                XAttribute(XName.Get "assemblyIdentity", name) |]
-             |> result.Add
+        [| XAttribute(XName.Get "moduleId", fn)
+           XAttribute(XName.Get "name", fn)
+           XAttribute(XName.Get "assembly", name)
+           XAttribute(XName.Get "assemblyIdentity", name) |]
+        |> result.Add
 
-             false
-           | FN _
-           | DA _
-           | BRDA _ -> true
-           | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
-    |> Seq.sortBy
-         (fun r ->
-           match r with
-           | FN (a, _) -> 4 * a
-           | DA (a, _) -> (4 * a) + 1
-           | BRDA (a, _, _, _) -> (4 * a) + 2
-           | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
+        false
+      | FN _
+      | DA _
+      | BRDA _ -> true
+      | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
+    |> Seq.sortBy (fun r ->
+      match r with
+      | FN (a, _) -> 4 * a
+      | DA (a, _) -> (4 * a) + 1
+      | BRDA (a, _, _, _) -> (4 * a) + 2
+      | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
     |> Seq.fold
          (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
            match r with
@@ -74,7 +73,8 @@ module internal Lcov =
              let endclass =
                n.IndexOf("::", StringComparison.Ordinal)
 
-             let startclass = n.LastIndexOf(' ', endclass) + 1
+             let startclass =
+               n.LastIndexOf(' ', endclass) + 1
 
              let c =
                n.Substring(startclass, endclass - startclass)
@@ -149,31 +149,30 @@ module internal Lcov =
   let ofLines (lines: string array) =
     try
       lines
-      |> Seq.map
-           (fun line ->
-             match line with
-             | l when l.StartsWith("SF:", StringComparison.Ordinal) -> SF(l.Substring 3)
-             | l when l.StartsWith("FN:", StringComparison.Ordinal) ->
-               let trim = l.Substring 3
-               let comma = trim.IndexOf ','
-               let n = trim.Substring(0, comma)
-               let name = trim.Substring(comma + 1)
-               FN(n |> Int32.TryParse |> snd, name)
-             | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
-               match (l.Substring 3).Split(',') |> Array.toList with
-               | n :: v :: _ -> DA(n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
-               | _ -> raise (line |> sprintf "%A" |> InvalidDataException)
-             | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
-               match (l.Substring 5).Split(',') |> Array.toList with
-               | n :: v :: x :: y :: _ ->
-                 BRDA(
-                   n |> Int32.TryParse |> snd,
-                   v |> Int32.TryParse |> snd,
-                   x |> Int32.TryParse |> snd,
-                   y |> Int32.TryParse |> snd
-                 )
-               | _ -> raise (line |> sprintf "%A" |> InvalidDataException)
-             | _ -> Other)
+      |> Seq.map (fun line ->
+        match line with
+        | l when l.StartsWith("SF:", StringComparison.Ordinal) -> SF(l.Substring 3)
+        | l when l.StartsWith("FN:", StringComparison.Ordinal) ->
+          let trim = l.Substring 3
+          let comma = trim.IndexOf ','
+          let n = trim.Substring(0, comma)
+          let name = trim.Substring(comma + 1)
+          FN(n |> Int32.TryParse |> snd, name)
+        | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
+          match (l.Substring 3).Split(',') |> Array.toList with
+          | n :: v :: _ -> DA(n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
+          | _ -> raise (line |> sprintf "%A" |> InvalidDataException)
+        | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
+          match (l.Substring 5).Split(',') |> Array.toList with
+          | n :: v :: x :: y :: _ ->
+            BRDA(
+              n |> Int32.TryParse |> snd,
+              v |> Int32.TryParse |> snd,
+              x |> Int32.TryParse |> snd,
+              y |> Int32.TryParse |> snd
+            )
+          | _ -> raise (line |> sprintf "%A" |> InvalidDataException)
+        | _ -> Other)
       |> Seq.fold
            (fun (i, l) r ->
              match r with
@@ -208,6 +207,6 @@ module internal Lcov =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Lcov/Pipe #1 stage #1 at line 152@153::Invoke(System.String)",
+                            Target = "AltCover.Lcov/Pipe #1 stage #1 at line 152@152::Invoke(System.String)",
                             Justification = "Compiler generated")>]
 ()

@@ -31,7 +31,7 @@ Make one of these
 * [`module AltCoverCommand`](AltCoverCommand-fsapidoc) -- This represents the various `AltCover` operations available, and their execution from a Fake script.
 
 ### Example
-(based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L984-L1004))
+(based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/9b12b5b27f2877fcde186c1d8c08f6335108e306/Build/targets.fsx#L984-L1004))
 
 ```
 #r "paket:
@@ -55,7 +55,7 @@ let prep = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive
 ```
 
 ### Example
-(based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3578-L3591))
+(based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/9b12b5b27f2877fcde186c1d8c08f6335108e306/Build/targets.fsx#L3578-L3591))
 
 ```
 #r "paket:

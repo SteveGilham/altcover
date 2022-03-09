@@ -101,10 +101,11 @@ module internal Args =
   let internal counts (args: Abstract.IPrepareOptions) =
     args
     |> countItems
-    |> List.collect (fun (a, b) -> { 0 .. b } |> Seq.map (fun _ -> a) |> Seq.toList)
+    |> List.collect (fun (a, b) -> { 0..b } |> Seq.map (fun _ -> a) |> Seq.toList)
 
   let prepare (args: Abstract.IPrepareOptions) =
-    let argsList = args.CommandLine |> Seq.toList
+    let argsList =
+      args.CommandLine |> Seq.toList
 
     let trailing =
       if List.isEmpty argsList then
@@ -123,7 +124,8 @@ module internal Args =
     [ parameters; trailing ] |> List.concat
 
   let internal buildCollect (args: Abstract.ICollectOptions) =
-    let argsList = args.CommandLine |> Seq.toList
+    let argsList =
+      args.CommandLine |> Seq.toList
 
     let trailing =
       if List.isEmpty argsList then
@@ -138,7 +140,7 @@ module internal Args =
     let counts (args: Abstract.ICollectOptions) =
       args
       |> countItems
-      |> List.collect (fun (a, b) -> { 0 .. b } |> Seq.map (fun _ -> a) |> Seq.toList)
+      |> List.collect (fun (a, b) -> { 0..b } |> Seq.map (fun _ -> a) |> Seq.toList)
 
     [ [ "Runner" ]
       item "-r" args.RecorderDirectory

@@ -100,7 +100,8 @@ module Configuration =
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
 
-    let inject = XElement(XName.Get "Font", font)
+    let inject =
+      XElement(XName.Get "Font", font)
 
     match
       config.XPathSelectElements("//CoveragePath")
@@ -225,17 +226,16 @@ module Configuration =
       |> snd
 
     config.XPathSelectElements("//Geometry")
-    |> Seq.iter
-         (fun e ->
-           let width =
-             Math.Max(attribute e "width" |> int, 600)
+    |> Seq.iter (fun e ->
+      let width =
+        Math.Max(attribute e "width" |> int, 600)
 
-           let height =
-             Math.Max(attribute e "height" |> int, 450)
+      let height =
+        Math.Max(attribute e "height" |> int, 450)
 
-           let x = attribute e "x" |> int
-           let y = attribute e "y" |> int
-           position (width, height) (x, y))
+      let x = attribute e "x" |> int
+      let y = attribute e "y" |> int
+      position (width, height) (x, y))
 
   let ClearGeometry () =
     let file, config = ensureFile ()

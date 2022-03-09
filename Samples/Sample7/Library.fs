@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open NUnit.Framework
 open FsUnitTyped

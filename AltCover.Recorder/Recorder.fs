@@ -1,4 +1,4 @@
-// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
+﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage.Counter/Coverage.Counter.csproj
 
 namespace AltCover.Recorder
@@ -82,7 +82,8 @@ module Instance =
                     "AvoidReturningArraysOnPropertiesRule",
                     Justification = "Code more easily rewritten thus")>]
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let mutable internal modules = [| String.Empty |]
+  let mutable internal modules =
+    [| String.Empty |]
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
@@ -91,13 +92,9 @@ module Instance =
     //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
-    |> Seq.exists
-         (fun n ->
-           n.Name == "AltCover.DataCollector"
-           && n.FullName.EndsWith(
-             "PublicKeyToken=c02b1a9f5b7cade8",
-             StringComparison.Ordinal
-           ))
+    |> Seq.exists (fun n ->
+      n.Name == "AltCover.DataCollector"
+      && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
     && Token <> "AltCover"
 
   type internal Sampled =
@@ -146,7 +143,8 @@ module Instance =
              d)
            (Dictionary<string, Dictionary<Sampled, bool>>())
 
-    let mutable internal samples = makeSamples ()
+    let mutable internal samples =
+      makeSamples ()
 
     let mutable internal isRunner = false
 
@@ -209,7 +207,8 @@ module Instance =
     /// <summary>
     /// Reporting back to the mother-ship
     /// </summary>
-    let mutable internal trace = Tracer.Create(signalFile ())
+    let mutable internal trace =
+      Tracer.Create(signalFile ())
 
     let internal withMutex (f: bool -> 'a) =
       let own = mutex.WaitOne(1000)
@@ -220,12 +219,13 @@ module Instance =
         if own then mutex.ReleaseMutex()
 
     let internal initialiseTrace (t: Tracer) =
-      withMutex
-        (fun _ ->
-          trace <- t.OnStart()
-          isRunner <- isRunner || trace.IsConnected)
+      withMutex (fun _ ->
+        trace <- t.OnStart()
+        isRunner <- isRunner || trace.IsConnected)
 
-    let internal watcher = new FileSystemWatcher()
+    let internal watcher =
+      new FileSystemWatcher()
+
     let mutable internal recording = true
 
     let internal clear () =
@@ -246,20 +246,19 @@ module Instance =
           match counts.Values |> Seq.sumBy (fun x -> x.Count) with
           | 0 -> ()
           | _ ->
-            withMutex
-              (fun own ->
-                let delta =
-                  Counter.doFlushFile
-                    ignore
-                    (fun _ _ -> ())
-                    own
-                    counts
-                    CoverageFormat
-                    ReportFile
-                    None
+            withMutex (fun own ->
+              let delta =
+                Counter.doFlushFile
+                  ignore
+                  (fun _ _ -> ())
+                  own
+                  counts
+                  CoverageFormat
+                  ReportFile
+                  None
 
-                getResource "Coverage statistics flushing took {0:N} seconds"
-                |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+              getResource "Coverage statistics flushing took {0:N} seconds"
+              |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
 
     let internal flushPause () =
       ("PauseHandler")
@@ -285,15 +284,13 @@ module Instance =
       recording <- true
 
     let internal traceVisit moduleId hitPointId context =
-      lock
-        synchronize
-        (fun () ->
-          let counts = visits
+      lock synchronize (fun () ->
+        let counts = visits
 
-          if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
-            clear ()
+        if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
+          clear ()
 
-          trace.OnVisit counts moduleId hitPointId context)
+        trace.OnVisit counts moduleId hitPointId context)
 
     [<SuppressMessage("Microsoft.Usage",
                       "CA2202:DisposeObjectsBeforeLosingScope",
@@ -306,8 +303,11 @@ module Instance =
            sprintf "exception = %s" (x.ToString())
            StackTrace().ToString() |]
 
-      let stamp = sprintf "%A" DateTime.UtcNow.Ticks
-      let filename = ReportFile + "." + stamp + ".exn"
+      let stamp =
+        sprintf "%A" DateTime.UtcNow.Ticks
+
+      let filename =
+        ReportFile + "." + stamp + ".exn"
 
       use file =
         File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write)
@@ -366,25 +366,23 @@ module Instance =
            context.ToString()
            |> InvalidDataException
            |> raise)
-        |> Seq.map
-             (fun hit ->
-               if samples.ContainsKey(moduleId) then
-                 let next = samples.[moduleId]
+        |> Seq.map (fun hit ->
+          if samples.ContainsKey(moduleId) then
+            let next = samples.[moduleId]
 
-                 let mutable hasPointKey = next.ContainsKey(hit)
+            let mutable hasPointKey =
+              next.ContainsKey(hit)
 
-                 if hasPointKey |> not then
-                   lock
-                     next
-                     (fun () ->
-                       hasPointKey <- next.ContainsKey(hit)
+            if hasPointKey |> not then
+              lock next (fun () ->
+                hasPointKey <- next.ContainsKey(hit)
 
-                       if hasPointKey |> not then
-                         next.Add(hit, true))
+                if hasPointKey |> not then
+                  next.Add(hit, true))
 
-                 not hasPointKey
-               else
-                 false)
+            not hasPointKey
+          else
+            false)
         |> Seq.fold (||) false // true if any are novel -- all must be evaluated
 
     /// <summary>
@@ -424,7 +422,9 @@ module Instance =
       else
         Null
 
-    let internal payloadControl = payloadSelection clock
+    let internal payloadControl =
+      payloadSelection clock
+
     let internal payloadSelector enable = payloadControl granularity enable
 
     let internal visitSelection track moduleId hitPointId =
@@ -504,4 +504,9 @@ module Instance =
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "DeclareEventsExplicitlyRule",
+                            Scope = "type",  // TypeDefinition
+                            Target = "<StartupCode$AltCover-Recorder>.$Recorder",
+                            Justification = "Compiler generated doExit@453 and :doUnload@450")>]
 ()

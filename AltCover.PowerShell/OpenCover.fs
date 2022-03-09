@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Collections.Generic
@@ -231,23 +231,20 @@ type MergeOpenCoverCommand() =
     |> self.Files.AddRange
 
   override self.ProcessRecord() =
-    whileInCurrentDirectory
-      self
-      (fun _ ->
-        if self.ParameterSetName.StartsWith("File", StringComparison.Ordinal) then
-          self.FilesToDocuments()
+    whileInCurrentDirectory self (fun _ ->
+      if self.ParameterSetName.StartsWith("File", StringComparison.Ordinal) then
+        self.FilesToDocuments()
 
-        self.Files.AddRange self.XDocument)
+      self.Files.AddRange self.XDocument)
 
   override self.EndProcessing() =
-    whileInCurrentDirectory
-      self
-      (fun _ ->
-        let xmlDocument = AltCover.OpenCover.Merge self.Files
+    whileInCurrentDirectory self (fun _ ->
+      let xmlDocument =
+        AltCover.OpenCover.Merge self.Files
 
-        if self.OutputFile
-           |> String.IsNullOrWhiteSpace
-           |> not then
-          xmlDocument.Save(self.OutputFile)
+      if self.OutputFile
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        xmlDocument.Save(self.OutputFile)
 
-        self.WriteObject xmlDocument)
+      self.WriteObject xmlDocument)

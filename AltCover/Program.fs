@@ -1,6 +1,7 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Runtime.InteropServices
 #if GLOBALTOOL
 open System.IO
@@ -13,15 +14,20 @@ open AltCover.Main
 ()
 
 #if DEBUG
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                  "AvoidUninstantiatedInternalClassesRule",
-                                                  Justification = "Like the name says")>]
+[<SuppressMessage("Gendarme.Rules.Performance",
+                  "AvoidUninstantiatedInternalClassesRule",
+                  Justification = "Like the name says")>]
 type internal Marker =
   | DummyValueForReflectiveAccess = 0
 #endif
 
 module EntryPoint =
   [<EntryPoint>]
+#if GLOBALTOOL
+  [<SuppressMessage("Gendarme.Rules.Portability",
+                    "DoNotHardcodePathsRule",
+                    Justification = "Safe hard-coded in-pacakge relative path")>]
+#endif
   let private main arguments =
     CommandLine.toConsole ()
 
@@ -36,7 +42,8 @@ module EntryPoint =
 
       match first with
       | Select "TargetsPath" _ ->
-        let here = Assembly.GetExecutingAssembly().Location
+        let here =
+          Assembly.GetExecutingAssembly().Location
 
         let targets =
           Path.Combine(

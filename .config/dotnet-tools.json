@@ -3,31 +3,31 @@
   "isRoot": true,
   "tools": {
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.0.0",
+      "version": "5.0.4",
       "commands": [
         "reportgenerator"
       ]
     },
     "fake-cli": {
-      "version": "5.21.0",
+      "version": "5.22.0",
       "commands": [
         "fake"
       ]
     },
     "xmldocmd": {
-      "version": "2.7.0",
+      "version": "2.8.0",
       "commands": [
         "xmldocmd"
       ]
     },
     "altcode.gendarme-tool": {
-      "version": "2022.1.25.12143-pre-release",
+      "version": "2022.2.17.8350",
       "commands": [
         "gendarme"
       ]
     },
     "dotnet-fsharplint": {
-      "version": "0.21.0",
+      "version": "0.21.1",
       "commands": [
         "dotnet-fsharplint"
       ]

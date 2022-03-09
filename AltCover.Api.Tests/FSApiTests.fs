@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
@@ -23,9 +23,8 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n ->
-             n.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -53,7 +52,10 @@ module FSApiTests =
         .GetManifestResourceStream(sresource)
 
     use sreader = new StreamReader(sstream)
-    use xsreader = System.Xml.XmlReader.Create(sreader)
+
+    use xsreader =
+      System.Xml.XmlReader.Create(sreader)
+
     schemata.Add(String.Empty, xsreader) |> ignore
 
     transformed.Validate(schemata, null)
@@ -69,8 +71,8 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find
-           (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -82,24 +84,22 @@ module FSApiTests =
     let getAttribute (x: XElement) n = x.Attribute(XName.Get n).Value
 
     after.Descendants(XName.Get "Summary")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "visitedSequencePoints" "0"
-           setAttribute el "sequenceCoverage" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "visitedSequencePoints" "0"
+      setAttribute el "sequenceCoverage" "0"
 
-           if getAttribute el "minCrapScore" = "2.11" then
-             setAttribute el "minCrapScore" "2.15"
+      if getAttribute el "minCrapScore" = "2.11" then
+        setAttribute el "minCrapScore" "2.15"
 
-           if getAttribute el "maxCrapScore" = "2.11" then
-             setAttribute el "maxCrapScore" "2.15")
+      if getAttribute el "maxCrapScore" = "2.11" then
+        setAttribute el "maxCrapScore" "2.15")
 
     after.Descendants(XName.Get "Method")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "sequenceCoverage" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "sequenceCoverage" "0"
 
-           if getAttribute el "crapScore" = "2.11" then
-             setAttribute el "crapScore" "2.15")
+      if getAttribute el "crapScore" = "2.11" then
+        setAttribute el "crapScore" "2.15")
 
     after.Descendants(XName.Get "SequencePoint")
     |> Seq.toList
@@ -116,32 +116,30 @@ module FSApiTests =
       |> XDocument.Parse
 
     after.Descendants(XName.Get "Summary")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "visitedBranchPoints" "0"
-           setAttribute el "branchCoverage" "0"
-           setAttribute el "visitedSequencePoints" "0"
-           setAttribute el "sequenceCoverage" "0"
-           setAttribute el "visitedClasses" "0"
-           setAttribute el "visitedMethods" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "visitedBranchPoints" "0"
+      setAttribute el "branchCoverage" "0"
+      setAttribute el "visitedSequencePoints" "0"
+      setAttribute el "sequenceCoverage" "0"
+      setAttribute el "visitedClasses" "0"
+      setAttribute el "visitedMethods" "0"
 
-           if getAttribute el "minCrapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             setAttribute el "minCrapScore" "0"
-             setAttribute el "maxCrapScore" "0")
+      if getAttribute el "minCrapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        setAttribute el "minCrapScore" "0"
+        setAttribute el "maxCrapScore" "0")
 
     after.Descendants(XName.Get "Method")
-    |> Seq.iter
-         (fun el ->
-           setAttribute el "visited" "false"
-           setAttribute el "sequenceCoverage" "0"
-           setAttribute el "branchCoverage" "0"
+    |> Seq.iter (fun el ->
+      setAttribute el "visited" "false"
+      setAttribute el "sequenceCoverage" "0"
+      setAttribute el "branchCoverage" "0"
 
-           if getAttribute el "crapScore"
-              |> String.IsNullOrWhiteSpace
-              |> not then
-             setAttribute el "crapScore" "0")
+      if getAttribute el "crapScore"
+         |> String.IsNullOrWhiteSpace
+         |> not then
+        setAttribute el "crapScore" "0")
 
     OpenCover.PostProcess after BranchOrdinal.Offset
     //#if !NET472
@@ -226,7 +224,8 @@ module FSApiTests =
       use reader = new StreamReader(stream)
       reader.ReadToEnd()
 
-    let result = (OpenCover.JsonToXml doc).ToString()
+    let result =
+      (OpenCover.JsonToXml doc).ToString()
 
     use stream3 =
       Assembly
@@ -277,7 +276,8 @@ module FSApiTests =
       use reader = new StreamReader(stream)
       reader.ReadToEnd()
 
-    let result = (OpenCover.JsonToXml doc).ToString()
+    let result =
+      (OpenCover.JsonToXml doc).ToString()
 
     use stream3 =
       Assembly
@@ -372,7 +372,9 @@ module FSApiTests =
         .GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")
 
     let doc = XDocument.Load(stream)
-    let result = CoverageFormats.ConvertToJson doc
+
+    let result =
+      CoverageFormats.ConvertToJson doc
 
     use stream3 =
       Assembly
@@ -409,7 +411,8 @@ module FSApiTests =
 
     let doc = XDocument.Load(stream)
 
-    let result = CoverageFormats.ConvertToJson doc
+    let result =
+      CoverageFormats.ConvertToJson doc
 
     use stream3 =
       Assembly
@@ -453,7 +456,8 @@ module FSApiTests =
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
 
-    let result = CoverageFormats.ConvertToJson doc
+    let result =
+      CoverageFormats.ConvertToJson doc
 
     use stream3 =
       Assembly
@@ -496,7 +500,8 @@ module FSApiTests =
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
 
-    let result = CoverageFormats.ConvertToJson doc
+    let result =
+      CoverageFormats.ConvertToJson doc
 
     use stream3 =
       Assembly
@@ -533,7 +538,8 @@ module FSApiTests =
 
     let doc = XDocument.Load(stream)
 
-    let result = CoverageFormats.ConvertToJson doc
+    let result =
+      CoverageFormats.ConvertToJson doc
 
     use stream3 =
       Assembly
@@ -574,7 +580,8 @@ module FSApiTests =
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
 
-    let result = CoverageFormats.ConvertToJson doc
+    let result =
+      CoverageFormats.ConvertToJson doc
 
     use stream3 =
       Assembly
@@ -650,7 +657,10 @@ module FSApiTests =
 
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
-    let rewrite = CoverageFormats.ConvertToNCover doc
+
+    let rewrite =
+      CoverageFormats.ConvertToNCover doc
+
     rewrite.Save mstream
 
     use mstream2 =
@@ -701,7 +711,10 @@ module FSApiTests =
     |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
 
     use mstream = new MemoryStream()
-    let rewrite = CoverageFormats.ConvertToNCover doc
+
+    let rewrite =
+      CoverageFormats.ConvertToNCover doc
+
     rewrite.Save mstream
 
     use mstream2 =
@@ -738,8 +751,12 @@ module FSApiTests =
 
   [<Test>]
   let OpenCoverFromNCover () =
-    let sample = typeof<M.Thing>.Assembly.Location
-    let reporter, doc = AltCover.Report.reportGenerator ()
+    let sample =
+      typeof<M.Thing>.Assembly.Location
+
+    let reporter, doc =
+      AltCover.Report.reportGenerator ()
+
     let visitors = [ reporter ]
 
     Visitor.visit
@@ -894,7 +911,8 @@ module FSApiTests =
     test
       <@ converted.OuterXml.Replace(Environment.NewLine, String.Empty) = documentText @>
 
-    let reverted = XmlTypes.ToXDocument converted
+    let reverted =
+      XmlTypes.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
     test
       <@ reverted
@@ -915,7 +933,9 @@ module FSApiTests =
     |> Seq.filter (isNull >> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
-    let cob = CoverageFormats.ConvertToCobertura doc
+    let cob =
+      CoverageFormats.ConvertToCobertura doc
+
     use stream2 = new MemoryStream()
     cob.Save stream2
 
@@ -968,7 +988,9 @@ module FSApiTests =
     |> Seq.filter (isNull >> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
-    let cob = CoverageFormats.ConvertToCobertura doc
+    let cob =
+      CoverageFormats.ConvertToCobertura doc
+
     use stream2 = new MemoryStream()
     cob.Save stream2
 
@@ -1060,34 +1082,33 @@ module FSApiTests =
     [ ("CompressInterior", true, false)
       ("SameSpan", false, true)
       ("CompressBoth", true, true) ]
-    |> List.iter
-         (fun (test, inSeq, sameSpan) ->
-           use mstream = new MemoryStream()
+    |> List.iter (fun (test, inSeq, sameSpan) ->
+      use mstream = new MemoryStream()
 
-           let rewrite =
-             OpenCover.CompressBranching doc inSeq sameSpan
+      let rewrite =
+        OpenCover.CompressBranching doc inSeq sameSpan
 
-           rewrite.Save mstream
+      rewrite.Save mstream
 
-           use mstream2 =
-             new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+      use mstream2 =
+        new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
 
-           use rdr = new StreamReader(mstream2)
+      use rdr = new StreamReader(mstream2)
 
-           let result =
-             rdr.ReadToEnd().Replace("\r", String.Empty)
+      let result =
+        rdr.ReadToEnd().Replace("\r", String.Empty)
 
-           use stream2 =
-             Assembly
-               .GetExecutingAssembly()
-               .GetManifestResourceStream("AltCover.Api.Tests." + test + ".xml")
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.Api.Tests." + test + ".xml")
 
-           use rdr2 = new StreamReader(stream2)
+      use rdr2 = new StreamReader(stream2)
 
-           let expected =
-             rdr2.ReadToEnd().Replace("\r", String.Empty)
+      let expected =
+        rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-           NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected, test))
+      NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected, test))
   //test <@ result = expected @>)
 
   [<Test>]
@@ -1101,11 +1122,17 @@ module FSApiTests =
                                fail
                                summary ]
 
-    let pprep = Primitive.PrepareOptions.Create()
-    let prep = AltCover.PrepareOptions.Primitive pprep
+    let pprep =
+      Primitive.PrepareOptions.Create()
 
-    let pcoll = Primitive.CollectOptions.Create()
-    let coll = AltCover.CollectOptions.Primitive pcoll
+    let prep =
+      AltCover.PrepareOptions.Primitive pprep
+
+    let pcoll =
+      Primitive.CollectOptions.Create()
+
+    let coll =
+      AltCover.CollectOptions.Primitive pcoll
 
     let targets =
       Assembly
@@ -1247,12 +1274,14 @@ module FSApiTests =
            .ShowSummary
          |> String.IsNullOrEmpty @>
 
-    let pprep = Primitive.PrepareOptions.Create()
+    let pprep =
+      Primitive.PrepareOptions.Create()
 
     let prep =
       AltCover.AltCover.PrepareOptions.Primitive pprep
 
-    let pcoll = Primitive.CollectOptions.Create()
+    let pcoll =
+      Primitive.CollectOptions.Create()
 
     let coll =
       AltCover.AltCover.CollectOptions.Primitive pcoll
@@ -1261,21 +1290,18 @@ module FSApiTests =
       <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
 
     let coll1 =
-      { pcoll with
-          Verbosity = TraceLevel.Verbose }
+      { pcoll with Verbosity = TraceLevel.Verbose }
       |> AltCover.AltCover.CollectOptions.Primitive
 
     test
       <@ DotNet.ToTestArguments prep coll1 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
 
     let coll2 =
-      { pcoll with
-          Verbosity = TraceLevel.Warning }
+      { pcoll with Verbosity = TraceLevel.Warning }
       |> AltCover.AltCover.CollectOptions.Primitive
 
     let prep2 =
-      { pprep with
-          Verbosity = TraceLevel.Error }
+      { pprep with Verbosity = TraceLevel.Error }
       |> AltCover.AltCover.PrepareOptions.Primitive
 
     test
@@ -1297,7 +1323,8 @@ module FSApiTests =
 
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.Merge [ doc1; doc2 ]
+    let merge =
+      AltCover.OpenCover.Merge [ doc1; doc2 ]
 
     let lines =
       [ """<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
@@ -1305,7 +1332,9 @@ module FSApiTests =
         """  <Modules />"""
         """</CoverageSession>""" ]
 
-    let expected = String.Join(Environment.NewLine, lines)
+    let expected =
+      String.Join(Environment.NewLine, lines)
+
     test <@ merge.ToString() = expected.ToString() @>
 
   [<Test>]
@@ -1317,7 +1346,9 @@ module FSApiTests =
 
     let doc1 = XDocument.Load stream1
 
-    let merge = AltCover.OpenCover.Merge [ doc1 ]
+    let merge =
+      AltCover.OpenCover.Merge [ doc1 ]
+
     test <@ merge.ToString() = doc1.ToString() @>
 
   [<Test>]
@@ -1342,7 +1373,8 @@ module FSApiTests =
                                  doc1
                                  doc2 ]
 
-    let summary = merge.Root.Element(XName.Get "Summary")
+    let summary =
+      merge.Root.Element(XName.Get "Summary")
 
     //printfn "%A" merge
 
@@ -1374,7 +1406,8 @@ module FSApiTests =
                                  doc1
                                  doc2 ]
 
-    let summary = merge.Root.Element(XName.Get "Summary")
+    let summary =
+      merge.Root.Element(XName.Get "Summary")
 
     //printfn "%A" merge
 
@@ -1405,15 +1438,15 @@ module FSApiTests =
     [ ("seqpnt", "document")
       ("module", "name") ]
     |> Seq.map (fun (k, v) -> (XName.Get k, XName.Get v))
-    |> Seq.iter
-         (fun (k, v) ->
-           doc.Descendants k
-           |> Seq.iter
-                (fun x ->
-                  let old = x.Attribute(v).Value
-                  x.Attribute(v).Value <- mangleFile old))
+    |> Seq.iter (fun (k, v) ->
+      doc.Descendants k
+      |> Seq.iter (fun x ->
+        let old = x.Attribute(v).Value
+        x.Attribute(v).Value <- mangleFile old))
 
-    let rewrite = AltCover.RenderToHtml.Action doc
+    let rewrite =
+      AltCover.RenderToHtml.Action doc
+
     test <@ rewrite |> Seq.map fst |> Seq.toList = [ "Program.fs" ] @>
 
   [<Test>]
@@ -1427,14 +1460,14 @@ module FSApiTests =
 
     [ ("File", "fullPath") ]
     |> Seq.map (fun (k, v) -> (XName.Get k, XName.Get v))
-    |> Seq.iter
-         (fun (k, v) ->
-           doc.Descendants k
-           |> Seq.iter
-                (fun x ->
-                  let old = x.Attribute(v).Value
-                  x.Attribute(v).Value <- mangleFile old))
+    |> Seq.iter (fun (k, v) ->
+      doc.Descendants k
+      |> Seq.iter (fun x ->
+        let old = x.Attribute(v).Value
+        x.Attribute(v).Value <- mangleFile old))
 
-    let rewrite = AltCover.RenderToHtml.Action doc
+    let rewrite =
+      AltCover.RenderToHtml.Action doc
+
     test <@ rewrite |> Seq.map fst |> Seq.toList = [ "Filter.fs" ] @>
 #endif

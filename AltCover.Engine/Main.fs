@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -52,7 +52,10 @@ module internal Main =
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
-    let snk = StrongNameKeyData.Make(buffer.ToArray())
+
+    let snk =
+      StrongNameKeyData.Make(buffer.ToArray())
+
     CoverageParameters.add snk
     CoverageParameters.recorderStrongNameKey <- Some(snk)
 
@@ -348,16 +351,18 @@ module internal Main =
       match action with
       | Right (rest, options) ->
         // Check that the directories are distinct
-        let inputDirectories = CoverageParameters.inputDirectories ()
-        let outputDirectories = CoverageParameters.outputDirectories ()
+        let inputDirectories =
+          CoverageParameters.inputDirectories ()
+
+        let outputDirectories =
+          CoverageParameters.outputDirectories ()
 
         inputDirectories
-        |> Seq.iter
-             (fun fromDirectory ->
-               if outputDirectories.Contains fromDirectory then
-                 CommandLine.error <-
-                   CommandLine.Format.Local("NotInPlace", fromDirectory)
-                   :: CommandLine.error)
+        |> Seq.iter (fun fromDirectory ->
+          if outputDirectories.Contains fromDirectory then
+            CommandLine.error <-
+              CommandLine.Format.Local("NotInPlace", fromDirectory)
+              :: CommandLine.error)
 
         CommandLine.doPathOperation
           (fun () ->
@@ -368,11 +373,10 @@ module internal Main =
                && CommandLine.error |> List.isEmpty
                && found.Any() then
               found
-              |> Seq.iter
-                   (fun toDirectory ->
-                     CommandLine.error <-
-                       CommandLine.Format.Local("SaveExists", toDirectory)
-                       :: CommandLine.error)
+              |> Seq.iter (fun toDirectory ->
+                CommandLine.error <-
+                  CommandLine.Format.Local("SaveExists", toDirectory)
+                  :: CommandLine.error)
 
             if CommandLine.error |> List.isEmpty then
               (Seq.iter CommandLine.ensureDirectory outputDirectories))
@@ -415,22 +419,20 @@ module internal Main =
     let internal checkKey (a: AssemblyNameReference) =
       a.PublicKeyToken
       |> Option.ofObj
-      |> Option.map
-           (fun t ->
-             String.Join(
-               String.Empty,
-               t
-               |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture))
-             )
-             == "4ebffcaabf10ce6a") // recorder.snk
+      |> Option.map (fun t ->
+        String.Join(
+          String.Empty,
+          t
+          |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture))
+        )
+        == "4ebffcaabf10ce6a") // recorder.snk
       |> Option.defaultValue false
 
     let internal screenAssembly (fullName: String) (a: AssemblyDefinition) =
       if a.CustomAttributes
-         |> Seq.exists
-              (fun a ->
-                a.AttributeType.FullName
-                == "AltCover.Recorder.InstrumentationAttribute")
+         |> Seq.exists (fun a ->
+           a.AttributeType.FullName
+           == "AltCover.Recorder.InstrumentationAttribute")
          || a.MainModule.AssemblyReferences
             |> Seq.cast<AssemblyNameReference>
             |> Seq.exists checkKey
@@ -452,52 +454,49 @@ module internal Main =
       let mapping = Dictionary<string, string>()
 
       Seq.zip instrumentFromInfos instrumentToPaths
-      |> Seq.map
-           (fun (x, y) ->
-             let f = x.FullName // trim separator
-             (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
+      |> Seq.map (fun (x, y) ->
+        let f = x.FullName // trim separator
+        (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
       Seq.zip inputInfos outputInfos
-      |> Seq.iter
-           (fun (inputInfo, outputInfo) ->
-             // recurse here
+      |> Seq.iter (fun (inputInfo, outputInfo) ->
+        // recurse here
 
-             // all files in/under the input but not in/under any output
-             let files =
-               inputInfo.GetFiles("*", SearchOption.AllDirectories)
-               |> Seq.filter
-                    (fun i ->
-                      outputInfos
-                      |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
-                      |> not)
+        // all files in/under the input but not in/under any output
+        let files =
+          inputInfo.GetFiles("*", SearchOption.AllDirectories)
+          |> Seq.filter (fun i ->
+            outputInfos
+            |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
+            |> not)
 
-             // mutable bucket
-             let filemap =
-               files
-               |> Seq.fold
-                    (fun (d: Dictionary<string, string>) info ->
-                      let fullName = info.FullName
-                      let dirname = info.DirectoryName
+        // mutable bucket
+        let filemap =
+          files
+          |> Seq.fold
+               (fun (d: Dictionary<string, string>) info ->
+                 let fullName = info.FullName
+                 let dirname = info.DirectoryName
 
-                      let reldir =
-                        Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
+                 let reldir =
+                   Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
 
-                      let copy =
-                        Path.Combine(outputInfo.FullName, reldir, info.Name)
+                 let copy =
+                   Path.Combine(outputInfo.FullName, reldir, info.Name)
 
-                      copy
-                      |> Path.GetDirectoryName
-                      |> Directory.CreateDirectory
-                      |> ignore
+                 copy
+                 |> Path.GetDirectoryName
+                 |> Directory.CreateDirectory
+                 |> ignore
 
-                      d.Add(fullName, copy)
-                      d)
-                    (Dictionary<string, string>())
+                 d.Add(fullName, copy)
+                 d)
+               (Dictionary<string, string>())
 
-             // filter no-ops here
+        // filter no-ops here
 
-             // maybe mutex??
+        // maybe mutex??
 // #if IDEMPOTENT_INSTRUMENT
 //                     Instrument.I.withFileMutex
 //                       fullName
@@ -510,65 +509,64 @@ module internal Main =
 //                     File.Copy(fullName, copy, true)))
 // #endif
 
-             filemap
-             |> Seq.iter (fun kvp -> File.Copy(kvp.Key, kvp.Value, true)))
+        filemap
+        |> Seq.iter (fun kvp -> File.Copy(kvp.Key, kvp.Value, true)))
 
       // Track the symbol-bearing assemblies
       let assemblies =
         instrumentFromInfos
-        |> Seq.map
-             (fun sourceInfo ->
-               sourceInfo.GetFiles()
-               |> Seq.fold
-                    (fun (accumulator: AssemblyInfo list) info ->
-                      let fullName = info.FullName
+        |> Seq.map (fun sourceInfo ->
+          sourceInfo.GetFiles()
+          |> Seq.fold
+               (fun (accumulator: AssemblyInfo list) info ->
+                 let fullName = info.FullName
 
-                      imageLoadResilient
-                        (fun () ->
-                          use stream = File.OpenRead(fullName)
-                          use def = AssemblyDefinition.ReadAssembly(stream)
-                          ProgramDatabase.readSymbols def
+                 imageLoadResilient
+                   (fun () ->
+                     use stream = File.OpenRead(fullName)
 
-                          Some def
-                          |> Option.bind (screenAssembly fullName)
-                          |> Option.filter
-                               (fun def ->
-                                 def.MainModule.HasSymbols
-                                 && (def.IsIncluded).IsInstrumented
-                                 && (def.MainModule.Attributes
-                                     &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly))
-                          |> Option.map
-                               (fun def ->
-                                 CommandLine.Format.Local("instrumenting", fullName)
-                                 |> Output.info
+                     use def =
+                       AssemblyDefinition.ReadAssembly(stream)
 
-                                 { Path = [ fullName ]
-                                   Name = def.Name.Name
-                                   Hash =
-                                     use stream = File.OpenRead fullName
+                     ProgramDatabase.readSymbols def
 
-                                     stream
-                                     |> CoverageParameters.hash.ComputeHash
-                                     |> Convert.ToBase64String
-                                   Refs =
-                                     def.MainModule.AssemblyReferences
-                                     |> Seq.map (fun r -> r.Name)
-                                     |> Seq.toList }
-                                 :: accumulator)
-                          |> Option.defaultValue accumulator)
-                        (fun () -> accumulator))
-                    [])
+                     Some def
+                     |> Option.bind (screenAssembly fullName)
+                     |> Option.filter (fun def ->
+                       def.MainModule.HasSymbols
+                       && (def.IsIncluded).IsInstrumented
+                       && (def.MainModule.Attributes
+                           &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly))
+                     |> Option.map (fun def ->
+                       CommandLine.Format.Local("instrumenting", fullName)
+                       |> Output.info
+
+                       { Path = [ fullName ]
+                         Name = def.Name.Name
+                         Hash =
+                           use stream = File.OpenRead fullName
+
+                           stream
+                           |> CoverageParameters.hash.ComputeHash
+                           |> Convert.ToBase64String
+                         Refs =
+                           def.MainModule.AssemblyReferences
+                           |> Seq.map (fun r -> r.Name)
+                           |> Seq.toList }
+                       :: accumulator)
+                     |> Option.defaultValue accumulator)
+                   (fun () -> accumulator))
+               [])
         |> Seq.toList
         |> Seq.concat
         |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique
-        |> Seq.map
-             (fun (n, agroup) ->
-               { (agroup |> Seq.head) with
-                   Path =
-                     agroup
-                     |> Seq.map (fun aa -> aa.Path)
-                     |> Seq.concat
-                     |> Seq.toList })
+        |> Seq.map (fun (n, agroup) ->
+          { (agroup |> Seq.head) with
+              Path =
+                agroup
+                |> Seq.map (fun aa -> aa.Path)
+                |> Seq.concat
+                |> Seq.toList })
         |> Seq.toList
 
       // sort the assemblies into order so that the depended-upon are processed first
@@ -581,12 +579,11 @@ module internal Main =
 
       let simplified =
         assemblies
-        |> List.map
-             (fun a ->
-               { a with
-                   Refs =
-                     a.Refs
-                     |> List.filter (fun n -> Set.contains n candidates) })
+        |> List.map (fun a ->
+          { a with
+              Refs =
+                a.Refs
+                |> List.filter (fun n -> Set.contains n candidates) })
 
       let rec bundle unassigned unresolved collection n =
         match unassigned with
@@ -607,12 +604,11 @@ module internal Main =
           let next =
             unassigned
             |> List.filter (fun u -> u.Refs |> List.isEmpty |> not)
-            |> List.map
-                 (fun a ->
-                   { a with
-                       Refs =
-                         a.Refs
-                         |> List.filter (fun n -> Set.contains n waiting) })
+            |> List.map (fun a ->
+              { a with
+                  Refs =
+                    a.Refs
+                    |> List.filter (fun n -> Set.contains n waiting) })
 
           bundle next waiting (stage :: collection) (n - 1)
 
@@ -622,20 +618,19 @@ module internal Main =
         bundle simplified candidates [] (simplified |> List.length)
         |> List.concat
         |> List.rev
-        |> List.map
-             (fun a ->
-               let proto = a.Path.Head
+        |> List.map (fun a ->
+          let proto = a.Path.Head
 
-               let targets =
-                 a.Path
-                 |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
+          let targets =
+            a.Path
+            |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
 
-               ({ AssemblyPath = proto
-                  Destinations = targets
-                  Identity =
-                    { Assembly = a.Hash
-                      Configuration = CoverageParameters.configurationHash.Value } },
-                a.Name))
+          ({ AssemblyPath = proto
+             Destinations = targets
+             Identity =
+               { Assembly = a.Hash
+                 Configuration = CoverageParameters.configurationHash.Value } },
+           a.Name))
 
       List.unzip sorted
 
@@ -680,7 +675,8 @@ module internal Main =
       | Right (rest, fromInfo, toInfo, targetInfo) ->
         CommandLine.applyVerbosity ()
 
-        let report = CoverageParameters.reportPath ()
+        let report =
+          CoverageParameters.reportPath ()
 
         let result =
           CommandLine.doPathOperation
@@ -699,7 +695,8 @@ module internal Main =
               Output.info
               <| CommandLine.Format.Local("reportingto", report)
 
-              let reporter, document = selectReportGenerator ()
+              let reporter, document =
+                selectReportGenerator ()
 
               let visitors =
                 [ reporter
@@ -741,11 +738,8 @@ module internal Main =
         [ "../netcoreapp2.0"
           "../netstandard2.0"
           "../any" ]
-        |> Seq.map
-             (fun d ->
-               canonicalPath (
-                 Path.Combine(Path.Combine(here, d), "AltCover.PowerShell.dll")
-               ))
+        |> Seq.map (fun d ->
+          canonicalPath (Path.Combine(Path.Combine(here, d), "AltCover.PowerShell.dll")))
         |> Seq.filter File.Exists
         |> Seq.tryHead
         |> Option.map (sprintf "Import-Module %A")

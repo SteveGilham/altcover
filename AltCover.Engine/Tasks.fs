@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.IO
@@ -138,7 +138,7 @@ type Prepare() =
   member val Verbosity = "Info" with get, set
 
   member private self.Message text =
-    base.Log.LogMessage(MessageImportance.High, text)
+    ``base``.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
     let log =
@@ -210,9 +210,7 @@ type Collect() =
 
   member val Threshold = String.Empty with get, set
 
-  [<SuppressMessage("Microsoft.Naming",
-                    "CA1704",
-                    Justification = "'Cobertura' is jargon")>]
+  [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "'Cobertura' is jargon")>]
   member val Cobertura = String.Empty with get, set
 
   member val OutputFile = String.Empty with get, set
@@ -233,7 +231,7 @@ type Collect() =
   member self.Summary = Command.Summary()
 
   member private self.Message text =
-    base.Log.LogMessage(MessageImportance.High, text)
+    ``base``.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
     let log =
@@ -342,7 +340,7 @@ type RunSettings() =
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
   member private self.Message text =
-    base.Log.LogMessage(MessageImportance.High, text)
+    ``base``.Log.LogMessage(MessageImportance.High, text)
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
@@ -389,7 +387,8 @@ type RunSettings() =
           parent.Add extra
           extra
 
-      let here = Assembly.GetExecutingAssembly().Location
+      let here =
+        Assembly.GetExecutingAssembly().Location
 
       let expected =
         Path.Combine(Path.GetDirectoryName(here), self.DataCollector)
@@ -402,9 +401,11 @@ type RunSettings() =
         let ip1 =
           ensureHas rs "InProcDataCollectionRunSettings"
 
-        let ip2 = ensureHas ip1 "InProcDataCollectors"
+        let ip2 =
+          ensureHas ip1 "InProcDataCollectors"
 
-        let name = AssemblyName.GetAssemblyName(expected)
+        let name =
+          AssemblyName.GetAssemblyName(expected)
 
         let altcover =
           XElement(
@@ -488,7 +489,9 @@ type ContingentCopy() =
       let toDir =
         Path.Combine(self.InstrumentDirectory, relativeDir)
 
-      let filename = self.FileName |> Path.GetFileName
+      let filename =
+        self.FileName |> Path.GetFileName
+
       let toFile = Path.Combine(toDir, filename)
 
       let from =
@@ -511,7 +514,7 @@ type RetryDelete() =
   member val Files: string array = [||] with get, set
 
   member internal self.Write message =
-    base.Log.LogMessage(MessageImportance.High, message)
+    ``base``.Log.LogMessage(MessageImportance.High, message)
 
   override self.Execute() =
     if self.Files.IsNotNull then

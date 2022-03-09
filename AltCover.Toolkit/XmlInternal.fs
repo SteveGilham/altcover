@@ -34,7 +34,9 @@ module internal XmlUtilities =
         | AltCover.ReportFormat.NCover -> ".xsd.NCoverEmbedded.xsd"
         | _ -> ".xsd.OpenCover.xsd"
 
-    use stream = here.GetManifestResourceStream(resource)
+    use stream =
+      here.GetManifestResourceStream(resource)
+
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     schemas.Add(String.Empty, xreader) |> ignore

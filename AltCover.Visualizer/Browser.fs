@@ -7,8 +7,8 @@ open System.Runtime.InteropServices
 
 [<AutoOpen>]
 [<SuppressMessage("Gendarme.Rules.Smells",
-                   "AvoidSpeculativeGeneralityRule",
-                   Justification = "Delegation is DRYing the codebase")>]
+                  "AvoidSpeculativeGeneralityRule",
+                  Justification = "Delegation is DRYing the codebase")>]
 module internal Extensions =
 #if !NETCOREAPP2_1
   [<SuppressMessage("Gendarme.Rules.Globalization",
@@ -21,9 +21,9 @@ module internal Extensions =
 #endif
              replace (y: string, z: string) (x: string) =
 #if !NETCOREAPP2_1
-             x.Replace(y, z)
+    x.Replace(y, z)
 #else
-             x.Replace(y, z, System.StringComparison.Ordinal)
+    x.Replace(y, z, System.StringComparison.Ordinal)
 #endif
 
 #if !NETCOREAPP2_1
@@ -37,9 +37,9 @@ module internal Extensions =
 #endif
              indexOf (y: char) (x: string) =
 #if !NETCOREAPP2_1
-             x.IndexOf y
+    x.IndexOf y
 #else
-             x.IndexOf(y, System.StringComparison.Ordinal)
+    x.IndexOf(y, System.StringComparison.Ordinal)
 #endif
 
 module Browser =
@@ -49,7 +49,9 @@ module Browser =
                     Justification = "I know what I'm doing here")>]
   // browser launch from Avalonia
   let private shellExec (cmd: string) waitForExit =
-    let escapedArgs = cmd |> replace ("\"", "\\\"") // use Blackfox instead???
+    let escapedArgs =
+      cmd |> replace ("\"", "\\\"") // use Blackfox instead???
+
     let psi = ProcessStartInfo()
     psi.FileName <- "/bin/sh"
     psi.Arguments <- "-c \"" + escapedArgs + "\""
@@ -95,5 +97,8 @@ module Browser =
 
       psi.CreateNoWindow <- true
       psi.UseShellExecute <- isWindows
-      use _proc = System.Diagnostics.Process.Start(psi)
+
+      use _proc =
+        System.Diagnostics.Process.Start(psi)
+
       ()

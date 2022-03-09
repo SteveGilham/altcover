@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -46,26 +46,35 @@ type MainWindow() as this =
   let getIcon name =
     let iconstype = icons.GetType()
     let named = iconstype.GetProperty(name)
-    let value = named.GetValue(icons) :?> Lazy<Bitmap>
+
+    let value =
+      named.GetValue(icons) :?> Lazy<Bitmap>
+
     value.Force()
 
   [<NonSerialized>]
-  let visited = SolidColorBrush.Parse "#0000CD" // "#F5F5F5" // Medium Blue on White Smoke
+  let visited =
+    SolidColorBrush.Parse "#0000CD" // "#F5F5F5" // Medium Blue on White Smoke
 
   [<NonSerialized>]
-  let declared = SolidColorBrush.Parse "#FFA500" // "#F5F5F5" // Orange on White Smoke
+  let declared =
+    SolidColorBrush.Parse "#FFA500" // "#F5F5F5" // Orange on White Smoke
 
   [<NonSerialized>]
-  let staticAnalysis = SolidColorBrush.Parse "#000000" // "#F5F5F5" // Black on White Smoke
+  let staticAnalysis =
+    SolidColorBrush.Parse "#000000" // "#F5F5F5" // Black on White Smoke
 
   [<NonSerialized>]
-  let automatic = SolidColorBrush.Parse "#FFD700" // "#F5F5F5" // Gold on White Smoke
+  let automatic =
+    SolidColorBrush.Parse "#FFD700" // "#F5F5F5" // Gold on White Smoke
 
   [<NonSerialized>]
-  let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
+  let notVisited =
+    SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
 
   [<NonSerialized>]
-  let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
+  let excluded =
+    SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
   let makeTreeNode pc leaf name icon =
     let tree = Image()
@@ -126,24 +135,26 @@ type MainWindow() as this =
     this.ShowMessageBox status caption message
 
   member private this.ShowMessageBox (status: MessageType) caption message =
-    Dispatcher.UIThread.Post
-      (fun _ ->
-        this.FindControl<Image>("Status").Source <- (match status with
-                                                     | MessageType.Info -> icons.Info
-                                                     | MessageType.Warning -> icons.Warn
-                                                     | _ -> icons.Error)
-          .Force()
+    Dispatcher.UIThread.Post (fun _ ->
+      this.FindControl<Image>("Status").Source <- (match status with
+                                                   | MessageType.Info -> icons.Info
+                                                   | MessageType.Warning -> icons.Warn
+                                                   | _ -> icons.Error)
+        .Force()
 
-        this.FindControl<TextBlock>("Caption").Text <- caption
-        this.FindControl<TextBox>("Message").Text <- message
-        this.FindControl<StackPanel>("MessageBox").IsVisible <- true
-        this.FindControl<Menu>("Menu").IsVisible <- false
-        this.FindControl<DockPanel>("Grid").IsVisible <- false)
+      this.FindControl<TextBlock>("Caption").Text <- caption
+      this.FindControl<TextBox>("Message").Text <- message
+      this.FindControl<StackPanel>("MessageBox").IsVisible <- true
+      this.FindControl<Menu>("Menu").IsVisible <- false
+      this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
-    let listitem = this.FindControl<MenuItem>("List")
-    let items = listitem.Items.OfType<MenuItem>()
+    let listitem =
+      this.FindControl<MenuItem>("List")
+
+    let items =
+      listitem.Items.OfType<MenuItem>()
 
     let active =
       HandlerCommon.PopulateMenu
@@ -170,7 +181,10 @@ type MainWindow() as this =
     HandlerCommon.UpdateCoverageFiles this path add
     let active = this.PopulateMenu()
     Persistence.saveCoverageFiles coverageFiles
-    let menu = this.FindControl<MenuItem>("Refresh")
+
+    let menu =
+      this.FindControl<MenuItem>("Refresh")
+
     menu.IsEnabled <- active
 
     menu.Icon <-
@@ -190,20 +204,19 @@ type MainWindow() as this =
 
   member private this.UpdateTextFonts (text: TextPresenter) text2 =
     [ text; text2 ]
-    |> List.iter
-         (fun t ->
-           let (_, logfont) =
-             LogFont.TryParse(Persistence.readFont ())
+    |> List.iter (fun t ->
+      let (_, logfont) =
+        LogFont.TryParse(Persistence.readFont ())
 
-           t.FontFamily <- FontFamily(logfont.faceName)
-           t.FontSize <- float logfont.height
-           t.FontWeight <- enum logfont.weight
+      t.FontFamily <- FontFamily(logfont.faceName)
+      t.FontSize <- float logfont.height
+      t.FontWeight <- enum logfont.weight
 
-           t.FontStyle <-
-             match logfont.italic with
-             | 0uy -> FontStyle.Normal
-             | 255uy -> FontStyle.Italic
-             | _ -> FontStyle.Oblique)
+      t.FontStyle <-
+        match logfont.italic with
+        | 0uy -> FontStyle.Normal
+        | 255uy -> FontStyle.Italic
+        | _ -> FontStyle.Oblique)
 
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
@@ -213,7 +226,9 @@ type MainWindow() as this =
       f ()
     with
     | x ->
-      let caption = Resource.GetResourceString "LoadError"
+      let caption =
+        Resource.GetResourceString "LoadError"
+
       this.ShowMessageBox MessageType.Error caption x.Message
 
   member private this.PrepareDoubleTap
@@ -261,29 +276,26 @@ type MainWindow() as this =
       (lines: FormattedTextLine list)
       (file: Source)
       =
-      let branches = HandlerCommon.TagBranches root file
+      let branches =
+        HandlerCommon.TagBranches root file
 
       let h = (lines |> Seq.head).Height
       let pad = (h - 16.0) / 2.0
       let margin = Thickness(0.0, pad)
 
-      Dispatcher.UIThread.Post
-        (fun _ ->
-          stack.Children.Clear()
+      Dispatcher.UIThread.Post (fun _ ->
+        stack.Children.Clear()
 
-          for l in 1 .. lines.Length do
-            let pic = Image()
+        for l in 1 .. lines.Length do
+          let pic = Image()
 
-            let pix =
-              HandlerCommon.IconForBranches
-                icons
-                branches
-                l
-                (fun text -> ToolTip.SetTip(pic, text))
+          let pix =
+            HandlerCommon.IconForBranches icons branches l (fun text ->
+              ToolTip.SetTip(pic, text))
 
-            pic.Source <- pix
-            pic.Margin <- margin
-            stack.Children.Add pic)
+          pic.Source <- pix
+          pic.Margin <- margin
+          stack.Children.Add pic)
 
     let markCoverage
       (root: XPathNavigator)
@@ -301,84 +313,84 @@ type MainWindow() as this =
       let linemark =
         tags
         |> HandlerCommon.TagLines visited notVisited
-        |> List.map
-             (fun (l, tag) ->
-               let start =
-                 (l - 1) * (7 + Environment.NewLine.Length)
+        |> List.map (fun (l, tag) ->
+          let start =
+            (l - 1) * (7 + Environment.NewLine.Length)
 
-               FormattedTextStyleSpan(start, 7, tag))
+          FormattedTextStyleSpan(start, 7, tag))
 
       (formats, linemark)
 
     context.Row.DoubleTapped
-    |> Event.add
-         (fun _ ->
-           let text =
-             this.FindControl<TextPresenter>("Source")
+    |> Event.add (fun _ ->
+      let text =
+        this.FindControl<TextPresenter>("Source")
 
-           let text2 = this.FindControl<TextPresenter>("Lines")
+      let text2 =
+        this.FindControl<TextPresenter>("Lines")
 
-           let scroller =
-             this.FindControl<ScrollViewer>("Coverage")
+      let scroller =
+        this.FindControl<ScrollViewer>("Coverage")
 
-           let noSource () =
-             this.DisplayMessage MessageType.Info
-             <| String.Format(
-               System.Globalization.CultureInfo.CurrentCulture,
-               Resource.GetResourceString "No source location",
-               visibleName
-             )
+      let noSource () =
+        this.DisplayMessage MessageType.Info
+        <| String.Format(
+          System.Globalization.CultureInfo.CurrentCulture,
+          Resource.GetResourceString "No source location",
+          visibleName
+        )
 
-           let showSource (info: Source) (line: int) =
-             this.CatchAllAndWarn
-               (fun () ->
-                 this.UpdateTextFonts text text2
-                 text.Text <- info.ReadAllText().Replace('\t', '\u2192')
+      let showSource (info: Source) (line: int) =
+        this.CatchAllAndWarn (fun () ->
+          this.UpdateTextFonts text text2
+          text.Text <- info.ReadAllText().Replace('\t', '\u2192')
 
-                 let textLines =
-                   text.FormattedText.GetLines() |> Seq.toList
+          let textLines =
+            text.FormattedText.GetLines() |> Seq.toList
 
-                 text2.Text <-
-                   String.Join(
-                     Environment.NewLine,
-                     textLines
-                     // Font limitation or Avalonia limitation?
-                     // character \u2442 just shows as a box.
-                     |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i))
-                   )
+          text2.Text <-
+            String.Join(
+              Environment.NewLine,
+              textLines
+              // Font limitation or Avalonia limitation?
+              // character \u2442 just shows as a box.
+              |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i))
+            )
 
-                 let sample = textLines |> Seq.head
-                 let depth = sample.Height * float (line - 1)
-                 let root = xpath.Clone()
-                 root.MoveToRoot()
+          let sample = textLines |> Seq.head
+          let depth = sample.Height * float (line - 1)
+          let root = xpath.Clone()
+          root.MoveToRoot()
 
-                 let (formats, linemark) =
-                   markCoverage root text text2 textLines info
+          let (formats, linemark) =
+            markCoverage root text text2 textLines info
 
-                 let stack = this.FindControl<StackPanel>("Branches")
-                 root.MoveToRoot()
-                 markBranches root stack textLines info
+          let stack =
+            this.FindControl<StackPanel>("Branches")
 
-                 async {
-                   Threading.Thread.Sleep(300)
+          root.MoveToRoot()
+          markBranches root stack textLines info
 
-                   Dispatcher.UIThread.Post
-                     (fun _ ->
-                       text.FormattedText.Spans <- formats
-                       text.Tag <- formats
-                       text.InvalidateVisual()
-                       text2.FormattedText.Spans <- linemark
-                       text2.Tag <- linemark
-                       text2.InvalidateVisual()
+          async {
+            Threading.Thread.Sleep(300)
 
-                       let midpoint = scroller.Viewport.Height / 2.0
+            Dispatcher.UIThread.Post (fun _ ->
+              text.FormattedText.Spans <- formats
+              text.Tag <- formats
+              text.InvalidateVisual()
+              text2.FormattedText.Spans <- linemark
+              text2.Tag <- linemark
+              text2.InvalidateVisual()
 
-                       if (depth > midpoint) then
-                         scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
-                 }
-                 |> Async.Start)
+              let midpoint =
+                scroller.Viewport.Height / 2.0
 
-           HandlerCommon.DoRowActivation xpath this noSource showSource)
+              if (depth > midpoint) then
+                scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+          }
+          |> Async.Start)
+
+      HandlerCommon.DoRowActivation xpath this noSource showSource)
 
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidLongMethodsRule",
@@ -395,18 +407,19 @@ type MainWindow() as this =
     let filterBits =
       (Resource.GetResourceString "SelectXml")
         .Split([| '|' |])
-      |> Seq.map
-           (fun f ->
-             let entry = f.Split([| '%' |])
-             let filter = FileDialogFilter()
-             filter.Name <- entry |> Seq.head
-             filter.Extensions <- List(entry |> Seq.tail)
-             filter)
+      |> Seq.map (fun f ->
+        let entry = f.Split([| '%' |])
+        let filter = FileDialogFilter()
+        filter.Name <- entry |> Seq.head
+        filter.Extensions <- List(entry |> Seq.tail)
+        filter)
 
     ofd.Filters <- List(filterBits)
     this.Title <- "AltCover.Visualizer"
 
-    let p = Environment.OSVersion.Platform |> int
+    let p =
+      Environment.OSVersion.Platform |> int
+
     let isWindows = p <= 3
 
     let respondToFont font =
@@ -415,20 +428,21 @@ type MainWindow() as this =
       let text =
         this.FindControl<TextPresenter>("Source")
 
-      let text2 = this.FindControl<TextPresenter>("Lines")
+      let text2 =
+        this.FindControl<TextPresenter>("Lines")
+
       this.UpdateTextFonts text text2
 
       [ text; text2 ]
-      |> Seq.iter
-           (fun t ->
-             let tmp = t.Text
-             t.Text <- String.Empty
-             t.Text <- tmp
+      |> Seq.iter (fun t ->
+        let tmp = t.Text
+        t.Text <- String.Empty
+        t.Text <- tmp
 
-             t.FormattedText.Spans <-
-               match t.Tag with
-               | :? (list<FormattedTextStyleSpan>) as l -> l
-               | _ -> [])
+        t.FormattedText.Spans <-
+          match t.Tag with
+          | :? (list<FormattedTextStyleSpan>) as l -> l
+          | _ -> [])
 
       let h =
         (text.FormattedText.GetLines() |> Seq.head).Height
@@ -440,107 +454,101 @@ type MainWindow() as this =
       |> Seq.cast<Image>
       |> Seq.iter (fun pic -> pic.Margin <- margin)
 
-    let fontItem = this.FindControl<MenuItem>("Font")
+    let fontItem =
+      this.FindControl<MenuItem>("Font")
 
     if isWindows then
       fontItem.IsVisible <- true
 
       fontItem.Click
-      |> Event.add
-           (fun _ ->
-             let hwnd = this.PlatformImpl.Handle.Handle
+      |> Event.add (fun _ ->
+        let hwnd = this.PlatformImpl.Handle.Handle
 
-             Fonts.SelectWin32(Persistence.readFont (), hwnd)
-             |> Option.ofObj
-             |> Option.iter respondToFont)
+        Fonts.SelectWin32(Persistence.readFont (), hwnd)
+        |> Option.ofObj
+        |> Option.iter respondToFont)
     else if Fonts.Wish().Any() then
       fontItem.IsVisible <- true
 
       fontItem.Click
-      |> Event.add
-           (fun _ ->
-             Persistence.readFont ()
-             |> Fonts.SelectWish
-             |> Option.ofObj
-             |> Option.iter respondToFont)
+      |> Event.add (fun _ ->
+        Persistence.readFont ()
+        |> Fonts.SelectWish
+        |> Option.ofObj
+        |> Option.iter respondToFont)
 
     [ "open"
       "refresh"
       "font"
       "showAbout"
       "exit" ]
-    |> Seq.iter
-         (fun n ->
-           let cap =
-             n.First().ToString().ToUpper() + n.Substring(1)
+    |> Seq.iter (fun n ->
+      let cap =
+        n.First().ToString().ToUpper() + n.Substring(1)
 
-           let raw =
-             Resource.GetResourceString(n + "Button.Label")
+      let raw =
+        Resource.GetResourceString(n + "Button.Label")
 
-           let keytext = raw.Split('|')
+      let keytext = raw.Split('|')
 
-           let menu = this.FindControl<MenuItem> cap
-           // Why is this Shift inverted?  This turns into Alt+key.  TODO raise issue
-           let hotkey =
-             Avalonia.Input.KeyGesture.Parse("Alt+Shift+" + keytext.[0])
+      let menu = this.FindControl<MenuItem> cap
+      // Why is this Shift inverted?  This turns into Alt+key.  TODO raise issue
+      let hotkey =
+        Avalonia.Input.KeyGesture.Parse("Alt+Shift+" + keytext.[0])
 
-           menu.HotKey <- hotkey
+      menu.HotKey <- hotkey
 
-           let item =
-             this.FindControl<Primitives.AccessText>(cap + "Text")
+      let item =
+        this.FindControl<Primitives.AccessText>(cap + "Text")
 
-           item.Text <- keytext.[1]
+      item.Text <- keytext.[1]
 
-           )
+    )
 
     this.FindControl<MenuItem>("Exit").Click
-    |> Event.add
-         (fun _ ->
-           if Persistence.save then
-             Persistence.saveGeometry this
+    |> Event.add (fun _ ->
+      if Persistence.save then
+        Persistence.saveGeometry this
 
-           let l =
-             Avalonia.Application.Current.ApplicationLifetime
-             :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
+      let l =
+        Avalonia.Application.Current.ApplicationLifetime
+        :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
 
-           l.Shutdown())
+      l.Shutdown())
 
     this.FindControl<MenuItem>("ShowAbout").Click
-    |> Event.add
-         (fun _ ->
-           this.FindControl<StackPanel>("AboutBox").IsVisible <- true
-           this.FindControl<Menu>("Menu").IsVisible <- false
-           this.FindControl<DockPanel>("Grid").IsVisible <- false)
+    |> Event.add (fun _ ->
+      this.FindControl<StackPanel>("AboutBox").IsVisible <- true
+      this.FindControl<Menu>("Menu").IsVisible <- false
+      this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
     let openFile = new Event<String option>()
 
     this.FindControl<MenuItem>("Open").Click
-    |> Event.add
-         (fun _ ->
-           this.HideAboutBox()
+    |> Event.add (fun _ ->
+      this.HideAboutBox()
 
-           async {
-             (ofd.ShowAsync(this)
-              |> Async.AwaitTask // task not disposed??
-              |> Async.RunSynchronously)
-             |> Option.ofObj
-             |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
-             |> Option.iter openFile.Trigger
-           }
-           |> Async.Start)
+      async {
+        (ofd.ShowAsync(this)
+         |> Async.AwaitTask // task not disposed??
+         |> Async.RunSynchronously)
+        |> Option.ofObj
+        |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
+        |> Option.iter openFile.Trigger
+      }
+      |> Async.Start)
 
     let click =
       openFile.Publish
       |> Event.choose id
-      |> Event.map
-           (fun n ->
-             ofd.Directory <- Path.GetDirectoryName n
+      |> Event.map (fun n ->
+        ofd.Directory <- Path.GetDirectoryName n
 
-             if Persistence.save then
-               Persistence.saveFolder ofd.Directory
+        if Persistence.save then
+          Persistence.saveFolder ofd.Directory
 
-             justOpened <- n
-             -1)
+        justOpened <- n
+        -1)
 
     let select =
       this
@@ -548,7 +556,8 @@ type MainWindow() as this =
         .Items.OfType<MenuItem>()
       |> Seq.mapi (fun n (i: MenuItem) -> i.Click |> Event.map (fun _ -> n))
     // The sum of all these events -- we have explicitly selected a file
-    let fileSelection = select |> Seq.fold Event.merge click
+    let fileSelection =
+      select |> Seq.fold Event.merge click
 
     let refresh =
       this.FindControl<MenuItem>("Refresh").Click
@@ -559,44 +568,44 @@ type MainWindow() as this =
       row.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Left
 
       row.LayoutUpdated
-      |> Event.add
-           (fun _ ->
-             let remargin (t: TreeViewItem) =
-               if t.HeaderPresenter.IsNotNull then
-                 let hp =
-                   t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
+      |> Event.add (fun _ ->
+        let remargin (t: TreeViewItem) =
+          if t.HeaderPresenter.IsNotNull then
+            let hp =
+              t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
 
-                 let grid = hp.Parent :?> Grid
-                 grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
+            let grid = hp.Parent :?> Grid
+            grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
 
-             remargin row
+        remargin row
 
-             row.Items.OfType<TreeViewItem>()
-             |> Seq.iter remargin)
+        row.Items.OfType<TreeViewItem>()
+        |> Seq.iter remargin)
 
       row.Tapped
-      |> Event.add
-           (fun evt ->
-             row.IsExpanded <- not row.IsExpanded
+      |> Event.add (fun evt ->
+        row.IsExpanded <- not row.IsExpanded
 
-             if not leaf then
-               let items = (row.Header :?> StackPanel).Children
-               items.RemoveAt(0)
-               let mark = Image()
+        if not leaf then
+          let items =
+            (row.Header :?> StackPanel).Children
 
-               mark.Source <-
-                 if row.Items.OfType<Object>().Any() then
-                   if row.IsExpanded then
-                     icons.TreeCollapse.Force()
-                   else
-                     icons.TreeExpand.Force()
-                 else
-                   icons.Blank.Force()
+          items.RemoveAt(0)
+          let mark = Image()
 
-               mark.Margin <- Thickness.Parse("2")
-               items.Insert(0, mark)
+          mark.Source <-
+            if row.Items.OfType<Object>().Any() then
+              if row.IsExpanded then
+                icons.TreeCollapse.Force()
+              else
+                icons.TreeExpand.Force()
+            else
+              icons.Blank.Force()
 
-             evt.Handled <- true)
+          mark.Margin <- Thickness.Parse("2")
+          items.Insert(0, mark)
+
+        evt.Handled <- true)
 
       row.Items <- List<TreeViewItem>()
       row.Header <- makeTreeNode note leaf name <| anIcon.Force()
@@ -607,78 +616,78 @@ type MainWindow() as this =
     |> Event.add this.HideAboutBox
 
     Event.merge fileSelection refresh
-    |> Event.add
-         (fun index ->
-           let mutable auxModel =
-             { Model = List<TreeViewItem>()
-               Row = null }
+    |> Event.add (fun index ->
+      let mutable auxModel =
+        { Model = List<TreeViewItem>()
+          Row = null }
 
-           let addNode =
-             fun leaf (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon pc name (tip: string option) ->
-               let newrow = makeNewRow pc leaf name icon
+      let addNode =
+        fun leaf (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon pc name (tip: string option) ->
+          let newrow = makeNewRow pc leaf name icon
 
-               (context.Row.Items :?> List<TreeViewItem>)
-                 .Add newrow
+          (context.Row.Items :?> List<TreeViewItem>)
+            .Add newrow
 
-               tip
-               |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
+          tip
+          |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
 
-               { context with Row = newrow }
+          { context with Row = newrow }
 
-           let environment =
-             { Icons = icons
-               GetFileInfo =
-                 fun i ->
-                   FileInfo(
-                     if i < 0 then
-                       justOpened
-                     else
-                       coverageFiles.[i]
-                   )
-               Display = this.DisplayMessage
-               UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
-               UpdateUISuccess =
-                 fun info ->
-                   let tree = this.FindControl<TreeView>("Tree")
-                   this.Title <- "AltCover.Visualizer"
+      let environment =
+        { Icons = icons
+          GetFileInfo =
+            fun i ->
+              FileInfo(
+                if i < 0 then
+                  justOpened
+                else
+                  coverageFiles.[i]
+              )
+          Display = this.DisplayMessage
+          UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
+          UpdateUISuccess =
+            fun info ->
+              let tree =
+                this.FindControl<TreeView>("Tree")
 
-                   tree.Items.OfType<IDisposable>()
-                   |> Seq.iter (fun x -> x.Dispose())
+              this.Title <- "AltCover.Visualizer"
 
-                   let t1 =
-                     this.FindControl<TextPresenter>("Source")
+              tree.Items.OfType<IDisposable>()
+              |> Seq.iter (fun x -> x.Dispose())
 
-                   let t2 = this.FindControl<TextPresenter>("Lines")
+              let t1 =
+                this.FindControl<TextPresenter>("Source")
 
-                   [ t1; t2 ]
-                   |> Seq.iter
-                        (fun t ->
-                          t.Text <- String.Empty
-                          t.FormattedText.Spans <- []
-                          t.Tag <- t.FormattedText.Spans)
+              let t2 =
+                this.FindControl<TextPresenter>("Lines")
 
-                   this
-                     .FindControl<StackPanel>("Branches")
-                     .Children.Clear()
+              [ t1; t2 ]
+              |> Seq.iter (fun t ->
+                t.Text <- String.Empty
+                t.FormattedText.Spans <- []
+                t.Tag <- t.FormattedText.Spans)
 
-                   tree.Items <- auxModel.Model
-                   this.UpdateMRU info.FullName true
-               SetXmlNode =
-                 fun pc name icon tip ->
-                   let model = auxModel.Model
-                   let row = makeNewRow pc false name icon
-                   model.Add row
+              this
+                .FindControl<StackPanel>("Branches")
+                .Children.Clear()
 
-                   if tip |> String.IsNullOrWhiteSpace |> not then
-                     ToolTip.SetTip(row, tip)
+              tree.Items <- auxModel.Model
+              this.UpdateMRU info.FullName true
+          SetXmlNode =
+            fun pc name icon tip ->
+              let model = auxModel.Model
+              let row = makeNewRow pc false name icon
+              model.Add row
 
-                   { Model = model; Row = row }
-               AddNode = (addNode false)
-               AddLeafNode = (addNode true)
-               Map = this.PrepareDoubleTap }
+              if tip |> String.IsNullOrWhiteSpace |> not then
+                ToolTip.SetTip(row, tip)
 
-           Dispatcher.UIThread.Post
-             (fun _ -> CoverageFileTree.DoSelected environment index))
+              { Model = model; Row = row }
+          AddNode = (addNode false)
+          AddLeafNode = (addNode true)
+          Map = this.PrepareDoubleTap }
+
+      Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
 
     this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "
                                                    + AssemblyVersionInformation.AssemblyFileVersion
@@ -695,15 +704,18 @@ type MainWindow() as this =
       copyright
     )
 
-    let link = this.FindControl<TextBlock>("Link")
+    let link =
+      this.FindControl<TextBlock>("Link")
+
     link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"
-    let linkButton = this.FindControl<Button>("LinkButton")
+
+    let linkButton =
+      this.FindControl<Button>("LinkButton")
 
     linkButton.Click
-    |> Event.add
-         (fun _ ->
-           Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
-             "http://www.github.com/SteveGilham/altcover")
+    |> Event.add (fun _ ->
+      Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
+        "http://www.github.com/SteveGilham/altcover")
 
     this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString
                                                           "AboutDialog.About"
@@ -718,15 +730,14 @@ type MainWindow() as this =
     )
 
     this.Closing
-    |> Event.add
-         (fun e ->
-           if this.FindControl<DockPanel>("Grid").IsVisible
-              |> not then
-             this.FindControl<StackPanel>("AboutBox").IsVisible <- false
-             this.FindControl<StackPanel>("MessageBox").IsVisible <- false
-             this.FindControl<Menu>("Menu").IsVisible <- true
-             this.FindControl<DockPanel>("Grid").IsVisible <- true
-             e.Cancel <- true)
+    |> Event.add (fun e ->
+      if this.FindControl<DockPanel>("Grid").IsVisible
+         |> not then
+        this.FindControl<StackPanel>("AboutBox").IsVisible <- false
+        this.FindControl<StackPanel>("MessageBox").IsVisible <- false
+        this.FindControl<Menu>("Menu").IsVisible <- true
+        this.FindControl<DockPanel>("Grid").IsVisible <- true
+        e.Cancel <- true)
 
     // MessageBox
     let okButton =
@@ -735,11 +746,10 @@ type MainWindow() as this =
     okButton.Content <- "OK"
 
     okButton.Click
-    |> Event.add
-         (fun _ ->
-           this.FindControl<StackPanel>("MessageBox").IsVisible <- false
-           this.FindControl<Menu>("Menu").IsVisible <- true
-           this.FindControl<DockPanel>("Grid").IsVisible <- true)
+    |> Event.add (fun _ ->
+      this.FindControl<StackPanel>("MessageBox").IsVisible <- false
+      this.FindControl<Menu>("Menu").IsVisible <- true
+      this.FindControl<DockPanel>("Grid").IsVisible <- true)
 
     // AboutBox
     let okButton2 =
@@ -748,11 +758,10 @@ type MainWindow() as this =
     okButton2.Content <- "OK"
 
     okButton2.Click
-    |> Event.add
-         (fun _ ->
-           this.FindControl<StackPanel>("AboutBox").IsVisible <- false
-           this.FindControl<Menu>("Menu").IsVisible <- true
-           this.FindControl<DockPanel>("Grid").IsVisible <- true)
+    |> Event.add (fun _ ->
+      this.FindControl<StackPanel>("AboutBox").IsVisible <- false
+      this.FindControl<Menu>("Menu").IsVisible <- true
+      this.FindControl<DockPanel>("Grid").IsVisible <- true)
 
   interface IVisualizerWindow with
     member self.CoverageFiles
@@ -768,6 +777,6 @@ type MainWindow() as this =
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 522@523::Invoke(Microsoft.FSharp.Core.Unit)",
+                            Target = "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 531@532::Invoke(Microsoft.FSharp.Core.Unit)",
                             Justification = "Local of type 'Task`1' is not disposed of. Hmm.")>]
 ()

@@ -1,4 +1,4 @@
-#if !NET472
+﻿#if !NET472
 #if NET20
 namespace Tests.Recorder.Clr2
 #else
@@ -91,78 +91,79 @@ module AltCoverCoreTests =
 
   let internal readResults (stream: Stream) =
     let hits = List<string * int * Track>()
-    use formatter = new System.IO.BinaryReader(stream)
+
+    use formatter =
+      new System.IO.BinaryReader(stream)
 
     let rec sink () =
-      maybeIOException
-        (fun () ->
-          let id = formatter.ReadString()
-          let strike = formatter.ReadInt32()
-          let tag = formatter.ReadByte() |> int
+      maybeIOException (fun () ->
+        let id = formatter.ReadString()
+        let strike = formatter.ReadInt32()
+        let tag = formatter.ReadByte() |> int
 
-          (id,
-           strike,
-           match enum tag with
-           //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
-           | Tag.Call -> Adapter.asCall <| formatter.ReadInt32()
-           //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
-           | Tag.Table ->
-             Assert.True((id = String.Empty))
-             Assert.True((strike = 0))
+        (id,
+         strike,
+         match enum tag with
+         //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
+         | Tag.Call -> Adapter.asCall <| formatter.ReadInt32()
+         //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
+         | Tag.Table ->
+           Assert.True((id = String.Empty))
+           Assert.True((strike = 0))
 
-             let t =
-               Dictionary<string, Dictionary<int, PointVisit>>()
+           let t =
+             Dictionary<string, Dictionary<int, PointVisit>>()
 
-             let rec ``module`` () =
-               let m = formatter.ReadString()
+           let rec ``module`` () =
+             let m = formatter.ReadString()
 
-               if String.IsNullOrEmpty m then
-                 ()
-               else
-                 t.Add(m, Dictionary<int, PointVisit>())
-                 let points = formatter.ReadInt32()
+             if String.IsNullOrEmpty m then
+               ()
+             else
+               t.Add(m, Dictionary<int, PointVisit>())
+               let points = formatter.ReadInt32()
 
-                 let rec sequencePoint pts =
-                   if pts > 0 then
-                     let p = formatter.ReadInt32()
-                     let n = formatter.ReadInt64()
-                     let pv = Adapter.init (n, [])
-                     t.[m].Add(p, pv)
+               let rec sequencePoint pts =
+                 if pts > 0 then
+                   let p = formatter.ReadInt32()
+                   let n = formatter.ReadInt64()
+                   let pv = Adapter.init (n, [])
+                   t.[m].Add(p, pv)
 
-                     let rec tracking () =
-                       let track = formatter.ReadByte() |> int
+                   let rec tracking () =
+                     let track = formatter.ReadByte() |> int
 
-                       match enum track with
-                       | Tag.Time ->
-                         pv.Tracks.Add(Adapter.time <| formatter.ReadInt64())
-                         tracking ()
-                       | Tag.Call ->
-                         pv.Tracks.Add(Adapter.asCall <| formatter.ReadInt32())
-                         tracking ()
-                       | Tag.Both ->
-                         pv.Tracks.Add(
-                           Adapter.newBoth (
-                             (formatter.ReadInt64()),
-                             (formatter.ReadInt32())
-                           )
+                     match enum track with
+                     | Tag.Time ->
+                       pv.Tracks.Add(Adapter.time <| formatter.ReadInt64())
+                       tracking ()
+                     | Tag.Call ->
+                       pv.Tracks.Add(Adapter.asCall <| formatter.ReadInt32())
+                       tracking ()
+                     | Tag.Both ->
+                       pv.Tracks.Add(
+                         Adapter.newBoth (
+                           (formatter.ReadInt64()),
+                           (formatter.ReadInt32())
                          )
+                       )
 
-                         tracking ()
-                       //| Tag.Table -> Assert.True( false, "No nested tables!!")
-                       | _ -> sequencePoint (pts - 1)
+                       tracking ()
+                     //| Tag.Table -> Assert.True( false, "No nested tables!!")
+                     | _ -> sequencePoint (pts - 1)
 
-                     tracking ()
-                   else
-                     ``module`` ()
+                   tracking ()
+                 else
+                   ``module`` ()
 
-                 sequencePoint points
+               sequencePoint points
 
-             ``module`` ()
-             Adapter.table t
-           | _ -> Adapter.asNull ())
-          |> hits.Add
+           ``module`` ()
+           Adapter.table t
+         | _ -> Adapter.asNull ())
+        |> hits.Add
 
-          sink ())
+        sink ())
 
     sink ()
     hits
@@ -180,7 +181,8 @@ module AltCoverCoreTests =
 
     let tag = unique + ".acv"
 
-    let expected = [ ("name", 23, Adapter.asNull ()) ]
+    let expected =
+      [ ("name", 23, Adapter.asNull ()) ]
 
     do
       use stream = File.Create tag
@@ -204,13 +206,13 @@ module AltCoverCoreTests =
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
 
-      let results = readResults stream |> Seq.toList
+      let results =
+        readResults stream |> Seq.toList
 
       Adapter.VisitsSeq()
       |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
-      |> Seq.iter
-           (fun v ->
-             Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+      |> Seq.iter (fun v ->
+        Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
 
       Assert.That(
         Adapter.VisitsSeq() |> Seq.length,
@@ -240,7 +242,9 @@ module AltCoverCoreTests =
       Dictionary<string, Dictionary<int, PointVisit>>()
 
     t.["name"] <- Dictionary<int, PointVisit>()
-    let expect23 = [ Adapter.asCall 17; Adapter.asCall 42 ]
+
+    let expect23 =
+      [ Adapter.asCall 17; Adapter.asCall 42 ]
 
     let expect24 =
       [ Adapter.time 17L
@@ -286,9 +290,8 @@ module AltCoverCoreTests =
 
       Adapter.VisitsSeq()
       |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
-      |> Seq.iter
-           (fun v ->
-             Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+      |> Seq.iter (fun v ->
+        Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
 
       Assert.That(
         Adapter.VisitsSeq() |> Seq.length,
@@ -405,13 +408,13 @@ module AltCoverCoreTests =
       use stream =
         new DeflateStream(File.OpenRead(root + ".0.acv"), CompressionMode.Decompress)
 
-      let results = stream |> readResults |> Seq.toList
+      let results =
+        stream |> readResults |> Seq.toList
 
       Adapter.VisitsSeq()
       |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
-      |> Seq.iter
-           (fun v ->
-             Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+      |> Seq.iter (fun v ->
+        Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
 
       Assert.That(
         Adapter.VisitsSeq() |> Seq.length,

@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
@@ -99,10 +99,9 @@ module AltCoverTests3 =
 
     let optionNames =
       options
-      |> Seq.map
-           (fun o ->
-             (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
-               .ToLowerInvariant())
+      |> Seq.map (fun o ->
+        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+          .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -115,10 +114,9 @@ module AltCoverTests3 =
 
     let optionNames =
       options
-      |> Seq.map
-           (fun o ->
-             (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
-               .ToLowerInvariant())
+      |> Seq.map (fun o ->
+        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+          .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -407,19 +405,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Attribute -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Attribute -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Attribute -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Attribute -> x.Regex.ToString()),
         Is.EquivalentTo([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |])
       )
 
@@ -435,50 +431,48 @@ module AltCoverTests3 =
     [ "attributetoplevel", FilterScope.Attribute
       "methodtoplevel", FilterScope.Method
       "typetoplevel", FilterScope.Type ]
-    |> List.iter
-         (fun (key, value) ->
-           Main.init ()
+    |> List.iter (fun (key, value) ->
+      Main.init ()
 
-           try
-             CoverageParameters.topLevel.Clear()
-             let options = Main.I.declareOptions ()
+      try
+        CoverageParameters.topLevel.Clear()
+        let options = Main.I.declareOptions ()
 
-             let input =
-               [| "--" + key
-                  "1;a"
-                  "/" + key
-                  "2"
-                  "--" + key
-                  "3"
-                  "--" + key + "=4"
-                  "--" + key + "=5"
-                  "/" + key + "=6" |]
+        let input =
+          [| "--" + key
+             "1;a"
+             "/" + key
+             "2"
+             "--" + key
+             "3"
+             "--" + key + "=4"
+             "--" + key + "=5"
+             "/" + key + "=6" |]
 
-             let parse =
-               CommandLine.parseCommandLine input options
+        let parse =
+          CommandLine.parseCommandLine input options
 
-             match parse with
-             | Right (x, y) ->
-               Assert.That(y, Is.SameAs options)
-               Assert.That(x, Is.Empty)
+        match parse with
+        | Right (x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
 
-             Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
+        Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
 
-             Assert.That(
-               CoverageParameters.topLevel
-               |> Seq.map
-                    (fun x ->
-                      match x.Scope with
-                      | scope when scope = value -> x.Regex.ToString()),
-               Is.EquivalentTo([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |])
-             )
+        Assert.That(
+          CoverageParameters.topLevel
+          |> Seq.map (fun x ->
+            match x.Scope with
+            | scope when scope = value -> x.Regex.ToString()),
+          Is.EquivalentTo([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |])
+        )
 
-             Assert.That(
-               CoverageParameters.topLevel
-               |> Seq.forall (fun x -> x.Sense = Exclude)
-             )
-           finally
-             CoverageParameters.topLevel.Clear())
+        Assert.That(
+          CoverageParameters.topLevel
+          |> Seq.forall (fun x -> x.Sense = Exclude)
+        )
+      finally
+        CoverageParameters.topLevel.Clear())
 
   [<Test>]
   let ParsingMethodsGivesMethods () =
@@ -511,19 +505,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Method -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Method -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Method -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Method -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1"
              "2"
@@ -574,19 +566,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Type -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Type -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Type -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Type -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1"
              "2"
@@ -638,19 +628,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Assembly -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Assembly -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Assembly -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Assembly -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1"
              "2"
@@ -702,19 +690,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Assembly -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Assembly -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Assembly -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Assembly -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1|a"
              "\\d"
@@ -764,19 +750,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Module -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Module -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Module -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Module -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1"
              "2"
@@ -827,19 +811,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.File -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.File -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.File -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.File -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1"
              "2"
@@ -890,19 +872,17 @@ module AltCoverTests3 =
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.forall
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Path -> true
-               | _ -> false)
+        |> Seq.forall (fun x ->
+          match x.Scope with
+          | FilterScope.Path -> true
+          | _ -> false)
       )
 
       Assert.That(
         CoverageParameters.nameFilters
-        |> Seq.map
-             (fun x ->
-               match x.Scope with
-               | FilterScope.Path -> x.Regex.ToString()),
+        |> Seq.map (fun x ->
+          match x.Scope with
+          | FilterScope.Path -> x.Regex.ToString()),
         Is.EquivalentTo(
           [| "1"
              "2"
@@ -930,7 +910,9 @@ module AltCoverTests3 =
       CoverageParameters.theReportPath <- None
       let options = Main.I.declareOptions ()
       let unique = Guid.NewGuid().ToString()
-      let where = Assembly.GetExecutingAssembly().Location
+
+      let where =
+        Assembly.GetExecutingAssembly().Location
 
       let path =
         Path.Combine(Path.GetDirectoryName(where), unique)
@@ -1431,7 +1413,9 @@ module AltCoverTests3 =
     try
       Instrument.resolutionTable.Clear()
       let options = Main.I.declareOptions ()
-      let here = Assembly.GetExecutingAssembly().Location
+
+      let here =
+        Assembly.GetExecutingAssembly().Location
 
       let next =
         Path.Combine(Path.GetDirectoryName here, "AltCover.Engine.dll")
@@ -1623,7 +1607,10 @@ module AltCoverTests3 =
       CoverageParameters.keys.Clear()
 
       let options = Main.I.declareOptions ()
-      let unique = Assembly.GetExecutingAssembly().Location
+
+      let unique =
+        Assembly.GetExecutingAssembly().Location
+
       let input = [| "-sn"; unique |]
 
       let parse =
@@ -1686,13 +1673,12 @@ module AltCoverTests3 =
 
       let expected =
         CoverageParameters.keys.Keys
-        |> Seq.map
-             (fun x ->
-               String.Join(
-                 String.Empty,
-                 BitConverter.GetBytes(x)
-                 |> Seq.map (fun x -> x.ToString("x2"))
-               ))
+        |> Seq.map (fun x ->
+          String.Join(
+            String.Empty,
+            BitConverter.GetBytes(x)
+            |> Seq.map (fun x -> x.ToString("x2"))
+          ))
         |> Seq.sort
 
       Assert.That(
@@ -1760,7 +1746,10 @@ module AltCoverTests3 =
       CoverageParameters.keys.Clear()
 
       let options = Main.I.declareOptions ()
-      let unique = Assembly.GetExecutingAssembly().Location
+
+      let unique =
+        Assembly.GetExecutingAssembly().Location
+
       let input = [| "-k"; unique |]
 
       let parse =
@@ -2138,7 +2127,10 @@ module AltCoverTests3 =
       CoverageParameters.trackingNames.Clear()
 
       let options = Main.I.declareOptions ()
-      let unique = Assembly.GetExecutingAssembly().Location
+
+      let unique =
+        Assembly.GetExecutingAssembly().Location
+
       let input = [| "-c"; "99" |]
 
       let parse =
@@ -2494,7 +2486,9 @@ module AltCoverTests3 =
     try
       CoverageParameters.coverstyle <- CoverStyle.All
       let options = Main.I.declareOptions ()
-      let input = [| "--linecover"; "--linecover" |]
+
+      let input =
+        [| "--linecover"; "--linecover" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2518,7 +2512,9 @@ module AltCoverTests3 =
     try
       CoverageParameters.coverstyle <- CoverStyle.All
       let options = Main.I.declareOptions ()
-      let input = [| "--linecover"; "--branchcover" |]
+
+      let input =
+        [| "--linecover"; "--branchcover" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2623,7 +2619,9 @@ module AltCoverTests3 =
     try
       CoverageParameters.coverstyle <- CoverStyle.All
       let options = Main.I.declareOptions ()
-      let input = [| "--branchcover"; "--branchcover" |]
+
+      let input =
+        [| "--branchcover"; "--branchcover" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2647,7 +2645,9 @@ module AltCoverTests3 =
     try
       CoverageParameters.coverstyle <- CoverStyle.All
       let options = Main.I.declareOptions ()
-      let input = [| "--branchcover"; "--linecover" |]
+
+      let input =
+        [| "--branchcover"; "--linecover" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2898,20 +2898,18 @@ module AltCoverTests3 =
         Assert.That(x, Is.SameAs rest)
 
         y
-        |> Seq.iter
-             (fun y' ->
-               Assert.That(
-                 y'.FullName |> canonicalDirectory,
-                 Is.EqualTo(canonicalDirectory here)
-               ))
+        |> Seq.iter (fun y' ->
+          Assert.That(
+            y'.FullName |> canonicalDirectory,
+            Is.EqualTo(canonicalDirectory here)
+          ))
 
         z
-        |> Seq.iter
-             (fun z' ->
-               Assert.That(
-                 z'.FullName |> canonicalDirectory,
-                 Is.EqualTo(canonicalDirectory (Path.GetDirectoryName here))
-               ))
+        |> Seq.iter (fun z' ->
+          Assert.That(
+            z'.FullName |> canonicalDirectory,
+            Is.EqualTo(canonicalDirectory (Path.GetDirectoryName here))
+          ))
 
         t
         |> Seq.zip y
@@ -2971,8 +2969,8 @@ module AltCoverTests3 =
         |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
 
         z
-        |> Seq.iter
-             (fun z' -> Assert.That(z'.FullName, Is.EqualTo(canonicalDirectory there)))
+        |> Seq.iter (fun z' ->
+          Assert.That(z'.FullName, Is.EqualTo(canonicalDirectory there)))
 
         t
         |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo here))
@@ -3229,25 +3227,23 @@ module AltCoverTests3 =
 
       here
       |> Directory.GetFiles
-      |> Seq.filter
-           (fun f ->
-             match Path.GetExtension f with
-             | ".dll"
-             | ".exe" -> true
-             | _ -> false)
-      |> Seq.iter
-           (fun f ->
-             use stream = File.OpenRead(f)
+      |> Seq.filter (fun f ->
+        match Path.GetExtension f with
+        | ".dll"
+        | ".exe" -> true
+        | _ -> false)
+      |> Seq.iter (fun f ->
+        use stream = File.OpenRead(f)
 
-             use def =
-               Mono.Cecil.AssemblyDefinition.ReadAssembly(stream)
+        use def =
+          Mono.Cecil.AssemblyDefinition.ReadAssembly(stream)
 
-             ProgramDatabase.readSymbols def
+        ProgramDatabase.readSymbols def
 
-             let result =
-               Main.I.screenAssembly (Path.GetFileName f) def
+        let result =
+          Main.I.screenAssembly (Path.GetFileName f) def
 
-             Assert.True(result |> Option.isSome, f))
+        Assert.True(result |> Option.isSome, f))
 
       Assert.That(sb.ToString(), Is.Empty)
 
@@ -3259,7 +3255,8 @@ module AltCoverTests3 =
 
       //Instrument.I.writeAssembly prepared (Path.Combine(there, "Sample3.dll"))
 
-      let second = Path.Combine(here, "Sample4.dll")
+      let second =
+        Path.Combine(here, "Sample4.dll")
 
       use assembly =
         Mono.Cecil.AssemblyDefinition.ReadAssembly second
@@ -3318,13 +3315,16 @@ module AltCoverTests3 =
         Guid.NewGuid().ToString()
       )
 
-    let toInfo = [ Directory.CreateDirectory there ]
+    let toInfo =
+      [ Directory.CreateDirectory there ]
+
     let fromInfo = [ DirectoryInfo(here) ]
 
     let x, y =
       Main.I.prepareTargetFiles fromInfo toInfo fromInfo [ there ]
 
-    let f, t = Seq.zip fromInfo toInfo |> Seq.head
+    let f, t =
+      Seq.zip fromInfo toInfo |> Seq.head
 
     let flen = here.Length
     let tlen = there.Length
@@ -3377,10 +3377,9 @@ module AltCoverTests3 =
     let assemblies =
       f.EnumerateFiles()
       |> Seq.map (fun x -> x.FullName)
-      |> Seq.filter
-           (fun f ->
-             f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-             || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter (fun f ->
+        f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+        || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
       |> Seq.filter (
         Mono.Cecil.AssemblyDefinition.ReadAssembly
         >> ProgramDatabase.getPdbFromImage
@@ -3492,7 +3491,9 @@ module AltCoverTests3 =
         |> Path.GetDirectoryName
 
       let placeholder = Path.Combine(here, unique)
-      let info = Directory.CreateDirectory(placeholder)
+
+      let info =
+        Directory.CreateDirectory(placeholder)
 
       let psh =
         Path.Combine(info.FullName, "AltCover.PowerShell.dll")
@@ -3506,7 +3507,10 @@ module AltCoverTests3 =
       use stdout = new StringWriter()
       Console.SetOut stdout
       CommandLine.toConsole ()
-      let rc = AltCover.Main.effectiveMain [| "i" |]
+
+      let rc =
+        AltCover.Main.effectiveMain [| "i" |]
+
       Assert.That(rc, Is.EqualTo 0)
       let result = stdout.ToString()
 
@@ -3531,9 +3535,14 @@ module AltCoverTests3 =
       use stdout = new StringWriter()
       Console.SetOut stdout
       CommandLine.toConsole ()
-      let rc = AltCover.Main.effectiveMain [| "v" |]
+
+      let rc =
+        AltCover.Main.effectiveMain [| "v" |]
+
       Assert.That(rc, Is.EqualTo 0)
-      let result = stdout.ToString().Replace("\r\n", "\n")
+
+      let result =
+        stdout.ToString().Replace("\r\n", "\n")
 
       let expected =
         "AltCover version "
@@ -3573,7 +3582,8 @@ module AltCoverTests3 =
           Options = options
           Options2 = empty }
 
-      let result = stderr.ToString().Replace("\r\n", "\n")
+      let result =
+        stderr.ToString().Replace("\r\n", "\n")
 
       let expected =
         "Error - usage is:\n"
@@ -3617,7 +3627,9 @@ module AltCoverTests3 =
 
       Assert.That(returnCode, Is.EqualTo 0)
       test <@ stderr.ToString() |> String.IsNullOrEmpty @>
-      let here = Assembly.GetExecutingAssembly().Location
+
+      let here =
+        Assembly.GetExecutingAssembly().Location
 
       let expected =
         Path.Combine(
@@ -3658,7 +3670,9 @@ module AltCoverTests3 =
         main.Invoke(null, [| [| "-i"; unique |] |])
 
       Assert.That(returnCode, Is.EqualTo 255)
-      let result = stderr.ToString().Replace("\r\n", "\n")
+
+      let result =
+        stderr.ToString().Replace("\r\n", "\n")
 
       let expected =
         "\"-i\" \""
@@ -3708,8 +3722,12 @@ module AltCoverTests3 =
 
         let core =
           if abbrev then
-            let h = s |> Seq.take 1 |> Seq.toArray |> String
-            let t = s |> Seq.skip 3 |> Seq.toArray |> String
+            let h =
+              s |> Seq.take 1 |> Seq.toArray |> String
+
+            let t =
+              s |> Seq.skip 3 |> Seq.toArray |> String
+
             (h + "[" + t + "]").Replace("=]", "]=")
           else
             s
@@ -3801,7 +3819,9 @@ module AltCoverTests3 =
     Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
     (AltCover.LoggingOptions.ActionAdapter null) "23"
 
-    let ignoreAction = new Action<String>(ignore)
+    let ignoreAction =
+      new Action<String>(ignore)
+
     ignoreAction.Invoke("ignoreAction")
     Assert.That(AltCover.LoggingOptions.ActionAdapter(ignoreAction), Is.Not.Null)
     let mutable x = String.Empty
@@ -3838,12 +3858,11 @@ module AltCoverTests3 =
     let subject = Prepare()
 
     subject.GetType().GetProperties()
-    |> Seq.iter
-         (fun p ->
-           let v = p.GetValue(subject)
+    |> Seq.iter (fun p ->
+      let v = p.GetValue(subject)
 
-           if p.CanWrite then
-             p.SetValue(subject, v))
+      if p.CanWrite then
+        p.SetValue(subject, v))
 
     let save = Main.effectiveMain
     let mutable args = [| "some junk " |]
@@ -3884,12 +3903,11 @@ module AltCoverTests3 =
     let subject = Prepare()
 
     subject.GetType().GetProperties()
-    |> Seq.iter
-         (fun p ->
-           let v = p.GetValue(subject)
+    |> Seq.iter (fun p ->
+      let v = p.GetValue(subject)
 
-           if p.CanWrite then
-             p.SetValue(subject, v))
+      if p.CanWrite then
+        p.SetValue(subject, v))
 
     let save = Main.effectiveMain
     let mutable args = [| "some junk " |]
@@ -3908,34 +3926,33 @@ module AltCoverTests3 =
         "Info", []
         "Warning", [ "-q" ]
         "Error", [ "-q"; "-q" ] ]
-      |> List.iter
-           (fun (level, q) ->
-             subject
-               .GetType()
-               .GetProperty("Verbosity")
-               .SetValue(subject, level)
+      |> List.iter (fun (level, q) ->
+        subject
+          .GetType()
+          .GetProperty("Verbosity")
+          .SetValue(subject, level)
 
-             aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
 
-             Main.effectiveMain <-
-               (fun a ->
-                 args <- a
-                 255)
+        Main.effectiveMain <-
+          (fun a ->
+            args <- a
+            255)
 
-             let result = subject.Execute()
-             Assert.That(result, Is.False)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
 
-             Assert.That(
-               args,
-               Is.EquivalentTo(
-                 [ "--reportFormat"
-                   "OpenCover"
-                   "--save"
-                   "--defer" ]
-                 @ q
-               ),
-               level
-             ))
+        Assert.That(
+          args,
+          Is.EquivalentTo(
+            [ "--reportFormat"
+              "OpenCover"
+              "--save"
+              "--defer" ]
+            @ q
+          ),
+          level
+        ))
     finally
       Main.effectiveMain <- save
       Output.info <- fst saved
@@ -4035,8 +4052,8 @@ module AltCoverTests3 =
           .GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
       let x =
-        Assert.Throws<System.Reflection.TargetInvocationException>
-          (fun () -> ignore (message.Invoke(subject, [| "x" :> obj |])))
+        Assert.Throws<System.Reflection.TargetInvocationException> (fun () ->
+          ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
         x.InnerException,
@@ -4062,12 +4079,11 @@ module AltCoverTests3 =
     let subject = Collect()
 
     subject.GetType().GetProperties()
-    |> Seq.iter
-         (fun p ->
-           let v = p.GetValue(subject)
+    |> Seq.iter (fun p ->
+      let v = p.GetValue(subject)
 
-           if p.CanWrite then
-             p.SetValue(subject, v))
+      if p.CanWrite then
+        p.SetValue(subject, v))
 
     let save = Main.effectiveMain
     let mutable args = [| "some junk " |]
@@ -4106,12 +4122,11 @@ module AltCoverTests3 =
     let subject = Collect()
 
     subject.GetType().GetProperties()
-    |> Seq.iter
-         (fun p ->
-           let v = p.GetValue(subject)
+    |> Seq.iter (fun p ->
+      let v = p.GetValue(subject)
 
-           if p.CanWrite then
-             p.SetValue(subject, v))
+      if p.CanWrite then
+        p.SetValue(subject, v))
 
     let save = Main.effectiveMain
     let mutable args = [| "some junk " |]
@@ -4129,24 +4144,23 @@ module AltCoverTests3 =
         "Info", []
         "Warning", [ "-q" ]
         "Error", [ "-q"; "-q" ] ]
-      |> List.iter
-           (fun (level, q) ->
-             // subject.ACLog <- Some <| FSApi.Logging.Create()
-             subject
-               .GetType()
-               .GetProperty("Verbosity")
-               .SetValue(subject, level)
+      |> List.iter (fun (level, q) ->
+        // subject.ACLog <- Some <| FSApi.Logging.Create()
+        subject
+          .GetType()
+          .GetProperty("Verbosity")
+          .SetValue(subject, level)
 
-             aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
 
-             Main.effectiveMain <-
-               (fun a ->
-                 args <- a
-                 255)
+        Main.effectiveMain <-
+          (fun a ->
+            args <- a
+            255)
 
-             let result = subject.Execute()
-             Assert.That(result, Is.False)
-             Assert.That(args, Is.EquivalentTo([ "Runner"; "--collect" ] @ q), level))
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo([ "Runner"; "--collect" ] @ q), level))
     finally
       Main.effectiveMain <- save
       Output.info <- fst saved
@@ -4187,8 +4201,8 @@ module AltCoverTests3 =
           .GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
       let x =
-        Assert.Throws<System.Reflection.TargetInvocationException>
-          (fun () -> ignore (message.Invoke(subject, [| "x" :> obj |])))
+        Assert.Throws<System.Reflection.TargetInvocationException> (fun () ->
+          ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
         x.InnerException,
@@ -4425,7 +4439,9 @@ module AltCoverTests3 =
     write.SetValue(subject, Some(fun (s: string) -> ()))
     Assert.That(subject.Execute(), Is.True)
     Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
-    let result = subject.Extended |> File.ReadAllText
+
+    let result =
+      subject.Extended |> File.ReadAllText
 
     Assert.That(
       result
@@ -4474,7 +4490,9 @@ module AltCoverTests3 =
     subject.TestSetting <- settings
     Assert.That(subject.Execute(), Is.True)
     Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
-    let result = subject.Extended |> File.ReadAllText
+
+    let result =
+      subject.Extended |> File.ReadAllText
 
     Assert.That(
       result
@@ -4542,7 +4560,9 @@ module AltCoverTests3 =
     subject.TestSetting <- settings
     Assert.That(subject.Execute(), Is.True)
     Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
-    let result = subject.Extended |> File.ReadAllText
+
+    let result =
+      subject.Extended |> File.ReadAllText
 
     Assert.That(
       result
@@ -4677,7 +4697,9 @@ module AltCoverTests3 =
       Assembly.GetExecutingAssembly().Location
       |> Path.GetDirectoryName
 
-    let from = Path.Combine(where, "Sample2.pdb")
+    let from =
+      Path.Combine(where, "Sample2.pdb")
+
     let target = Path.Combine(where, unique)
     File.Copy(from, target, true)
     test <@ File.Exists target @>
@@ -4688,35 +4710,27 @@ module AltCoverTests3 =
     [ IOException() :> Exception
       System.Security.SecurityException() :> Exception
       UnauthorizedAccessException() :> Exception ]
-    |> List.iter
-         (fun ex ->
-           let builder = System.Text.StringBuilder()
+    |> List.iter (fun ex ->
+      let builder = System.Text.StringBuilder()
 
-           CommandLine.I.doRetry
-             (fun _ -> raise ex)
-             (builder.Append >> ignore)
-             2
-             0
-             0
-             target
+      CommandLine.I.doRetry (fun _ -> raise ex) (builder.Append >> ignore) 2 0 0 target
 
-           test
-             <@ builder
-               .ToString()
-               .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
+      test
+        <@ builder
+          .ToString()
+          .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
 
     let builder = System.Text.StringBuilder()
     let monitor (s: string) = s |> builder.Append |> ignore
 
-    Assert.Throws<InvalidDataException>
-      (fun () ->
-        CommandLine.I.doRetry
-          (fun _ -> raise <| InvalidDataException())
-          monitor
-          2
-          0
-          0
-          target)
+    Assert.Throws<InvalidDataException> (fun () ->
+      CommandLine.I.doRetry
+        (fun _ -> raise <| InvalidDataException())
+        monitor
+        2
+        0
+        0
+        target)
     |> ignore
 
     test <@ builder.ToString() |> String.IsNullOrEmpty @>
@@ -4730,8 +4744,8 @@ module AltCoverTests3 =
         .GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
 
     let ex =
-      Assert.Throws<TargetInvocationException>
-        (fun () -> write.Invoke(subject, [| "xx" |]) |> ignore)
+      Assert.Throws<TargetInvocationException> (fun () ->
+        write.Invoke(subject, [| "xx" |]) |> ignore)
 
     test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
 // Recorder.fs => Recorder.Tests

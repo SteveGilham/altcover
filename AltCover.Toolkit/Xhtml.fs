@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 open System.Linq
@@ -49,11 +49,10 @@ module Xhtml =
       transform.Transform(source, output)
 
     rewrite.XPathSelectElements("//script[@language='JavaScript']")
-    |> Seq.iter
-         (fun n ->
-           let text = n.Value
-           n.Value <- "//"
-           n.Add(XCData(text)))
+    |> Seq.iter (fun n ->
+      let text = n.Value
+      n.Value <- "//"
+      n.Add(XCData(text)))
 
     rewrite.AddFirst(XDocumentType("html", null, null, null))
     rewrite

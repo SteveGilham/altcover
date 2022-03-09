@@ -43,14 +43,13 @@ module ThreadLevel =
   let internal pop () = CallTrack.Pop()
 
   let rec stack1 i =
-    let here = Thread.CurrentThread.GetHashCode()
+    let here =
+      Thread.CurrentThread.GetHashCode()
 
     try
       push i
 
-      lock
-        (synchronize)
-        (fun _ -> printfn "push on %A state = %A" here CallTrack.Instance)
+      lock (synchronize) (fun _ -> printfn "push on %A state = %A" here CallTrack.Instance)
 
       Thread.Yield() |> ignore
       if i < 10 then stack1 (i + 1)
@@ -68,7 +67,8 @@ module AsyncLevel =
   module CallTrack =
     // Option chosen for the default value
     // [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
-    let instance = AsyncLocal<Option<int list>>()
+    let instance =
+      AsyncLocal<Option<int list>>()
 
     let private Update l = // fsharplint:disable-line NonPublicValuesNames
       instance.Value <- Some l //.Value
@@ -98,27 +98,24 @@ module AsyncLevel =
   let internal pop () = CallTrack.Pop()
 
   let rec stack1 i =
-    let here = Thread.CurrentThread.GetHashCode()
+    let here =
+      Thread.CurrentThread.GetHashCode()
 
     try
       push i
 
-      lock
-        (synchronize)
-        (fun _ ->
-          printfn "push on %A state = %A" here
-          <| CallTrack.Instance())
+      lock (synchronize) (fun _ ->
+        printfn "push on %A state = %A" here
+        <| CallTrack.Instance())
 
       Thread.Yield() |> ignore
       if i < 10 then stack1 (i + 1)
     finally
       pop () |> ignore
 
-      lock
-        (synchronize)
-        (fun _ ->
-          printfn "pop on %A state = %A" here
-          <| CallTrack.Instance())
+      lock (synchronize) (fun _ ->
+        printfn "pop on %A state = %A" here
+        <| CallTrack.Instance())
 
 [<EntryPoint>]
 let main argv =
