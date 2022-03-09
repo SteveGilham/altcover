@@ -1219,6 +1219,10 @@ module internal Visitor =
       else
         lastOfSequencePoint dbg n
 
+    let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
+      if (i |> dbg.GetSequencePoint).IsNotNull then i
+      else firstOfSequencePoint dbg i.Previous
+
     let internal getJumps (dbg: MethodDebugInformation) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
       let next = i.Next
@@ -1326,7 +1330,7 @@ module internal Visitor =
 
       // possibly add MoveNext filtering
       let generated (i: Instruction) =
-        let before = i.Previous
+        let before = firstOfSequencePoint dbg i
         let sp = dbg.GetSequencePoint before
 
         before.OpCode = OpCodes.Ldloc_0
