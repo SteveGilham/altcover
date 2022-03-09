@@ -1220,8 +1220,10 @@ module internal Visitor =
         lastOfSequencePoint dbg n
 
     let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
-      if (i |> dbg.GetSequencePoint).IsNotNull then i
-      else firstOfSequencePoint dbg i.Previous
+      if (i |> dbg.GetSequencePoint).IsNotNull then
+        i
+      else
+        firstOfSequencePoint dbg i.Previous
 
     let internal getJumps (dbg: MethodDebugInformation) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
@@ -1336,7 +1338,9 @@ module internal Visitor =
         before.OpCode = OpCodes.Ldloc_0
         && sp.IsNotNull
         && sp.IsHidden
-        && (let v0t = dbg.Method.Body.Variables.[0].VariableType
+        && (let v0t =
+              dbg.Method.Body.Variables.[0].VariableType
+
             v0t.MetadataType = MetadataType.Int32) // state machines do this
 
       [ rawInstructions |> Seq.cast ]
@@ -1524,3 +1528,10 @@ module internal Visitor =
       match dict.TryGetValue file with
       | (true, url) -> url
       | _ -> I.locateMatch file dict
+
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidMessageChainsRule",
+                            Scope = "member",  // MethodDefinition
+                            Target = "AltCover.Visitor/I/generated@1335::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Justification = "No direct call available")>]
+()
