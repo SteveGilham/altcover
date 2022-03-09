@@ -1,4 +1,4 @@
-namespace Recorder.Tests
+﻿namespace Recorder.Tests
 
 open System
 open System.Runtime.InteropServices

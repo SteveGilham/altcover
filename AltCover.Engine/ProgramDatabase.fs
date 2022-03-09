@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -33,8 +33,11 @@ module internal ProgramDatabase =
       :?> ImageDebugHeaderEntry
 
     let internal getSymbolsByFolder fileName folderName =
-      let name = Path.Combine(folderName, fileName)
-      let fallback = Path.ChangeExtension(name, ".pdb")
+      let name =
+        Path.Combine(folderName, fileName)
+
+      let fallback =
+        Path.ChangeExtension(name, ".pdb")
 
       if File.Exists(fallback) then
         Some fallback
@@ -55,20 +58,18 @@ module internal ProgramDatabase =
     |> Option.bind (fun x -> x.Entries |> Seq.tryHead)
     |> Option.map (fun x -> x.Data)
     |> Option.filter (fun x -> x.Length > 0x18)
-    |> Option.map
-         (fun x ->
-           x
-           |> Seq.skip 0x18 // size of the debug header
-           |> Seq.takeWhile (fun x -> x <> byte 0)
-           |> Seq.toArray
-           |> System.Text.Encoding.UTF8.GetString)
+    |> Option.map (fun x ->
+      x
+      |> Seq.skip 0x18 // size of the debug header
+      |> Seq.takeWhile (fun x -> x <> byte 0)
+      |> Seq.toArray
+      |> System.Text.Encoding.UTF8.GetString)
     |> Option.filter (fun s -> s.Length > 0)
-    |> Option.filter
-         (fun s ->
-           File.Exists s
-           || (s == (assembly.Name.Name + ".pdb")
-               && (assembly |> I.getEmbeddedPortablePdbEntry)
-                 .IsNotNull))
+    |> Option.filter (fun s ->
+      File.Exists s
+      || (s == (assembly.Name.Name + ".pdb")
+          && (assembly |> I.getEmbeddedPortablePdbEntry)
+            .IsNotNull))
 
   let internal getPdbWithFallback (assembly: AssemblyDefinition) =
     let path = assembly.MainModule.FileName
@@ -89,18 +90,17 @@ module internal ProgramDatabase =
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
   let internal readSymbols (assembly: AssemblyDefinition) =
     getPdbWithFallback assembly
-    |> Option.iter
-         (fun pdbpath ->
-           let provider: ISymbolReaderProvider =
-             if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
-               PdbReaderProvider() :> ISymbolReaderProvider
-             else
-               MdbReaderProvider() :> ISymbolReaderProvider
+    |> Option.iter (fun pdbpath ->
+      let provider: ISymbolReaderProvider =
+        if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
+          PdbReaderProvider() :> ISymbolReaderProvider
+        else
+          MdbReaderProvider() :> ISymbolReaderProvider
 
-           let reader =
-             provider.GetSymbolReader(assembly.MainModule, pdbpath)
+      let reader =
+        provider.GetSymbolReader(assembly.MainModule, pdbpath)
 
-           assembly.MainModule.ReadSymbols(reader))
+      assembly.MainModule.ReadSymbols(reader))
 
   // reflective short-cuts don't work.
   // maybe move this somewhere else, now?

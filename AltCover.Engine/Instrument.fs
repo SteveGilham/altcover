@@ -1,4 +1,4 @@
-// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
+﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage/Instrument/CounterAssemblyBuilder.cs
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage/Instrument/InstrumentorVisitor.cs
 
@@ -82,9 +82,8 @@ type internal AsyncSupport =
 
     let wait =
       task.Methods
-      |> Seq.filter
-           (fun f ->
-             f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
+      |> Seq.filter (fun f ->
+        f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
       |> Seq.head
 
     let def2 =
@@ -138,12 +137,15 @@ module internal Instrument =
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
 
-    use def = AssemblyDefinition.ReadAssembly stream
+    use def =
+      AssemblyDefinition.ReadAssembly stream
+
     def.Name.Version.ToString()
 
   let version = recorderVersion ()
 
-  let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
+  let internal resolutionTable =
+    Dictionary<string, AssemblyDefinition>()
 
   let internal modules = List<string>()
 
@@ -211,7 +213,8 @@ module internal Instrument =
         |> Seq.head
         |> assembly.Assembly.MainModule.ImportReference
 
-      let inject = CustomAttribute(constructor, blob)
+      let inject =
+        CustomAttribute(constructor, blob)
 
       assembly.Assembly.CustomAttributes.Add inject
 
@@ -261,7 +264,8 @@ module internal Instrument =
       if not name.HasPublicKey then
         None
       else
-        let index = KeyStore.arrayToIndex name.PublicKey
+        let index =
+          KeyStore.arrayToIndex name.PublicKey
 
         match CoverageParameters.keys.TryGetValue(index) with
         | (false, _) -> None
@@ -300,86 +304,89 @@ module internal Instrument =
     // Create the new assembly that will record visits, based on the prototype.
     // returns>A representation of the assembly used to record all coverage visits.</returns>
     let internal prepareAssemblyDefinition (definition: AssemblyDefinition) =
-      guard
-        definition
-        (fun () ->
+      guard definition (fun () ->
 
-          //if monoRuntime |> not then
-          ProgramDatabase.readSymbols definition
+        //if monoRuntime |> not then
+        ProgramDatabase.readSymbols definition
 
-          definition.Name.Name <- (extractName definition) + ".g"
+        definition.Name.Name <- (extractName definition) + ".g"
 
-          let pair = CoverageParameters.recorderStrongNameKey
-          updateStrongNaming definition pair
+        let pair =
+          CoverageParameters.recorderStrongNameKey
 
-          definition.MainModule.GetTypes()
-          |> Seq.iter
-               (fun t ->
-                 if t.IsPublic
-                    && (not
-                        <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
-                   t.IsPublic <- false)
+        updateStrongNaming definition pair
 
-          injectInstrumentation
-            definition
-            { Assembly = definition
-              Inspection = Inspections.Ignore
-              Destinations = []
-              Identity =
-                { Assembly = "AltCover+Recorder+g+"
-                  Configuration = "Uninstrumented++" } }
+        definition.MainModule.GetTypes()
+        |> Seq.iter (fun t ->
+          if t.IsPublic
+             && (not
+                 <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
+            t.IsPublic <- false)
 
-          [ // set the coverage file path and unique token
-            ("get_ReportFile",
-             (fun (w: ILProcessor) ->
-               w.Create(OpCodes.Ldstr, CoverageParameters.reportPath ())))
-            ("get_Token",
-             (fun (w: ILProcessor) ->
-               w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
-            ("get_CoverageFormat",
-             (fun (w: ILProcessor) ->
-               w.Create(OpCodes.Ldc_I4, CoverageParameters.reportFormat () |> int)))
-            ("get_Sample",
-             (fun (w: ILProcessor) ->
-               w.Create(OpCodes.Ldc_I4, CoverageParameters.sampling ())))
-            ("get_Defer",
-             (fun (w: ILProcessor) -> w.Create(CoverageParameters.deferOpCode ()))) ]
-          |> List.iter
-               (fun (property, value) ->
-                 let pathGetterDef =
-                   definition.MainModule.GetTypes()
-                   |> Seq.collect (fun t -> t.Methods)
-                   |> Seq.filter (fun m -> m.Name == property)
-                   |> Seq.head
+        injectInstrumentation
+          definition
+          { Assembly = definition
+            Inspection = Inspections.Ignore
+            Destinations = []
+            Identity =
+              { Assembly = "AltCover+Recorder+g+"
+                Configuration = "Uninstrumented++" } }
 
-                 let body = pathGetterDef.Body
-                 let worker = body.GetILProcessor()
-                 let initialBody = body.Instructions |> Seq.toList
-                 let head = initialBody |> Seq.head
-                 worker.InsertBefore(head, value (worker))
-                 worker.InsertBefore(head, worker.Create(OpCodes.Ret))
-                 initialBody |> Seq.iter worker.Remove
-                 pruneLocalScopes pathGetterDef)
+        [ // set the coverage file path and unique token
+          ("get_ReportFile",
+           (fun (w: ILProcessor) ->
+             w.Create(OpCodes.Ldstr, CoverageParameters.reportPath ())))
+          ("get_Token",
+           (fun (w: ILProcessor) ->
+             w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
+          ("get_CoverageFormat",
+           (fun (w: ILProcessor) ->
+             w.Create(OpCodes.Ldc_I4, CoverageParameters.reportFormat () |> int)))
+          ("get_Sample",
+           (fun (w: ILProcessor) ->
+             w.Create(OpCodes.Ldc_I4, CoverageParameters.sampling ())))
+          ("get_Defer",
+           (fun (w: ILProcessor) -> w.Create(CoverageParameters.deferOpCode ()))) ]
+        |> List.iter (fun (property, value) ->
+          let pathGetterDef =
+            definition.MainModule.GetTypes()
+            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.filter (fun m -> m.Name == property)
+            |> Seq.head
 
-          [ ("get_Timer",  // set the timer interval in ticks
-             CoverageParameters.interval ()) ]
-          |> List.iter
-               (fun (property, value) ->
-                 let pathGetterDef =
-                   definition.MainModule.GetTypes()
-                   |> Seq.collect (fun t -> t.Methods)
-                   |> Seq.filter (fun m -> m.Name == property)
-                   |> Seq.head
+          let body = pathGetterDef.Body
+          let worker = body.GetILProcessor()
 
-                 let body = pathGetterDef.Body
-                 let worker = body.GetILProcessor()
-                 let initialBody = body.Instructions |> Seq.toList
-                 let head = initialBody |> Seq.head
-                 worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
-                 worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
-                 worker.InsertBefore(head, worker.Create(OpCodes.Ret))
-                 initialBody |> Seq.iter worker.Remove
-                 pruneLocalScopes pathGetterDef))
+          let initialBody =
+            body.Instructions |> Seq.toList
+
+          let head = initialBody |> Seq.head
+          worker.InsertBefore(head, value (worker))
+          worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+          initialBody |> Seq.iter worker.Remove
+          pruneLocalScopes pathGetterDef)
+
+        [ ("get_Timer",  // set the timer interval in ticks
+           CoverageParameters.interval ()) ]
+        |> List.iter (fun (property, value) ->
+          let pathGetterDef =
+            definition.MainModule.GetTypes()
+            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.filter (fun m -> m.Name == property)
+            |> Seq.head
+
+          let body = pathGetterDef.Body
+          let worker = body.GetILProcessor()
+
+          let initialBody =
+            body.Instructions |> Seq.toList
+
+          let head = initialBody |> Seq.head
+          worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
+          worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
+          worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+          initialBody |> Seq.iter worker.Remove
+          pruneLocalScopes pathGetterDef))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
@@ -433,21 +440,18 @@ module internal Instrument =
           |> List.filter (String.IsNullOrWhiteSpace >> not)
           |> List.filter Directory.Exists
           |> Seq.distinct
-          |> Seq.collect
-               (fun dir ->
-                 Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
+          |> Seq.collect (fun dir ->
+            Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
           |> Seq.sortDescending
-          |> Seq.filter
-               (fun f ->
-                 let x = Path.GetExtension f
+          |> Seq.filter (fun f ->
+            let x = Path.GetExtension f
 
-                 x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
-                 || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-          |> Seq.filter
-               (fun f ->
-                 y
-                   .ToString()
-                   .Equals(CommandLine.findAssemblyName f, StringComparison.Ordinal))
+            x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
+            || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter (fun f ->
+            y
+              .ToString()
+              .Equals(CommandLine.findAssemblyName f, StringComparison.Ordinal))
           |> Seq.tryHead
 
         match candidate sources with
@@ -542,7 +546,9 @@ module internal Instrument =
           a.Write(sink, pk)
         // #endif
 
-        let resolver = assembly.MainModule.AssemblyResolver
+        let resolver =
+          assembly.MainModule.AssemblyResolver
+
         hookResolver resolver
         write assembly path pkey
       finally
@@ -587,37 +593,37 @@ module internal Instrument =
 
       // The return value is for unit testing purposes, only
       // The side-effects are what is important.
-      let assemblyReferenceSubstitutions = new Dictionary<String, String>()
+      let assemblyReferenceSubstitutions =
+        new Dictionary<String, String>()
 
       interestingReferences
-      |> Seq.iter
-           (fun r ->
-             let original = r.ToString()
-             let token = knownToken r
+      |> Seq.iter (fun r ->
+        let original = r.ToString()
+        let token = knownToken r
 
-             let effectiveKey =
-               match token with
-               | None ->
-                 CoverageParameters.defaultStrongNameKey
-                 |> Option.map KeyStore.keyToRecord
-               | Some _ -> token
+        let effectiveKey =
+          match token with
+          | None ->
+            CoverageParameters.defaultStrongNameKey
+            |> Option.map KeyStore.keyToRecord
+          | Some _ -> token
 
-             match effectiveKey with
-             | None ->
-               r.HasPublicKey <- false
-               r.PublicKeyToken <- null
-               r.PublicKey <- null
-             | Some key ->
-               r.HasPublicKey <- true
-               r.PublicKey <- key.Pair.PublicKey |> Seq.toArray // implicitly sets token
+        match effectiveKey with
+        | None ->
+          r.HasPublicKey <- false
+          r.PublicKeyToken <- null
+          r.PublicKey <- null
+        | Some key ->
+          r.HasPublicKey <- true
+          r.PublicKey <- key.Pair.PublicKey |> Seq.toArray // implicitly sets token
 
-             let updated = r.ToString()
+        let updated = r.ToString()
 
-             if
-               not
-               <| updated.Equals(original, StringComparison.Ordinal)
-             then
-               assemblyReferenceSubstitutions.[original] <- updated)
+        if
+          not
+          <| updated.Equals(original, StringComparison.Ordinal)
+        then
+          assemblyReferenceSubstitutions.[original] <- updated)
 
       assemblyReferenceSubstitutions
 
@@ -642,7 +648,8 @@ module internal Instrument =
           .Value
           .Object
 
-      let app = (targeted.Values |> Seq.head).Object
+      let app =
+        (targeted.Values |> Seq.head).Object
 
       let existingDependencies =
         app
@@ -683,15 +690,17 @@ module internal Instrument =
             with
           | None -> app |> addFirst [ rawDependencies ]
           | Some p ->
-            let recorder = rawDependencies.Value.Object |> Seq.head
+            let recorder =
+              rawDependencies.Value.Object |> Seq.head
+
             p.Value.Object.[recorder.Key] <- recorder.Value
 
         updateDependencies ()
 
       let stripRecorderRefs (j: JsonObject) =
         j.Keys
-        |> Seq.filter
-             (fun k -> k.StartsWith("AltCover.Recorder.g/", StringComparison.Ordinal))
+        |> Seq.filter (fun k ->
+          k.StartsWith("AltCover.Recorder.g/", StringComparison.Ordinal))
         |> Seq.toList
         |> List.iter (j.Remove >> ignore)
 
@@ -702,7 +711,9 @@ module internal Instrument =
                """{"AltCover.Recorder.g/%s": {"runtime": { "AltCover.Recorder.g.dll": {}}}}"""
 
         let updateRuntime () =
-          let runtimeObject = (JsonValue.Parse runtime).Object
+          let runtimeObject =
+            (JsonValue.Parse runtime).Object
+
           stripRecorderRefs targeted
           let recorder = runtimeObject |> Seq.head
           targeted.[recorder.Key] <- recorder.Value
@@ -721,7 +732,9 @@ module internal Instrument =
                """{"AltCover.Recorder.g/%s": {"type": "project", "serviceable": false, "sha512": "" }}"""
 
         let updateLibraries () =
-          let newlibs = (JsonValue.Parse newLibraries).Object
+          let newlibs =
+            (JsonValue.Parse newLibraries).Object
+
           stripRecorderRefs libraries
           libraries |> addFirst newlibs
 
@@ -754,10 +767,8 @@ module internal Instrument =
               RecordingMethod = recordingMethod
               AsyncSupport =
                 state.AsyncSupport
-                |> Option.map
-                     (fun a ->
-                       { a with
-                           LocalWait = a.Wait |> m.Module.ImportReference }) }
+                |> Option.map (fun a ->
+                  { a with LocalWait = a.Wait |> m.Module.ImportReference }) }
         | _ -> state
 
       { restate with
@@ -803,7 +814,8 @@ module internal Instrument =
 
     let internal visitBranchPoint (state: InstrumentContext) branch =
       if branch.Included && state.MethodWorker.IsNotNull then
-        let point = (branch.Uid ||| Counter.branchFlag)
+        let point =
+          (branch.Uid ||| Counter.branchFlag)
 
         let instrument instruction =
           if branch.Representative <> Reporting.None then
@@ -817,7 +829,8 @@ module internal Instrument =
             instruction // maybe have to insert NOPs?
 
         let updateSwitch update =
-          let operands = branch.Start.Operand :?> Instruction []
+          let operands =
+            branch.Start.Operand :?> Instruction []
 
           branch.Indexes
           |> Seq.filter (fun i -> i >= 0)
@@ -883,7 +896,8 @@ module internal Instrument =
       state
 
     let writeAssemblies definition file targets sink =
-      let first = Path.Combine(targets |> Seq.head, file)
+      let first =
+        Path.Combine(targets |> Seq.head, file)
 
       String.Format(
         System.Globalization.CultureInfo.CurrentCulture,
@@ -897,19 +911,18 @@ module internal Instrument =
 
       targets
       |> Seq.tail
-      |> Seq.iter
-           (fun p ->
-             let pathn = Path.Combine(p, file)
+      |> Seq.iter (fun p ->
+        let pathn = Path.Combine(p, file)
 
-             String.Format(
-               System.Globalization.CultureInfo.CurrentCulture,
-               CommandLine.resources.GetString "instrumented",
-               definition,
-               pathn
-             )
-             |> sink
+        String.Format(
+          System.Globalization.CultureInfo.CurrentCulture,
+          CommandLine.resources.GetString "instrumented",
+          definition,
+          pathn
+        )
+        |> sink
 
-             File.Copy(first, pathn, true))
+        File.Copy(first, pathn, true))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.BadRecursiveInvocationRule",
                                                       "BadRecursiveInvocationRule",
@@ -925,7 +938,9 @@ module internal Instrument =
 
              let methodWorker = body.GetILProcessor()
              removeTailInstructions methodWorker
-             let (endFinally, rtype, leave) = encapsulateWithTryFinally methodWorker
+
+             let (endFinally, rtype, leave) =
+               encapsulateWithTryFinally methodWorker
 
              bulkInsertBefore
                methodWorker
@@ -951,12 +966,12 @@ module internal Instrument =
 
              let isStateMachine () =
                m.Method.CustomAttributes // could improve this
-               |> Seq.exists
-                    (fun a ->
-                      a.AttributeType.FullName
-                      == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+               |> Seq.exists (fun a ->
+                 a.AttributeType.FullName
+                 == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
 
-             let asyncChecks = [ isTaskType; isStateMachine ]
+             let asyncChecks =
+               [ isTaskType; isStateMachine ]
 
              let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
@@ -1122,9 +1137,11 @@ module internal Instrument =
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification = "AvoidSpeculativeGenerality too")>]
     let private visitAfterAssembly (state: InstrumentContext) (assembly: AssemblyEntry) =
-      let ``module`` = assembly.Assembly.MainModule
+      let ``module`` =
+        assembly.Assembly.MainModule
 
-      let originalFileName = Path.GetFileName ``module``.FileName
+      let originalFileName =
+        Path.GetFileName ``module``.FileName
 
       use mem = new System.IO.MemoryStream()
 
@@ -1164,7 +1181,8 @@ module internal Instrument =
           .GetExecutingAssembly()
           .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
 
-      let recordingAssembly = prepareAssembly (stream)
+      let recordingAssembly =
+        prepareAssembly (stream)
 
       { state with
           RecordingAssembly = recordingAssembly
@@ -1200,7 +1218,8 @@ module internal Instrument =
           .Split(' ')
         |> Array.map (fun x -> Convert.ToByte(x, 16))
 
-      let inject = CustomAttribute(constructor, blob)
+      let inject =
+        CustomAttribute(constructor, blob)
 
       r.CustomAttributes.Add inject
 
@@ -1223,7 +1242,8 @@ module internal Instrument =
           .GetExecutingAssembly()
           .GetManifestResourceStream("AltCover.AltCover.Async.net46.dll")
 
-      use delta = AssemblyDefinition.ReadAssembly(stream)
+      use delta =
+        AssemblyDefinition.ReadAssembly(stream)
 
       // get a handle on the property
       let readCallTrackType (m: ModuleDefinition) =
@@ -1254,7 +1274,9 @@ module internal Instrument =
               .DeclaringType.GetStaticConstructor() }
 
       let net20 = readCallTrackType m
-      let asy46 = readCallTrackType delta.MainModule
+
+      let asy46 =
+        readCallTrackType delta.MainModule
 
       let field =
         ((net20.GetValue.Body.Instructions |> Seq.head)
@@ -1263,16 +1285,21 @@ module internal Instrument =
           .Resolve()
 
       let localAsync = field.FieldType.Resolve()
-      let oldtype = field.FieldType :?> GenericInstanceType
+
+      let oldtype =
+        field.FieldType :?> GenericInstanceType
 
       // replace the type references in the recorder
-      let generics = asy46.FieldType.GenericArguments
+      let generics =
+        asy46.FieldType.GenericArguments
+
       generics.Clear()
 
       net20.FieldType.GenericArguments
       |> Seq.iter (m.ImportReference >> generics.Add)
 
-      let async2 = (asy46.FieldType |> m.ImportReference)
+      let async2 =
+        (asy46.FieldType |> m.ImportReference)
 
       let maker =
         asy46.Maker.Body.Instructions
@@ -1285,10 +1312,9 @@ module internal Instrument =
       let build =
         net20.Maker.Body.Instructions
         |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
-        |> Seq.find
-             (fun i ->
-               (i.Operand :?> MethodReference).DeclaringType.Name
-               == oldtype.Name)
+        |> Seq.find (fun i ->
+          (i.Operand :?> MethodReference).DeclaringType.Name
+          == oldtype.Name)
 
       net20.Field.FieldType <- async2
       net20.Value.PropertyType <- async2
@@ -1298,28 +1324,30 @@ module internal Instrument =
       let copyInstance (old: CallTracker) (updated: MethodDefinition) =
         let body = old.Instance.Body
         let worker = body.GetILProcessor()
-        let initialBody = body.Instructions |> Seq.toList
+
+        let initialBody =
+          body.Instructions |> Seq.toList
+
         let head = initialBody |> Seq.head
 
         bulkInsertBefore
           worker
           head
           (updated.Body.Instructions
-           |> Seq.map
-                (fun i ->
-                  match i.OpCode.FlowControl with
-                  | FlowControl.Call ->
-                    i.Operand <-
-                      let mr = (i.Operand :?> MethodReference)
+           |> Seq.map (fun i ->
+             match i.OpCode.FlowControl with
+             | FlowControl.Call ->
+               i.Operand <-
+                 let mr = (i.Operand :?> MethodReference)
 
-                      if mr.DeclaringType.FullName
-                         == old.CallTrack.FullName then
-                        old.GetValue :> MethodReference
-                      else
-                        mr |> m.ImportReference
+                 if mr.DeclaringType.FullName
+                    == old.CallTrack.FullName then
+                   old.GetValue :> MethodReference
+                 else
+                   mr |> m.ImportReference
 
-                    i
-                  | _ -> i))
+               i
+             | _ -> i))
           true
         |> ignore
 
@@ -1343,7 +1371,8 @@ module internal Instrument =
         |> Option.iter (fun _ -> uprateRecorder recorder)
 
         // write the module ID values
-        let keys = modules |> Seq.distinct |> Seq.toList
+        let keys =
+          modules |> Seq.distinct |> Seq.toList
 
         let getterDef =
           recorder.MainModule.GetTypes()
@@ -1353,7 +1382,10 @@ module internal Instrument =
 
         let body = getterDef.Body
         let worker = body.GetILProcessor()
-        let initialBody = body.Instructions |> Seq.toList
+
+        let initialBody =
+          body.Instructions |> Seq.toList
+
         let head = initialBody |> Seq.head
 
         let stringtype =
@@ -1367,16 +1399,15 @@ module internal Instrument =
         |> ignore
 
         keys
-        |> Seq.iteri
-             (fun i k ->
-               let addElement =
-                 [ worker.Create(OpCodes.Dup)
-                   worker.Create(OpCodes.Ldc_I4, i)
-                   worker.Create(OpCodes.Ldstr, k)
-                   worker.Create(OpCodes.Stelem_Any, stringtype) ]
+        |> Seq.iteri (fun i k ->
+          let addElement =
+            [ worker.Create(OpCodes.Dup)
+              worker.Create(OpCodes.Ldc_I4, i)
+              worker.Create(OpCodes.Ldstr, k)
+              worker.Create(OpCodes.Stelem_Any, stringtype) ]
 
-               bulkInsertBefore worker head addElement true
-               |> ignore)
+          bulkInsertBefore worker head addElement true
+          |> ignore)
 
         let store =
           [ worker.Create(OpCodes.Stsfld, head.Operand :?> FieldReference) ]
@@ -1395,18 +1426,12 @@ module internal Instrument =
           ignore
 
         CoverageParameters.instrumentDirectories ()
-        |> Seq.iter
-             (fun instrument ->
+        |> Seq.iter (fun instrument ->
 
-               Directory.GetFiles(
-                 instrument,
-                 "*.deps.json",
-                 SearchOption.TopDirectoryOnly
-               )
-               |> Seq.iter
-                    (fun f ->
+          Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
+          |> Seq.iter (fun f ->
 
-                      File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))))
+            File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
 

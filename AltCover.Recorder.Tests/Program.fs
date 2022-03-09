@@ -1,4 +1,4 @@
-#if !NET472
+﻿#if !NET472
 #if NET20
 namespace Tests.Recorder.Clr2
 #else

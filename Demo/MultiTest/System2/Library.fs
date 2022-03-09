@@ -1,11 +1,11 @@
-namespace System2
+﻿namespace System2
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
 open System.Reflection
 
-[<assembly:AssemblyVersionAttribute("1.0.0.0")>]
-[<assembly:AssemblyFileVersionAttribute("1.0.0.0")>]
+[<assembly: AssemblyVersionAttribute("1.0.0.0")>]
+[<assembly: AssemblyFileVersionAttribute("1.0.0.0")>]
 do ()
 
 module DU =
@@ -23,7 +23,8 @@ module DU =
         | Bop t -> Bar(string t)
         // New cases go in here
         | _ -> this
-      with _ -> Bar "none"
+      with
+      | _ -> Bar "none"
 
     member this.MyBar = this.as_bar
 

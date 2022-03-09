@@ -1,4 +1,4 @@
-namespace Sample6.AssemblyInfo
+﻿namespace Sample6.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.InteropServices

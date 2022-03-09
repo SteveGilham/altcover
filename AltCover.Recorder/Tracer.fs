@@ -1,4 +1,4 @@
-namespace AltCover.Recorder
+﻿namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
@@ -88,19 +88,17 @@ type internal Tracer =
 
       t.Keys
       |> Seq.filter (fun k -> t.[k].Count > 0)
-      |> Seq.iter
-           (fun m ->
-             this.Formatter.Write m
-             this.Formatter.Write t.[m].Count
+      |> Seq.iter (fun m ->
+        this.Formatter.Write m
+        this.Formatter.Write t.[m].Count
 
-             t.[m].Keys
-             |> Seq.iter
-                  (fun p ->
-                    this.Formatter.Write p
-                    let v = t.[m].[p]
-                    this.Formatter.Write v.Count
-                    v.Tracks |> Seq.iter this.PushContext
-                    this.PushContext Null))
+        t.[m].Keys
+        |> Seq.iter (fun p ->
+          this.Formatter.Write p
+          let v = t.[m].[p]
+          this.Formatter.Write v.Count
+          v.Tracks |> Seq.iter this.PushContext
+          this.PushContext Null))
 
       this.Formatter.Write String.Empty
 

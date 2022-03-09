@@ -28,10 +28,7 @@ module AltCoverCommand =
   let internal setExecutable tool collect =
     match collect with
     | AltCover.Primitive p -> AltCover.Primitive { p with Executable = tool }
-    | AltCover.TypeSafe t ->
-      AltCover.TypeSafe
-        { t with
-            Executable = TypeSafe.Tool tool }
+    | AltCover.TypeSafe t -> AltCover.TypeSafe { t with Executable = TypeSafe.Tool tool }
     | AltCover.Abstract a ->
       let copy: Primitive.CollectOptions =
         { RecorderDirectory = a.RecorderDirectory
@@ -268,7 +265,8 @@ module AltCoverCommand =
                                                     Justification = "Generic types are implicit")>]
 
   let internal runCore options modifyCommand =
-    use __ = Trace.traceTask "AltCover" String.Empty
+    use __ =
+      Trace.traceTask "AltCover" String.Empty
 
     let command =
       (composeCommandLine options) |> modifyCommand
@@ -317,16 +315,16 @@ module AltCoverCommand =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@292T.#monoPath",
+                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@290T.#monoPath",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@292T.#options",
+                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@290T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@245T.#options",
+                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@242T.#options",
                             Justification = "Generated code")>]
 ()

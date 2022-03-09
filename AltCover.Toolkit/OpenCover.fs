@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -29,7 +29,8 @@ module OpenCover =
 
     if sp |> List.isEmpty |> not
        && bp |> List.isEmpty |> not then
-      let tail = XElement(XName.Get "SequencePoint")
+      let tail =
+        XElement(XName.Get "SequencePoint")
 
       tail.Add(
         XAttribute(
@@ -40,11 +41,10 @@ module OpenCover =
 
       let interleave =
         List.concat [ sp; bp; [ tail ] ]
-        |> List.sortBy
-             (fun x ->
-               x.Attribute(XName.Get "offset").Value
-               |> Int32.TryParse
-               |> snd)
+        |> List.sortBy (fun x ->
+          x.Attribute(XName.Get "offset").Value
+          |> Int32.TryParse
+          |> snd)
 
       interleave
       |> Seq.fold
@@ -60,11 +60,10 @@ module OpenCover =
 
                    let (kill, keep) =
                      bs
-                     |> List.partition
-                          (fun b ->
-                            b.Attribute(XName.Get "offsetend").Value
-                            |> Int32.TryParse
-                            |> snd < next)
+                     |> List.partition (fun b ->
+                       b.Attribute(XName.Get "offsetend").Value
+                       |> Int32.TryParse
+                       |> snd < next)
 
                    kill |> Seq.iter (fun b -> b.Remove())
                    keep
@@ -75,20 +74,18 @@ module OpenCover =
                  if sameSpan then
                    let (kill, keep) =
                      bx
-                     |> List.groupBy
-                          (fun b ->
-                            (b.Attribute(XName.Get "offset").Value,
-                             b.Attribute(XName.Get "offsetchain").Value,
-                             b.Attribute(XName.Get "offsetend").Value))
+                     |> List.groupBy (fun b ->
+                       (b.Attribute(XName.Get "offset").Value,
+                        b.Attribute(XName.Get "offsetchain").Value,
+                        b.Attribute(XName.Get "offsetend").Value))
                      |> List.fold
                           (fun (ki, ke) (_, bz) ->
                             let totalVisits =
                               bz
-                              |> Seq.sumBy
-                                   (fun b ->
-                                     b.Attribute(XName.Get "vc").Value
-                                     |> Int32.TryParse
-                                     |> snd)
+                              |> Seq.sumBy (fun b ->
+                                b.Attribute(XName.Get "vc").Value
+                                |> Int32.TryParse
+                                |> snd)
 
                             let h = bz |> Seq.head
 
@@ -112,22 +109,16 @@ module OpenCover =
                |> List.rev // because the list will have been built up in reverse order
                |> Seq.mapi (fun i b -> (i, b))
                |> Seq.groupBy (fun (_, b) -> b.Attribute(XName.Get "offset").Value)
-               |> Seq.iter
-                    (fun (_, paths) ->
-                      paths // assume likely ranges for these numbers!
-                      |> Seq.sortBy
-                           (fun (n, p) ->
-                             n
-                             + 100
-                               * (p.Attribute(XName.Get "offsetend").Value
-                                  |> Int32.TryParse
-                                  |> snd))
-                      |> Seq.iteri
-                           (fun i (_, p) ->
-                             p.SetAttribute(
-                               "path",
-                               (i + 1).ToString(CultureInfo.InvariantCulture)
-                             )))
+               |> Seq.iter (fun (_, paths) ->
+                 paths // assume likely ranges for these numbers!
+                 |> Seq.sortBy (fun (n, p) ->
+                   n
+                   + 100
+                     * (p.Attribute(XName.Get "offsetend").Value
+                        |> Int32.TryParse
+                        |> snd))
+                 |> Seq.iteri (fun i (_, p) ->
+                   p.SetAttribute("path", (i + 1).ToString(CultureInfo.InvariantCulture))))
 
                s.SetAttribute("bec", by.Length.ToString(CultureInfo.InvariantCulture))
                s.SetAttribute("bev", "0")
@@ -143,7 +134,8 @@ module OpenCover =
                     "CA1011:ConsiderPassingBaseTypesAsParameters",
                     Justification = "AvoidSpeculativeGenerality too")>]
   let PostProcess (document: XDocument) (ordinal: BranchOrdinal) =
-    let orderAttr = ordinal.ToString().ToLowerInvariant()
+    let orderAttr =
+      ordinal.ToString().ToLowerInvariant()
 
     let counts =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -229,17 +221,16 @@ module OpenCover =
       |> Seq.tryFind (fun n -> n.FullName == methodFullName)
 
     methodDef
-    |> Option.iter
-         (fun x ->
-           let token =
-             m.Descendants(XName.Get "MetadataToken")
-             |> Seq.head
+    |> Option.iter (fun x ->
+      let token =
+        m.Descendants(XName.Get "MetadataToken")
+        |> Seq.head
 
-           token.Value <-
-             x
-               .MetadataToken
-               .ToUInt32()
-               .ToString(CultureInfo.InvariantCulture))
+      token.Value <-
+        x
+          .MetadataToken
+          .ToUInt32()
+          .ToString(CultureInfo.InvariantCulture))
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
     // Fix offset, sc, ec in <MethodPoint />
@@ -250,123 +241,114 @@ module OpenCover =
 
     m.Descendants(XName.Get "MethodPoint")
     |> Seq.tryHead
-    |> Option.iter
-         (fun x ->
-           let a =
-             x.Attributes()
-             |> Seq.filter (fun s -> charIndexOf (s.Name.ToString()) '{' < 0)
-             |> Seq.cast<obj>
-             |> Seq.toArray
+    |> Option.iter (fun x ->
+      let a =
+        x.Attributes()
+        |> Seq.filter (fun s -> charIndexOf (s.Name.ToString()) '{' < 0)
+        |> Seq.cast<obj>
+        |> Seq.toArray
 
-           x.RemoveAttributes()
+      x.RemoveAttributes()
 
-           x.Add(
-             XAttribute(
-               XName.Get("type", "http://www.w3.org/2001/XMLSchema-instance"),
-               "SequencePoint"
-             )
-           )
+      x.Add(
+        XAttribute(
+          XName.Get("type", "http://www.w3.org/2001/XMLSchema-instance"),
+          "SequencePoint"
+        )
+      )
 
-           x.Add a
+      x.Add a
 
-           debugInfo
-           |> Option.iter
-                (fun dbg ->
-                  dbg.SequencePoints
-                  |> Seq.filter (fun s -> s.IsHidden |> not)
-                  |> Seq.tryHead
-                  |> Option.iter
-                       (fun s ->
-                         x.Attribute(XName.Get "sc").Value <- s.StartColumn.ToString(
-                           CultureInfo.InvariantCulture
-                         )
+      debugInfo
+      |> Option.iter (fun dbg ->
+        dbg.SequencePoints
+        |> Seq.filter (fun s -> s.IsHidden |> not)
+        |> Seq.tryHead
+        |> Option.iter (fun s ->
+          x.Attribute(XName.Get "sc").Value <- s.StartColumn.ToString(
+            CultureInfo.InvariantCulture
+          )
 
-                         x.Attribute(XName.Get "ec").Value <- s.EndColumn.ToString(
-                           CultureInfo.InvariantCulture
-                         )
+          x.Attribute(XName.Get "ec").Value <- s.EndColumn.ToString(
+            CultureInfo.InvariantCulture
+          )
 
-                         x.Attribute(XName.Get "offset").Value <- s.Offset.ToString(
-                           CultureInfo.InvariantCulture
-                         ))))
+          x.Attribute(XName.Get "offset").Value <- s.Offset.ToString(
+            CultureInfo.InvariantCulture
+          ))))
 
     // Fix sequence points as best we can
     debugInfo
-    |> Option.iter
-         (fun d ->
-           let sp =
-             d.SequencePoints
-             |> Seq.filter (fun s -> s.IsHidden |> not)
-             |> Seq.toList
+    |> Option.iter (fun d ->
+      let sp =
+        d.SequencePoints
+        |> Seq.filter (fun s -> s.IsHidden |> not)
+        |> Seq.toList
 
-           seqpts
-           |> List.fold
-                (fun (dbgpts: Cil.SequencePoint list, offset: int) xmlpt ->
-                  let (ok, line) =
-                    Int32.TryParse(
-                      xmlpt.Attribute(XName.Get "sl").Value,
-                      NumberStyles.Integer,
-                      CultureInfo.InvariantCulture
-                    )
+      seqpts
+      |> List.fold
+           (fun (dbgpts: Cil.SequencePoint list, offset: int) xmlpt ->
+             let (ok, line) =
+               Int32.TryParse(
+                 xmlpt.Attribute(XName.Get "sl").Value,
+                 NumberStyles.Integer,
+                 CultureInfo.InvariantCulture
+               )
 
-                  let maybeDbg = dbgpts |> List.tryHead
+             let maybeDbg = dbgpts |> List.tryHead
 
-                  let filter (d: Cil.SequencePoint) = d.StartLine <= line
+             let filter (d: Cil.SequencePoint) = d.StartLine <= line
 
-                  let next =
-                    if (ok
-                        && maybeDbg |> Option.filter filter |> Option.isSome) then
-                      let dbgline = maybeDbg |> Option.get
-                      let offset' = dbgline.Offset
-                      (dbgpts |> List.skipWhile filter, offset')
-                    else
-                      (dbgpts, offset)
+             let next =
+               if (ok
+                   && maybeDbg |> Option.filter filter |> Option.isSome) then
+                 let dbgline = maybeDbg |> Option.get
+                 let offset' = dbgline.Offset
+                 (dbgpts |> List.skipWhile filter, offset')
+               else
+                 (dbgpts, offset)
 
-                  let a = xmlpt.Attributes() |> Seq.toArray
-                  xmlpt.RemoveAttributes()
-                  xmlpt.Add(a |> Array.take 3)
+             let a = xmlpt.Attributes() |> Seq.toArray
+             xmlpt.RemoveAttributes()
+             xmlpt.Add(a |> Array.take 3)
 
-                  xmlpt.SetAttribute(
-                    "offset",
-                    (snd next).ToString(CultureInfo.InvariantCulture)
-                  )
+             xmlpt.SetAttribute(
+               "offset",
+               (snd next).ToString(CultureInfo.InvariantCulture)
+             )
 
-                  xmlpt.Add(a |> Array.skip 3)
-                  next)
-                (sp, 0)
-           |> ignore
+             xmlpt.Add(a |> Array.skip 3)
+             next)
+           (sp, 0)
+      |> ignore
 
-           sp
-           |> Seq.map (fun s -> s.Document.Url)
-           |> Seq.tryFind File.Exists
-           |> Option.map File.ReadAllLines
-           |> Option.iter
-                (fun f ->
-                  seqpts
-                  |> Seq.iter
-                       (fun point ->
-                         let (ok, index) =
-                           Int32.TryParse(
-                             point.Attribute(XName.Get "sl").Value,
-                             NumberStyles.Integer,
-                             CultureInfo.InvariantCulture
-                           )
+      sp
+      |> Seq.map (fun s -> s.Document.Url)
+      |> Seq.tryFind File.Exists
+      |> Option.map File.ReadAllLines
+      |> Option.iter (fun f ->
+        seqpts
+        |> Seq.iter (fun point ->
+          let (ok, index) =
+            Int32.TryParse(
+              point.Attribute(XName.Get "sl").Value,
+              NumberStyles.Integer,
+              CultureInfo.InvariantCulture
+            )
 
-                         if ok then
-                           let line = f.[index - 1] // or Array.get f (index - 1)
-                           let cols = line.Length + 1
+          if ok then
+            let line = f.[index - 1] // or Array.get f (index - 1)
+            let cols = line.Length + 1
 
-                           point.SetAttribute(
-                             "ec",
-                             cols.ToString(CultureInfo.InvariantCulture)
-                           )
+            point.SetAttribute("ec", cols.ToString(CultureInfo.InvariantCulture))
 
-                           point.SetAttribute(
-                             "sc",
-                             (cols - line.TrimStart().Length)
-                               .ToString(CultureInfo.InvariantCulture)
-                           )
+            point.SetAttribute(
+              "sc",
+              (cols - line.TrimStart().Length)
+                .ToString(CultureInfo.InvariantCulture)
+            )
 
-                         )))
+        )))
 
   let private hash = sha1Hash ()
 
@@ -375,7 +357,9 @@ module OpenCover =
     (m.Elements() |> Seq.head)
       .AddBeforeSelf(summary ())
 
-    let modulePath = m.Element(XName.Get "ModulePath")
+    let modulePath =
+      m.Element(XName.Get "ModulePath")
+
     let assemblyFileName = modulePath.Value
 
     let assemblyPath =
@@ -398,16 +382,17 @@ module OpenCover =
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
     // Fix offset, sc, ec in <MethodPoint />
-    |> Option.iter
-         (fun path ->
-           modulePath.Value <- (Path.GetFullPath path)
-           m.Attribute(XName.Get "hash").Value <- hashFile path
+    |> Option.iter (fun path ->
+      modulePath.Value <- (Path.GetFullPath path)
+      m.Attribute(XName.Get "hash").Value <- hashFile path
 
-           use def = AssemblyDefinition.ReadAssembly path
-           def.MainModule.ReadSymbols()
+      use def =
+        AssemblyDefinition.ReadAssembly path
 
-           m.Descendants(XName.Get "Method")
-           |> Seq.iter (fun m2 -> fixFormatMethod m2 def))
+      def.MainModule.ReadSymbols()
+
+      m.Descendants(XName.Get "Method")
+      |> Seq.iter (fun m2 -> fixFormatMethod m2 def))
 
   let FormatFromCoverlet (report: XDocument) (files: string array) =
     let rewrite = XDocument(report)
@@ -415,17 +400,13 @@ module OpenCover =
     // attributes in <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     rewrite.Descendants(XName.Get "CoverageSession")
-    |> Seq.iter
-         (fun session ->
-           session.RemoveAttributes()
+    |> Seq.iter (fun session ->
+      session.RemoveAttributes()
 
-           session.Add(
-             XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
-             XAttribute(
-               XNamespace.Xmlns + "xsi",
-               "http://www.w3.org/2001/XMLSchema-instance"
-             )
-           ))
+      session.Add(
+        XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
+        XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance")
+      ))
 
     // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
     // fill in path  <ModulePath>...\Sample4.dll</ModulePath>
@@ -632,7 +613,10 @@ module OpenCover =
       |> Seq.find (fun t -> (attributeOrEmpty "uid" t) == key)
 
     let token = attributeOrEmpty "token" tm
-    let hash = attributeOrEmpty "hash" tm.Parent.Parent
+
+    let hash =
+      attributeOrEmpty "hash" tm.Parent.Parent
+
     let tm = Map.find (hash, token) tracked
     let result = XElement(x)
     result.SetAttributeValue(XName.Get "uid", tm.Uid)
@@ -648,10 +632,9 @@ module OpenCover =
     |> Seq.map (fun x -> x.Attribute(XName.Get "fileid"))
     |> Seq.filter (isNull >> not)
     |> Seq.tryHead
-    |> Option.iter
-         (fun a ->
-           let newfile = mapFile files a modu
-           np0.SetAttributeValue(XName.Get "fileid", newfile))
+    |> Option.iter (fun a ->
+      let newfile = mapFile files a modu
+      np0.SetAttributeValue(XName.Get "fileid", newfile))
 
     let times =
       group
@@ -659,13 +642,12 @@ module OpenCover =
       |> Seq.groupBy (attributeOrEmpty "time")
       |> Seq.map (fun (t, x) -> t, x |> mergeCounts)
       |> Seq.filter (fun (_, x) -> x > 0)
-      |> Seq.map
-           (fun (t, x) ->
-             XElement(
-               XName.Get "Time",
-               XAttribute(XName.Get "time", t),
-               XAttribute(XName.Get "vc", x)
-             ))
+      |> Seq.map (fun (t, x) ->
+        XElement(
+          XName.Get "Time",
+          XAttribute(XName.Get "time", t),
+          XAttribute(XName.Get "vc", x)
+        ))
 
     np0.Elements(XName.Get "Times")
     |> Seq.toList
@@ -678,13 +660,12 @@ module OpenCover =
       |> Seq.groupBy (attributeOrEmpty "uid")
       |> Seq.map (fun (t, x) -> t, x |> mergeCounts)
       |> Seq.filter (fun (_, x) -> x > 0)
-      |> Seq.map
-           (fun (t, x) ->
-             XElement(
-               XName.Get "TrackedMethodRef",
-               XAttribute(XName.Get "uid", t),
-               XAttribute(XName.Get "vc", x)
-             ))
+      |> Seq.map (fun (t, x) ->
+        XElement(
+          XName.Get "TrackedMethodRef",
+          XAttribute(XName.Get "uid", t),
+          XAttribute(XName.Get "vc", x)
+        ))
 
     np0.Elements(XName.Get "TrackedMethodRefs")
     |> Seq.toList
@@ -696,7 +677,9 @@ module OpenCover =
       np0.Add t
 
     if tracks |> Seq.isEmpty |> not then
-      let t = XElement(XName.Get "TrackedMethodRefs")
+      let t =
+        XElement(XName.Get "TrackedMethodRefs")
+
       tracks |> Seq.toArray |> t.Add
       np0.Add t
 
@@ -720,7 +703,10 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       |> Seq.fold
            (fun (count, points) group ->
              let g = group |> snd
-             let (mc, np0) = fixPoint files modu tracked g
+
+             let (mc, np0) =
+               fixPoint files modu tracked g
+
              (count + if mc > 0 then 1 else 0), np0 :: points)
            (0, [])
 
@@ -730,33 +716,30 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let lines =
       newsps
       |> Seq.groupBy (attributeOrEmpty "sl")
-      |> Seq.map
-           (fun (l, x) ->
-             l |> Int32.TryParse |> snd,
-             x
-             |> Seq.sortBy ((attributeOrEmpty "sc") >> Int32.TryParse >> snd)
-             |> Seq.head)
+      |> Seq.map (fun (l, x) ->
+        l |> Int32.TryParse |> snd,
+        x
+        |> Seq.sortBy ((attributeOrEmpty "sc") >> Int32.TryParse >> snd)
+        |> Seq.head)
 
     let branches =
       newbps
-      |> Seq.map
-           (fun b ->
-             (b
-              |> (attributeOrEmpty "sl")
-              |> Int32.TryParse
-              |> snd),
-             b)
+      |> Seq.map (fun b ->
+        (b
+         |> (attributeOrEmpty "sl")
+         |> Int32.TryParse
+         |> snd),
+        b)
 
     let interleave =
       [ lines; branches ]
       |> Seq.concat
-      |> Seq.sortBy
-           (fun (n, x) ->
-             (n <<< 1)
-             + (if x.Name.LocalName == "SequencePoint" then
-                  0
-                else
-                  1))
+      |> Seq.sortBy (fun (n, x) ->
+        (n <<< 1)
+        + (if x.Name.LocalName == "SequencePoint" then
+             0
+           else
+             1))
       |> Seq.map snd
       |> Seq.toList
 
@@ -799,38 +782,37 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       |> Seq.map (fun f -> f.Attribute(XName.Get "uid"))
       |> Seq.filter (isNull >> not)
       |> Seq.tryHead
-      |> Option.map
-           (fun a ->
-             let fr0 = XElement(XName.Get "FileRef")
-             let newfile = mapFile files a modu
-             fr0.SetAttributeValue(XName.Get "uid", newfile)
-             fr0)
+      |> Option.map (fun a ->
+        let fr0 = XElement(XName.Get "FileRef")
+        let newfile = mapFile files a modu
+        fr0.SetAttributeValue(XName.Get "uid", newfile)
+        fr0)
 
     let sequencePoints modu (group: string * XElement seq) =
-      let sp = XElement(XName.Get "SequencePoints")
+      let sp =
+        XElement(XName.Get "SequencePoints")
 
       let sps =
         group
         |> snd
         |> Seq.collect (fun m -> m.Descendants(XName.Get "SequencePoint"))
-        |> Seq.groupBy
-             (fun s ->
-               s
-               |> attributeOrEmpty "sl"
-               |> Int32.TryParse
-               |> snd,
-               s
-               |> attributeOrEmpty "sc"
-               |> Int32.TryParse
-               |> snd)
+        |> Seq.groupBy (fun s ->
+          s
+          |> attributeOrEmpty "sl"
+          |> Int32.TryParse
+          |> snd,
+          s
+          |> attributeOrEmpty "sc"
+          |> Int32.TryParse
+          |> snd)
 
-      let (vs, newsps) = mergePoints files modu tracked sps
+      let (vs, newsps) =
+        mergePoints files modu tracked sps
 
       newsps
-      |> Seq.iter
-           (fun s ->
-             s.SetAttributeValue(XName.Get "bec", 0)
-             s.SetAttributeValue(XName.Get "bev", 0))
+      |> Seq.iter (fun s ->
+        s.SetAttributeValue(XName.Get "bec", 0)
+        s.SetAttributeValue(XName.Get "bev", 0))
 
       sp.Add newsps
       (sp, newsps, vs)
@@ -842,22 +824,23 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
         group
         |> snd
         |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
-        |> Seq.groupBy
-             (fun s ->
-               (s
-                |> attributeOrEmpty "sl"
-                |> Int32.TryParse
-                |> snd,
-                s
-                |> attributeOrEmpty "offset"
-                |> Int32.TryParse
-                |> snd),
-               s
-               |> attributeOrEmpty "endoffset"
-               |> Int32.TryParse
-               |> snd)
+        |> Seq.groupBy (fun s ->
+          (s
+           |> attributeOrEmpty "sl"
+           |> Int32.TryParse
+           |> snd,
+           s
+           |> attributeOrEmpty "offset"
+           |> Int32.TryParse
+           |> snd),
+          s
+          |> attributeOrEmpty "endoffset"
+          |> Int32.TryParse
+          |> snd)
 
-      let (vb, newbps) = mergePoints files modu tracked bps
+      let (vb, newbps) =
+        mergePoints files modu tracked bps
+
       bp.Add newbps
       (bp, newbps, vb)
 
@@ -874,19 +857,17 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       let mp =
         methodPoints
         |> Seq.tryHead
-        |> Option.map
-             (fun r ->
-               let mp0 = XElement r
-               mp0.SetAttributeValue(XName.Get "vc", mpv)
+        |> Option.map (fun r ->
+          let mp0 = XElement r
+          mp0.SetAttributeValue(XName.Get "vc", mpv)
 
-               r.Attribute(XName.Get "fileid")
-               |> Option.ofObj
-               |> Option.iter
-                    (fun a ->
-                      let newfile = mapFile files a modu
-                      mp0.SetAttributeValue(XName.Get "fileid", newfile))
+          r.Attribute(XName.Get "fileid")
+          |> Option.ofObj
+          |> Option.iter (fun a ->
+            let newfile = mapFile files a modu
+            mp0.SetAttributeValue(XName.Get "fileid", newfile))
 
-               mp0)
+          mp0)
 
       (mp, mpv)
 
@@ -899,12 +880,18 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
              let sm = XElement(XName.Get "Summary")
              let mt = metadataToken group
 
-             let name = XElement(XName.Get "Name", fst group)
+             let name =
+               XElement(XName.Get "Name", fst group)
+
              let modu = rep.Parent.Parent.Parent.Parent
 
              let fr = fileRef modu group
-             let (sp, newsps, vs) = sequencePoints modu group
-             let (bp, newbps, vb) = branchPoints modu group
+
+             let (sp, newsps, vs) =
+               sequencePoints modu group
+
+             let (bp, newbps, vb) =
+               branchPoints modu group
 
              // bec, bev heuristic
              if newsps |> Seq.isEmpty |> not
@@ -1005,7 +992,9 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
                |> Seq.groupBy (fun x -> x.Element(XName.Get "Name").Value)
 
-             let (msum, merged) = mergeMethods files tracked methods
+             let (msum, merged) =
+               mergeMethods files tracked methods
+
              mm.Add merged
 
              let classVisit =
@@ -1042,14 +1031,13 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
         |> Seq.sort
 
       foundFiles
-      |> Seq.iter
-           (fun file ->
-             XElement(
-               XName.Get "File",
-               XAttribute(XName.Get "uid", Map.find file files),
-               XAttribute(XName.Get "fullPath", file)
-             )
-             |> f.Add)
+      |> Seq.iter (fun file ->
+        XElement(
+          XName.Get "File",
+          XAttribute(XName.Get "uid", Map.find file files),
+          XAttribute(XName.Get "fullPath", file)
+        )
+        |> f.Add)
 
     let findClasses (c: XElement) =
       let classes =
@@ -1058,7 +1046,9 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
         |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
         |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
 
-      let msummary, merged = mergeClasses files tracked classes
+      let msummary, merged =
+        mergeClasses files tracked classes
+
       c.Add merged
       msummary
 
@@ -1075,10 +1065,9 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     [ "ModulePath"
       "ModuleTime"
       "ModuleName" ]
-    |> List.iter
-         (fun n ->
-           let x = XName.Get n
-           merge.Add(XElement(x, r.Element(x).Value)))
+    |> List.iter (fun n ->
+      let x = XName.Get n
+      merge.Add(XElement(x, r.Element(x).Value)))
 
     let f = XElement(XName.Get "Files")
     merge.Add f
@@ -1100,20 +1089,19 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       modules
       |> Seq.collect (fun m -> m.Descendants(XName.Get "TrackedMethod"))
       |> Seq.groupBy (attributeOrEmpty "token")
-      |> Seq.map
-           (fun grouped ->
-             let key = (hashValue, fst grouped)
-             let data = Map.find key tracked
+      |> Seq.map (fun grouped ->
+        let key = (hashValue, fst grouped)
+        let data = Map.find key tracked
 
-             XElement(
-               XName.Get "TrackedMethod",
-               XAttribute(XName.Get "uid", data.Uid),
-               XAttribute(XName.Get "token", data.Token),
-               XAttribute(XName.Get "name", data.Name),
-               XAttribute(XName.Get "strategy", String.Join(";", data.Strategy)),
-               XAttribute(XName.Get "entry", String.Join(";", data.Entry)),
-               XAttribute(XName.Get "exit", String.Join(";", data.Exit))
-             ))
+        XElement(
+          XName.Get "TrackedMethod",
+          XAttribute(XName.Get "uid", data.Uid),
+          XAttribute(XName.Get "token", data.Token),
+          XAttribute(XName.Get "name", data.Name),
+          XAttribute(XName.Get "strategy", String.Join(";", data.Strategy)),
+          XAttribute(XName.Get "entry", String.Join(";", data.Entry)),
+          XAttribute(XName.Get "exit", String.Join(";", data.Exit))
+        ))
 
     trackedMethods |> Seq.toArray |> t.Add
 
@@ -1150,31 +1138,28 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
     let tracked =
       inputs
-      |> List.collect
-           (fun x ->
-             x.Descendants(XName.Get "TrackedMethod")
-             |> Seq.toList)
-      |> List.map
-           (fun x ->
-             { Hash = x.Parent.Parent |> attributeOrEmpty "hash"
-               Token = x |> attributeOrEmpty "token"
-               Name = x |> attributeOrEmpty "name"
-               Strategy =
-                 (x |> attributeOrEmpty "strategy").Split(';')
-                 |> Seq.toList
-               Entry =
-                 (x |> attributeOrEmpty "entry").Split(';')
-                 |> Seq.toList
-               Exit =
-                 (x |> attributeOrEmpty "exit").Split(';')
-                 |> Seq.toList
-               Uid = 0 })
-      |> List.filter
-           (fun t ->
-             (t.Name |> String.IsNullOrWhiteSpace
-              || t.Hash |> String.IsNullOrWhiteSpace
-              || t.Token |> String.IsNullOrWhiteSpace)
-             |> not)
+      |> List.collect (fun x ->
+        x.Descendants(XName.Get "TrackedMethod")
+        |> Seq.toList)
+      |> List.map (fun x ->
+        { Hash = x.Parent.Parent |> attributeOrEmpty "hash"
+          Token = x |> attributeOrEmpty "token"
+          Name = x |> attributeOrEmpty "name"
+          Strategy =
+            (x |> attributeOrEmpty "strategy").Split(';')
+            |> Seq.toList
+          Entry =
+            (x |> attributeOrEmpty "entry").Split(';')
+            |> Seq.toList
+          Exit =
+            (x |> attributeOrEmpty "exit").Split(';')
+            |> Seq.toList
+          Uid = 0 })
+      |> List.filter (fun t ->
+        (t.Name |> String.IsNullOrWhiteSpace
+         || t.Hash |> String.IsNullOrWhiteSpace
+         || t.Token |> String.IsNullOrWhiteSpace)
+        |> not)
       |> List.groupBy (fun t -> (t.Hash, t.Token))
       |> List.mapi (fun i (k, v) -> (k, mergeTrackedMethods i v))
       |> Map.ofList
@@ -1200,7 +1185,8 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       .Element(XName.Get "Modules")
       .Add(modules |> List.toArray)
 
-    let sm = doc.Root.Element(XName.Get "Summary")
+    let sm =
+      doc.Root.Element(XName.Get "Summary")
 
     summary.Xml.Attributes()
     |> Seq.map XAttribute
@@ -1211,13 +1197,12 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
   let Merge (documents: XDocument seq) =
     let inputs =
       documents
-      |> Seq.filter
-           (fun x ->
-             try
-               let format = XmlUtilities.discoverFormat x
-               format = ReportFormat.OpenCover
-             with
-             | :? XmlSchemaValidationException -> false)
+      |> Seq.filter (fun x ->
+        try
+          let format = XmlUtilities.discoverFormat x
+          format = ReportFormat.OpenCover
+        with
+        | :? XmlSchemaValidationException -> false)
       |> Seq.toList
 
     match inputs with
@@ -1227,7 +1212,8 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
   [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
   let JsonToXml (document: string) =
-    let json = document |> NativeJson.fromJsonText
+    let json =
+      document |> NativeJson.fromJsonText
 
     let xml =
       json
@@ -1267,6 +1253,6 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 764@765::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 747@748::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

@@ -1,12 +1,11 @@
-open System
+﻿open System
 open System.IO
 open System.Reflection
 open System.Security.Cryptography
 
 let key = fsi.CommandLineArgs.[1]
 
-let stream =
-    new FileStream(key, System.IO.FileMode.Open, System.IO.FileAccess.Read)
+let stream = new FileStream(key, System.IO.FileMode.Open, System.IO.FileAccess.Read)
 
 let pair = StrongNameKeyPair(stream)
 // get the public key token as 8 bytes from the end of a SHA1 hash of the key material

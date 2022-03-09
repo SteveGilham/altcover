@@ -1,4 +1,4 @@
-#r "paket:
+﻿#r "paket:
 nuget BlackFox.VsWhere >= 1.0.0
 nuget Fake.Core.Target >= 5.21.0
 nuget Fake.Core.Environment >= 5.21.0
@@ -22,14 +22,12 @@ open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 
-let consoleBefore =
-    (Console.ForegroundColor, Console.BackgroundColor)
+let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
 Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
 
 // Really bootstrap
-let dotnetPath =
-    "dotnet" |> ProcessUtils.tryFindFileOnPath
+let dotnetPath = "dotnet" |> ProcessUtils.tryFindFileOnPath
 
 let dotnetOptions (o: DotNet.Options) =
     match dotnetPath with
@@ -39,8 +37,8 @@ let dotnetOptions (o: DotNet.Options) =
 DotNet.restore
     (fun o ->
         { o with
-              Packages = [ "./packages" ]
-              Common = dotnetOptions o.Common })
+            Packages = [ "./packages" ]
+            Common = dotnetOptions o.Common })
     "./Build/NuGet.csproj"
 
 let toolPackages =
@@ -66,17 +64,16 @@ let nuget =
 let dixon =
     ("./packages/"
      + (packageVersion "AltCode.Dixon")
-     + "/tools" )
+     + "/tools")
     |> Path.getFullName
 
 let fxcop =
     if Environment.isWindows then
         BlackFox.VsWhere.VsInstances.getAll ()
         |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 17)
-        |> Seq.map
-            (fun i ->
-                i.InstallationPath
-                @@ "Team Tools/Static Analysis Tools/FxCop")
+        |> Seq.map (fun i ->
+            i.InstallationPath
+            @@ "Team Tools/Static Analysis Tools/FxCop")
         |> Seq.filter Directory.Exists
         |> Seq.tryHead
     else
@@ -147,30 +144,29 @@ Target.description "ResetConsoleColours"
 Target.createFinal "ResetConsoleColours" resetColours
 Target.activateFinal "ResetConsoleColours"
 
-_Target
-    "FxCop"
-    (fun _ ->
-        fxcop
-        |> Option.iter
-            (fun fx ->
-                Directory.ensure "./packages/fxcop/"
-                let target = Path.getFullName "./packages/fxcop/"
-                let prefix = fx.Length
+_Target "FxCop" (fun _ ->
+    fxcop
+    |> Option.iter (fun fx ->
+        Directory.ensure "./packages/fxcop/"
+        let target = Path.getFullName "./packages/fxcop/"
+        let prefix = fx.Length
 
-                let check t pf (f: string) =
-                    let destination = t @@ (f.Substring pf)
-                    // printfn "%A" destination
-                    destination |> File.Exists |> not &&
-                    destination |> Path.GetFileName <> "SecurityTransparencyRules.dll"
+        let check t pf (f: string) =
+            let destination = t @@ (f.Substring pf)
+            // printfn "%A" destination
+            destination |> File.Exists |> not
+            && destination |> Path.GetFileName
+               <> "SecurityTransparencyRules.dll"
 
-                Shell.copyDir target fx (check target prefix)
+        Shell.copyDir target fx (check target prefix)
 
-                Shell.copyDir target dixon (fun f -> 
-                    Path.GetFileNameWithoutExtension f <> "AltCode.Dixon")
+        Shell.copyDir target dixon (fun f ->
+            Path.GetFileNameWithoutExtension f
+            <> "AltCode.Dixon")
 
-                let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
-                // Maybe process here...
-                config.Save "./packages/fxcop/DixonCmd.exe.config"))
+        let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
+        // Maybe process here...
+        config.Save "./packages/fxcop/DixonCmd.exe.config"))
 
 _Target "Preparation" ignore
 

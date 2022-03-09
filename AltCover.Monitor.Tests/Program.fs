@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 #if !NET472
 
@@ -9,7 +9,8 @@ module ExpectoMain =
     [ Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
       Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
       Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
-      Tests.MonitorTests.ShouldCountOpenCoverTotals, "MonitorTests.ShouldCountOpenCoverTotals"
+      Tests.MonitorTests.ShouldCountOpenCoverTotals,
+      "MonitorTests.ShouldCountOpenCoverTotals"
       Tests.MonitorTests.ShouldRecordPointTotals, "MonitorTests.ShouldRecordPointTotals"
       Tests.MonitorTests.ShouldRecordVisitTotals, "MonitorTests.ShouldRecordVisitTotals" ]
 

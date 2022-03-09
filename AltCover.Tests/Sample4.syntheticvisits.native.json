@@ -4,15 +4,15 @@
      "Tests.Program": {
        "System.Int32 Tests.Program::main(System.String[])": {
          "Lines": {
-           "61": 1
+           "63": 1
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 1,
-            "SL": 61,
+            "SL": 63,
             "SC": 16,
-            "EL": 61,
+            "EL": 63,
             "EC": 17,
             "Offset": 0,
             "Id": 0
@@ -23,15 +23,15 @@
      "Tests.DU": {
        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)": {
          "Lines": {
-           "49": 0
+           "51": 0
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 49,
+            "SL": 51,
             "SC": 21,
-            "EL": 49,
+            "EL": 51,
             "EC": 26,
             "Offset": 0,
             "Id": 1
@@ -40,15 +40,15 @@
         },
        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)": {
          "Lines": {
-           "50": 3
+           "52": 3
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 3,
-            "SL": 50,
+            "SL": 52,
             "SC": 21,
-            "EL": 50,
+            "EL": 52,
             "EC": 26,
             "Offset": 0,
             "Id": 2,
@@ -62,13 +62,13 @@
         },
        "System.Void Tests.DU::testMakeUnion()": {
          "Lines": {
-           "54": 9,
-           "55": 7,
-           "56": 5
+           "56": 9,
+           "57": 7,
+           "58": 5
           },
          "Branches": [
            {
-            "Line": 54,
+            "Line": 56,
             "Offset": 207,
             "EndOffset": 247,
             "Path": 0,
@@ -76,7 +76,7 @@
             "Hits": 0
            },
            {
-            "Line": 54,
+            "Line": 56,
             "Offset": 207,
             "EndOffset": 212,
             "Path": 1,
@@ -89,7 +89,7 @@
              ]
            },
            {
-            "Line": 55,
+            "Line": 57,
             "Offset": 463,
             "EndOffset": 504,
             "Path": 0,
@@ -98,7 +98,7 @@
             "Id": 2
            },
            {
-            "Line": 55,
+            "Line": 57,
             "Offset": 463,
             "EndOffset": 468,
             "Path": 1,
@@ -122,36 +122,36 @@
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 56,
+            "SL": 58,
             "SC": 5,
-            "EL": 56,
-            "EC": 44,
+            "EL": 58,
+            "EC": 45,
             "Offset": 738,
             "Id": 3
            },
            {
             "VC": 5,
-            "SL": 56,
+            "SL": 58,
             "SC": 5,
-            "EL": 56,
-            "EC": 44,
+            "EL": 58,
+            "EC": 45,
             "Offset": 504,
             "Id": 4
            },
            {
             "VC": 0,
-            "SL": 55,
+            "SL": 57,
             "SC": 5,
-            "EL": 55,
+            "EL": 57,
             "EC": 39,
             "Offset": 500,
             "Id": 5
            },
            {
             "VC": 7,
-            "SL": 55,
+            "SL": 57,
             "SC": 5,
-            "EL": 55,
+            "EL": 57,
             "EC": 39,
             "Offset": 247,
             "Id": 6,
@@ -167,18 +167,18 @@
            },
            {
             "VC": 0,
-            "SL": 54,
+            "SL": 56,
             "SC": 5,
-            "EL": 54,
+            "EL": 56,
             "EC": 37,
             "Offset": 243,
             "Id": 7
            },
            {
             "VC": 9,
-            "SL": 54,
+            "SL": 56,
             "SC": 5,
-            "EL": 54,
+            "EL": 56,
             "EC": 37,
             "Offset": 0,
             "Id": 8
@@ -198,17 +198,18 @@
      "Tests.DU/MyUnion": {
        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()": {
          "Lines": {
-           "35": 0,
            "36": 0,
            "37": 0,
            "38": 0,
            "39": 0,
-           "41": 0,
-           "42": 0
+           "40": 0,
+           "42": 0,
+           "43": 0,
+           "44": 0
           },
          "Branches": [
            {
-            "Line": 36,
+            "Line": 37,
             "Offset": 9,
             "EndOffset": 178,
             "Path": 0,
@@ -217,7 +218,7 @@
             "Id": 4
            },
            {
-            "Line": 36,
+            "Line": 37,
             "Offset": 9,
             "EndOffset": 35,
             "Path": 1,
@@ -234,7 +235,7 @@
              ]
            },
            {
-            "Line": 36,
+            "Line": 37,
             "Offset": 9,
             "EndOffset": 86,
             "Path": 2,
@@ -243,7 +244,7 @@
             "Id": 6
            },
            {
-            "Line": 36,
+            "Line": 37,
             "Offset": 9,
             "EndOffset": 132,
             "Path": 3,
@@ -275,30 +276,39 @@
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 42,
-            "SC": 17,
-            "EL": 42,
-            "EC": 27,
+            "SL": 44,
+            "SC": 14,
+            "EL": 44,
+            "EC": 24,
             "Offset": 189,
             "Id": 9
            },
            {
             "VC": 0,
-            "SL": 42,
+            "SL": 43,
             "SC": 7,
-            "EL": 42,
+            "EL": 43,
             "EC": 11,
             "Offset": 182,
             "Id": 10
            },
            {
             "VC": 0,
-            "SL": 41,
+            "SL": 42,
             "SC": 16,
-            "EL": 41,
+            "EL": 42,
             "EC": 20,
             "Offset": 178,
             "Id": 11
+           },
+           {
+            "VC": 0,
+            "SL": 40,
+            "SC": 20,
+            "EL": 40,
+            "EC": 33,
+            "Offset": 149,
+            "Id": 12
            },
            {
             "VC": 0,
@@ -306,8 +316,8 @@
             "SC": 20,
             "EL": 39,
             "EC": 33,
-            "Offset": 149,
-            "Id": 12
+            "Offset": 103,
+            "Id": 13
            },
            {
             "VC": 0,
@@ -315,32 +325,23 @@
             "SC": 20,
             "EL": 38,
             "EC": 33,
-            "Offset": 103,
-            "Id": 13
-           },
-           {
-            "VC": 0,
-            "SL": 37,
-            "SC": 20,
-            "EL": 37,
-            "EC": 33,
             "Offset": 49,
             "Id": 14
            },
            {
             "VC": 0,
-            "SL": 36,
+            "SL": 37,
             "SC": 9,
-            "EL": 36,
+            "EL": 37,
             "EC": 24,
             "Offset": 1,
             "Id": 15
            },
            {
             "VC": 0,
-            "SL": 35,
+            "SL": 36,
             "SC": 7,
-            "EL": 35,
+            "EL": 36,
             "EC": 10,
             "Offset": 0,
             "Id": 16
@@ -349,24 +350,24 @@
         },
        "Microsoft.FSharp.Core.FSharpFunc\u00602\u003CMicrosoft.FSharp.Core.Unit,Tests.DU/MyUnion\u003E Tests.DU/MyUnion::get_MyBar()": {
          "Lines": {
-           "44": 0
+           "46": 0
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 44,
+            "SL": 46,
             "SC": 25,
-            "EL": 44,
+            "EL": 46,
             "EC": 36,
             "Offset": 0,
             "Id": 17
            },
            {
             "VC": 0,
-            "SL": 44,
+            "SL": 46,
             "SC": 25,
-            "EL": 44,
+            "EL": 46,
             "EC": 36,
             "Offset": 0,
             "Id": 18
@@ -377,25 +378,25 @@
      "Tests.DU/MyClass": {
        "System.Void Tests.DU/MyClass::.ctor()": {
          "Lines": {
-           "46": 0,
-           "47": 0
+           "48": 0,
+           "49": 0
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 46,
+            "SL": 48,
             "SC": 8,
-            "EL": 46,
+            "EL": 48,
             "EC": 15,
             "Offset": 15,
             "Id": 19
            },
            {
             "VC": 0,
-            "SL": 47,
+            "SL": 49,
             "SC": 27,
-            "EL": 47,
+            "EL": 49,
             "EC": 28,
             "Offset": 8,
             "Id": 20
@@ -406,15 +407,15 @@
      "Tests.M": {
        "Tests.M/Thing Tests.M::makeThing(System.String)": {
          "Lines": {
-           "20": 0
+           "21": 0
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 20,
+            "SL": 21,
             "SC": 21,
-            "EL": 20,
+            "EL": 21,
             "EC": 34,
             "Offset": 0,
             "Id": 21
@@ -423,12 +424,12 @@
         },
        "System.Void Tests.M::testMakeThing()": {
          "Lines": {
-           "24": 0,
-           "25": 0
+           "25": 0,
+           "26": 0
           },
          "Branches": [
            {
-            "Line": 24,
+            "Line": 25,
             "Offset": 207,
             "EndOffset": 247,
             "Path": 0,
@@ -437,7 +438,7 @@
             "Id": 8
            },
            {
-            "Line": 24,
+            "Line": 25,
             "Offset": 207,
             "EndOffset": 212,
             "Path": 1,
@@ -461,36 +462,36 @@
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 25,
+            "SL": 26,
             "SC": 5,
-            "EL": 25,
+            "EL": 26,
             "EC": 54,
             "Offset": 551,
             "Id": 22
            },
            {
             "VC": 0,
-            "SL": 25,
+            "SL": 26,
             "SC": 5,
-            "EL": 25,
+            "EL": 26,
             "EC": 54,
             "Offset": 247,
             "Id": 23
            },
            {
             "VC": 0,
-            "SL": 24,
+            "SL": 25,
             "SC": 5,
-            "EL": 24,
+            "EL": 25,
             "EC": 43,
             "Offset": 243,
             "Id": 24
            },
            {
             "VC": 0,
-            "SL": 24,
+            "SL": 25,
             "SC": 5,
-            "EL": 24,
+            "EL": 25,
             "EC": 43,
             "Offset": 0,
             "Id": 25
@@ -501,16 +502,16 @@
      "Tests.M/Thing": {
        "System.Byte[] Tests.M/Thing::bytes()": {
          "Lines": {
-           "18": 0
+           "19": 0
           },
          "Branches": [],
          "SeqPnts": [
            {
             "VC": 0,
-            "SL": 18,
-            "SC": 27,
-            "EL": 18,
-            "EC": 73,
+            "SL": 19,
+            "SC": 7,
+            "EL": 19,
+            "EC": 53,
             "Offset": 0,
             "Id": 26
            }

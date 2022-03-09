@@ -1,4 +1,4 @@
-namespace AltCover.Test
+﻿namespace AltCover.Test
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
@@ -11,18 +11,23 @@ open System.Threading
 [<RunInstaller(true)>]
 type ProjectInstaller() as this =
   inherit System.Configuration.Install.Installer()
+
   do
     //
     // serviceProcessInstaller
     //
-    let serviceProcessInstaller = new ServiceProcessInstaller()
+    let serviceProcessInstaller =
+      new ServiceProcessInstaller()
+
     serviceProcessInstaller.Account <- ServiceAccount.NetworkService
     serviceProcessInstaller.Password <- null
     serviceProcessInstaller.Username <- null
     //
     // serviceInstaller
     //
-    let serviceInstaller = new ServiceInstaller()
+    let serviceInstaller =
+      new ServiceInstaller()
+
     serviceInstaller.Description <- "Test service for coverage"
     serviceInstaller.DisplayName <- "AltCover Test Service"
     serviceInstaller.ServiceName <- "AltCover.Test.Service"
@@ -30,8 +35,10 @@ type ProjectInstaller() as this =
     //
     // ProjectInstaller
     //
-    this.Installers.AddRange([| serviceProcessInstaller :> Installer
-                                serviceInstaller :> Installer |])
+    this.Installers.AddRange(
+      [| serviceProcessInstaller :> Installer
+         serviceInstaller :> Installer |]
+    )
 
 /// <summary>
 /// Trival service based on the walkthrough at http://msdn.microsoft.com/en-us/library/zt39148a%28v=vs.110%29.aspx
@@ -42,7 +49,9 @@ type ProjectInstaller() as this =
 type Service() as this =
   inherit ServiceBase()
   do this.Initialize()
-  member private this.waiter = new AutoResetEvent(false)
+
+  member private this.waiter =
+    new AutoResetEvent(false)
 
   member this.Initialize() =
     this.ServiceName <- "AltCoverSvc"
@@ -57,18 +66,22 @@ type Service() as this =
   /// <param name="args">This parameter is not used.</param>
   override this.OnStart args =
     Debug.WriteLine("Starting service")
+
     let sleepWorkflow =
       async {
         let interval = TimeSpan(0, 0, 5)
 
-        let rec loop() =
-          if this.waiter.WaitOne(interval) then Debug.WriteLine "Service exiting"
+        let rec loop () =
+          if this.waiter.WaitOne(interval) then
+            Debug.WriteLine "Service exiting"
           else
             Debug.WriteLine "Service working"
-            loop()
+            loop ()
+
         Debug.WriteLine "Starting sleep workflow"
-        loop()
+        loop ()
       }
+
     Async.Start sleepWorkflow
 
   /// <summary>

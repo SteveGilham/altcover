@@ -1,4 +1,4 @@
-#r "paket:
+﻿#r "paket:
 nuget Fake.DotNet.Cli >= 5.20.3
 nuget AltCover.Fake >= 7.0 //"
 

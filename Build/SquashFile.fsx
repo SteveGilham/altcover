@@ -1,4 +1,4 @@
-open System
+﻿open System
 open System.IO
 open System.IO.Compression
 open System.Text
@@ -12,13 +12,11 @@ for arg in Environment.GetCommandLineArgs() |> Seq.skip 3 do
     use squashed = new MemoryStream()
 
     do
-        use compress =
-            new DeflateStream(squashed, CompressionMode.Compress, true)
+        use compress = new DeflateStream(squashed, CompressionMode.Compress, true)
 
         compress.Write(binary, 0, binary.Length)
 
-    let crushed =
-        Array.create<byte> (int squashed.Length) 0uy
+    let crushed = Array.create<byte> (int squashed.Length) 0uy
 
     squashed.Seek(0L, SeekOrigin.Begin) |> ignore
 

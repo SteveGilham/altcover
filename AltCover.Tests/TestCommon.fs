@@ -46,7 +46,8 @@ module TestCommon =
   let maybeReraise f g =
     try
       f ()
-    with _ ->
+    with
+    | _ ->
       g ()
       reraise ()
 
@@ -55,7 +56,8 @@ module TestCommon =
   let test' x message =
     try
       test x
-    with fail ->
+    with
+    | fail ->
       Swensen.Unquote.AssertionFailedException(
         message + Environment.NewLine + fail.Message,
         fail
@@ -90,7 +92,9 @@ module TestCommonTests =
       Path.Combine(where, Guid.NewGuid().ToString())
 
     realDir |> Directory.CreateDirectory |> ignore
-    let another = Path.Combine(realDir, "another.txt")
+
+    let another =
+      Path.Combine(realDir, "another.txt")
 
     do
       use _dummy = File.Create another
@@ -121,11 +125,11 @@ module TestCommonTests =
     Assert.Throws<Xunit.Sdk.TrueException>(  // remove for fantomas
 #endif  // remove for fantomas
 #endif  // remove for fantomas
-                                            fun () -> test <@ false @>)
+      fun () -> test <@ false @>)
     |> ignore
 
-    Assert.Throws<Swensen.Unquote.AssertionFailedException>
-      (fun () -> test' <@ false @> "junk")
+    Assert.Throws<Swensen.Unquote.AssertionFailedException> (fun () ->
+      test' <@ false @> "junk")
     |> ignore
 
 #if !NET472
@@ -147,22 +151,18 @@ module ExpectoTestCommon =
       def.MainModule.GetTypes()
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
-      |> Seq.filter
-           (fun m ->
-             m.CustomAttributes
-             |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
+      |> Seq.filter (fun m ->
+        m.CustomAttributes
+        |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
       |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
 
     let lookup =
       def.MainModule.GetAllTypes()
-      |> Seq.filter
-           (fun t ->
-             t.Methods
-             |> Seq.exists (fun m -> m.Name = "Invoke"))
-      |> Seq.map
-           (fun t ->
-             (t.FullName.Replace("/", "+"),
-              t.Methods |> Seq.find (fun m -> m.Name = "Invoke")))
+      |> Seq.filter (fun t ->
+        t.Methods
+        |> Seq.exists (fun m -> m.Name = "Invoke"))
+      |> Seq.map (fun t ->
+        (t.FullName.Replace("/", "+"), t.Methods |> Seq.find (fun m -> m.Name = "Invoke")))
       |> Map.ofSeq
 
     let calls =
@@ -178,13 +178,12 @@ module ExpectoTestCommon =
           // or the coverlet equivalent
           // having been injected into the local function reference
 
-          |> Seq.find
-               (fun i ->
-                 i.OpCode = OpCodes.Call
-                 && i
-                   .Operand
-                   .GetType()
-                   .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
+          |> Seq.find (fun i ->
+            i.OpCode = OpCodes.Call
+            && i
+              .Operand
+              .GetType()
+              .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
         >> (fun i ->
           let m = (i.Operand :?> MethodDefinition)
           m.DeclaringType.FullName + "::" + m.Name)
@@ -209,18 +208,14 @@ module ExpectoTestCommon =
     testList name
     <| (((check, "TestCommonTests.ConsistencyCheck")
          :: regular
-         |> List.map
-              (fun (f, name) ->
-                testCase
-                  name
-                  (fun () ->
-                    lock
-                      sync
-                      (fun () ->
-                        pretest ()
+         |> List.map (fun (f, name) ->
+           testCase name (fun () ->
+             lock sync (fun () ->
+               pretest ()
 
-                        try
-                          f ()
-                        with :? NUnit.Framework.IgnoreException -> ()))))
+               try
+                 f ()
+               with
+               | :? NUnit.Framework.IgnoreException -> ()))))
         @ specials)
 #endif

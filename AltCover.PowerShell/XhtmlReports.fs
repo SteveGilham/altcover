@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Collections.Generic
@@ -82,7 +82,8 @@ type ConvertToBarChartCommand() =
          |> not then
         use w =
           { new StringWriter(System.Globalization.CultureInfo.InvariantCulture) with
-              override self.Encoding = System.Text.Encoding.UTF8 }
+              override self.Encoding =
+                System.Text.Encoding.UTF8 }
 
         rewrite.Save(w)
         File.WriteAllText(self.OutputFile, w.ToString().Replace("\u2442", "&#x2442;"))
@@ -167,10 +168,9 @@ type ConvertToSourceMapCommand(outputFolder: String) =
           Directory.CreateDirectory(self.OutputFolder)
 
         rewrite
-        |> Seq.iter
-             (fun (name, doc) ->
-               Path.Combine(folder.FullName, name + ".html")
-               |> doc.Save)
+        |> Seq.iter (fun (name, doc) ->
+          Path.Combine(folder.FullName, name + ".html")
+          |> doc.Save)
 
       let result =
         new Dictionary<string, System.Xml.XmlDocument>() //todo
