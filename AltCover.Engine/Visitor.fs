@@ -1336,6 +1336,8 @@ module internal Visitor =
         before.OpCode = OpCodes.Ldloc_0
         && sp.IsNotNull
         && sp.IsHidden
+        && (let v0t = dbg.Method.Body.Variables.[0].VariableType
+            v0t.MetadataType = MetadataType.Int32) // state machines do this
 
       [ rawInstructions |> Seq.cast ]
       |> Seq.filter (fun _ -> dbg.IsNotNull)
