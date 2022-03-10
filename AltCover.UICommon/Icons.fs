@@ -49,7 +49,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "MethodWarning"
 
   member self.MethodNoSource =
-    makeIcon "MissingMethod"
+    makeIcon "MethodMissing"
 
   member self.Branched =
     makeIcon "BranchFork_grn"
