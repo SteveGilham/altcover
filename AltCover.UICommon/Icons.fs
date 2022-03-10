@@ -22,13 +22,13 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   //with
   //| x -> System.InvalidOperationException(name, x) |> raise
 
-  member self.Report = makeIcon "Report"
+  member self.Report = makeIcon "RawCodeCoverageDataFile"
 
   member self.ReportDated =
-    makeIcon "ReportStale"
+    makeIcon "RawCodeCoverageDataFileStale"
 
   member self.ReportWarning =
-    makeIcon "ReportWarning"
+    makeIcon "RawCodeCoverageDataFileWarning"
 
   member self.Assembly = makeIcon "Assembly"
   member self.Event = makeIcon "Event"
@@ -49,7 +49,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
     makeIcon "MethodWarning"
 
   member self.MethodNoSource =
-    makeIcon "MissingMethod"
+    makeIcon "MethodMissing"
 
   member self.Branched =
     makeIcon "BranchFork_grn"
