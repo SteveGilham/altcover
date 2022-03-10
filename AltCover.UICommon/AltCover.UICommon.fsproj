@@ -47,9 +47,9 @@
     <EmbeddedResource Include="Property.png" />
     <EmbeddedResource Include="Refresh.png" />
     <EmbeddedResource Include="Refresh_greyThin.png" />
-    <EmbeddedResource Include="Report.png" />
-    <EmbeddedResource Include="ReportStale.png" />
-    <EmbeddedResource Include="ReportWarning.png" />
+    <EmbeddedResource Include="RawCodeCoverageDataFile.png" />
+    <EmbeddedResource Include="RawCodeCoverageDataFileStale.png" />
+    <EmbeddedResource Include="RawCodeCoverageDataFileWarning.png" />
     <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="StatusError.png" />

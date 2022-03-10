@@ -183,63 +183,18 @@ module private Gui =
     seq { 0 .. (types.Length - 1) }
     |> Seq.iter (prepareTreeLine handler)
 
+#if !VIS_PERCENT
     handler.classStructureTree.Model <-
-      new TreeStore(
-#if !VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>
-#else
-        typeof<Gdk.Pixbuf>
-#endif
-      )
-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
     handler.auxModel <-
-      new TreeStore(
-#if !VIS_PERCENT
-        typeof<string>,
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
 #endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>,
-#endif
-        typeof<Gdk.Pixbuf>,
-        typeof<string>,
-#if VIS_PERCENT
-        typeof<string>
-#else
-        typeof<Gdk.Pixbuf>
-#endif
-      )
 
 #if !NET472
   [<AutoSerializable(false); Sealed>]
@@ -408,7 +363,7 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name, pc, icon.Force())
+              model.AppendValues(name, (*pc,*) icon.Force()) // VIS_PERCENT
 
             if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)

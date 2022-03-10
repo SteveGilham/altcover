@@ -25,7 +25,7 @@
         <MenuItem Name="List" IsEnabled="False">
           <MenuItem.Header>
             <StackPanel>
-              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandDown_lightGray.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
+              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandDown_lightGrey.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
             </StackPanel>
           </MenuItem.Header>
           <MenuItem Header="0"></MenuItem>

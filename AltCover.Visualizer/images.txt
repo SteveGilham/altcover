@@ -1,0 +1,16 @@
+Screenshot-GTK.png -> README.core.md
+Screenshot-Avalonia -> README.visualizer.md
+Annotated.png
+Annotation66a.png
+FontSelection.png
+
+---
+TheVisualizer.md ->
+
+Screenshot-Avalonia
+Screenshot-GTK
+Annotated.png
+Annotation66a.png
+FontSelection.png -- 328x112
+Annotation66b.png
+Screenshot-GTK3
