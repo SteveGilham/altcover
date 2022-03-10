@@ -1273,6 +1273,8 @@ _Target "FxCop" (fun _ ->
                              + (dd.Item "blackfox.commandline")
                              + "/lib/netstandard2.0"
                           nugetCache
+                          @@ "blackfox.vswhere/1.1.0/lib/netstandard2.0"
+                          nugetCache
                           @@ "cake.common/"
                              + (dd.Item "cake.common")
                              + "/lib/netstandard2.0"
