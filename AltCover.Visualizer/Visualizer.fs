@@ -486,13 +486,13 @@ module private Gui =
       if n.LineOnly then
         endchars
       else
-        n.EndColumn
+        n.EndColumn - 1
 
     let until =
       if endchars = 0 then
         endline
       else
-        buff.GetIterAtLineOffset(n.EndLine - 1, Math.Min(ec, endchars) - 1)
+        buff.GetIterAtLineOffset(n.EndLine - 1, Math.Min(ec, endchars))
 
     let tag =
       match n.Style with
