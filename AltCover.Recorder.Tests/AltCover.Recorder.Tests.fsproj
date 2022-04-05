@@ -42,7 +42,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-    <PackageReference Include="NUnit" Version="3.13.2" Condition="'$(TargetFramework)' != 'net20'" />
+    <PackageReference Include="NUnit" Version="3.13.3" Condition="'$(TargetFramework)' != 'net20'" />
     <!-- last net2.0 support here -->
     <PackageReference Include="NUnit" Version="3.11.0" Condition="'$(TargetFramework)' == 'net20'" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1">
