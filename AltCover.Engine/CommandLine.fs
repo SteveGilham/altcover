@@ -319,6 +319,13 @@ module internal CommandLine =
     let internal validateFile file x =
       validateFileSystemEntity File.Exists fnf file x
 
+    type SecurityException with
+      [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                        "AvoidMethodWithUnusedGenericTypeRule",
+                        Justification = "Matches clause type")>]
+      static member Throw<'T>(e : exn) : 'T =
+        (e.Message, e) |> SecurityException |> raise
+
     let internal findAssemblyName f =
       try
         (AssemblyName.GetAssemblyName f).ToString()
@@ -333,7 +340,7 @@ module internal CommandLine =
       try
         f ()
       with
-      | :? CryptographicException as c -> raise ((c.Message, c) |> SecurityException)
+      | :? CryptographicException as c -> c |> SecurityException.Throw
 
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",

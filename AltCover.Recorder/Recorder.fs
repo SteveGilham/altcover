@@ -346,6 +346,13 @@ module Instance =
     let internal addVisit moduleId hitPointId context =
       curriedIssue71Wrapper visits moduleId hitPointId context Counter.addSingleVisit
 
+    type InvalidDataException with
+      [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                        "AvoidMethodWithUnusedGenericTypeRule",
+                        Justification = "Matches clause type")>]
+      static member Throw<'T>(message : obj) : 'T =
+        message.ToString() |> InvalidDataException |> raise
+
     let internal takeSample strategy moduleId hitPointId (context: Track) =
       match strategy with
       | Sampling.All -> true
@@ -363,9 +370,8 @@ module Instance =
              TimeVisit(hitPointId, b.Time)
              CallVisit(hitPointId, b.Call) ]
          | _ ->
-           context.ToString()
-           |> InvalidDataException
-           |> raise)
+           context
+           |> InvalidDataException.Throw)
         |> Seq.map (fun hit ->
           if samples.ContainsKey(moduleId) then
             let next = samples.[moduleId]

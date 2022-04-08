@@ -15,6 +15,15 @@ open AltCover.Shared
 open Mono.Cecil
 open Mono.Options
 
+[<AutoOpen>]
+module internal ThrowHelper =
+  type FormatException with
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                       Justification = "Matches clause type")>]
+    static member Throw<'T>(message: string) : 'T =
+      message |> FormatException |> raise
+
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SummaryFormat =
   | Default
@@ -61,7 +70,7 @@ type internal SummaryFormat =
              | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
              | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
              | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
-             | _ -> raise (s |> FormatException))
+             | _ -> s |> FormatException.Throw)
            (Many [])
     with
     | :? FormatException -> Default

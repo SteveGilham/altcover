@@ -1284,6 +1284,10 @@ _Target "FxCop" (fun _ ->
                              + (dd.Item "cake.core")
                              + "/lib/netstandard2.0"
                           nugetCache
+                          @@ "communitytoolkit.diagnostics/"
+                             + (dd.Item "communitytoolkit.diagnostics")
+                             + "/lib/netstandard2.0"
+                          nugetCache
                           @@ "fake.core.environment/"
                              + (dd.Item "fake.core.environment")
                              + "/lib/netstandard2.0"
