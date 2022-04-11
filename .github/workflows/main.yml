@@ -28,11 +28,11 @@ jobs:
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: dotnet fake run ./Build/build.fsx
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
           name: nupkgs
           path: _Packagin*/*.nupkg
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: failure()
       with:
           name: reports.windows
@@ -54,7 +54,7 @@ jobs:
       run: dotnet fake run ./Build/setup.fsx
     - name: Build
       run: dotnet fake run ./Build/build.fsx  
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: failure()
       with:
           name: reports.linux
