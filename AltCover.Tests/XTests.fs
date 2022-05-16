@@ -668,7 +668,7 @@ module AltCoverXTests =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net6.0")
 
     let key0 =
       Path.Combine(here, "Build/SelfTest.snk")
@@ -732,6 +732,7 @@ module AltCoverXTests =
            "-s=nunit"
            "-e=Sample"
            "-c=[Test]"
+           "--localSource"
            "--save" |]
 
       let result = Main.I.doInstrumentation args
@@ -786,12 +787,18 @@ module AltCoverXTests =
 
       let expected =
         [ "AltCover.Recorder.g.dll"
+          "FSharp.Core.dll"
+          "Newtonsoft.Json.dll"
+          "NuGet.Frameworks.dll"
           "Sample4.deps.json"
           "Sample4.dll"
-          "Sample4.runtimeconfig.dev.json"
           "Sample4.runtimeconfig.json"
           "Sample4.pdb"
           "Unquote.dll"
+          "xunit.abstractions.dll"
+          "xunit.assert.dll"
+          "xunit.core.dll"
+          "xunit.execution.dotnet.dll"
           "xunit.runner.reporters.netcoreapp10.dll"
           "xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]

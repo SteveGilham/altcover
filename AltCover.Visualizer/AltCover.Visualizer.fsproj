@@ -47,6 +47,10 @@
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
+    <Reference Include="atk-sharp">
+      <HintPath>..\ThirdParty\gtk-sharp2\atk-sharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="gdk-sharp">
       <HintPath>..\ThirdParty\gtk-sharp2\gdk-sharp.dll</HintPath>
       <Private>false</Private>
