@@ -66,8 +66,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\netcoreapp2.1\.NETCoreApp,Version=v2.1.AssemblyAttributes.fs" />
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\netcoreapp2.1\Sample4.AssemblyInfo.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\Sample4.AssemblyInfo.fs" />
   </ItemGroup>
   
   <ItemGroup>

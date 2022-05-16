@@ -190,11 +190,11 @@ module internal Instrument =
       (recorder: AssemblyDefinition)
       (assembly: AssemblyEntry)
       =
-      let a =
-        System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+      let ascii = System.Text.Encoding.ASCII
 
-      let c =
-        System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration)
+      let a = ascii.GetBytes(assembly.Identity.Assembly)
+
+      let c = ascii.GetBytes(assembly.Identity.Configuration)
 
       let blob =
         [| prelude |> List.toArray

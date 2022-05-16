@@ -247,12 +247,12 @@ module internal CommandLine =
       try
         result <- f ()
       with
-      | :? ArgumentException as a -> a :> Exception |> (logException store)
-      | :? NotSupportedException as n -> n :> Exception |> (logException store)
-      | :? IOException as i -> i :> Exception |> (logException store)
+      | :? ArgumentException as a -> a |> (logException store)
+      | :? NotSupportedException as n -> n |> (logException store)
+      | :? IOException as i -> i |> (logException store)
       | :? System.Security.SecurityException as s ->
-        s :> Exception |> (logException store)
-      | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
+        s |> (logException store)
+      | :? UnauthorizedAccessException as u -> u |> (logException store)
 
       result
 

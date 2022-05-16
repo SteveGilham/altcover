@@ -84,13 +84,13 @@ module AltCoverTests =
   let sample1path =
     Path.Combine(
       SolutionDir(),
-      "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll"
+      "_Binaries/Sample1/Debug+AnyCPU/net6.0/Sample1.dll"
     )
 
   let sample4path =
     Path.Combine(
       SolutionDir(),
-      "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
+      "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"
     )
 
   let sample8path =
@@ -145,15 +145,21 @@ module AltCoverTests =
                            Exemption.None ] @>
 
   // ProgramDatabase.fs
+  let isAssemblyType (file : string) =
+#if !NET472
+    [".dll"]
+#else
+    [".dll"; ".exe"]
+#endif
+    |> Seq.exists(fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
+
   [<Test>]
   let ShouldGetPdbFromImage () =
     let files =
       [ Directory.GetFiles(dir, "AltCover*")
         Directory.GetFiles(dir, "Sample*") ]
       |> Seq.concat
-      |> Seq.filter (fun x ->
-        x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-        || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter isAssemblyType
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
       |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
@@ -229,9 +235,7 @@ module AltCoverTests =
   [<Test>]
   let ShouldGetPdbWithFallback () =
     Directory.GetFiles(dir)
-    |> Seq.filter (fun x ->
-      x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-      || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.filter isAssemblyType
     |> Seq.filter (fun x -> (x + ".mdb") |> File.Exists |> not)
     |> Seq.filter (fun f ->
       f |> Path.GetFileNameWithoutExtension
@@ -378,9 +382,7 @@ module AltCoverTests =
   [<Test>]
   let ShouldGetSymbolsFromPdb () =
     Directory.GetFiles(dir)
-    |> Seq.filter (fun x ->
-      x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-      || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.filter isAssemblyType
     |> Seq.filter (fun f ->
       f |> Path.GetFileNameWithoutExtension
       <> "testhost")
@@ -3540,7 +3542,7 @@ module AltCoverTests =
       let path =
         Path.Combine(
           SolutionDir(),
-          "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
+          "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"
         )
 
       "Main"
@@ -3792,7 +3794,7 @@ module AltCoverTests =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("netcoreapp2.1", "netstandard2.0")
+        .Replace("net6.0", "netstandard2.0")
 
     let path6 =
       sample4path
