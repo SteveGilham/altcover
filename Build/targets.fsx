@@ -30,6 +30,7 @@ open Fake.Tools.Git
 open NUnit.Framework
 open Swensen.Unquote
 
+let fsharpCore = "6.0.4" // maybe automate
 let Copyright = ref String.Empty
 let Version = ref String.Empty
 
@@ -3770,7 +3771,7 @@ _Target "Packaging" (fun _ ->
          ("FAKE.Core.Process", "5.21.0")
          ("FAKE.DotNet.Cli", "5.21.0")
          ("System.Collections.Immutable", "1.7.1")
-         ("FSharp.Core", "6.0.1") ],
+         ("FSharp.Core", fsharpCore) ],
        "_Packaging.fake",
        "./_Generated/altcover.fake.nuspec",
        "altcover.fake") ]
@@ -5344,8 +5345,10 @@ _Target "ApiUse" (fun _ ->
         let targets =
             fsproj.Descendants(XName.Get("TargetFrameworks"))
             |> Seq.head
+            
+        let netTarget = "net6.0"
 
-        targets.SetValue "netcoreapp2.1"
+        targets.SetValue netTarget
 
         let pack =
             fsproj.Descendants(XName.Get("PackageReference"))
@@ -5355,7 +5358,9 @@ _Target "ApiUse" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover.api"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "Version", Version.Value),
+                XElement(XName.Get "PrivateAssets", "all"),
+                XElement(XName.Get "IncludeAssets", "build")
             )
 
         pack.AddBeforeSelf inject
@@ -5431,6 +5436,7 @@ _Target "DoIt"
 
   let p2 =
     { AltCover.Primitive.PrepareOptions.Create() with
+        LocalSource = true
         CallContext = [| "[Fact]"; "0" |]
         AssemblyFilter = [| "xunit" |] }
 
@@ -5513,7 +5519,7 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   storage: none
   source https://api.nuget.org/v3/index.json
-  nuget FSharp.Core = 6.0.1
+  nuget FSharp.Core = {3}
   nuget Fake.Core.Target >= 5.21.0
   nuget Fake.DotNet.Cli >= 5.21.0
   source {0}
@@ -5527,7 +5533,8 @@ group NetcoreBuild
                 dependencies,
                 Path.getFullName "./_Packaging.api",
                 Version.Value,
-                Path.getFullName "./_Packaging.fake"
+                Path.getFullName "./_Packaging.fake",
+                fsharpCore
             )
         )
 
@@ -5537,7 +5544,7 @@ group NetcoreBuild
             "run ./DriveApi.fsx" // "-v run ./DriveApi.fsx" for verbose mode
             "running fake script returned with a non-zero exit code"
 
-        let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.netcoreapp2.1.xml"
+        let x = Path.getFullName ("./_ApiUse/_DotnetTest/coverage." + netTarget + ".xml")
 
         Actions.CheckSample4 before x
     finally

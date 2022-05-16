@@ -585,7 +585,8 @@ a:hover {color: #ecc;}
             |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
             |> Seq.toList
 
-        let expected = "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        let expected = "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+        //"0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         // "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A in %s" recorded path)
