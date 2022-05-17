@@ -407,8 +407,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Attribute -> true
-          | _ -> false)
+          | FilterScope.Attribute -> true)
       )
 
       Assert.That(
@@ -507,8 +506,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Method -> true
-          | _ -> false)
+          | FilterScope.Method -> true)
       )
 
       Assert.That(
@@ -568,8 +566,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Type -> true
-          | _ -> false)
+          | FilterScope.Type -> true)
       )
 
       Assert.That(
@@ -630,8 +627,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Assembly -> true
-          | _ -> false)
+          | FilterScope.Assembly -> true)
       )
 
       Assert.That(
@@ -692,8 +688,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Assembly -> true
-          | _ -> false)
+          | FilterScope.Assembly -> true)
       )
 
       Assert.That(
@@ -752,8 +747,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Module -> true
-          | _ -> false)
+          | FilterScope.Module -> true)
       )
 
       Assert.That(
@@ -813,8 +807,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.File -> true
-          | _ -> false)
+          | FilterScope.File -> true)
       )
 
       Assert.That(
@@ -874,8 +867,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Path -> true
-          | _ -> false)
+          | FilterScope.Path -> true)
       )
 
       Assert.That(
