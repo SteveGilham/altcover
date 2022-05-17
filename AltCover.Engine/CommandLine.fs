@@ -333,7 +333,6 @@ module internal CommandLine =
       try
         f ()
       with
-      | :? CryptographicUnexpectedOperationException as c -> raise ((c.Message, c) |> SecurityException)
       | :? CryptographicException as c -> raise ((c.Message, c) |> SecurityException)
 
     [<SuppressMessage("Microsoft.Globalization",
