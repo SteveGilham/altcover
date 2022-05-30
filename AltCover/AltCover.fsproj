@@ -11,6 +11,7 @@
     <ApplicationIcon>AltCover.ico</ApplicationIcon>
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
+    <TargetLatestRuntimePatch Condition="'$(TargetFramework)' == 'netcoreapp2.0'">true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
