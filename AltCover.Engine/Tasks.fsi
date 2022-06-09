@@ -166,7 +166,7 @@ type Prepare =
     ///</summary>
     member ShowGenerated : bool with get, set
     ///<summary>
-    /// Corresponds to command line options ` -q` & `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
@@ -236,7 +236,7 @@ type Collect =
     ///</summary>
     member SummaryFormat : string with get, set
     ///<summary>
-    /// Corresponds to command line options ` -q` & `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
