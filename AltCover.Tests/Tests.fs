@@ -82,16 +82,10 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 #if !NET472
   let sample1path =
-    Path.Combine(
-      SolutionDir(),
-      "_Binaries/Sample1/Debug+AnyCPU/net6.0/Sample1.dll"
-    )
+    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net6.0/Sample1.dll")
 
   let sample4path =
-    Path.Combine(
-      SolutionDir(),
-      "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"
-    )
+    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll")
 
   let sample8path =
     Path.Combine(
@@ -145,13 +139,13 @@ module AltCoverTests =
                            Exemption.None ] @>
 
   // ProgramDatabase.fs
-  let isAssemblyType (file : string) =
+  let isAssemblyType (file: string) =
 #if !NET472
-    [".dll"]
+    [ ".dll" ]
 #else
-    [".dll"; ".exe"]
+    [ ".dll"; ".exe" ]
 #endif
-    |> Seq.exists(fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
+    |> Seq.exists (fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
 
   [<Test>]
   let ShouldGetPdbFromImage () =
@@ -3540,10 +3534,7 @@ module AltCoverTests =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(
-          SolutionDir(),
-          "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"
-        )
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll")
 
       "Main"
       |> (Regex

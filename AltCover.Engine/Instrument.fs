@@ -192,9 +192,11 @@ module internal Instrument =
       =
       let ascii = System.Text.Encoding.ASCII
 
-      let a = ascii.GetBytes(assembly.Identity.Assembly)
+      let a =
+        ascii.GetBytes(assembly.Identity.Assembly)
 
-      let c = ascii.GetBytes(assembly.Identity.Configuration)
+      let c =
+        ascii.GetBytes(assembly.Identity.Configuration)
 
       let blob =
         [| prelude |> List.toArray

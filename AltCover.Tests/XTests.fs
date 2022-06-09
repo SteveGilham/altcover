@@ -67,9 +67,9 @@ module AltCoverXTests =
         | "document" ->
           test'
             <@ a1
-              .Value
-              .Replace("\\", "/")
-              .EndsWith(a2.Value.Replace("\\", "/")) @>
+                 .Value
+                 .Replace("\\", "/")
+                 .EndsWith(a2.Value.Replace("\\", "/")) @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -137,16 +137,16 @@ module AltCoverXTests =
         | "fullPath" ->
           test'
             <@ a1
-              .Value
-              .Replace("\\", "/")
-              .Replace("altcover", "AltCover")
-              .Replace("Samples/", String.Empty)
-              .EndsWith(
-                a2
-                  .Value
-                  .Replace("\\", "/")
-                  .Replace("altcover", "AltCover")
-              ) @>
+                 .Value
+                 .Replace("\\", "/")
+                 .Replace("altcover", "AltCover")
+                 .Replace("Samples/", String.Empty)
+                 .EndsWith(
+                   a2
+                     .Value
+                     .Replace("\\", "/")
+                     .Replace("altcover", "AltCover")
+                 ) @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -180,7 +180,14 @@ module AltCoverXTests =
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
-    test <@ instance |> Args.collect = [ "Runner"; "-t"; "23"; "--collect"; "-q"; "-q" ] @>
+
+    test
+      <@ instance |> Args.collect = [ "Runner"
+                                      "-t"
+                                      "23"
+                                      "--collect"
+                                      "-q"
+                                      "-q" ] @>
     // hack
     let rerun =
       AltCover.CollectOptions.Abstract instance
@@ -188,7 +195,14 @@ module AltCoverXTests =
     let scan = rerun.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (rerun.GetHashCode() :> obj).IsNotNull @>
-    test <@ rerun |> Args.collect = [ "Runner"; "-t"; "23"; "--collect"; "-q"; "-q" ] @>
+
+    test
+      <@ rerun |> Args.collect = [ "Runner"
+                                   "-t"
+                                   "23"
+                                   "--collect"
+                                   "-q"
+                                   "-q" ] @>
 
   [<Test>]
   let TypeSafeEmptyThresholdCanBeValidated () =

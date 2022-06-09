@@ -3560,10 +3560,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
         else
           test
             <@ stderr
-              .ToString()
-              .Trim()
-              .Replace(Environment.NewLine, "|")
-              .StartsWith(toErr, StringComparison.Ordinal) @>
+                 .ToString()
+                 .Trim()
+                 .Replace(Environment.NewLine, "|")
+                 .StartsWith(toErr, StringComparison.Ordinal) @>
 
       )
     finally

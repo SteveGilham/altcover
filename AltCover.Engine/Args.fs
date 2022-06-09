@@ -97,8 +97,7 @@ module internal Args =
 
   let internal countItems (args: Abstract.IPrepareOptions) =
     let v = int args.Verbosity
-    [ ("-q", 2 - v)
-      ("--verbose", v - 4)]
+    [ ("-q", 2 - v); ("--verbose", v - 4) ]
 
   let internal counts (args: Abstract.IPrepareOptions) =
     args
@@ -139,8 +138,7 @@ module internal Args =
 
     let countItems (args: Abstract.ICollectOptions) =
       let v = int args.Verbosity
-      [ ("-q", 2 - v)
-        ("--verbose", v - 4)]
+      [ ("-q", 2 - v); ("--verbose", v - 4) ]
 
     let counts (args: Abstract.ICollectOptions) =
       args

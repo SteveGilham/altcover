@@ -183,7 +183,7 @@ module AltCoverTests3 =
 
     Assert.That(
       commandFragments |> List.length,
-      Is.EqualTo (optionCount), // drop -q/--verbose => verbosity
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
@@ -3672,12 +3672,12 @@ module AltCoverTests3 =
 
       test
         <@ stdout
-          .ToString()
-          .Equals(
-            expected.Replace("\\\\", "\\")
-            + Environment.NewLine,
-            StringComparison.Ordinal
-          ) @>
+             .ToString()
+             .Equals(
+               expected.Replace("\\\\", "\\")
+               + Environment.NewLine,
+               StringComparison.Ordinal
+             ) @>
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
@@ -3773,8 +3773,10 @@ module AltCoverTests3 =
           "[--" + core + "]"
 
       let fixup (s: String) =
-        if s.Length < 2 then sprintf "[-%s]" s
-        else fixupBase s
+        if s.Length < 2 then
+          sprintf "[-%s]" s
+        else
+          fixupBase s
 
       let mainHelp =
         Main.I.declareOptions ()
@@ -3797,7 +3799,7 @@ module AltCoverTests3 =
         + "or, for the global tool only\nAltCover TargetsPath\n\n"
         + "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
-      Assert.That (synthetic, Is.EqualTo helptext)
+      Assert.That(synthetic, Is.EqualTo helptext)
       test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
@@ -4755,8 +4757,8 @@ module AltCoverTests3 =
 
       test
         <@ builder
-          .ToString()
-          .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
+             .ToString()
+             .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
 
     let builder = System.Text.StringBuilder()
     let monitor (s: string) = s |> builder.Append |> ignore

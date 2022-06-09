@@ -816,7 +816,7 @@ module AltCoverRunnerTests =
     // swap "collect" and "commandline"
     Assert.That(
       primitiveNames |> List.length,
-      Is.EqualTo (optionCount - 1), // drop -q/--verbose => verbosity
+      Is.EqualTo(optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
@@ -833,7 +833,7 @@ module AltCoverRunnerTests =
 
     Assert.That(
       typesafeNames |> List.length,
-      Is.EqualTo (optionCount - 1), // drop -q/--verbose => verbosity
+      Is.EqualTo(optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
