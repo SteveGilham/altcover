@@ -95,7 +95,7 @@ module AltCoverTests3 =
   let ShouldHaveExpectedOptions () =
     Main.init ()
     let options = Main.I.declareOptions ()
-    let optionCount = 34
+    let optionCount = 35
 
     let optionNames =
       options
@@ -130,11 +130,11 @@ module AltCoverTests3 =
     // add "commandline"
     Assert.That(
       primitiveNames |> List.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got primitive "
       + String.Join("; ", primitiveNames)
     )
 
@@ -147,11 +147,11 @@ module AltCoverTests3 =
 
     Assert.That(
       typesafeNames |> List.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got typesafe "
       + String.Join("; ", typesafeNames)
     )
 
@@ -183,22 +183,22 @@ module AltCoverTests3 =
 
     Assert.That(
       commandFragments |> List.length,
-      Is.EqualTo optionCount,
+      Is.EqualTo (optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got fragments "
       + String.Join("; ", commandFragments)
     )
 
     // Adds "Tag", "IsPrimitive", "IsTypeSafe"
     Assert.That(
       fsapiNames |> Seq.length,
-      Is.EqualTo(optionCount + 1 + fsapiCases + 1),
+      Is.EqualTo(optionCount + fsapiCases + 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got fsapi "
       + String.Join("; ", fsapiNames)
     )
 
@@ -213,11 +213,11 @@ module AltCoverTests3 =
 
     Assert.That(
       taskNames |> Seq.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got tasks "
       + String.Join("; ", taskNames)
     )
 
@@ -250,11 +250,11 @@ module AltCoverTests3 =
     // inplace is explicitly hard-coded
     Assert.That(
       attributeNames |> Seq.length,
-      Is.EqualTo(optionCount - 3),
+      Is.EqualTo(optionCount - 4), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got targets "
       + String.Join("; ", attributeNames)
     )
 
@@ -2765,12 +2765,52 @@ module AltCoverTests3 =
       CommandLine.verbosity <- 0
 
   [<Test>]
+  let ParsingVerboseWorks () =
+    Main.init ()
+
+    try
+      let options = Main.I.declareOptions ()
+      let input = [| "--verbose" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo -1)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
   let ParsingMultiQuietWorks () =
     Main.init ()
 
     try
       let options = Main.I.declareOptions ()
       let input = [| "-q"; "-q"; "-q" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
+  let ParsingMixedQuietWorks () =
+    Main.init ()
+
+    try
+      let options = Main.I.declareOptions ()
+      let input = [| "-qq"; "--verbose"; "-qq" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -3700,7 +3740,8 @@ module AltCoverTests3 =
           .GetString("HelpText")
           .Replace("\r\n", "\n")
 
-      let fixup (s: String) =
+      let fixupBase (s: String) =
+
         let valued =
           s.EndsWith("=", StringComparison.Ordinal)
 
@@ -3731,16 +3772,20 @@ module AltCoverTests3 =
         else
           "[--" + core + "]"
 
+      let fixup (s: String) =
+        if s.Length < 2 then sprintf "[-%s]" s
+        else fixupBase s
+
       let mainHelp =
         Main.I.declareOptions ()
         |> Seq.map (fun o -> o.Prototype)
-        |> Seq.filter (fun s -> s.Length > 2)
+        |> Seq.filter (fun s -> s.Length <> 2)
         |> Seq.map fixup
 
       let runnerHelp =
         Runner.declareOptions ()
         |> Seq.map (fun o -> o.Prototype)
-        |> Seq.filter (fun s -> s.Length > 2)
+        |> Seq.filter (fun s -> s.Length <> 2)
         |> Seq.map fixup
 
       let synthetic =
@@ -3752,6 +3797,7 @@ module AltCoverTests3 =
         + "or, for the global tool only\nAltCover TargetsPath\n\n"
         + "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
+      Assert.That (synthetic, Is.EqualTo helptext)
       test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas

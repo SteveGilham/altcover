@@ -139,6 +139,8 @@ module ExpectoTestManifest =
        Tests.AltCoverRunnerTests.ParsingMultiQuietWorks, "Runner.ParsingMultiQuietWorks"
        Tests.AltCoverRunnerTests.ParsingBatchMultiQuietWorks,
        "Runner.ParsingBatchMultiQuietWorks"
+       Tests.AltCoverRunnerTests.ParsingVerboseWorks, "Runner.ParsingVerboseWorks"
+       Tests.AltCoverRunnerTests.ParsingMixedQuietWorks,  "Runner.ParsingMixedQuietWorks"
        Tests.AltCoverRunnerTests.ShouldRequireExe, "Runner.ShouldRequireExe"
        Tests.AltCoverRunnerTests.ShouldAcceptExe, "Runner.ShouldAcceptExe"
        Tests.AltCoverRunnerTests.ShouldRequireCollectIfNotExe,
@@ -788,6 +790,8 @@ module ExpectoTestManifest =
        Tests.AltCoverTests3.ParsingMultiQuietWorks, "Tests3.ParsingMultiQuietWorks"
        Tests.AltCoverTests3.ParsingBatchMultiQuietWorks,
        "Tests3.ParsingBatchMultiQuietWorks"
+       Tests.AltCoverTests3.ParsingVerboseWorks, "Tests3.ParsingVerboseWorks"
+       Tests.AltCoverTests3.ParsingMixedQuietWorks,  "Tests3.ParsingMixedQuietWorks"
        Tests.AltCoverTests3.OutputLeftPassesThrough, "Tests3.OutputLeftPassesThrough"
        Tests.AltCoverTests3.OutputInPlaceFails, "Tests3.OutputInPlaceFails"
        Tests.AltCoverTests3.ScreeningFilesShouldRejectTheInstrumentedOnes,

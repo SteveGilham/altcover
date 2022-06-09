@@ -781,7 +781,7 @@ module AltCoverRunnerTests =
   let ShouldHaveExpectedOptions () =
     Runner.init ()
     let options = Runner.declareOptions ()
-    let optionCount = 11
+    let optionCount = 12
 
     let optionNames =
       options
@@ -816,11 +816,11 @@ module AltCoverRunnerTests =
     // swap "collect" and "commandline"
     Assert.That(
       primitiveNames |> List.length,
-      Is.EqualTo optionCount,
+      Is.EqualTo (optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got primitives "
       + String.Join("; ", primitiveNames)
     )
 
@@ -833,11 +833,11 @@ module AltCoverRunnerTests =
 
     Assert.That(
       typesafeNames |> List.length,
-      Is.EqualTo optionCount,
+      Is.EqualTo (optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got typesafe "
       + String.Join("; ", typesafeNames)
     )
 
@@ -862,22 +862,22 @@ module AltCoverRunnerTests =
     // adds Runner and the trailing command line arguments
     Assert.That(
       commandFragments |> List.length,
-      Is.EqualTo(optionCount + 2),
+      Is.EqualTo(optionCount + 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got fragments "
       + String.Join("; ", typesafeNames)
     ) // todo
 
     // Adds "Tag", "IsPrimitive", "IsTypeSafe"
     Assert.That(
       fsapiNames |> Seq.length,
-      Is.EqualTo(optionCount + fsapiCases + 1),
+      Is.EqualTo(optionCount + fsapiCases), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got apinames "
       + String.Join("; ", fsapiNames)
     )
 
@@ -893,11 +893,11 @@ module AltCoverRunnerTests =
     // gains summary (output)
     Assert.That(
       taskNames |> Seq.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got tasks "
       + String.Join("; ", taskNames)
     )
 
@@ -929,7 +929,7 @@ module AltCoverRunnerTests =
     //       N/A,         N/A,        N/A,              fixed,      N/A
     Assert.That(
       attributeNames |> Seq.length,
-      Is.EqualTo(optionCount - 5),
+      Is.EqualTo(optionCount - 6), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
@@ -2096,12 +2096,52 @@ module AltCoverRunnerTests =
       CommandLine.verbosity <- 0
 
   [<Test>]
+  let ParsingVerboseWorks () =
+    Runner.init ()
+
+    try
+      let options = Runner.declareOptions ()
+      let input = [| "--verbose" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo -1)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
   let ParsingMultiQuietWorks () =
     Runner.init ()
 
     try
       let options = Runner.declareOptions ()
       let input = [| "-q"; "-q"; "-q" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
+  let ParsingMixedQuietWorks () =
+    Runner.init ()
+
+    try
+      let options = Runner.declareOptions ()
+      let input = [| "-qqq"; "--verbose"; "-q" |]
 
       let parse =
         CommandLine.parseCommandLine input options

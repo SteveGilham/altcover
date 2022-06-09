@@ -317,6 +317,7 @@ module internal Main =
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
         ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
+        ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
         ("<>",

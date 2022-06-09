@@ -853,6 +853,7 @@ module internal Runner =
              CommandLine.Format.Local("MultiplesNotAllowed", "--summary")
              :: CommandLine.error))
       ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
+      ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
