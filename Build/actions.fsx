@@ -401,6 +401,7 @@ using System.Runtime.CompilerServices;
         let prep =
             AltCover.PrepareOptions.Primitive
                 { Primitive.PrepareOptions.Create() with
+                    // Verbosity = System.Diagnostics.TraceLevel.Verbose
                     TypeFilter = [ """System\.""" ]
                     Report = simpleReport
                     OutputDirectories = [| "./" + instrumented |]

@@ -121,6 +121,12 @@ module internal Main =
       (false, Left None)
 
   module internal I =
+    let internal verbose message =
+      if CommandLine.verbosity < 0 then
+        Output.info message
+
+    let internal maybeVerbose p message = if p then verbose message
+
     let internal declareOptions () =
       let makeRegex (x: String) =
         x.Replace(char 0, '\\').Replace(char 1, '|')
@@ -468,9 +474,15 @@ module internal Main =
         let files =
           inputInfo.GetFiles("*", SearchOption.AllDirectories)
           |> Seq.filter (fun i ->
-            outputInfos
-            |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
-            |> not)
+            let ok =
+              outputInfos
+              |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
+              |> not
+
+            sprintf "%s : ** is in output tree **" i.FullName
+            |> (maybeVerbose (not ok))
+
+            ok)
 
         // mutable bucket
         let filemap =
@@ -511,7 +523,11 @@ module internal Main =
 // #endif
 
         filemap
-        |> Seq.iter (fun kvp -> File.Copy(kvp.Key, kvp.Value, true)))
+        |> Seq.iter (fun kvp ->
+          sprintf "Copying input %s to output %s" kvp.Key kvp.Value
+          |> verbose
+
+          File.Copy(kvp.Key, kvp.Value, true)))
 
       // Track the symbol-bearing assemblies
       let assemblies =
@@ -521,6 +537,10 @@ module internal Main =
           |> Seq.fold
                (fun (accumulator: AssemblyInfo list) info ->
                  let fullName = info.FullName
+
+                 fullName
+                 |> sprintf "%s : beginning process"
+                 |> verbose
 
                  imageLoadResilient
                    (fun () ->
@@ -534,10 +554,26 @@ module internal Main =
                      Some def
                      |> Option.bind (screenAssembly fullName)
                      |> Option.filter (fun def ->
-                       def.MainModule.HasSymbols
-                       && (def.IsIncluded).IsInstrumented
-                       && (def.MainModule.Attributes
-                           &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly))
+                       let symbols = def.MainModule.HasSymbols
+
+                       let passesFilter =
+                         (def.IsIncluded).IsInstrumented
+
+                       let pureIL =
+                         def.MainModule.Attributes
+                         &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly
+
+                       let ok = symbols && passesFilter && pureIL
+
+                       sprintf
+                         "%s : ** Failed one of : symbols %A/ pass filter %A/ ILOnly %A **"
+                         def.MainModule.FileName
+                         symbols
+                         passesFilter
+                         pureIL
+                       |> (maybeVerbose (not ok))
+
+                       ok)
                      |> Option.map (fun def ->
                        CommandLine.Format.Local("instrumenting", fullName)
                        |> Output.info
@@ -556,7 +592,12 @@ module internal Main =
                            |> Seq.toList }
                        :: accumulator)
                      |> Option.defaultValue accumulator)
-                   (fun () -> accumulator))
+                   (fun () ->
+                     info.FullName
+                     |> sprintf "%s : ** not a valid assembly **"
+                     |> verbose
+
+                     accumulator))
                [])
         |> Seq.toList
         |> Seq.concat

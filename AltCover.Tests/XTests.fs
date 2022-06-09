@@ -678,6 +678,33 @@ module AltCoverXTests =
          |> not @>
 
   [<Test>]
+  let OutputVerbose () =
+    let save1 = Output.info
+    let save2 = CommandLine.verbosity
+
+    try
+      let mutable buffer = String.Empty
+      Output.info <- fun x -> buffer <- x
+
+      Main.I.maybeVerbose false "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Main.I.maybeVerbose true "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      CommandLine.verbosity <- -1
+
+      Main.I.maybeVerbose false "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Main.I.maybeVerbose true "OutputVerbose"
+      test <@ buffer = "OutputVerbose" @>
+
+    finally
+      Output.info <- save1
+      CommandLine.verbosity <- save2
+
+  [<Test>]
   let ADotNetDryRunLooksAsExpected () =
     let where =
       Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)

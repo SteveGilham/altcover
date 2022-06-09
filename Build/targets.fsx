@@ -2564,6 +2564,7 @@ _Target "FSharpTypes" (fun _ ->
     let prep =
         AltCover.PrepareOptions.Primitive(
             { Primitive.PrepareOptions.Create() with
+                // Verbosity = System.Diagnostics.TraceLevel.Verbose
                 Report = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
                 AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]

@@ -2,6 +2,12 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.3.8xx (Habu series release 14)
+* [VISUALIZER] Fix off-by-one error in markup for the very last line of the file
+* Add a `--verbose`option for AltCover, the converse of `-q`.  Away from the command line, adds meaning to the `Verbosity` option value `System.Diagnostics.TraceLevel.Verbose`.  Currently `Verbose` output shows more of the selection of files for instrumentation, noting when files are excluded from the process.
+* Other minor build process asjustments for SDK 6.0.300/F# 6.0.4
+
+
 # 8.2.837 (Habu series release 13)
 * [VISUALIZER] Critical bug fixes for GTK and Avalonia : mismatched new icon names causing crashes
 * [VISUALIZER] Use new coverage data icon for the coverage report file, not a generic report icon

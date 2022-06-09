@@ -888,6 +888,7 @@ module ExpectoTestManifest =
        "XTests.PrepareOptionsCanBeValidatedWithErrors"
        Tests.AltCoverXTests.NullListsAreEmpty, "XTests.NullListsAreEmpty"
        Tests.AltCoverXTests.ValidateAssemblyOption, "XTests.ValidateAssemblyOption"
+       Tests.AltCoverXTests.OutputVerbose, "XTests.OutputVerbose"
        Tests.AltCoverXTests.ADotNetDryRunLooksAsExpected,
        "XTests.ADotNetDryRunLooksAsExpected"
        Tests.AltCoverXTests.ADryRunLooksAsExpected, "XTests.ADryRunLooksAsExpected"
