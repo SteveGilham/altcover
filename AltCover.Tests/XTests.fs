@@ -171,6 +171,7 @@ module AltCoverXTests =
     let subject =
       { Primitive.CollectOptions.Create() with
           Threshold = "23"
+          Verbosity = System.Diagnostics.TraceLevel.Error
           CommandLine = null }
 
     let instance =
@@ -179,7 +180,7 @@ module AltCoverXTests =
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
-    test <@ instance |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+    test <@ instance |> Args.collect = [ "Runner"; "-t"; "23"; "--collect"; "-q"; "-q" ] @>
     // hack
     let rerun =
       AltCover.CollectOptions.Abstract instance
@@ -187,7 +188,7 @@ module AltCoverXTests =
     let scan = rerun.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (rerun.GetHashCode() :> obj).IsNotNull @>
-    test <@ rerun |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+    test <@ rerun |> Args.collect = [ "Runner"; "-t"; "23"; "--collect"; "-q"; "-q" ] @>
 
   [<Test>]
   let TypeSafeEmptyThresholdCanBeValidated () =
@@ -212,6 +213,7 @@ module AltCoverXTests =
       { TypeSafe.CollectOptions.Create() with
           Threshold = TypeSafe.Threshold t
           SummaryFormat = TypeSafe.BPlus
+          Verbosity = System.Diagnostics.TraceLevel.Verbose
           Executable = TypeSafe.Tool "dotnet" }
 
     let instance =
@@ -228,13 +230,14 @@ module AltCoverXTests =
                                       "dotnet"
                                       "-t"
                                       "S23B16M7C3"
-                                      "--summary:BOC" ] @>
+                                      "--summary:BOC"
+                                      "--verbose" ] @>
 
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @>
 
     test
-      <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC" @>
+      <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC --verbose" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated () =

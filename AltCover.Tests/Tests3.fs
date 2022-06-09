@@ -183,7 +183,7 @@ module AltCoverTests3 =
 
     Assert.That(
       commandFragments |> List.length,
-      Is.EqualTo (optionCount - 1), // drop -q/--verbose => verbosity
+      Is.EqualTo (optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
@@ -3959,7 +3959,7 @@ module AltCoverTests3 =
     try
       // subject.ACLog <- Some <| FSApi.Logging.Create()
       [ "Off", [ "-q"; "-q"; "-q" ]
-        "Verbose", []
+        "Verbose", [ "--verbose" ]
         "NoneOfTheAbove", []
         "Info", []
         "Warning", [ "-q" ]
@@ -4177,7 +4177,7 @@ module AltCoverTests3 =
 
     try
       [ "Off", [ "-q"; "-q"; "-q" ]
-        "Verbose", []
+        "Verbose", [ "--verbose" ]
         "NoneOfTheAbove", []
         "Info", []
         "Warning", [ "-q" ]

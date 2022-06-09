@@ -5710,7 +5710,7 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\\", "/")
           .Replace(
-            """version="3.0.0.0""",
+            """version="8.2.0.0""",
             "version=\""
             + typeof<SummaryFormat>
               .Assembly.GetName()
@@ -6383,7 +6383,7 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\\", "/")
           .Replace(
-            """version="3.0.0.0""",
+            """version="8.2.0.0""",
             "version=\""
             + typeof<SummaryFormat>
               .Assembly.GetName()

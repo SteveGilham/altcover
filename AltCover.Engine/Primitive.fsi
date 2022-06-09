@@ -76,7 +76,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SummaryFormat: System.String
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
       }
@@ -243,7 +243,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         ShowGenerated: bool
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
       }

@@ -131,7 +131,7 @@ module DotNet =
       [
         // poss s <> Info
         fromValue,
-        "Verbosity",  //=`"Levels of output -- Info (default), Warning, Error, or Off"
+        "Verbosity",  //=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
         verbosity :> obj,
         verbosity <> System.Diagnostics.TraceLevel.Info ]
 
