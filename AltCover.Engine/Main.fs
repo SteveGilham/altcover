@@ -399,14 +399,17 @@ module internal Main =
           )
       | Left intro -> Left intro
 
-    let internal imageLoadResilient (f: unit -> 'a) (tidy: unit -> 'a) =
+    let internal imageLoadResilient (f: unit -> 'a) (tidy: exn -> 'a) =
       try
         f ()
       with
-      | :? Mono.Cecil.Cil.SymbolsNotMatchingException
-      | :? BadImageFormatException
-      | :? ArgumentException
-      | :? IOException -> tidy ()
+      | x when
+        (x :? Mono.Cecil.Cil.SymbolsNotMatchingException)
+        || (x :? BadImageFormatException)
+        || (x :? ArgumentException)
+        || (x :? IOException)
+        ->
+        tidy (x)
 
     let internal matchType =
       Maybe
@@ -586,9 +589,8 @@ module internal Main =
                            |> Seq.toList }
                        :: accumulator)
                      |> Option.defaultValue accumulator)
-                   (fun () ->
-                     info.FullName
-                     |> sprintf "%s : ** not a valid assembly **"
+                   (fun x ->
+                     sprintf "%s : ** not a valid assembly because %A **" info.FullName x
                      |> Output.verbose
 
                      accumulator))

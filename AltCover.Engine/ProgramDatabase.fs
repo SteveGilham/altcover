@@ -79,11 +79,24 @@ module internal ProgramDatabase =
       let foldername = Path.GetDirectoryName path
       let filename = Path.GetFileName path
 
-      foldername :: (Seq.toList symbolFolders)
-      |> Seq.map (I.getSymbolsByFolder filename)
-      |> Seq.choose id
-      |> Seq.tryFind (fun _ -> true)
-    | pdbpath -> pdbpath
+      let folder =
+        foldername :: (Seq.toList symbolFolders)
+        |> Seq.map (I.getSymbolsByFolder filename)
+        |> Seq.choose id
+        |> Seq.tryFind (fun _ -> true)
+
+      sprintf
+        "Assembly %s symbols from folder '%A'"
+        path
+        (Option.defaultValue String.Empty folder)
+      |> Output.verbose
+
+      folder
+    | pdbpath ->
+      sprintf "Assembly %s symbols from image '%s'" path pdbpath.Value
+      |> Output.verbose
+
+      pdbpath
 
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
