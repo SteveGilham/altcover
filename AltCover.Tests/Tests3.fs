@@ -3150,8 +3150,8 @@ module AltCoverTests3 =
     Main.init ()
     let one = ref false
     let two = ref false
-    let set2 () = two.Value <- true
-    Main.I.imageLoadResilient (fun () -> one.Value <- true) set2
+    let set2 _ = two.Value <- true
+    Main.I.imageLoadResilient (fun _ -> one.Value <- true) set2
     Assert.That(one.Value)
     Assert.That(two.Value, Is.False)
     set2 ()
@@ -3167,9 +3167,13 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let io () = IOException("fail") |> raise
+    let io = IOException("fail")
+    let fio () = io |> raise
 
-    Main.I.imageLoadResilient (set1 io) (fun () -> two.Value <- true)
+    Main.I.imageLoadResilient (set1 fio) (fun x ->
+      Assert.That(x, Is.SameAs io)
+      two.Value <- true)
+
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3185,10 +3189,13 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let bif () =
-      BadImageFormatException("fail") |> raise
+    let bif = BadImageFormatException("fail")
+    let fbif () = bif |> raise
 
-    Main.I.imageLoadResilient (set1 bif) (fun () -> two.Value <- true)
+    Main.I.imageLoadResilient (set1 fbif) (fun x ->
+      Assert.That(x, Is.SameAs bif)
+      two.Value <- true)
+
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3204,9 +3211,13 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let arg () = ArgumentException("fail") |> raise
+    let arg = ArgumentException("fail")
+    let farg () = arg |> raise
 
-    Main.I.imageLoadResilient (set1 arg) (fun () -> two.Value <- true)
+    Main.I.imageLoadResilient (set1 farg) (fun x ->
+      Assert.That(x, Is.SameAs arg)
+      two.Value <- true)
+
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
