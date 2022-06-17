@@ -195,11 +195,14 @@ module internal CommandLine =
       try
         result <- f ()
       with
-      | :? ArgumentException as a -> a |> (logException store)
-      | :? NotSupportedException as n -> n |> (logException store)
-      | :? IOException as i -> i |> (logException store)
-      | :? System.Security.SecurityException as s -> s |> (logException store)
-      | :? UnauthorizedAccessException as u -> u |> (logException store)
+      | x when
+        (x :? ArgumentException)
+        || (x :? NotSupportedException)
+        || (x :? IOException)
+        || (x :? System.Security.SecurityException)
+        || (x :? UnauthorizedAccessException)
+        ->
+        x |> (logException store)
 
       result
 
@@ -210,18 +213,16 @@ module internal CommandLine =
       try
         action f
       with
-      | x ->
-        match x with
-        | :? IOException
-        | :? System.Security.SecurityException
-        | :? UnauthorizedAccessException ->
-          if depth < limit then
-            Threading.Thread.Sleep(rest)
-            doRetry action log limit rest (depth + 1) f
-          else
-            x.ToString() |> log
-
-        | _ -> reraise ()
+      | x when
+        (x :? IOException)
+        || (x :? System.Security.SecurityException)
+        || (x :? UnauthorizedAccessException)
+        ->
+        if depth < limit then
+          Threading.Thread.Sleep(rest)
+          doRetry action log limit rest (depth + 1) f
+        else
+          x.ToString() |> log
 
     let logExceptionsToFile name extend =
       let path =
