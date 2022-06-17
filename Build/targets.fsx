@@ -6884,6 +6884,7 @@ _Target "Issue156" (fun _ ->
 
         let p0 =
             { Primitive.PrepareOptions.Create() with
+                Dependencies = ["C:/WINDOWS/Microsoft.NET/assembly/GAC_MSIL/WindowsBase/v4.0_4.0.0.0__31bf3856ad364e35/WindowsBase.dll"]
                 AssemblyFilter =
                     [| "nunit"
                        "Adapter"
@@ -6902,9 +6903,7 @@ _Target "Issue156" (fun _ ->
                      .WithAltCoverOptions
                      pp0
                      cc0
-                     ForceTrue)
-                    .WithAltCoverImportModule()
-                    .WithAltCoverGetVersion()
+                     ForceTrueOnly)
                 |> testWithCLIArguments)
             ""
     finally
