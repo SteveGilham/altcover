@@ -10,12 +10,9 @@
         <TestProjectType>UnitTest</TestProjectType>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="altcover" Version="8.2.837" />
         <PackageReference Include="xunit.runner.console" Version="2.4.1" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="MSTest.TestFramework" />
-        <PackageReference Include="MSTest.TestAdapter" />
+        <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+        <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" />

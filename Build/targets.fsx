@@ -6841,6 +6841,76 @@ _Target "Issue114" (fun _ ->
         Shell.mkdir folder
         Actions.CleanDir folder)
 
+_Target "Issue156" (fun _ ->
+    try
+        Directory.ensure "./_Issue156"
+        Shell.cleanDir ("./_Issue156")
+
+        let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+
+        let repo = config.Descendants(XName.Get("add")) |> Seq.head
+
+        repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+        config.Save "./_Issue156/NuGet.config"
+
+        let csproj = XDocument.Load "./RegressionTesting\issue156/Tests.csproj"
+
+        let pack =
+            csproj.Descendants(XName.Get("PackageReference"))
+            |> Seq.head
+
+        let inject =
+            XElement(
+                XName.Get "PackageReference",
+                XAttribute(XName.Get "Include", "altcover"),
+                XAttribute(XName.Get "Version", Version.Value)
+            )
+
+        pack.AddBeforeSelf inject
+        csproj.Save "./_Issue156/Tests.fsproj"
+        Shell.copy "./_Issue156" (!! "./Samples/Sample26/*.cs")
+
+        DotNet.restore
+            (fun o ->
+                let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue156")
+
+                let mparams = { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+
+                { tmp with MSBuildParams = mparams })
+            ""
+
+        let p0 =
+            { Primitive.PrepareOptions.Create() with
+                AssemblyFilter =
+                    [| "nunit"
+                       "Adapter"
+                       "FSharp"
+                       "AltCover" |] }
+
+        let pp0 = AltCover.PrepareOptions.Primitive p0
+        let c0 = Primitive.CollectOptions.Create()
+        let cc0 = AltCover.CollectOptions.Primitive c0
+
+        DotNet.test
+            (fun p ->
+                (({ p.WithCommon(withWorkingDirectoryVM "_Issue156") with
+                      Configuration = DotNet.BuildConfiguration.Debug
+                      NoBuild = false })
+                     .WithAltCoverOptions
+                     pp0
+                     cc0
+                     ForceTrue)
+                    .WithAltCoverImportModule()
+                    .WithAltCoverGetVersion()
+                |> testWithCLIArguments)
+            ""
+    finally
+        let folder = (nugetCache @@ "altcover") @@ Version.Value
+
+        Shell.mkdir folder
+        Actions.CleanDir folder)
+
+
 // AOB
 
 _Target "MakeDocumentation" (fun _ ->
@@ -7346,6 +7416,8 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "Issue20" ==> "Deployment"
 
 "Unpack" ==> "Issue114" ==> "Deployment"
+
+"Unpack" ==> "Issue156"
 
 "Unpack"
 ==> "DotnetGlobalIntegration"
