@@ -121,12 +121,6 @@ module internal Main =
       (false, Left None)
 
   module internal I =
-    let internal verbose message =
-      if CommandLine.verbosity < 0 then
-        Output.info message
-
-    let internal maybeVerbose p message = if p then verbose message
-
     let internal declareOptions () =
       let makeRegex (x: String) =
         x.Replace(char 0, '\\').Replace(char 1, '|')
@@ -480,7 +474,7 @@ module internal Main =
               |> not
 
             sprintf "%s : ** is in output tree **" i.FullName
-            |> (maybeVerbose (not ok))
+            |> (Output.maybeVerbose (not ok))
 
             ok)
 
@@ -525,7 +519,7 @@ module internal Main =
         filemap
         |> Seq.iter (fun kvp ->
           sprintf "Copying input %s to output %s" kvp.Key kvp.Value
-          |> verbose
+          |> Output.verbose
 
           File.Copy(kvp.Key, kvp.Value, true)))
 
@@ -540,7 +534,7 @@ module internal Main =
 
                  fullName
                  |> sprintf "%s : beginning process"
-                 |> verbose
+                 |> Output.verbose
 
                  imageLoadResilient
                    (fun () ->
@@ -571,7 +565,7 @@ module internal Main =
                          symbols
                          passesFilter
                          pureIL
-                       |> (maybeVerbose (not ok))
+                       |> (Output.maybeVerbose (not ok))
 
                        ok)
                      |> Option.map (fun def ->
@@ -595,7 +589,7 @@ module internal Main =
                    (fun () ->
                      info.FullName
                      |> sprintf "%s : ** not a valid assembly **"
-                     |> verbose
+                     |> Output.verbose
 
                      accumulator))
                [])

@@ -684,20 +684,20 @@ module AltCoverXTests =
 
     try
       let mutable buffer = String.Empty
-      Output.info <- fun x -> buffer <- x
+      Output.verbose <- ignore
 
-      Main.I.maybeVerbose false "OutputVerbose"
+      Output.maybeVerbose false "OutputVerbose"
       test <@ buffer |> String.IsNullOrEmpty @>
 
-      Main.I.maybeVerbose true "OutputVerbose"
+      Output.maybeVerbose true "OutputVerbose"
       test <@ buffer |> String.IsNullOrEmpty @>
 
-      CommandLine.verbosity <- -1
+      Output.verbose <- fun x -> buffer <- x
 
-      Main.I.maybeVerbose false "OutputVerbose"
+      Output.maybeVerbose false "OutputVerbose"
       test <@ buffer |> String.IsNullOrEmpty @>
 
-      Main.I.maybeVerbose true "OutputVerbose"
+      Output.maybeVerbose true "OutputVerbose"
       test <@ buffer = "OutputVerbose" @>
 
     finally

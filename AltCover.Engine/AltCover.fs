@@ -617,7 +617,8 @@ module AltCover =
           Failure = options.Failure |> LoggingOptions.ActionAdapter
           Warn = options.Warn |> LoggingOptions.ActionAdapter
           Echo = options.Echo |> LoggingOptions.ActionAdapter
-          Info = options.Info |> LoggingOptions.ActionAdapter }
+          Info = options.Info |> LoggingOptions.ActionAdapter
+          Verbose = options.Info |> LoggingOptions.ActionAdapter }
       |> Primitive
 
     static member ActionAdapter(action: Action<String>) =
@@ -644,4 +645,9 @@ module AltCover =
       match self with
       | Primitive p -> p.Info
       | Abstract a -> a.Info |> LoggingOptions.ActionAdapter
+
+    member self.Verbose =
+      match self with
+      | Primitive p -> p.Verbose
+      | Abstract a -> a.Verbose |> LoggingOptions.ActionAdapter
 #endif

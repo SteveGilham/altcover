@@ -100,58 +100,6 @@ module internal Zip =
 
 type internal StringSink = Action<String>
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage;
-  NoComparison;
-  AutoSerializable(false)>]
-type internal UsageInfo =
-  { Intro: String
-    Options: OptionSet
-    Options2: OptionSet }
-
-module internal Output =
-  let mutable internal info: String -> unit =
-    ignore
-
-  let mutable internal warn: String -> unit =
-    ignore
-
-  let mutable internal echo: String -> unit =
-    ignore
-
-  let mutable internal error: String -> unit =
-    ignore
-
-  let mutable internal usage: UsageInfo -> unit =
-    ignore
-
-  let internal warnOn x = if x then warn else info
-
-  let internal logExceptionToFile path e =
-    Directory.CreateDirectory(path |> Path.GetDirectoryName)
-    |> ignore
-
-    use stream =
-      File.Open(path, FileMode.Append, FileAccess.Write)
-
-    use writer = new StreamWriter(stream)
-
-    let rec logException padding ex =
-      ex.ToString() |> writer.WriteLine
-
-      ex.GetType().GetProperties()
-      |> Seq.filter (fun p ->
-        [ "Message"; "StackTrace" ]
-        |> Seq.exists (fun n -> n == p.Name)
-        |> not)
-      |> Seq.iter (fun p ->
-        (padding + p.Name + " = ") |> writer.WriteLine
-
-        match p.GetValue(ex) with
-        | :? Exception as exx -> logException ("  " + padding) exx
-        | v -> v |> sprintf "%A" |> writer.WriteLine)
-
-    logException String.Empty e
-
 module internal CommandLine =
 
   let mutable internal verbosity = 0
@@ -397,6 +345,9 @@ module internal CommandLine =
     | fail -> fail
 
   let internal applyVerbosity () =
+    if verbosity >= 0 then
+      Output.verbose <- ignore
+
     if verbosity >= 1 then
       Output.info <- ignore
       Output.echo <- ignore
@@ -556,4 +507,5 @@ module internal CommandLine =
     Output.usage <- usageBase
     Output.echo <- writeErr
     Output.info <- writeOut
+    Output.verbose <- writeOut
     Output.warn <- writeOut

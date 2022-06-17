@@ -20,6 +20,7 @@ namespace AltCover.Cake
       public Action<string> Warn { get; set; }
       public Action<string> Failure { get; set; }
       public Action<string> Echo { get; set; }
+      public Action<string> Verbose { get; set; }
     }
 
     private static FSOptions MakeLog(ICakeContext context, Abstract.ILoggingOptions log)
@@ -35,6 +36,7 @@ namespace AltCover.Cake
         result.Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x);
         result.Failure = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
         result.Echo = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x);
+        result.Verbose = x => context.Log.Write(Verbosity.Verbose, LogLevel.Verbose, x);
       }
 
       return FSOptions.Translate(result);

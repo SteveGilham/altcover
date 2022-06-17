@@ -9,6 +9,7 @@ module internal TaskIO =
       Output.warn <- self.Warn
       Output.info <- self.Info
       Output.echo <- self.Echo
+      Output.verbose <- self.Verbose
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s

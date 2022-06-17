@@ -294,5 +294,9 @@ module Abstract =
     /// Sink for command line/usage messages
     ///</summary>
     abstract member Echo : Action<String> with get
+    ///<summary>
+    /// Sink for detailed messages
+    ///</summary>
+    abstract member Verbose : Action<String> with get
     end
 #endif

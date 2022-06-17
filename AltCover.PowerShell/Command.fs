@@ -686,6 +686,7 @@ type InvokeAltCoverCommand() =
       { Primitive.LoggingOptions.Create() with
           Failure = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))
+          Verbose = (fun s -> self.WriteVerbose(s))
           Warn = (fun s -> self.WriteWarning s) }
 
   member private self.Dispatch() =

@@ -364,6 +364,10 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Sink for command line/usage messages
         ///</summary>
+        member Verbose : (System.String -> unit)
+        ///<summary>
+        /// Sink for detailed messages
+        ///</summary>
         member Echo : (System.String -> unit)
         ///<summary>
         /// Returns a pure sink (all input ignored) instance

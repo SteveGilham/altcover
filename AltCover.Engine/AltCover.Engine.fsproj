@@ -23,6 +23,7 @@
     <Compile Include="Compatibility.fs" />
     <Compile Include="Exemption.fs" />
     <Compile Include="Abstraction.fs" />
+    <Compile Include="Output.fs" />
     <Compile Include="Canonical.fs" />
     <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />

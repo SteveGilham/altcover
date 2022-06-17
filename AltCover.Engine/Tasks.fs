@@ -147,7 +147,8 @@ type Prepare() =
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
               Warn = base.Log.LogWarning
-              Info = self.Message })
+              Info = self.Message
+              Verbose = self.Message })
         self.ACLog
 
     let task =
@@ -240,7 +241,8 @@ type Collect() =
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
               Warn = base.Log.LogWarning
-              Info = self.Message })
+              Info = self.Message
+              Verbose = self.Message })
         self.ACLog
 
     let task =

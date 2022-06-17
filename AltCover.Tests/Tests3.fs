@@ -3846,12 +3846,14 @@ module AltCoverTests3 =
     member val Warn: Action<String> = null with get, set
     member val Failure: Action<String> = null with get, set
     member val Echo: Action<String> = null with get, set
+    member val Verbose: Action<String> = null with get, set
 
     interface Abstract.ILoggingOptions with
       member self.Info = self.Info
       member self.Warn = self.Warn
       member self.Failure = self.Failure
       member self.Echo = self.Echo
+      member self.Verbose = self.Verbose
 
   [<Test>]
   let LoggingCanBeExercised () =
@@ -3872,17 +3874,20 @@ module AltCoverTests3 =
     AltCover.LoggingOptions.Create().Warn "32"
     AltCover.LoggingOptions.Create().Error "32"
     AltCover.LoggingOptions.Create().Echo "32"
+    AltCover.LoggingOptions.Create().Verbose "32"
 
     let o = Logging()
     o.Info <- null
     o.Warn <- null
     o.Failure <- null
     o.Echo <- null
+    o.Verbose <- null
 
     Assert.That(o.Info, Is.Null)
     Assert.That(o.Warn, Is.Null)
     Assert.That(o.Failure, Is.Null)
     Assert.That(o.Echo, Is.Null)
+    Assert.That(o.Verbose, Is.Null)
 
     let p = AltCover.LoggingOptions.Translate o
     Assert.That(p.Warn, Is.Not.Null)
@@ -3891,6 +3896,7 @@ module AltCoverTests3 =
     p2.Warn "32"
     p2.Error "32"
     p2.Echo "32"
+    p2.Verbose "32"
 
   [<Test>]
   let EmptyInstrumentIsJustTheDefaults () =
