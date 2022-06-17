@@ -618,7 +618,7 @@ module AltCover =
           Warn = options.Warn |> LoggingOptions.ActionAdapter
           Echo = options.Echo |> LoggingOptions.ActionAdapter
           Info = options.Info |> LoggingOptions.ActionAdapter
-          Verbose = options.Info |> LoggingOptions.ActionAdapter }
+          Verbose = options.Verbose |> LoggingOptions.ActionAdapter }
       |> Primitive
 
     static member ActionAdapter(action: Action<String>) =
