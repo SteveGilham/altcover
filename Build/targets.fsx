@@ -6845,6 +6845,8 @@ _Target "Issue156" (fun _ ->
     try
         Directory.ensure "./_Issue156"
         Shell.cleanDir ("./_Issue156")
+        Directory.ensure "./_Issue156/Tests"
+        Directory.ensure "./_Issue156/ClassLibrary1"
 
         let config = XDocument.Load "./Build/NuGet.config.dotnettest"
 
@@ -6853,7 +6855,7 @@ _Target "Issue156" (fun _ ->
         repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
         config.Save "./_Issue156/NuGet.config"
 
-        let csproj = XDocument.Load "./RegressionTesting\issue156/Tests.csproj"
+        let csproj = XDocument.Load "./RegressionTesting/issue156/Tests/Tests.csproj"
 
         let pack =
             csproj.Descendants(XName.Get("PackageReference"))
@@ -6867,12 +6869,13 @@ _Target "Issue156" (fun _ ->
             )
 
         pack.AddBeforeSelf inject
-        csproj.Save "./_Issue156/Tests.fsproj"
-        Shell.copy "./_Issue156" (!! "./Samples/Sample26/*.cs")
+        csproj.Save "./_Issue156/Tests/Tests.csproj"
+        Shell.copy "./_Issue156/Tests" (!! "./RegressionTesting/issue156/Tests/*.cs")
+        Shell.copy "./_Issue156/ClassLibrary1" (!! "./RegressionTesting/issue156/ClassLibrary1/*.cs*")
 
         DotNet.restore
             (fun o ->
-                let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue156")
+                let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue156/Tests")
 
                 let mparams = { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
 
@@ -6893,7 +6896,7 @@ _Target "Issue156" (fun _ ->
 
         DotNet.test
             (fun p ->
-                (({ p.WithCommon(withWorkingDirectoryVM "_Issue156") with
+                (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
                       Configuration = DotNet.BuildConfiguration.Debug
                       NoBuild = false })
                      .WithAltCoverOptions
