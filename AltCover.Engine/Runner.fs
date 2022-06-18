@@ -20,9 +20,8 @@ module internal ThrowHelper =
   type FormatException with
     [<SuppressMessage("Gendarme.Rules.Design.Generic",
                       "AvoidMethodWithUnusedGenericTypeRule",
-                       Justification = "Matches clause type")>]
-    static member Throw<'T>(message: string) : 'T =
-      message |> FormatException |> raise
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(message: string) : 'T = message |> FormatException |> raise
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SummaryFormat =

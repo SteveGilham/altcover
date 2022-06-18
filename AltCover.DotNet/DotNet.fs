@@ -87,11 +87,17 @@ module DotNet =
                       Justification = "Compiler Generated")>]
     let internal toPrepareListArgumentList (prepare: Abstract.IPrepareOptions) =
       let dependencies = prepare.Dependencies
-      let extra = if dependencies |> Seq.isEmpty then 0 else 1
-      let suffix = String.Empty
-                   |> Seq.replicate extra
-      let d2 = suffix
-               |> Seq.append dependencies
+
+      let extra =
+        if dependencies |> Seq.isEmpty then
+          0
+        else
+          1
+
+      let suffix =
+        String.Empty |> Seq.replicate extra
+
+      let d2 = suffix |> Seq.append dependencies
 
       [ fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe `'|'` separated list of paths"
         fromList, "DependencyList", d2 //=`"pipe `'|'` separated *AND TERMINATED* list of paths"

@@ -5364,7 +5364,7 @@ _Target "ApiUse" (fun _ ->
         let targets =
             fsproj.Descendants(XName.Get("TargetFrameworks"))
             |> Seq.head
-            
+
         let netTarget = "net6.0"
 
         targets.SetValue netTarget

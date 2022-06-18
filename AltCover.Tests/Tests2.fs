@@ -477,7 +477,8 @@ module AltCoverTests2 =
         test' <@ resolved |> isNull @> <| f.ToString())
 
       let found =
-        AssemblyConstants.resolutionTable.Keys |> Seq.toList
+        AssemblyConstants.resolutionTable.Keys
+        |> Seq.toList
 
       found
       |> Seq.iter (fun k ->

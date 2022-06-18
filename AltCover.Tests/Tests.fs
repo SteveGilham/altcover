@@ -145,13 +145,13 @@ module AltCoverTests =
                            Exemption.None ] @>
 
   // ProgramDatabase.fs
-  let isAssemblyType (file : string) =
+  let isAssemblyType (file: string) =
 #if !NET472
-    [".dll"]
+    [ ".dll" ]
 #else
-    [".dll"; ".exe"]
+    [ ".dll"; ".exe" ]
 #endif
-    |> Seq.exists(fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
+    |> Seq.exists (fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
 
   [<Test>]
   let ShouldGetPdbFromImage () =

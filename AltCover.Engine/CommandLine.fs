@@ -195,8 +195,7 @@ module internal CommandLine =
       | :? ArgumentException as a -> a |> (logException store)
       | :? NotSupportedException as n -> n |> (logException store)
       | :? IOException as i -> i |> (logException store)
-      | :? System.Security.SecurityException as s ->
-        s |> (logException store)
+      | :? System.Security.SecurityException as s -> s |> (logException store)
       | :? UnauthorizedAccessException as u -> u |> (logException store)
 
       result
@@ -268,7 +267,7 @@ module internal CommandLine =
       [<SuppressMessage("Gendarme.Rules.Design.Generic",
                         "AvoidMethodWithUnusedGenericTypeRule",
                         Justification = "Matches clause type")>]
-      static member Throw<'T>(e : exn) : 'T =
+      static member Throw<'T>(e: exn) : 'T =
         (e.Message, e) |> SecurityException |> raise
 
     let internal transformCryptographicException f =
@@ -396,7 +395,8 @@ module internal CommandLine =
 
   let internal validateAssembly assembly x =
     if I.validateFile assembly x then
-      let name = AssemblyConstants.findAssemblyName x
+      let name =
+        AssemblyConstants.findAssemblyName x
 
       if String.IsNullOrWhiteSpace name then
         error <-

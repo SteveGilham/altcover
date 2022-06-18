@@ -184,8 +184,7 @@ module internal Main =
                  CommandLine.validateAssembly "--dependency" path
 
                if ok then
-                 AssemblyResolver.Register name path
-                 |> ignore)
+                 AssemblyResolver.Register name path)
 
              ()
              false))

@@ -39,12 +39,15 @@ module AssemblyConstants =
 
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                   Justification = "minimum size overloads")>]
-type AssemblyResolver () as self =
+                  Justification = "minimum size overloads")>]
+type AssemblyResolver() as self =
   inherit DefaultAssemblyResolver()
-  do self.add_ResolveFailure <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
 
-  static member private AssemblyRegister (name:string) (path:string) =
+  do
+    self.add_ResolveFailure
+    <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
+
+  static member private AssemblyRegister (name: string) (path: string) =
     let def = AssemblyResolver.ReadAssembly path // recursive
     AssemblyConstants.resolutionTable.[name] <- def
     def
@@ -52,18 +55,18 @@ type AssemblyResolver () as self =
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
                     Justification = "Owned by registration table")>]
-  static member Register (name:string) (path:string) =
+  static member Register (name: string) (path: string) =
     AssemblyResolver.AssemblyRegister name path
     |> ignore
 
-  static member ReadAssembly (path: String) =
+  static member ReadAssembly(path: String) =
     let reader = ReaderParameters()
-    reader.AssemblyResolver <- new AssemblyResolver ()
+    reader.AssemblyResolver <- new AssemblyResolver()
     AssemblyDefinition.ReadAssembly(path, reader)
 
-  static member ReadAssembly (file: Stream) =
+  static member ReadAssembly(file: Stream) =
     let reader = ReaderParameters()
-    reader.AssemblyResolver <- new AssemblyResolver ()
+    reader.AssemblyResolver <- new AssemblyResolver()
     AssemblyDefinition.ReadAssembly(file, reader)
 
   [<SuppressMessage("Gendarme.Rules.Performance",
