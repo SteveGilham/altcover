@@ -184,8 +184,9 @@ module internal Main =
                  CommandLine.validateAssembly "--dependency" path
 
                if ok then
-                 AssemblyResolver.resolutionTable.[name] <-
-                   AssemblyResolver.ReadAssembly path)
+                 AssemblyResolver.Register name path
+                 |> ignore)
+
              ()
              false))
 

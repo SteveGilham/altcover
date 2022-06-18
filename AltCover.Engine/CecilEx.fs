@@ -14,11 +14,8 @@ open System.Reflection
 open Mono.Cecil
 open Mono.Cecil.Cil
 
-type AssemblyResolver () as self =
-  inherit DefaultAssemblyResolver()
-  do self.add_ResolveFailure <| new AssemblyResolveEventHandler(AssemblyResolver.resolveFromNugetCache)
-
-  static member nugetCache =
+module AssemblyConstants =
+  let internal nugetCache =
     Path.Combine(
       Path.Combine(
         Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
@@ -27,8 +24,16 @@ type AssemblyResolver () as self =
       "packages"
     )
 
-  static member internal resolutionTable =
+  let internal resolutionTable =
     Dictionary<string, AssemblyDefinition>()
+
+type AssemblyResolver () as self =
+  inherit DefaultAssemblyResolver()
+  do self.add_ResolveFailure <| new AssemblyResolveEventHandler(AssemblyResolver.resolveFromNugetCache)
+
+  static member nugetCache = AssemblyConstants.nugetCache
+
+  static member internal resolutionTable = AssemblyConstants.resolutionTable
 
   static member findAssemblyName f =
     try
@@ -39,6 +44,11 @@ type AssemblyResolver () as self =
     | :? System.Security.SecurityException
     | :? BadImageFormatException
     | :? FileLoadException -> String.Empty
+
+  static member Register (name:string) (path:string) =
+    let def = AssemblyResolver.ReadAssembly path // recursive
+    AssemblyResolver.resolutionTable.[name] <- def
+    def
 
   static member ReadAssembly (path: String) =
     let reader = ReaderParameters()
@@ -109,9 +119,7 @@ type AssemblyResolver () as self =
         )
         |> (Output.warnOn true)
 
-        let a = AssemblyResolver.ReadAssembly x // recursive
-        AssemblyResolver.resolutionTable.[name] <- a
-        a
+        AssemblyResolver.Register name x
 
 [<AutoOpen>]
 module internal CecilExtension =
