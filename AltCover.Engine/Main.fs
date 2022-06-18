@@ -39,7 +39,7 @@ module internal Main =
     CoverageParameters.theOutputDirectories.Clear()
     CoverageParameters.configurationHash <- None
     ProgramDatabase.symbolFolders.Clear()
-    Instrument.resolutionTable.Clear()
+    CecilExtension.resolutionTable.Clear()
     Instrument.modules.Clear()
 
     CoverageParameters.keys.Clear()
@@ -184,7 +184,8 @@ module internal Main =
                  CommandLine.validateAssembly "--dependency" path
 
                if ok then
-                 Instrument.resolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
+                 CecilExtension.resolutionTable.[name] <-
+                   AssemblyDefinition.ReadAssembly path)
              ()
              false))
 

@@ -451,7 +451,7 @@ module AltCoverTests2 =
     use raw =
       Mono.Cecil.AssemblyDefinition.ReadAssembly where
 
-    Instrument.resolutionTable.Clear()
+    CecilExtension.resolutionTable.Clear()
 
     try
       raw.MainModule.AssemblyReferences
@@ -460,7 +460,7 @@ module AltCoverTests2 =
         >= 0)
       |> Seq.iter (fun f ->
         let resolved =
-          Instrument.I.hookResolveHandler.Invoke(null, f)
+          CecilExtension.hookResolveHandler.Invoke(null, f)
 
         test' <@ resolved.IsNotNull @> <| f.ToString())
 
@@ -472,22 +472,23 @@ module AltCoverTests2 =
         f.Version <- System.Version("666.666.666.666")
 
         let resolved =
-          Instrument.I.hookResolveHandler.Invoke(null, f)
+          CecilExtension.hookResolveHandler.Invoke(null, f)
 
         test' <@ resolved |> isNull @> <| f.ToString())
 
       let found =
-        Instrument.resolutionTable.Keys |> Seq.toList
+        CecilExtension.resolutionTable.Keys |> Seq.toList
 
       found
       |> Seq.iter (fun k ->
-        let matched = Instrument.resolutionTable.[k]
+        let matched =
+          CecilExtension.resolutionTable.[k]
 
         let k2 =
           AssemblyNameReference.Parse(k.ToString())
 
         k2.Version <- System.Version("666.666.666.666")
-        Instrument.resolutionTable.[k2.ToString()] <- matched)
+        CecilExtension.resolutionTable.[k2.ToString()] <- matched)
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
@@ -497,11 +498,11 @@ module AltCoverTests2 =
         f.Version <- System.Version("666.666.666.666")
 
         let resolved =
-          Instrument.I.hookResolveHandler.Invoke(null, f)
+          CecilExtension.hookResolveHandler.Invoke(null, f)
 
         test' <@ resolved.IsNotNull @> <| f.ToString())
     finally
-      Instrument.resolutionTable.Clear()
+      CecilExtension.resolutionTable.Clear()
 
   [<Test>]
   let ShouldBeAbleToPrepareTheAssembly () =

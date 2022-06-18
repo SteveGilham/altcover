@@ -144,9 +144,6 @@ module internal Instrument =
 
   let version = recorderVersion ()
 
-  let internal resolutionTable =
-    Dictionary<string, AssemblyDefinition>()
-
   let internal modules = List<string>()
 
   module internal I =
@@ -192,9 +189,11 @@ module internal Instrument =
       =
       let ascii = System.Text.Encoding.ASCII
 
-      let a = ascii.GetBytes(assembly.Identity.Assembly)
+      let a =
+        ascii.GetBytes(assembly.Identity.Assembly)
 
-      let c = ascii.GetBytes(assembly.Identity.Configuration)
+      let c =
+        ascii.GetBytes(assembly.Identity.Configuration)
 
       let blob =
         [| prelude |> List.toArray
@@ -396,89 +395,6 @@ module internal Instrument =
         AssemblyDefinition.ReadAssembly(assembly)
 
       prepareAssemblyDefinition definition
-
-    let private nugetCache =
-      Path.Combine(
-        Path.Combine(
-          Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-          ".nuget"
-        ),
-        "packages"
-      )
-
-    [<SuppressMessage("Gendarme.Rules.Performance",
-                      "AvoidUnusedParametersRule",
-                      Justification = "meets an interface")>]
-    let internal resolveFromNugetCache _ (y: AssemblyNameReference) =
-      let name = y.ToString()
-
-      if resolutionTable.ContainsKey name then
-        resolutionTable.[name]
-      else
-        // Placate Gendarme here
-        let share =
-          "|usr|share"
-            .Replace('|', Path.DirectorySeparatorChar)
-
-        let shared =
-          "dotnet|shared"
-            .Replace('|', Path.DirectorySeparatorChar)
-
-        let sources =
-          [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
-            Path.Combine(
-              Environment.GetEnvironmentVariable "ProgramFiles"
-              |> Option.ofObj
-              |> (Option.defaultValue share),
-              shared
-            )
-            Path.Combine(share, shared)
-            nugetCache ]
-
-        let candidate source =
-          source
-          |> List.filter (String.IsNullOrWhiteSpace >> not)
-          |> List.filter Directory.Exists
-          |> Seq.distinct
-          |> Seq.collect (fun dir ->
-            Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
-          |> Seq.sortDescending
-          |> Seq.filter (fun f ->
-            let x = Path.GetExtension f
-
-            x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
-            || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-          |> Seq.filter (fun f ->
-            y
-              .ToString()
-              .Equals(CommandLine.findAssemblyName f, StringComparison.Ordinal))
-          |> Seq.tryHead
-
-        match candidate sources with
-        | None -> null
-        | Some x ->
-          String.Format(
-            System.Globalization.CultureInfo.CurrentCulture,
-            CommandLine.resources.GetString "resolved",
-            y.ToString(),
-            x
-          )
-          |> (Output.warnOn true)
-
-          let a = AssemblyDefinition.ReadAssembly x
-          resolutionTable.[name] <- a
-          a
-
-    let internal hookResolveHandler =
-      new AssemblyResolveEventHandler(resolveFromNugetCache)
-
-    let internal hookResolver (resolver: IAssemblyResolver) =
-      if resolver.IsNotNull then
-        let hook =
-          resolver.GetType().GetMethod("add_ResolveFailure")
-
-        hook.Invoke(resolver, [| hookResolveHandler :> obj |])
-        |> ignore
 
     // #if IDEMPOTENT_INSTRUMENT
 //     let internal safeWait (mutex: System.Threading.WaitHandle) =
