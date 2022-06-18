@@ -40,7 +40,7 @@ module AssemblyConstants =
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                   Justification = "minimum size overloads")>]
-type AssemblyResolver() as self =
+type internal AssemblyResolver() as self =
   inherit DefaultAssemblyResolver()
 
   do
@@ -72,7 +72,7 @@ type AssemblyResolver() as self =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  static member ResolveFromNugetCache _ (y: AssemblyNameReference) =
+  static member internal ResolveFromNugetCache _ (y: AssemblyNameReference) =
     let name = y.ToString()
 
     if AssemblyConstants.resolutionTable.ContainsKey name then
