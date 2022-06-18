@@ -39,7 +39,7 @@ module internal Main =
     CoverageParameters.theOutputDirectories.Clear()
     CoverageParameters.configurationHash <- None
     ProgramDatabase.symbolFolders.Clear()
-    CecilExtension.resolutionTable.Clear()
+    AssemblyResolver.resolutionTable.Clear()
     Instrument.modules.Clear()
 
     CoverageParameters.keys.Clear()
@@ -112,7 +112,7 @@ module internal Main =
       CommandLine.error <-
         String.Format(
           CultureInfo.CurrentCulture,
-          CommandLine.resources.GetString "InvalidValue",
+          Output.resources.GetString "InvalidValue",
           "--callContext",
           x
         )
@@ -184,8 +184,8 @@ module internal Main =
                  CommandLine.validateAssembly "--dependency" path
 
                if ok then
-                 CecilExtension.resolutionTable.[name] <-
-                   AssemblyDefinition.ReadAssembly path)
+                 AssemblyResolver.resolutionTable.[name] <-
+                   AssemblyResolver.ReadAssembly path)
              ()
              false))
 
@@ -327,7 +327,7 @@ module internal Main =
              :: CommandLine.error)) ] // default end stop
       |> List.fold
            (fun (o: OptionSet) (p, a) ->
-             o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
+             o.Add(p, Output.resources.GetString(p), new System.Action<string>(a)))
            (OptionSet())
 
     let private echoDirectories (outputDirectory: string, inputDirectory: string) =
@@ -527,7 +527,7 @@ module internal Main =
                      use stream = File.OpenRead(fullName)
 
                      use def =
-                       AssemblyDefinition.ReadAssembly(stream)
+                       AssemblyResolver.ReadAssembly(stream)
 
                      ProgramDatabase.readSymbols def
 

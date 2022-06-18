@@ -99,7 +99,7 @@ module internal Json =
     Some path
     |> Option.filter File.Exists
     |> Option.map (fun p ->
-      let def = AssemblyDefinition.ReadAssembly p
+      let def = AssemblyResolver.ReadAssembly p
       ProgramDatabase.readSymbols def
       def)
 

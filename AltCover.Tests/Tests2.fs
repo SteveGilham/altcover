@@ -382,7 +382,7 @@ module AltCoverTests2 =
 
     pdb
     |> Seq.iter (fun p ->
-      let a = CommandLine.findAssemblyName p
+      let a = AssemblyResolver.findAssemblyName p
       Assert.That(String.IsNullOrWhiteSpace a, p))
 
     let dll = Directory.GetFiles(here, "*.dll")
@@ -390,7 +390,7 @@ module AltCoverTests2 =
 
     dll
     |> Seq.iter (fun d ->
-      let a = CommandLine.findAssemblyName d
+      let a = AssemblyResolver.findAssemblyName d
       Assert.That(a |> String.IsNullOrWhiteSpace |> not, d))
 
   [<Test>]
@@ -445,13 +445,13 @@ module AltCoverTests2 =
 
     json
     |> Seq.iter (fun j ->
-      let a = CommandLine.findAssemblyName j
+      let a = AssemblyResolver.findAssemblyName j
       test' <@ String.IsNullOrWhiteSpace a @> j)
 #endif
     use raw =
       Mono.Cecil.AssemblyDefinition.ReadAssembly where
 
-    CecilExtension.resolutionTable.Clear()
+    AssemblyResolver.resolutionTable.Clear()
 
     try
       raw.MainModule.AssemblyReferences
@@ -477,18 +477,18 @@ module AltCoverTests2 =
         test' <@ resolved |> isNull @> <| f.ToString())
 
       let found =
-        CecilExtension.resolutionTable.Keys |> Seq.toList
+        AssemblyResolver.resolutionTable.Keys |> Seq.toList
 
       found
       |> Seq.iter (fun k ->
         let matched =
-          CecilExtension.resolutionTable.[k]
+          AssemblyResolver.resolutionTable.[k]
 
         let k2 =
           AssemblyNameReference.Parse(k.ToString())
 
         k2.Version <- System.Version("666.666.666.666")
-        CecilExtension.resolutionTable.[k2.ToString()] <- matched)
+        AssemblyResolver.resolutionTable.[k2.ToString()] <- matched)
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
@@ -502,7 +502,7 @@ module AltCoverTests2 =
 
         test' <@ resolved.IsNotNull @> <| f.ToString())
     finally
-      CecilExtension.resolutionTable.Clear()
+      AssemblyResolver.resolutionTable.Clear()
 
   [<Test>]
   let ShouldBeAbleToPrepareTheAssembly () =

@@ -9,9 +9,109 @@ open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
+open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
+
+type AssemblyResolver () as self =
+  inherit DefaultAssemblyResolver()
+  do self.add_ResolveFailure <| new AssemblyResolveEventHandler(AssemblyResolver.resolveFromNugetCache)
+
+  static member nugetCache =
+    Path.Combine(
+      Path.Combine(
+        Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+        ".nuget"
+      ),
+      "packages"
+    )
+
+  static member internal resolutionTable =
+    Dictionary<string, AssemblyDefinition>()
+
+  static member findAssemblyName f =
+    try
+      (AssemblyName.GetAssemblyName f).ToString()
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> String.Empty
+
+  static member ReadAssembly (path: String) =
+    let reader = ReaderParameters()
+    reader.AssemblyResolver <- new AssemblyResolver ()
+    AssemblyDefinition.ReadAssembly(path, reader)
+
+  static member ReadAssembly (file: Stream) =
+    let reader = ReaderParameters()
+    reader.AssemblyResolver <- new AssemblyResolver ()
+    AssemblyDefinition.ReadAssembly(file, reader)
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  static member resolveFromNugetCache _ (y: AssemblyNameReference) =
+    let name = y.ToString()
+
+    if AssemblyResolver.resolutionTable.ContainsKey name then
+      AssemblyResolver.resolutionTable.[name]
+    else
+      // Placate Gendarme here
+      let share =
+        "|usr|share"
+          .Replace('|', Path.DirectorySeparatorChar)
+
+      let shared =
+        "dotnet|shared"
+          .Replace('|', Path.DirectorySeparatorChar)
+
+      let sources =
+        [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+          Path.Combine(
+            Environment.GetEnvironmentVariable "ProgramFiles"
+            |> Option.ofObj
+            |> (Option.defaultValue share),
+            shared
+          )
+          Path.Combine(share, shared)
+          AssemblyResolver.nugetCache ]
+
+      let candidate source =
+        source
+        |> List.filter (String.IsNullOrWhiteSpace >> not)
+        |> List.filter Directory.Exists
+        |> Seq.distinct
+        |> Seq.collect (fun dir ->
+          Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
+        |> Seq.sortDescending
+        |> Seq.filter (fun f ->
+          let x = Path.GetExtension f
+
+          x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
+          || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+        |> Seq.filter (fun f ->
+          y
+            .ToString()
+            .Equals(AssemblyResolver.findAssemblyName f, StringComparison.Ordinal))
+        |> Seq.tryHead
+
+      match candidate sources with
+      | None -> null
+      | Some x ->
+        String.Format(
+          System.Globalization.CultureInfo.CurrentCulture,
+          Output.resources.GetString "resolved",
+          y.ToString(),
+          x
+        )
+        |> (Output.warnOn true)
+
+        let a = AssemblyResolver.ReadAssembly x // recursive
+        AssemblyResolver.resolutionTable.[name] <- a
+        a
 
 [<AutoOpen>]
 module internal CecilExtension =
@@ -293,83 +393,8 @@ module internal CecilExtension =
       i.OpCode <- OpCodes.Nop
       i.Operand <- null)
 
-  let internal resolutionTable =
-    Dictionary<string, AssemblyDefinition>()
-
-  let private nugetCache =
-    Path.Combine(
-      Path.Combine(
-        Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-        ".nuget"
-      ),
-      "packages"
-    )
-
-  [<SuppressMessage("Gendarme.Rules.Performance",
-                    "AvoidUnusedParametersRule",
-                    Justification = "meets an interface")>]
-  let internal resolveFromNugetCache _ (y: AssemblyNameReference) =
-    let name = y.ToString()
-
-    if resolutionTable.ContainsKey name then
-      resolutionTable.[name]
-    else
-      // Placate Gendarme here
-      let share =
-        "|usr|share"
-          .Replace('|', Path.DirectorySeparatorChar)
-
-      let shared =
-        "dotnet|shared"
-          .Replace('|', Path.DirectorySeparatorChar)
-
-      let sources =
-        [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
-          Path.Combine(
-            Environment.GetEnvironmentVariable "ProgramFiles"
-            |> Option.ofObj
-            |> (Option.defaultValue share),
-            shared
-          )
-          Path.Combine(share, shared)
-          nugetCache ]
-
-      let candidate source =
-        source
-        |> List.filter (String.IsNullOrWhiteSpace >> not)
-        |> List.filter Directory.Exists
-        |> Seq.distinct
-        |> Seq.collect (fun dir ->
-          Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
-        |> Seq.sortDescending
-        |> Seq.filter (fun f ->
-          let x = Path.GetExtension f
-
-          x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
-          || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-        |> Seq.filter (fun f ->
-          y
-            .ToString()
-            .Equals(CommandLine.findAssemblyName f, StringComparison.Ordinal))
-        |> Seq.tryHead
-
-      match candidate sources with
-      | None -> null
-      | Some x ->
-        String.Format(
-          System.Globalization.CultureInfo.CurrentCulture,
-          CommandLine.resources.GetString "resolved",
-          y.ToString(),
-          x
-        )
-        |> (Output.warnOn true)
-
-        let a = AssemblyDefinition.ReadAssembly x
-        resolutionTable.[name] <- a
-        a
-
   let internal hookResolveHandler =
-    new AssemblyResolveEventHandler(resolveFromNugetCache)
+    new AssemblyResolveEventHandler(AssemblyResolver.resolveFromNugetCache)
 
   let internal hookResolver (resolver: IAssemblyResolver) =
     if resolver.IsNotNull then

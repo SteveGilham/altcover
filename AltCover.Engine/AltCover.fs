@@ -526,7 +526,7 @@ module AltCover =
         CommandLine.error <-
           String.Format(
             System.Globalization.CultureInfo.CurrentCulture,
-            CommandLine.resources.GetString "Incompatible",
+            Output.resources.GetString "Incompatible",
             "--branchcover",
             "--linecover"
           )

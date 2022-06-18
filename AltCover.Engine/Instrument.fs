@@ -75,7 +75,7 @@ type internal AsyncSupport =
       typeof<System.Threading.Tasks.Task>
         .Assembly
         .Location
-      |> AssemblyDefinition.ReadAssembly
+      |> AssemblyResolver.ReadAssembly
 
     let task =
       def.MainModule.GetType("System.Threading.Tasks.Task")
@@ -90,7 +90,7 @@ type internal AsyncSupport =
       typeof<Microsoft.FSharp.Control.AsyncReturn>
         .Assembly
         .Location
-      |> AssemblyDefinition.ReadAssembly
+      |> AssemblyResolver.ReadAssembly
 
     let fsasync =
       def2.MainModule.GetType("Microsoft.FSharp.Control.FSharpAsync")
@@ -138,7 +138,7 @@ module internal Instrument =
         .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
 
     use def =
-      AssemblyDefinition.ReadAssembly stream
+      AssemblyResolver.ReadAssembly stream
 
     def.Name.Version.ToString()
 
@@ -392,7 +392,7 @@ module internal Instrument =
                                                       Justification = "Return confusing Gendarme -- TODO")>]
     let internal prepareAssembly (assembly: Stream) =
       let definition =
-        AssemblyDefinition.ReadAssembly(assembly)
+        AssemblyResolver.ReadAssembly(assembly)
 
       prepareAssemblyDefinition definition
 
@@ -817,7 +817,7 @@ module internal Instrument =
 
       String.Format(
         System.Globalization.CultureInfo.CurrentCulture,
-        CommandLine.resources.GetString "instrumented",
+        Output.resources.GetString "instrumented",
         definition,
         first
       )
@@ -832,7 +832,7 @@ module internal Instrument =
 
         String.Format(
           System.Globalization.CultureInfo.CurrentCulture,
-          CommandLine.resources.GetString "instrumented",
+          Output.resources.GetString "instrumented",
           definition,
           pathn
         )
@@ -1159,7 +1159,7 @@ module internal Instrument =
           .GetManifestResourceStream("AltCover.AltCover.Async.net46.dll")
 
       use delta =
-        AssemblyDefinition.ReadAssembly(stream)
+        AssemblyResolver.ReadAssembly(stream)
 
       // get a handle on the property
       let readCallTrackType (m: ModuleDefinition) =
