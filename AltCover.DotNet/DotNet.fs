@@ -90,8 +90,8 @@ module DotNet =
       let extra = if dependencies |> Seq.isEmpty then 0 else 1
       let suffix = String.Empty
                    |> Seq.replicate extra
-      let d2 = dependencies 
-               |> Seq.append suffix
+      let d2 = suffix
+               |> Seq.append dependencies
 
       [ fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe `'|'` separated list of paths"
         fromList, "DependencyList", d2 //=`"pipe `'|'` separated *AND TERMINATED* list of paths"
