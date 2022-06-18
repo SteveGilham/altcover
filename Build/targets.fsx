@@ -304,6 +304,11 @@ let withWorkingDirectoryVN dir o =
         WorkingDirectory = Path.getFullName dir
         Verbosity = Some DotNet.Verbosity.Normal }
 
+let withWorkingDirectoryVDet dir o =
+    { dotnetOptions o with
+        WorkingDirectory = Path.getFullName dir
+        Verbosity = Some DotNet.Verbosity.Detailed }
+
 let withWorkingDirectoryOnly dir o =
     { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
@@ -6869,7 +6874,7 @@ _Target "Issue156" (fun _ ->
             )
 
         pack.AddBeforeSelf inject
-        csproj.Save "./_Issue156/Tests/Tests.csproj"
+        csproj.Save "./_Issue156/Tests/Issue156.csproj"
         Shell.copy "./_Issue156/Tests" (!! "./RegressionTesting/issue156/Tests/*.cs")
         Shell.copy "./_Issue156/ClassLibrary1" (!! "./RegressionTesting/issue156/ClassLibrary1/*.cs*")
 
@@ -6884,12 +6889,15 @@ _Target "Issue156" (fun _ ->
 
         let p0 =
             { Primitive.PrepareOptions.Create() with
-                Dependencies = ["C:/WINDOWS/Microsoft.NET/assembly/GAC_MSIL/WindowsBase/v4.0_4.0.0.0__31bf3856ad364e35/WindowsBase.dll"]
+                Dependencies = ["C:\\WINDOWS\\Microsoft.NET\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll" ]
+                //Dependencies = ["WindowsBase.dll"]
                 AssemblyFilter =
                     [| "nunit"
                        "Adapter"
                        "FSharp"
-                       "AltCover" |] }
+                       "AltCover" |]
+                SingleVisit = true
+                }
 
         let pp0 = AltCover.PrepareOptions.Primitive p0
         let c0 = Primitive.CollectOptions.Create()

@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 8.2.xxx (Habu series release 14)
 * [BUGFIX] -- Fake API fix for ZipFile, MethodPoint, SingleVisit, SourceLink to enable their activation
+* [BUGFIX] -- work around the behaviour of `dotnet test` with an argument ending `.dll` or `.exe`, directly through API and in docs for direct use.
 
 # 8.2.837 (Habu series release 13)
 * [VISUALIZER] Critical bug fixes for GTK and Avalonia : mismatched new icon names causing crashes

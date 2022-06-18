@@ -86,8 +86,13 @@ module DotNet =
                       "AvoidMethodWithUnusedGenericTypeRule",
                       Justification = "Compiler Generated")>]
     let internal toPrepareListArgumentList (prepare: Abstract.IPrepareOptions) =
+      let dependencies = prepare.Dependencies
+      let d2 = if dependencies |> Seq.isEmpty
+               then dependencies
+               else Seq.concat [ dependencies; seq { String.Empty } ]
+
       [ fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe `'|'` separated list of paths"
-        fromList, "DependencyList", prepare.Dependencies //=`"pipe `'|'` separated list of paths"
+        fromList, "DependencyList", d2 //=`"pipe `'|'` separated *AND TERMINATED* list of paths"
         fromList, "Keys", prepare.Keys //=`"pipe `'|'` separated list of paths to strong-name keys for re-signing assemblies"
         fromList, "FileFilter", prepare.FileFilter //=`"pipe `'|'` separated list of file name regexes"
         fromList, "AssemblyFilter", prepare.AssemblyFilter //=`"pipe `'|'` separated list of names"
