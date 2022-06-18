@@ -40,6 +40,7 @@ module AssemblyConstants =
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                   Justification = "minimum size overloads")>]
+[<Sealed>]
 type internal AssemblyResolver() as self =
   inherit DefaultAssemblyResolver()
 
