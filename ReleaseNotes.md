@@ -2,6 +2,9 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.xxx (Habu series release 14)
+* [BUGFIX] -- Fake API fix for ZipFile, MethodPoint, SingleVisit, SourceLink to enable their activation
+
 # 8.2.837 (Habu series release 13)
 * [VISUALIZER] Critical bug fixes for GTK and Avalonia : mismatched new icon names causing crashes
 * [VISUALIZER] Use new coverage data icon for the coverage report file, not a generic report icon
