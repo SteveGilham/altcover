@@ -27,15 +27,7 @@ module AssemblyConstants =
   let internal resolutionTable =
     Dictionary<string, AssemblyDefinition>()
 
-type AssemblyResolver () as self =
-  inherit DefaultAssemblyResolver()
-  do self.add_ResolveFailure <| new AssemblyResolveEventHandler(AssemblyResolver.resolveFromNugetCache)
-
-  static member nugetCache = AssemblyConstants.nugetCache
-
-  static member internal resolutionTable = AssemblyConstants.resolutionTable
-
-  static member findAssemblyName f =
+  let internal findAssemblyName f =
     try
       (AssemblyName.GetAssemblyName f).ToString()
     with
@@ -45,10 +37,24 @@ type AssemblyResolver () as self =
     | :? BadImageFormatException
     | :? FileLoadException -> String.Empty
 
-  static member Register (name:string) (path:string) =
+[<SuppressMessage("Gendarme.Rules.Smells",
+                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                   Justification = "minimum size overloads")>]
+type AssemblyResolver () as self =
+  inherit DefaultAssemblyResolver()
+  do self.add_ResolveFailure <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
+
+  static member private AssemblyRegister (name:string) (path:string) =
     let def = AssemblyResolver.ReadAssembly path // recursive
-    AssemblyResolver.resolutionTable.[name] <- def
+    AssemblyConstants.resolutionTable.[name] <- def
     def
+
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "Owned by registration table")>]
+  static member Register (name:string) (path:string) =
+    AssemblyResolver.AssemblyRegister name path
+    |> ignore
 
   static member ReadAssembly (path: String) =
     let reader = ReaderParameters()
@@ -63,11 +69,11 @@ type AssemblyResolver () as self =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  static member resolveFromNugetCache _ (y: AssemblyNameReference) =
+  static member ResolveFromNugetCache _ (y: AssemblyNameReference) =
     let name = y.ToString()
 
-    if AssemblyResolver.resolutionTable.ContainsKey name then
-      AssemblyResolver.resolutionTable.[name]
+    if AssemblyConstants.resolutionTable.ContainsKey name then
+      AssemblyConstants.resolutionTable.[name]
     else
       // Placate Gendarme here
       let share =
@@ -87,7 +93,7 @@ type AssemblyResolver () as self =
             shared
           )
           Path.Combine(share, shared)
-          AssemblyResolver.nugetCache ]
+          AssemblyConstants.nugetCache ]
 
       let candidate source =
         source
@@ -105,7 +111,7 @@ type AssemblyResolver () as self =
         |> Seq.filter (fun f ->
           y
             .ToString()
-            .Equals(AssemblyResolver.findAssemblyName f, StringComparison.Ordinal))
+            .Equals(AssemblyConstants.findAssemblyName f, StringComparison.Ordinal))
         |> Seq.tryHead
 
       match candidate sources with
@@ -119,7 +125,7 @@ type AssemblyResolver () as self =
         )
         |> (Output.warnOn true)
 
-        AssemblyResolver.Register name x
+        AssemblyResolver.AssemblyRegister name x
 
 [<AutoOpen>]
 module internal CecilExtension =
@@ -402,7 +408,7 @@ module internal CecilExtension =
       i.Operand <- null)
 
   let internal hookResolveHandler =
-    new AssemblyResolveEventHandler(AssemblyResolver.resolveFromNugetCache)
+    new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
 
   let internal hookResolver (resolver: IAssemblyResolver) =
     if resolver.IsNotNull then

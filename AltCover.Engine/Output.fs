@@ -35,11 +35,6 @@ module internal Output =
   let mutable internal usage: UsageInfo -> unit =
     ignore
 
-  let mutable internal verbose: String -> unit =
-    ignore
-
-  let internal maybeVerbose p message = if p then verbose message
-
   let internal warnOn x = if x then warn else info
 
   let internal logExceptionToFile path e =

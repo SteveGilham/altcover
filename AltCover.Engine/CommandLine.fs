@@ -396,7 +396,7 @@ module internal CommandLine =
 
   let internal validateAssembly assembly x =
     if I.validateFile assembly x then
-      let name = AssemblyResolver.findAssemblyName x
+      let name = AssemblyConstants.findAssemblyName x
 
       if String.IsNullOrWhiteSpace name then
         error <-

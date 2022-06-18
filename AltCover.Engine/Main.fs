@@ -39,7 +39,7 @@ module internal Main =
     CoverageParameters.theOutputDirectories.Clear()
     CoverageParameters.configurationHash <- None
     ProgramDatabase.symbolFolders.Clear()
-    AssemblyResolver.resolutionTable.Clear()
+    AssemblyConstants.resolutionTable.Clear()
     Instrument.modules.Clear()
 
     CoverageParameters.keys.Clear()
