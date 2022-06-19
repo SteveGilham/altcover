@@ -1403,7 +1403,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
       let options = Main.I.declareOptions ()
 
       let here =
@@ -1423,8 +1423,8 @@ module AltCoverTests3 =
         Assert.That(x, Is.Empty)
 
       let expected =
-        Instrument.resolutionTable.Keys
-        |> Seq.map (fun a -> Instrument.resolutionTable.[a].Name.Name)
+        AssemblyConstants.resolutionTable.Keys
+        |> Seq.map (fun a -> AssemblyConstants.resolutionTable.[a].Name.Name)
         |> Seq.sort
 
       Assert.That(
@@ -1432,7 +1432,7 @@ module AltCoverTests3 =
         Is.EqualTo("AltCover.Engine AltCover.Tests")
       )
     finally
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
 
   //let ParsingNoDependencyGivesFailure() =
   //  Main.init()
@@ -1453,7 +1453,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
       let options = Main.I.declareOptions ()
 
       let unique =
@@ -1469,7 +1469,7 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
 
   [<Test>]
   let ParsingNonDependencyGivesFailure () =
@@ -3746,7 +3746,7 @@ module AltCoverTests3 =
       )
 
       let helptext =
-        CommandLine
+        Output
           .resources
           .GetString("HelpText")
           .Replace("\r\n", "\n")

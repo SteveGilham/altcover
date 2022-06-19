@@ -86,8 +86,21 @@ module DotNet =
                       "AvoidMethodWithUnusedGenericTypeRule",
                       Justification = "Compiler Generated")>]
     let internal toPrepareListArgumentList (prepare: Abstract.IPrepareOptions) =
+      let dependencies = prepare.Dependencies
+
+      let extra =
+        if dependencies |> Seq.isEmpty then
+          0
+        else
+          1
+
+      let suffix =
+        String.Empty |> Seq.replicate extra
+
+      let d2 = suffix |> Seq.append dependencies
+
       [ fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe `'|'` separated list of paths"
-        fromList, "DependencyList", prepare.Dependencies //=`"pipe `'|'` separated list of paths"
+        fromList, "DependencyList", d2 //=`"pipe `'|'` separated *AND TERMINATED* list of paths"
         fromList, "Keys", prepare.Keys //=`"pipe `'|'` separated list of paths to strong-name keys for re-signing assemblies"
         fromList, "FileFilter", prepare.FileFilter //=`"pipe `'|'` separated list of file name regexes"
         fromList, "AssemblyFilter", prepare.AssemblyFilter //=`"pipe `'|'` separated list of names"
@@ -108,12 +121,12 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic ] //=-|+|++` to mark simple code like auto-properties in the coverage file
 
     let internal toPrepareArgArgumentList (prepare: Abstract.IPrepareOptions) =
-      [ (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
-        (arg, "MethodPoint", "false", prepare.MethodPoint) //="true|false"` - set "true" to record only the first point of each method
-        (arg, "Single", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
+      [ (arg, "ZipFile", "true", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
+        (arg, "MethodPoint", "true", prepare.MethodPoint) //="true|false"` - set "true" to record only the first point of each method
+        (arg, "Single", "true", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
         (arg, "BranchCover", "true", prepare.BranchCover) //="true|false"` - set "true" to record only branch coverage in OpenCover format
-        (arg, "SourceLink", "false", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
+        (arg, "SourceLink", "true", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
         (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
         (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file

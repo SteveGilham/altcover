@@ -2,6 +2,8 @@
 
 open System
 open System.IO
+open System.Reflection
+open System.Resources
 
 open AltCover.Shared
 open Mono.Options
@@ -15,6 +17,9 @@ type internal UsageInfo =
     Options2: OptionSet }
 
 module internal Output =
+  let internal resources =
+    ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
+
   let mutable internal info: String -> unit =
     ignore
 

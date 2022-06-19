@@ -6,8 +6,130 @@
 namespace AltCover
 
 open System
+open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
+open System.IO
+open System.Reflection
+
 open Mono.Cecil
 open Mono.Cecil.Cil
+
+module AssemblyConstants =
+  let internal nugetCache =
+    Path.Combine(
+      Path.Combine(
+        Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+        ".nuget"
+      ),
+      "packages"
+    )
+
+  let internal resolutionTable =
+    Dictionary<string, AssemblyDefinition>()
+
+  let internal findAssemblyName f =
+    try
+      (AssemblyName.GetAssemblyName f).ToString()
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> String.Empty
+
+[<SuppressMessage("Gendarme.Rules.Smells",
+                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                  Justification = "minimum size overloads")>]
+[<Sealed>]
+type internal AssemblyResolver() as self =
+  inherit DefaultAssemblyResolver()
+
+  do
+    self.add_ResolveFailure
+    <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
+
+  static member private AssemblyRegister (name: string) (path: string) =
+    let def = AssemblyResolver.ReadAssembly path // recursive
+    AssemblyConstants.resolutionTable.[name] <- def
+    def
+
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "Owned by registration table")>]
+  static member Register (name: string) (path: string) =
+    AssemblyResolver.AssemblyRegister name path
+    |> ignore
+
+  static member ReadAssembly(path: String) =
+    let reader = ReaderParameters()
+    reader.AssemblyResolver <- new AssemblyResolver()
+    AssemblyDefinition.ReadAssembly(path, reader)
+
+  static member ReadAssembly(file: Stream) =
+    let reader = ReaderParameters()
+    reader.AssemblyResolver <- new AssemblyResolver()
+    AssemblyDefinition.ReadAssembly(file, reader)
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  static member internal ResolveFromNugetCache _ (y: AssemblyNameReference) =
+    let name = y.ToString()
+
+    if AssemblyConstants.resolutionTable.ContainsKey name then
+      AssemblyConstants.resolutionTable.[name]
+    else
+      // Placate Gendarme here
+      let share =
+        "|usr|share"
+          .Replace('|', Path.DirectorySeparatorChar)
+
+      let shared =
+        "dotnet|shared"
+          .Replace('|', Path.DirectorySeparatorChar)
+
+      let sources =
+        [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+          Path.Combine(
+            Environment.GetEnvironmentVariable "ProgramFiles"
+            |> Option.ofObj
+            |> (Option.defaultValue share),
+            shared
+          )
+          Path.Combine(share, shared)
+          AssemblyConstants.nugetCache ]
+
+      let candidate source =
+        source
+        |> List.filter (String.IsNullOrWhiteSpace >> not)
+        |> List.filter Directory.Exists
+        |> Seq.distinct
+        |> Seq.collect (fun dir ->
+          Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
+        |> Seq.sortDescending
+        |> Seq.filter (fun f ->
+          let x = Path.GetExtension f
+
+          x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
+          || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+        |> Seq.filter (fun f ->
+          y
+            .ToString()
+            .Equals(AssemblyConstants.findAssemblyName f, StringComparison.Ordinal))
+        |> Seq.tryHead
+
+      match candidate sources with
+      | None -> null
+      | Some x ->
+        String.Format(
+          System.Globalization.CultureInfo.CurrentCulture,
+          Output.resources.GetString "resolved",
+          y.ToString(),
+          x
+        )
+        |> (Output.warnOn true)
+
+        AssemblyResolver.AssemblyRegister name x
 
 [<AutoOpen>]
 module internal CecilExtension =
@@ -288,3 +410,14 @@ module internal CecilExtension =
     |> Seq.iter (fun i ->
       i.OpCode <- OpCodes.Nop
       i.Operand <- null)
+
+  let internal hookResolveHandler =
+    new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
+
+  let internal hookResolver (resolver: IAssemblyResolver) =
+    if resolver.IsNotNull then
+      let hook =
+        resolver.GetType().GetMethod("add_ResolveFailure")
+
+      hook.Invoke(resolver, [| hookResolveHandler :> obj |])
+      |> ignore

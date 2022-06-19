@@ -30,6 +30,7 @@
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Metadata.fs" />
+    <Compile Include="CecilEx.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
@@ -37,7 +38,6 @@
     <Compile Include="OpenCover.fs" />
     <Compile Include="NativeJson.fs" />
     <Compile Include="CommandLine.fs" />
-    <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="LCov.fs" />
     <Compile Include="Cobertura.fs" />

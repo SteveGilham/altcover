@@ -304,6 +304,11 @@ let withWorkingDirectoryVN dir o =
         WorkingDirectory = Path.getFullName dir
         Verbosity = Some DotNet.Verbosity.Normal }
 
+let withWorkingDirectoryVDet dir o =
+    { dotnetOptions o with
+        WorkingDirectory = Path.getFullName dir
+        Verbosity = Some DotNet.Verbosity.Detailed }
+
 let withWorkingDirectoryOnly dir o =
     { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
@@ -6842,6 +6847,81 @@ _Target "Issue114" (fun _ ->
         Shell.mkdir folder
         Actions.CleanDir folder)
 
+_Target "Issue156" (fun _ ->
+    try
+        Directory.ensure "./_Issue156"
+        Shell.cleanDir ("./_Issue156")
+        Directory.ensure "./_Issue156/Tests"
+        Directory.ensure "./_Issue156/ClassLibrary1"
+
+        let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+
+        let repo = config.Descendants(XName.Get("add")) |> Seq.head
+
+        repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+        config.Save "./_Issue156/NuGet.config"
+
+        let csproj = XDocument.Load "./RegressionTesting/issue156/Tests/Tests.csproj"
+
+        let pack =
+            csproj.Descendants(XName.Get("PackageReference"))
+            |> Seq.head
+
+        let inject =
+            XElement(
+                XName.Get "PackageReference",
+                XAttribute(XName.Get "Include", "altcover"),
+                XAttribute(XName.Get "Version", Version.Value)
+            )
+
+        pack.AddBeforeSelf inject
+        csproj.Save "./_Issue156/Tests/Issue156.csproj"
+        Shell.copy "./_Issue156/Tests" (!! "./RegressionTesting/issue156/Tests/*.cs")
+        Shell.copy "./_Issue156/ClassLibrary1" (!! "./RegressionTesting/issue156/ClassLibrary1/*.cs*")
+
+        DotNet.restore
+            (fun o ->
+                let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue156/Tests")
+
+                let mparams = { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+
+                { tmp with MSBuildParams = mparams })
+            ""
+
+        let p0 =
+            { Primitive.PrepareOptions.Create() with
+                Dependencies = ["C:\\WINDOWS\\Microsoft.NET\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll" ]
+                //Dependencies = ["WindowsBase.dll"]
+                AssemblyFilter =
+                    [| "nunit"
+                       "Adapter"
+                       "FSharp"
+                       "AltCover" |]
+                SingleVisit = true
+                }
+
+        let pp0 = AltCover.PrepareOptions.Primitive p0
+        let c0 = Primitive.CollectOptions.Create()
+        let cc0 = AltCover.CollectOptions.Primitive c0
+
+        DotNet.test
+            (fun p ->
+                (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
+                      Configuration = DotNet.BuildConfiguration.Debug
+                      NoBuild = false })
+                     .WithAltCoverOptions
+                     pp0
+                     cc0
+                     ForceTrueOnly)
+                |> testWithCLIArguments)
+            ""
+    finally
+        let folder = (nugetCache @@ "altcover") @@ Version.Value
+
+        Shell.mkdir folder
+        Actions.CleanDir folder)
+
+
 // AOB
 
 _Target "MakeDocumentation" (fun _ ->
@@ -7347,6 +7427,8 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "Issue20" ==> "Deployment"
 
 "Unpack" ==> "Issue114" ==> "Deployment"
+
+"Unpack" ==> "Issue156"
 
 "Unpack"
 ==> "DotnetGlobalIntegration"
