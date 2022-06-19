@@ -169,11 +169,17 @@ module AltCoverTests =
     pdbs
     |> Seq.iter (fun x ->
       let f = fst x
+      let tokens, pdb = snd x
 
-      match snd x with
+      match pdb with
       // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
       //| None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
       | Some name ->
+        printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
+
+        if name |> Path.GetDirectoryName |> String.IsNullOrEmpty |> not
+        then
+          Assert.That (AltCover.ProgramDatabase.I.symbolMatch tokens name, f |> Path.GetFileName)
         //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
         let probe = Path.ChangeExtension(f, ".pdb")
         let file = FileInfo(probe)
@@ -182,7 +188,7 @@ module AltCoverTests =
         Assert.That(
           "/" + name.Replace("\\", "/"),
           Does.EndWith("/" + filename),
-          (fst x) + " -> " + name
+          f + " -> " + name
         ))
 
   [<Test>]
@@ -193,10 +199,10 @@ module AltCoverTests =
     use image =
       Mono.Cecil.AssemblyDefinition.ReadAssembly target
 
-    let pdb =
+    let (tokens, pdb) =
       AltCover.ProgramDatabase.getPdbFromImage image
 
-    match pdb with
+    match pdb with  // embedded pdb
     | Some name -> Assert.That(name, Is.EqualTo "Sample8.pdb", target + " -> " + name)
 
   [<Test>]
@@ -224,7 +230,7 @@ module AltCoverTests =
         AltCover.ProgramDatabase.getPdbFromImage (snd x)
 
       match pdb with
-      | None -> Assert.That(File.Exists probe, probe + " not found"))
+      | (_, None) -> Assert.That(File.Exists probe, probe + " not found"))
 
   [<Test>]
   let ShouldGetPdbWithFallback () =

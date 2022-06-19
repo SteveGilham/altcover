@@ -3426,6 +3426,7 @@ module AltCoverTests3 =
       |> Seq.filter (
         Mono.Cecil.AssemblyDefinition.ReadAssembly
         >> ProgramDatabase.getPdbFromImage
+        >> snd // TODO
         >> Option.isSome
       )
       |> Seq.sort

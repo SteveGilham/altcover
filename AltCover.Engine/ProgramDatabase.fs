@@ -18,7 +18,7 @@ module internal ProgramDatabase =
   let internal symbolFolders = List<String>()
 
   // Implementation details
-  module private I =
+  module internal I =
 
     // We no longer have to violate Cecil encapsulation to get the PDB path
     // but we do to get the embedded PDB info
@@ -49,8 +49,54 @@ module internal ProgramDatabase =
         else
           None
 
+    let lead (bytes : byte array) =
+      (int bytes[0]) ||| ((int bytes[1]) <<< 8) ||| ((int bytes[2]) <<< 16) ||| ((int bytes[3]) <<< 24)
+
+    let getAssemblyTokens (assembly: AssemblyDefinition) =
+      let m = assembly.MainModule
+      let t =
+        m.GetDebugHeader().Entries
+        |> Seq.filter (fun e -> e.Data.Length > 0x18 &&
+                                e.Directory.Type = ImageDebugType.CodeView)
+        |> Seq.map (fun x -> x.Data)
+        |> Seq.filter (fun x -> lead x = 1396986706)
+        |> Seq.map (fun x -> x |> Array.skip 4 |> Array.take 16 |> System.Guid)
+        |> Seq.toList
+      (m.Mvid, t)
+
+    let symbolMatch tokens (path : String) =
+      use s = if (Path.GetExtension path) <> ".pdb"
+              then path + ".mdb"
+              else path
+              |> File.OpenRead
+      let buffer = Array.create 16 0uy
+
+      let (ok, guids) =
+        if (Path.GetExtension path) <> ".pdb"
+        then
+          use b = new BinaryReader(s, System.Text.Encoding.UTF8, true)
+          let magic = b.ReadInt64 ()
+          let major = b.ReadInt32 ()
+          let minor = b.ReadInt32 ()
+          (magic = 5037318119232611860L &&
+           major = 50 &&
+           minor = 0, [fst tokens])
+        else
+          // TODO -- find the guid offset
+          (true, snd tokens)
+
+      let got = s.Read(buffer, 0, 16)// don't complicate things yet
+      let g = Guid buffer
+      sprintf "Symbol file %s GUID = %A" path g
+      |> Output.verbose
+
+      ok && got = 16 &&
+        guids |> Seq.exists(fun t -> t = g)
+
   // "Public" API
   let internal getPdbFromImage (assembly: AssemblyDefinition) =
+    let tokens = I.getAssemblyTokens assembly
+    (tokens,
     Some assembly.MainModule
     |> Option.filter (fun x -> x.HasDebugHeader)
     |> Option.map (fun x -> x.GetDebugHeader())
@@ -69,13 +115,13 @@ module internal ProgramDatabase =
       File.Exists s
       || (s == (assembly.Name.Name + ".pdb")
           && (assembly |> I.getEmbeddedPortablePdbEntry)
-            .IsNotNull))
+            .IsNotNull)))
 
   let internal getPdbWithFallback (assembly: AssemblyDefinition) =
     let path = assembly.MainModule.FileName
 
     match getPdbFromImage assembly with
-    | None when path |> String.IsNullOrWhiteSpace |> not -> // i.e. assemblies read from disk only
+    | (_, None) when path |> String.IsNullOrWhiteSpace |> not -> // i.e. assemblies read from disk only
       let foldername = Path.GetDirectoryName path
       let filename = Path.GetFileName path
 
@@ -92,8 +138,8 @@ module internal ProgramDatabase =
       |> Output.verbose
 
       folder
-    | pdbpath ->
-      sprintf "Assembly %s symbols from image '%s'" path pdbpath.Value
+    | (_, pdbpath) ->
+      sprintf "Assembly %s symbols from image '%s'" path (Option.defaultValue String.Empty pdbpath)
       |> Output.verbose
 
       pdbpath
