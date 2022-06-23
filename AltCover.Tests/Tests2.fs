@@ -3825,7 +3825,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         lines.[3]
           .Trim()
           .Replace("Line+I.doPath", "Line.I.doPath"),
-        Does.StartWith("at AltCover.CommandLine.I.doPathOperation")
+        Does.StartWith("at AltCover.Abstraction.DoPathOperation")
       )
 
       Assert.That(lines |> List.skip 4, Is.Not.Empty)
@@ -3946,7 +3946,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         lines.[3]
           .Trim()
           .Replace("Line+I.doPath", "Line.I.doPath"),
-        Does.StartWith("at AltCover.CommandLine.I.doPathOperation")
+        Does.StartWith("at AltCover.Abstraction.DoPathOperation")
       )
 
       Assert.That(lines |> List.skip 4, Is.Not.Empty)

@@ -193,8 +193,21 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldGetGUIDfromNativePdb () =
-    // 36fc1f5a-f829-41d9-b0f5-e0a935db09f4 for native.pdb
-    Assert.Pass() // TODO
+    let here =
+      System.Reflection.Assembly.GetExecutingAssembly()
+    let nativeName =
+      here.GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("native.pdb", StringComparison.Ordinal))
+    let native =
+      here.GetManifestResourceStream(nativeName)
+
+    use b = new BinaryReader(native)
+    let checkFormat = ProgramDatabase.I.checkPdb b
+    Assert.That (checkFormat, Is.True, "bad format")
+
+    let buffer = b.ReadBytes(16)
+    let g = Guid buffer
+    test <@ g = Guid("36fc1f5a-f829-41d9-b0f5-e0a935db09f4") @> //for native.pdb
 
   [<Test>]
   let ShouldGetEmbeddedPdbFromImage () =

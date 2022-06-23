@@ -49,73 +49,128 @@ module internal ProgramDatabase =
         else
           None
 
-    let lead (bytes : byte array) =
-      (int bytes[0]) ||| ((int bytes[1]) <<< 8) ||| ((int bytes[2]) <<< 16) ||| ((int bytes[3]) <<< 24)
+    let lead (bytes: byte array) =
+      (int bytes[0])
+      ||| ((int bytes[1]) <<< 8)
+      ||| ((int bytes[2]) <<< 16)
+      ||| ((int bytes[3]) <<< 24)
 
     let getAssemblyTokens (assembly: AssemblyDefinition) =
       let m = assembly.MainModule
+
       let t =
         m.GetDebugHeader().Entries
-        |> Seq.filter (fun e -> e.Data.Length > 0x18 &&
-                                e.Directory.Type = ImageDebugType.CodeView)
+        |> Seq.filter (fun e ->
+          e.Data.Length > 0x18
+          && e.Directory.Type = ImageDebugType.CodeView)
         |> Seq.map (fun x -> x.Data)
         |> Seq.filter (fun x -> lead x = 1396986706)
         |> Seq.map (fun x -> x |> Array.skip 4 |> Array.take 16 |> System.Guid)
         |> Seq.toList
+
       (m.Mvid, t)
 
-    let symbolMatch tokens (path : String) =
-      use s = if (Path.GetExtension path) <> ".pdb"
-              then path + ".mdb"
-              else path
-              |> File.OpenRead
-      let buffer = Array.create 16 0uy
+    let checkMdb (b: BinaryReader) =
 
-      let (ok, guids) =
-        if (Path.GetExtension path) <> ".pdb"
+      let magic = b.ReadInt64()
+      let major = b.ReadInt32()
+      let minor = b.ReadInt32()
+
+      magic = 5037318119232611860L
+      && major = 50
+      && minor = 0
+
+    let checkPdb (b: BinaryReader) =
+      let start = b.ReadInt32()
+      if start = 0x424a5342 // portable format
+      then
+        let major = b.ReadInt16()
+        let minor = b.ReadInt16()
+        let reserved = b.ReadInt32()
+        let versionSize = b.ReadInt32()
+        let version = b.ReadBytes(versionSize)
+        let flags = b.ReadInt16()
+        let streams = b.ReadInt16() |> int // # of stream headers
+        let headers =
+          {1..streams}
+          |> Seq.map (fun _ -> let offset = b.ReadInt32()
+                               let size = b.ReadInt32()
+                               let name = Seq.initInfinite id
+                                          |> Seq.map (fun _ -> b.ReadInt32())
+                                          |> Seq.takeWhile (fun x -> x > 0xffffff)
+                                          |> Seq.toArray
+                               (offset, size, name))
+          |> Seq.toArray
+
+        // don't expect any other #Pdb??? streams
+        let guid = headers |> Seq.tryFind (fun (_, _, x) -> x = [| 0x62645023 |] )
+        let ok = guid.IsSome
+
+        if ok
         then
-          use b = new BinaryReader(s, System.Text.Encoding.UTF8, true)
-          let magic = b.ReadInt64 ()
-          let major = b.ReadInt32 ()
-          let minor = b.ReadInt32 ()
-          (magic = 5037318119232611860L &&
-           major = 50 &&
-           minor = 0, [fst tokens])
-        else
-          // TODO -- find the guid offset
-          (true, snd tokens)
+          let (o, _, _ ) = guid.Value
+          b.BaseStream.Seek(int64 o, SeekOrigin.Begin) |> ignore
 
-      let got = s.Read(buffer, 0, 16)// don't complicate things yet
-      let g = Guid buffer
-      sprintf "Symbol file %s GUID = %A" path g
-      |> Output.verbose
+        ok &&
+        reserved = 0 &&
+        (int flags) = 0
 
-      ok && got = 16 &&
-        guids |> Seq.exists(fun t -> t = g)
+      else
+        // 0x7263694d -> // windows native TBD
+        false
+
+    let symbolMatch tokens (path: String) =
+      use s =
+        (if (Path.GetExtension path) <> ".pdb" then
+           path + ".mdb"
+         else
+           path)
+        |> File.OpenRead
+
+      Abstraction.DoPathOperation
+        (fun () ->
+          use b =
+            new BinaryReader(s, System.Text.Encoding.UTF8, true)
+          let (ok, guids) =
+            if (Path.GetExtension path) <> ".pdb" then
+              (checkMdb b, [ fst tokens ])
+            else
+              (checkPdb b, snd tokens)
+
+          let buffer = b.ReadBytes(16)
+          let g = Guid buffer
+
+          sprintf "Symbol file %s GUID = %A" path g
+          |> Output.verbose
+
+          ok
+          && guids |> Seq.exists (fun t -> t = g))
+        (fun _ -> false)
 
   // "Public" API
   let internal getPdbFromImage (assembly: AssemblyDefinition) =
     let tokens = I.getAssemblyTokens assembly
+
     (tokens,
-    Some assembly.MainModule
-    |> Option.filter (fun x -> x.HasDebugHeader)
-    |> Option.map (fun x -> x.GetDebugHeader())
-    |> Option.filter (fun x -> x.HasEntries)
-    |> Option.bind (fun x -> x.Entries |> Seq.tryHead)
-    |> Option.map (fun x -> x.Data)
-    |> Option.filter (fun x -> x.Length > 0x18)
-    |> Option.map (fun x ->
-      x
-      |> Seq.skip 0x18 // size of the debug header
-      |> Seq.takeWhile (fun x -> x <> byte 0)
-      |> Seq.toArray
-      |> System.Text.Encoding.UTF8.GetString)
-    |> Option.filter (fun s -> s.Length > 0)
-    |> Option.filter (fun s ->
-      File.Exists s
-      || (s == (assembly.Name.Name + ".pdb")
-          && (assembly |> I.getEmbeddedPortablePdbEntry)
-            .IsNotNull)))
+     Some assembly.MainModule
+     |> Option.filter (fun x -> x.HasDebugHeader)
+     |> Option.map (fun x -> x.GetDebugHeader())
+     |> Option.filter (fun x -> x.HasEntries)
+     |> Option.bind (fun x -> x.Entries |> Seq.tryHead)
+     |> Option.map (fun x -> x.Data)
+     |> Option.filter (fun x -> x.Length > 0x18)
+     |> Option.map (fun x ->
+       x
+       |> Seq.skip 0x18 // size of the debug header
+       |> Seq.takeWhile (fun x -> x <> byte 0)
+       |> Seq.toArray
+       |> System.Text.Encoding.UTF8.GetString)
+     |> Option.filter (fun s -> s.Length > 0)
+     |> Option.filter (fun s ->
+       File.Exists s
+       || (s == (assembly.Name.Name + ".pdb")
+           && (assembly |> I.getEmbeddedPortablePdbEntry)
+             .IsNotNull)))
 
   let internal getPdbWithFallback (assembly: AssemblyDefinition) =
     let path = assembly.MainModule.FileName
@@ -139,7 +194,10 @@ module internal ProgramDatabase =
 
       folder
     | (_, pdbpath) ->
-      sprintf "Assembly %s symbols from image '%s'" path (Option.defaultValue String.Empty pdbpath)
+      sprintf
+        "Assembly %s symbols from image '%s'"
+        path
+        (Option.defaultValue String.Empty pdbpath)
       |> Output.verbose
 
       pdbpath

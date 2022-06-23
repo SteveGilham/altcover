@@ -187,21 +187,9 @@ module internal CommandLine =
         exceptions <- e :: exceptions
 
     let internal doPathOperation (f: unit -> 'a) (defaultValue: 'a) store =
-      let mutable result = defaultValue
-
-      try
-        result <- f ()
-      with
-      | x when
-        (x :? ArgumentException)
-        || (x :? NotSupportedException)
-        || (x :? IOException)
-        || (x :? System.Security.SecurityException)
-        || (x :? UnauthorizedAccessException)
-        ->
+      Abstraction.DoPathOperation f (fun x ->
         x |> (logException store)
-
-      result
+        defaultValue)
 
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
