@@ -156,27 +156,41 @@ module internal ProgramDatabase =
      |> Option.filter (fun x -> x.HasDebugHeader)
      |> Option.map (fun x -> x.GetDebugHeader())
      |> Option.filter (fun x -> x.HasEntries)
-     |> Option.bind (fun x -> x.Entries |> Seq.tryHead)
-     |> Option.map (fun x -> x.Data)
-     |> Option.filter (fun x -> x.Length > 0x18)
-     |> Option.map (fun x ->
-       x
+      |> Option.bind (fun x ->
+        x.Entries
+        |> Seq.filter (fun e -> e.Data.Length > 0x18 &&
+                                e.Directory.Type = ImageDebugType.CodeView)
+        |> Seq.map (fun x -> x.Data)
+        //|> Seq.filter (fun x -> x.Length > 0x18)
+        |> Seq.map (fun x ->
+          let g = x |> Array.skip 4 |> Array.take 16 |> System.Guid
+          sprintf "Assembly symbol GUID = %A mvid = %A" g assembly.MainModule.Mvid
+          |> Output.verbose
+          let s = x
        |> Seq.skip 0x18 // size of the debug header
        |> Seq.takeWhile (fun x -> x <> byte 0)
        |> Seq.toArray
-       |> System.Text.Encoding.UTF8.GetString)
-     |> Option.filter (fun s -> s.Length > 0)
-     |> Option.filter (fun s ->
-       File.Exists s
+                  |> System.Text.Encoding.UTF8.GetString
+          s, g)
+        |> Seq.filter (fun (s, g) -> s.Length > 0)
+        |> Seq.filter (fun (s, g) ->
+          // printfn "Path to check %A for %A" s assembly
+          ([
+            Path.IsPathRooted
+            File.Exists
+            I.symbolMatch tokens
+           ]
+           |> List.forall(fun f -> f s))
        || (s == (assembly.Name.Name + ".pdb")
            && (assembly |> I.getEmbeddedPortablePdbEntry)
-             .IsNotNull)))
-
+                .IsNotNull))
+        |> Seq.map fst
+        |> Seq.tryHead))
   let internal getPdbWithFallback (assembly: AssemblyDefinition) =
     let path = assembly.MainModule.FileName
 
     match getPdbFromImage assembly with
-    | (_, None) when path |> String.IsNullOrWhiteSpace |> not -> // i.e. assemblies read from disk only
+    | (tokens, None) when path |> String.IsNullOrWhiteSpace |> not -> // i.e. assemblies read from disk only
       let foldername = Path.GetDirectoryName path
       let filename = Path.GetFileName path
 
@@ -184,7 +198,7 @@ module internal ProgramDatabase =
         foldername :: (Seq.toList symbolFolders)
         |> Seq.map (I.getSymbolsByFolder filename)
         |> Seq.choose id
-        |> Seq.tryFind (fun _ -> true)
+        |> Seq.tryFind (I.symbolMatch tokens)
 
       sprintf
         "Assembly %s symbols from folder '%A'"
