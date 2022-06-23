@@ -192,6 +192,11 @@ module AltCoverTests =
         ))
 
   [<Test>]
+  let ShouldGetGUIDfromNativePdb () =
+    // 36fc1f5a-f829-41d9-b0f5-e0a935db09f4 for native.pdb
+    Assert.Pass() // TODO
+
+  [<Test>]
   let ShouldGetEmbeddedPdbFromImage () =
     let target = sample8path
     maybeIgnore (fun () -> target |> File.Exists |> not)
