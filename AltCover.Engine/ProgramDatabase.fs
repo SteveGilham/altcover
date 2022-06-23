@@ -116,8 +116,59 @@ module internal ProgramDatabase =
         (int flags) = 0
 
       else
-        // 0x7263694d -> // windows native TBD
-        false
+        // windows native
+        let magic = b.ReadBytes(28)
+        let pageSize = b.ReadInt32()
+        let freePageMap = b.ReadInt32()
+        let pagesUsed = b.ReadInt32()
+        let directorySize  = b.ReadInt32()
+        let zero  = b.ReadInt32()
+
+        let ok =
+                  zero = 0 &&
+                  start = 0x7263694d &&
+                  magic = [| 111uy; 115uy; 111uy; 102uy; 116uy; 32uy;
+                              67uy; 47uy; 67uy; 43uy; 43uy; 32uy; 77uy; 83uy; 70uy; 32uy;
+                              55uy; 46uy; 48uy; 48uy; 13uy; 10uy; 26uy; 68uy; 83uy; 0uy;
+                              0uy; 0uy |]
+
+        printfn "native ok %A" ok
+
+        let directoryPages = ((directorySize + pageSize - 1) / pageSize * 4 + pageSize - 1) / pageSize
+        printfn "pageSize %A directorySize %A" pageSize directorySize
+        let directoryRoot =
+          {1..directoryPages}
+          |> Seq.map (fun _ -> b.ReadInt32())
+          |> Seq.toArray
+
+        directoryRoot
+        |> Seq.iter (printfn "directoryRoot %A")
+
+        let pages = (directorySize + pageSize - 1)/pageSize
+        let pagesPerPage = pageSize / 4
+        let mutable pagesToGo = pages
+        let streamData =
+          directoryRoot
+          |> Seq.map (fun page -> b.BaseStream.Seek((int64)(page * pageSize), SeekOrigin.Begin) |> ignore
+                                  let pagesInThisPage = Math.Min (pagesToGo, pagesPerPage)
+                                  pagesToGo <- pagesToGo - pagesPerPage
+                                  {1..pagesInThisPage}
+                                  |> Seq.map (fun _ -> b.ReadInt32())
+                                  |> Seq.toArray)
+          |> Seq.toArray
+          |> Array.concat
+
+        streamData
+        |> Seq.iter (printfn "streamData %A")
+
+        // Guid starts 12 bytes into the name index
+        //MsfDirectory dir = new MsfDirectory(reader, head, bits);
+        //DbiModuleInfo[] modules = null;
+        //Dictionary<string, PdbSource> sourceCache = new Dictionary<string, PdbSource>();
+        //dir.streams[1].Read(reader, bits);
+        //Dictionary<string, int> nameIndex = LoadNameIndex(bits, out pdbInfo.Age, out pdbInfo.Guid);
+
+        ok
 
     let symbolMatch tokens (path: String) =
       use s =
@@ -152,10 +203,10 @@ module internal ProgramDatabase =
     let tokens = I.getAssemblyTokens assembly
 
     (tokens,
-     Some assembly.MainModule
-     |> Option.filter (fun x -> x.HasDebugHeader)
-     |> Option.map (fun x -> x.GetDebugHeader())
-     |> Option.filter (fun x -> x.HasEntries)
+      Some assembly.MainModule
+      |> Option.filter (fun x -> x.HasDebugHeader)
+      |> Option.map (fun x -> x.GetDebugHeader())
+      |> Option.filter (fun x -> x.HasEntries)
       |> Option.bind (fun x ->
         x.Entries
         |> Seq.filter (fun e -> e.Data.Length > 0x18 &&
@@ -167,9 +218,9 @@ module internal ProgramDatabase =
           sprintf "Assembly symbol GUID = %A mvid = %A" g assembly.MainModule.Mvid
           |> Output.verbose
           let s = x
-       |> Seq.skip 0x18 // size of the debug header
-       |> Seq.takeWhile (fun x -> x <> byte 0)
-       |> Seq.toArray
+                  |> Seq.skip 0x18 // size of the debug header
+                  |> Seq.takeWhile (fun x -> x <> byte 0)
+                  |> Seq.toArray
                   |> System.Text.Encoding.UTF8.GetString
           s, g)
         |> Seq.filter (fun (s, g) -> s.Length > 0)
@@ -181,8 +232,8 @@ module internal ProgramDatabase =
             I.symbolMatch tokens
            ]
            |> List.forall(fun f -> f s))
-       || (s == (assembly.Name.Name + ".pdb")
-           && (assembly |> I.getEmbeddedPortablePdbEntry)
+          || (s == (assembly.Name.Name + ".pdb")
+              && (assembly |> I.getEmbeddedPortablePdbEntry)
                 .IsNotNull))
         |> Seq.map fst
         |> Seq.tryHead))
