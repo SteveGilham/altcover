@@ -462,10 +462,6 @@ module internal Instrument =
           a.Write(sink, pk)
         // #endif
 
-        let resolver =
-          assembly.MainModule.AssemblyResolver
-
-        hookResolver resolver
         write assembly path pkey
       finally
         Directory.SetCurrentDirectory(here)

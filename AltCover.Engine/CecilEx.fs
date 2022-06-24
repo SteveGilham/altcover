@@ -422,14 +422,3 @@ module internal CecilExtension =
     |> Seq.iter (fun i ->
       i.OpCode <- OpCodes.Nop
       i.Operand <- null)
-
-  let internal hookResolveHandler =
-    new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
-
-  let internal hookResolver (resolver: IAssemblyResolver) =
-    if resolver.IsNotNull then
-      let hook =
-        resolver.GetType().GetMethod("add_ResolveFailure")
-
-      hook.Invoke(resolver, [| hookResolveHandler :> obj |])
-      |> ignore

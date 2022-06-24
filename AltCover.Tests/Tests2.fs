@@ -449,18 +449,20 @@ module AltCoverTests2 =
       test' <@ String.IsNullOrWhiteSpace a @> j)
 #endif
     use raw =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly where
+      AssemblyResolver.ReadAssembly where
 
     AssemblyConstants.resolutionTable.Clear()
 
     try
+      Assert.That(raw.MainModule.AssemblyResolver.GetType(), Is.EqualTo typeof<AssemblyResolver>)
+
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
         f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         let resolved =
-          CecilExtension.hookResolveHandler.Invoke(null, f)
+          raw.MainModule.AssemblyResolver.Resolve(f)
 
         test' <@ resolved.IsNotNull @> <| f.ToString())
 
@@ -471,9 +473,7 @@ module AltCoverTests2 =
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
 
-        let resolved =
-          CecilExtension.hookResolveHandler.Invoke(null, f)
-
+        let resolved = AssemblyResolver.ResolveFromNugetCache () f
         test' <@ resolved |> isNull @> <| f.ToString())
 
       let found =
@@ -499,9 +499,11 @@ module AltCoverTests2 =
         f.Version <- System.Version("666.666.666.666")
 
         let resolved =
-          CecilExtension.hookResolveHandler.Invoke(null, f)
+          raw.MainModule.AssemblyResolver.Resolve(f)
+        test' <@ resolved.IsNotNull @> <| f.ToString()
 
-        test' <@ resolved.IsNotNull @> <| f.ToString())
+        let r2 = AssemblyResolver.ResolveFromNugetCache(f)
+        test' <@ r2.IsNotNull @> <| f.ToString())
     finally
       AssemblyConstants.resolutionTable.Clear()
 
