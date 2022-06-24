@@ -48,6 +48,13 @@ type internal AssemblyResolver() as self =
     self.add_ResolveFailure
     <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
 
+  override self.Resolve (name: AssemblyNameReference) =
+    // Option.orElseWith ifNoneThunk option
+    let key = name.ToString()
+    if AssemblyConstants.resolutionTable.ContainsKey key then
+      AssemblyConstants.resolutionTable.[key]
+    else base.Resolve name
+
   static member private AssemblyRegister (name: string) (path: string) =
     let def = AssemblyResolver.ReadAssembly path // recursive
     AssemblyConstants.resolutionTable.[name] <- def
