@@ -48,6 +48,9 @@ type internal AssemblyResolver() as self =
     self.add_ResolveFailure
     <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
 
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "UseObjectDisposedExceptionRule",
+                    Justification = "Dispose() => cache clear in DefaultAssemblyResolver => harmless")>]
   override self.Resolve(name: AssemblyNameReference) =
     // Option.orElseWith ifNoneThunk option
     let key = name.ToString()
