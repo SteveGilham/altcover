@@ -156,7 +156,7 @@ module AltCoverTests =
       |> Seq.filter isAssemblyType
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
-      |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+      |> Seq.map (fun x -> (x, AssemblyResolver.ReadAssembly x))
       |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)
       |> Seq.toList
 
@@ -191,7 +191,7 @@ module AltCoverTests =
     maybeIgnore (fun () -> target |> File.Exists |> not)
 
     use image =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly target
+      AssemblyResolver.ReadAssembly target
 
     let pdb =
       AltCover.ProgramDatabase.getPdbFromImage image
@@ -211,7 +211,7 @@ module AltCoverTests =
       |> Seq.filter (fun x ->
         x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
         || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-      |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+      |> Seq.map (fun x -> (x, AssemblyResolver.ReadAssembly x))
       |> Seq.toList
 
     Assert.That(files, Is.Not.Empty)
@@ -237,7 +237,7 @@ module AltCoverTests =
     |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
     |> Seq.iter (fun x ->
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly x
+        AssemblyResolver.ReadAssembly x
 
       let pdb =
         AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -275,7 +275,7 @@ module AltCoverTests =
 
       try
         use def =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly dll
+          AssemblyResolver.ReadAssembly dll
 
         let pdb =
           AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -323,7 +323,7 @@ module AltCoverTests =
 
         try
           use def =
-            Mono.Cecil.AssemblyDefinition.ReadAssembly dll
+            AssemblyResolver.ReadAssembly dll
 
           let pdb =
             AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -355,7 +355,7 @@ module AltCoverTests =
       || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun x ->
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly x
+        AssemblyResolver.ReadAssembly x
 
       let mdb =
         AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -381,7 +381,7 @@ module AltCoverTests =
       f |> Path.GetFileNameWithoutExtension
       <> "testhost")
     |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-    |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+    |> Seq.map AssemblyResolver.ReadAssembly
     |> Seq.filter (fun x ->
       not
       <| x.FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
@@ -406,7 +406,7 @@ module AltCoverTests =
     maybeIgnore (fun () -> target |> File.Exists |> not)
 
     use image =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly target
+      AssemblyResolver.ReadAssembly target
 
     AltCover.ProgramDatabase.readSymbols image
     Assert.That(image.MainModule.HasSymbols, image.MainModule.FileName)
@@ -421,7 +421,7 @@ module AltCoverTests =
       Path
         .GetFileName(x)
         .StartsWith("BlackFox", StringComparison.OrdinalIgnoreCase))
-    |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+    |> Seq.map AssemblyResolver.ReadAssembly
     |> Seq.filter (fun x ->
       not
       <| x.FullName.EndsWith(
@@ -453,7 +453,7 @@ module AltCoverTests =
       || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun x ->
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly x
+        AssemblyResolver.ReadAssembly x
 
       AltCover.ProgramDatabase.readSymbols def
       Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
@@ -600,7 +600,7 @@ module AltCoverTests =
   [<Test>]
   let AssemblyDoesNotMatchNonAssemblyClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     Assert.That(
       Filter.``match`` def (ff (FilterScope.Type, Regex "23", Exclude)),
@@ -615,7 +615,7 @@ module AltCoverTests =
   [<Test>]
   let AssemblyDoesMatchAssemblyClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     Assert.That(
       Filter.``match`` def (ff (FilterScope.Assembly, Regex "Cove", Exclude)),
@@ -630,7 +630,7 @@ module AltCoverTests =
   [<Test>]
   let ModuleDoesNotMatchNonModuleClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     Assert.That(
       Filter.``match`` def.MainModule (ff (FilterScope.Type, Regex "23", Exclude)),
@@ -640,7 +640,7 @@ module AltCoverTests =
   [<Test>]
   let ModuleDoesMatchModuleClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     Assert.That(
       Filter.``match`` def.MainModule (ff (FilterScope.Module, Regex "Cove", Exclude)),
@@ -655,7 +655,7 @@ module AltCoverTests =
   [<Test>]
   let TypeDoesNotMatchNonTypeClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     def.MainModule.Types
     |> Seq.iter (fun t ->
@@ -668,7 +668,7 @@ module AltCoverTests =
   [<Test>]
   let TypeDoesMatchTypeClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")) // exclude the many compiler generted chaff classes
@@ -688,7 +688,7 @@ module AltCoverTests =
   [<Test>]
   let MethodDoesNotMatchNonMethodClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.IsPublic)
@@ -702,7 +702,7 @@ module AltCoverTests =
   [<Test>]
   let MethodDoesMatchMethodClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     Assert.That(
       def.MainModule.Types
@@ -734,7 +734,7 @@ module AltCoverTests =
   [<Test>]
   let AttributeDoesNotMatchNonAttributeClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     def.MainModule.Types
     |> Seq.iter (fun t ->
@@ -747,7 +747,7 @@ module AltCoverTests =
   [<Test>]
   let AttributeDoesMatchAttributeClass () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     def.MainModule.Types
     |> Seq.filter (fun t ->
@@ -773,7 +773,7 @@ module AltCoverTests =
       typeof<Sample11.Class1>.Assembly.Location
 
     let sourceAssembly =
-      AssemblyDefinition.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(location)
 
     let direct =
       sourceAssembly.MainModule.Types
@@ -802,7 +802,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class1")
@@ -816,7 +816,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class2")
@@ -832,7 +832,7 @@ module AltCoverTests =
       tracer.GetType().Assembly.Location
 
     let sourceAssembly =
-      AssemblyDefinition.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(location)
 
     let direct =
       sourceAssembly.MainModule.Types
@@ -894,7 +894,7 @@ module AltCoverTests =
       typeof<Sample3.Class1>.Assembly.Location
 
     let sourceAssembly =
-      AssemblyDefinition.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(location)
 
     let direct =
       sourceAssembly.MainModule.Types
@@ -917,7 +917,7 @@ module AltCoverTests =
       typeof<Sample3.Class1>.Assembly.Location
 
     let sourceAssembly =
-      AssemblyDefinition.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(location)
 
     let direct =
       sourceAssembly.MainModule.Types
@@ -1008,7 +1008,7 @@ module AltCoverTests =
         .Location
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly where
+      AssemblyResolver.ReadAssembly where
 
     let cl =
       def.MainModule.GetType("AltCover.CommandLine")
@@ -1028,7 +1028,7 @@ module AltCoverTests =
       let path = Path.Combine(dir, "Sample4.dll")
 
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        AssemblyResolver.ReadAssembly path
 
       let items =
         def.MainModule.GetAllTypes()
@@ -1114,13 +1114,13 @@ module AltCoverTests =
     //let pdb3 = Path.Combine(mono, "Mono.Options.pdb")
     //Assert.That(File.Exists pdb3, Is.True, "Mono.Options.pdb not found")
 
-    let a = AssemblyDefinition.ReadAssembly exe
+    let a = AssemblyResolver.ReadAssembly exe
     ProgramDatabase.readSymbols a
 
-    let m = AssemblyDefinition.ReadAssembly dll
+    let m = AssemblyResolver.ReadAssembly dll
     ProgramDatabase.readSymbols m
 
-    let f = AssemblyDefinition.ReadAssembly fdll
+    let f = AssemblyResolver.ReadAssembly fdll
     ProgramDatabase.readSymbols f
 
     // work round the instrumented assemblies having unreliable symbols
@@ -1132,7 +1132,7 @@ module AltCoverTests =
 
     let localAssembly =
       Path.Combine(dir, "AltCover.Engine.dll")
-      |> AssemblyDefinition.ReadAssembly
+      |> AssemblyResolver.ReadAssembly
 
     ProgramDatabase.readSymbols localAssembly
 
@@ -1197,7 +1197,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample23.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample23)
+      AssemblyResolver.ReadAssembly(sample23)
 
     let symbols23 =
       Path.ChangeExtension(sample23, ".pdb")
@@ -1301,7 +1301,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample24.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample24)
+      AssemblyResolver.ReadAssembly(sample24)
 
     let symbols24 =
       Path.ChangeExtension(sample24, ".pdb")
@@ -1353,7 +1353,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample23.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample23)
+      AssemblyResolver.ReadAssembly(sample23)
 
     let symbols23 =
       Path.ChangeExtension(sample23, ".pdb")
@@ -1457,7 +1457,7 @@ module AltCoverTests =
         .GetManifestResourceStream(res2)
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      AssemblyResolver.ReadAssembly stream
 
     let r = Mono.Cecil.Pdb.PdbReaderProvider()
 
@@ -1537,7 +1537,7 @@ module AltCoverTests =
         .GetManifestResourceStream(res2)
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      AssemblyResolver.ReadAssembly stream
 
     let r = Mono.Cecil.Pdb.PdbReaderProvider()
 
@@ -1600,7 +1600,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample5.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     // ProgramDatabase.readSymbols def
 
@@ -1805,7 +1805,7 @@ module AltCoverTests =
       Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6Classic.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     let methods =
       def.MainModule.GetAllTypes()
@@ -1874,7 +1874,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample6.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     let methods =
       def.MainModule.GetAllTypes()
@@ -1951,7 +1951,7 @@ module AltCoverTests =
       typeof<Sample3.Class1>.Assembly.Location
 
     use sourceAssembly =
-      AssemblyDefinition.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(location)
 
     let i =
       sourceAssembly.MainModule.GetAllTypes()
@@ -2142,7 +2142,7 @@ module AltCoverTests =
   [<Test>]
   let AfterProcessingYieldsAnExpectedValue () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     let inputs =
       [ Node.Start []
@@ -2219,7 +2219,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class1")
@@ -2233,7 +2233,7 @@ module AltCoverTests =
       Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample3)
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class2")
@@ -2244,7 +2244,7 @@ module AltCoverTests =
   [<Test>]
   let TerminalCasesGoNoDeeper () =
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     let inputs =
       [ Node.MethodPoint
@@ -2285,7 +2285,7 @@ module AltCoverTests =
     let path = sample1path
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2345,7 +2345,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample16.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2428,7 +2428,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample17.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2496,7 +2496,7 @@ module AltCoverTests =
     let path = sample1path
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2568,7 +2568,7 @@ module AltCoverTests =
     let path = sample1path
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule
@@ -2626,7 +2626,7 @@ module AltCoverTests =
       let path = sample1path
 
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        AssemblyResolver.ReadAssembly path
 
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
 
@@ -2870,7 +2870,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample2.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2900,7 +2900,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample2.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2933,7 +2933,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample2.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2972,7 +2972,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample2.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -3057,7 +3057,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3083,7 +3083,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3109,7 +3109,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3136,7 +3136,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3175,7 +3175,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3231,7 +3231,7 @@ module AltCoverTests =
     let path = Path.Combine(dir, "Sample3.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3372,7 +3372,7 @@ module AltCoverTests =
             Destinations = [] })
 
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        AssemblyResolver.ReadAssembly path
 
       let xml = TTBaseline
 
@@ -4262,7 +4262,7 @@ module AltCoverTests =
             Destinations = [] })
 
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        AssemblyResolver.ReadAssembly path
 
       let xml = TTBaseline
 
@@ -4313,7 +4313,7 @@ module AltCoverTests =
             Destinations = [] })
 
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        AssemblyResolver.ReadAssembly path
 
       let xml =
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -4367,7 +4367,7 @@ module AltCoverTests =
             Destinations = [] })
 
       use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        AssemblyResolver.ReadAssembly path
 
       let xml =
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -4405,7 +4405,7 @@ module AltCoverTests =
       )
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let target =
       def
@@ -4444,7 +4444,7 @@ module AltCoverTests =
       )
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     let target =
       def
@@ -4486,7 +4486,7 @@ module AltCoverTests =
       Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -4541,7 +4541,7 @@ module AltCoverTests =
       Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 

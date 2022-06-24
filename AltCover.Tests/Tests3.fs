@@ -3279,7 +3279,7 @@ module AltCoverTests3 =
         use stream = File.OpenRead(f)
 
         use def =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly(stream)
+          AssemblyResolver.ReadAssembly(stream)
 
         ProgramDatabase.readSymbols def
 
@@ -3302,7 +3302,7 @@ module AltCoverTests3 =
         Path.Combine(here, "Sample4.dll")
 
       use assembly =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly second
+        AssemblyResolver.ReadAssembly second
 
       assembly.MainModule.AssemblyReferences.Add(prepared.Name)
 
@@ -3424,7 +3424,7 @@ module AltCoverTests3 =
         f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
         || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
       |> Seq.filter (
-        Mono.Cecil.AssemblyDefinition.ReadAssembly
+        AssemblyResolver.ReadAssembly
         >> ProgramDatabase.getPdbFromImage
         >> Option.isSome
       )

@@ -1131,13 +1131,13 @@ module AltCoverXTests =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
     let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     use recstream =
       AltCoverTests2.recorderStream ()
 
     use recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1190,13 +1190,13 @@ module AltCoverXTests =
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     use recstream =
       AltCoverTests2.recorderStream ()
 
     use recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1249,7 +1249,7 @@ module AltCoverXTests =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1290,7 +1290,7 @@ module AltCoverXTests =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
     let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -1300,7 +1300,7 @@ module AltCoverXTests =
         .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     use recorder =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly from
+      AssemblyResolver.ReadAssembly from
 
     ProgramDatabase.readSymbols recorder
 
