@@ -439,53 +439,41 @@ module AltCoverTests2 =
     use raw =
       AssemblyResolver.ReadAssembly where
 
-    AssemblyConstants.resolutionTable.Clear()
-
     try
       Assert.That(
         raw.MainModule.AssemblyResolver.GetType(),
         Is.EqualTo typeof<AssemblyResolver>
       )
 
+      // Discover by searching
+      AssemblyConstants.resolutionTable.Clear()
+
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
         f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
-        let resolved =
-          raw.MainModule.AssemblyResolver.Resolve(f)
-
-        printfn "1 %A" AssemblyConstants.resolutionTable.Keys
-        test' <@ resolved.IsNotNull @> <| f.ToString())
-
-      raw.MainModule.AssemblyReferences
-      |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil.Pdb", StringComparison.Ordinal)
-        >= 0)
-      |> Seq.iter (fun f ->
-        f.Version <- System.Version("666.666.666.666")
-
-        printfn "2 %A" AssemblyConstants.resolutionTable.Keys
         let resolved =
           AssemblyResolver.ResolveFromNugetCache () f
-        printfn "3 %A" AssemblyConstants.resolutionTable.Keys
 
-        test' <@ resolved |> isNull @> <| f.ToString())
+        test <@ AssemblyConstants.resolutionTable.Count = 1 @>
+        test' <@ resolved.IsNotNull @> <| f.ToString())
 
-      let found =
-        AssemblyConstants.resolutionTable.Keys
-        |> Seq.toList
+      // Discover by searching
+      AssemblyConstants.resolutionTable.Clear()
 
-      found
-      |> Seq.iter (fun k ->
-        let matched =
-          AssemblyConstants.resolutionTable.[k]
+      raw.MainModule.AssemblyReferences
+      |> Seq.filter (fun f ->
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
+        >= 0)
+      |> Seq.iter (fun f ->
+        let resolved =
+          raw.MainModule.AssemblyResolver.Resolve(f)
 
-        let k2 =
-          AssemblyNameReference.Parse(k.ToString())
+        test' <@ resolved.IsNotNull @> <| f.ToString())
 
-        k2.Version <- System.Version("666.666.666.666")
-        AssemblyConstants.resolutionTable.[k2.ToString()] <- matched)
+      // Resolve failure
+      AssemblyConstants.resolutionTable.Clear()
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
@@ -493,19 +481,43 @@ module AltCoverTests2 =
         >= 0)
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
-        printfn "4 %A" AssemblyConstants.resolutionTable.Keys
-
         let resolved =
-          raw.MainModule.AssemblyResolver.Resolve(f)
-        printfn "5 %A" AssemblyConstants.resolutionTable.Keys
+          AssemblyResolver.ResolveFromNugetCache () f
 
-        test' <@ resolved.IsNotNull @> <| f.ToString()
+        test <@ AssemblyConstants.resolutionTable.Count = 0 @>
+        test' <@ resolved |> isNull @> <| f.ToString())
 
-        let r2 =
-          AssemblyResolver.ResolveFromNugetCache(f)
-        printfn "6 %A" AssemblyConstants.resolutionTable.Keys
+      // Resolve from cache
+      AssemblyConstants.resolutionTable.Clear()
 
-        test' <@ r2.IsNotNull @> <| f.ToString())
+      raw.MainModule.AssemblyReferences
+      |> Seq.filter (fun f ->
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
+        >= 0)
+      |> Seq.iter (fun f ->
+        f.Version <- System.Version("666.666.666.666")
+        AssemblyConstants.resolutionTable.[f.ToString()] <- raw
+        let resolved =
+          AssemblyResolver.ResolveFromNugetCache () f
+
+        test <@ AssemblyConstants.resolutionTable.Count = 1 @>
+        test' <@ resolved = raw @> <| f.ToString())
+
+      // Also resolve from cache
+      AssemblyConstants.resolutionTable.Clear()
+
+      raw.MainModule.AssemblyReferences
+      |> Seq.filter (fun f ->
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
+        >= 0)
+      |> Seq.iter (fun f ->
+        f.Version <- System.Version("666.666.666.666")
+        AssemblyConstants.resolutionTable.[f.ToString()] <- raw
+        let resolved =
+          raw.MainModule.AssemblyResolver.Resolve f
+
+        test <@ AssemblyConstants.resolutionTable.Count = 1 @>
+        test' <@ resolved = raw @> <| f.ToString())
     finally
       AssemblyConstants.resolutionTable.Clear()
 
@@ -3545,6 +3557,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
     finally
       CommandLine.toConsole ()
+      Output.verbose <- ignore
       CommandLine.verbosity <- 0
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
