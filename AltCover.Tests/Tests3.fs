@@ -90,6 +90,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldHaveExpectedOptions () =
@@ -2962,6 +2963,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let OutputToReallyNewPlaceIsOK () =
@@ -3025,6 +3027,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let InPlaceToExistingPlaceFails () =
@@ -3067,6 +3070,7 @@ module AltCoverTests3 =
       CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let InPlaceOperationIsAsExpected () =
@@ -3144,6 +3148,7 @@ module AltCoverTests3 =
       CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ImageLoadResilientPassesThrough () =
@@ -3279,7 +3284,7 @@ module AltCoverTests3 =
         use stream = File.OpenRead(f)
 
         use def =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly(stream)
+          AssemblyResolver.ReadAssembly(stream)
 
         ProgramDatabase.readSymbols def
 
@@ -3302,7 +3307,7 @@ module AltCoverTests3 =
         Path.Combine(here, "Sample4.dll")
 
       use assembly =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly second
+        AssemblyResolver.ReadAssembly second
 
       assembly.MainModule.AssemblyReferences.Add(prepared.Name)
 
@@ -3424,7 +3429,7 @@ module AltCoverTests3 =
         f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
         || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
       |> Seq.filter (
-        Mono.Cecil.AssemblyDefinition.ReadAssembly
+        AssemblyResolver.ReadAssembly
         >> ProgramDatabase.getPdbFromImage
         >> snd // TODO
         >> Option.isSome
@@ -3513,6 +3518,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let StoresAsExpected () =
@@ -3569,6 +3575,7 @@ module AltCoverTests3 =
     //Assert.That(result, Is.EqualTo(expected))
     finally
       Console.SetOut saved
+      Output.verbose <- ignore
 
   [<Test>]
   let VersionIsAsExpected () =
@@ -3609,6 +3616,7 @@ module AltCoverTests3 =
       )
     finally
       Console.SetOut saved
+      Output.verbose <- ignore
 
   [<Test>]
   let UsageIsAsExpected () =
@@ -3648,6 +3656,7 @@ module AltCoverTests3 =
       )
     finally
       Console.SetError saved
+      Output.verbose <- ignore
 
 #if !NET472
   [<Test>]
@@ -4012,6 +4021,7 @@ module AltCoverTests3 =
           level
         ))
     finally
+      CommandLine.verbosity <- 0
       Main.effectiveMain <- save
       Output.info <- fst saved
       Output.error <- snd saved
@@ -4220,6 +4230,7 @@ module AltCoverTests3 =
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo([ "Runner"; "--collect" ] @ q), level))
     finally
+      CommandLine.verbosity <- 0
       Main.effectiveMain <- save
       Output.info <- fst saved
       Output.error <- snd saved
@@ -4458,6 +4469,7 @@ module AltCoverTests3 =
     write.SetValue(subject, Some(fun (s: string) -> ()))
     Assert.That(subject.Execute(), Is.False)
     Assert.That(subject.Extended, Is.Empty)
+    CommandLine.verbosity <- 0
 
   let template =
     """<?xml version="1.0" encoding="utf-8"?>

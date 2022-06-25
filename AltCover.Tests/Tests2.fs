@@ -74,7 +74,7 @@ module AltCoverTests2 =
     use recstream = recorderStream ()
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -90,8 +90,7 @@ module AltCoverTests2 =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     Assert.That(def.Name.HasPublicKey)
     let key0 = def.Name.PublicKey
@@ -111,8 +110,7 @@ module AltCoverTests2 =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let key0 = def.Name.PublicKey
     let token0 = def.Name.PublicKeyToken
@@ -153,8 +151,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
     finally
@@ -168,8 +165,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownKey def.Name))
@@ -184,8 +180,7 @@ module AltCoverTests2 =
       let path =
         typeof<System.IO.FileAccess>.Assembly.Location
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
@@ -202,8 +197,7 @@ module AltCoverTests2 =
           .Assembly
           .Location
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let key =
         KeyStore.arrayToIndex def.Name.PublicKey
@@ -229,8 +223,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
       provideKeyPair () |> CoverageParameters.add
@@ -249,8 +242,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       Assert.That(Option.isNone (Instrument.I.knownToken def.Name))
     finally
@@ -267,8 +259,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownToken def.Name))
@@ -286,8 +277,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
       provideKeyPair () |> CoverageParameters.add
@@ -304,8 +294,7 @@ module AltCoverTests2 =
       let path =
         typeof<System.IO.FileAccess>.Assembly.Location
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let key =
         KeyStore.arrayToIndex def.Name.PublicKey
@@ -324,8 +313,7 @@ module AltCoverTests2 =
           .Assembly
           .Location
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let key =
         KeyStore.arrayToIndex def.Name.PublicKey
@@ -346,7 +334,7 @@ module AltCoverTests2 =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     use prepared =
-      AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols prepared
 
@@ -449,59 +437,87 @@ module AltCoverTests2 =
       test' <@ String.IsNullOrWhiteSpace a @> j)
 #endif
     use raw =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly where
-
-    AssemblyConstants.resolutionTable.Clear()
+      AssemblyResolver.ReadAssembly where
 
     try
+      Assert.That(
+        raw.MainModule.AssemblyResolver.GetType(),
+        Is.EqualTo typeof<AssemblyResolver>
+      )
+
+      // Discover by searching
+      AssemblyConstants.resolutionTable.Clear()
+
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         let resolved =
-          CecilExtension.hookResolveHandler.Invoke(null, f)
+          AssemblyResolver.ResolveFromNugetCache () f
+
+        test <@ AssemblyConstants.resolutionTable.Count = 1 @>
+        test' <@ resolved.IsNotNull @> <| f.ToString())
+
+      // Discover by searching
+      AssemblyConstants.resolutionTable.Clear()
+
+      raw.MainModule.AssemblyReferences
+      |> Seq.filter (fun f ->
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
+        >= 0)
+      |> Seq.iter (fun f ->
+        let resolved =
+          raw.MainModule.AssemblyResolver.Resolve(f)
 
         test' <@ resolved.IsNotNull @> <| f.ToString())
 
+      // Resolve failure
+      AssemblyConstants.resolutionTable.Clear()
+
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
-
         let resolved =
-          CecilExtension.hookResolveHandler.Invoke(null, f)
+          AssemblyResolver.ResolveFromNugetCache () f
 
+        test <@ AssemblyConstants.resolutionTable.Count = 0 @>
         test' <@ resolved |> isNull @> <| f.ToString())
 
-      let found =
-        AssemblyConstants.resolutionTable.Keys
-        |> Seq.toList
-
-      found
-      |> Seq.iter (fun k ->
-        let matched =
-          AssemblyConstants.resolutionTable.[k]
-
-        let k2 =
-          AssemblyNameReference.Parse(k.ToString())
-
-        k2.Version <- System.Version("666.666.666.666")
-        AssemblyConstants.resolutionTable.[k2.ToString()] <- matched)
+      // Resolve from cache
+      AssemblyConstants.resolutionTable.Clear()
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
-
+        AssemblyConstants.resolutionTable.[f.ToString()] <- raw
         let resolved =
-          CecilExtension.hookResolveHandler.Invoke(null, f)
+          AssemblyResolver.ResolveFromNugetCache () f
 
-        test' <@ resolved.IsNotNull @> <| f.ToString())
+        test <@ AssemblyConstants.resolutionTable.Count = 1 @>
+        test' <@ resolved = raw @> <| f.ToString())
+
+      // Also resolve from cache
+      AssemblyConstants.resolutionTable.Clear()
+
+      raw.MainModule.AssemblyReferences
+      |> Seq.filter (fun f ->
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
+        >= 0)
+      |> Seq.iter (fun f ->
+        f.Version <- System.Version("666.666.666.666")
+        AssemblyConstants.resolutionTable.[f.ToString()] <- raw
+        let resolved =
+          raw.MainModule.AssemblyResolver.Resolve f
+
+        test <@ AssemblyConstants.resolutionTable.Count = 1 @>
+        test' <@ resolved = raw @> <| f.ToString())
     finally
       AssemblyConstants.resolutionTable.Clear()
 
@@ -517,8 +533,7 @@ module AltCoverTests2 =
       let prepared =
         Instrument.I.prepareAssembly (File.OpenRead path)
 
-      use raw =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use raw = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols raw
       Assert.That(prepared.Name.Name, Is.EqualTo(raw.Name.Name + ".g"))
@@ -727,10 +742,10 @@ module AltCoverTests2 =
           Maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
 
         use raw =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+          AssemblyResolver.ReadAssembly outputdll
 
         use raw2 =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly alter
+          AssemblyResolver.ReadAssembly alter
 
         Assert.That(
           raw.MainModule.Mvid,
@@ -823,7 +838,7 @@ module AltCoverTests2 =
       Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
 
     use ``module`` =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols ``module``
 
@@ -988,7 +1003,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         Instrument.I.writeAssembly prepared outputdll
         // TODO -- see Instrument.I.WriteAssembly       Assert.That (File.Exists (outputdll + ".mdb"))
         use raw =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+          AssemblyResolver.ReadAssembly outputdll
 
         Assert.That raw.Name.HasPublicKey
         // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
@@ -1042,8 +1057,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let save = CoverageParameters.theReportPath
 
       try
-        use def =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        use def = AssemblyResolver.ReadAssembly path
 
         ProgramDatabase.readSymbols def
 
@@ -1074,7 +1088,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         Instrument.I.writeAssembly def outputdll
 
         use raw =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+          AssemblyResolver.ReadAssembly outputdll
 
         Assert.That(raw.Name.HasPublicKey, "bad public key")
         // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
@@ -1144,8 +1158,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldUpdateHandlerOK ([<NUnit.Framework.Range(0, 31)>] selection) =
     let path = AltCoverTests.sample1path
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -1254,8 +1267,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1289,8 +1301,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1332,8 +1343,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1373,8 +1383,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1412,8 +1421,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1451,7 +1459,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     use recstream = recorderStream ()
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -1523,10 +1531,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
         .GetManifestResourceStream(res)
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      AssemblyResolver.ReadAssembly stream
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1599,10 +1607,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
+      AssemblyResolver.ReadAssembly sample24
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1680,10 +1688,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
+      AssemblyResolver.ReadAssembly sample24
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1761,10 +1769,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly sample27
+      AssemblyResolver.ReadAssembly sample27
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1837,10 +1845,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly sample30
+      AssemblyResolver.ReadAssembly sample30
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1928,7 +1936,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         .GetManifestResourceStream(res2)
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      AssemblyResolver.ReadAssembly stream
 
     let r = Mono.Cecil.Pdb.PdbReaderProvider()
 
@@ -1938,7 +1946,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     def.MainModule.ReadSymbols(rr)
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -2039,7 +2047,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     use recstream = recorderStream ()
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -2074,8 +2082,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2172,8 +2179,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(Path.GetDirectoryName(where), "Sample16.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     CoverageParameters.coalesceBranches.Value <- true
@@ -2265,8 +2271,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let path = AltCoverTests.sample1path
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2387,8 +2392,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2421,8 +2425,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2481,8 +2484,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2533,8 +2535,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let token0 = def.Name.PublicKeyToken
@@ -2569,8 +2570,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, Path.GetFileName(here))
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let token0 = def.Name.PublicKeyToken
@@ -2620,8 +2620,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let token0 = def.Name.PublicKeyToken
@@ -2657,8 +2656,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2683,8 +2681,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def |> ignore
 
@@ -2719,8 +2716,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def |> ignore
 
@@ -2728,7 +2724,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         typeof<TestAttribute>.Assembly.Location
 
       use ndef =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly npath
+        AssemblyResolver.ReadAssembly npath
 
       let key =
         KeyStore.arrayToIndex ndef.Name.PublicKey
@@ -2772,8 +2768,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2790,7 +2785,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Some(StrongNameKeyData.Make(buffer.ToArray()))
 
     use fake =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     let state =
       InstrumentContext.Build [ "nunit.framework"
@@ -2817,8 +2812,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2835,7 +2829,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Some(StrongNameKeyData.Make(buffer.ToArray()))
 
     use fake =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     let state =
       InstrumentContext.Build [ "nunit.framework"
@@ -2861,8 +2855,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2893,8 +2886,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2922,8 +2914,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2951,8 +2942,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2968,7 +2958,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       use recstream = recorderStream ()
 
       use def' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+        AssemblyResolver.ReadAssembly recstream
 
       let visit =
         def'.MainModule.GetAllTypes()
@@ -3023,8 +3013,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -3048,8 +3037,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -3107,8 +3095,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -3124,7 +3111,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       use recstream = recorderStream ()
 
       use def' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+        AssemblyResolver.ReadAssembly recstream
 
       let visit =
         def'.MainModule.GetAllTypes()
@@ -3133,7 +3120,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         |> Seq.head
 
       use def'' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly where
+        AssemblyResolver.ReadAssembly where
 
       let v =
         def''.MainModule.ImportReference visit
@@ -3330,7 +3317,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       use stream = recorderStream ()
 
       use def =
-        AssemblyDefinition.ReadAssembly stream
+        AssemblyResolver.ReadAssembly stream
 
       def.Name.Version.ToString()
 
@@ -3359,7 +3346,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     use prepared =
-      AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols prepared
 
@@ -3395,7 +3382,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     use prepared =
-      AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols prepared
 
@@ -3463,7 +3450,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       { InstrumentContext.Build [] with RecordingAssembly = null }
 
     use prepared =
-      AssemblyDefinition.ReadAssembly path
+      AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols prepared
 
@@ -3570,6 +3557,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
     finally
       CommandLine.toConsole ()
+      Output.verbose <- ignore
       CommandLine.verbosity <- 0
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
