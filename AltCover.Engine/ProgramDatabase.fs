@@ -117,6 +117,7 @@ module internal ProgramDatabase =
 
       else
         // windows native
+        // new PdbFileHeader()
         let magic = b.ReadBytes(28)
         let pageSize = b.ReadInt32()
         let freePageMap = b.ReadInt32()
@@ -161,12 +162,14 @@ module internal ProgramDatabase =
         streamData
         |> Seq.iter (printfn "streamData %A")
 
-        // Guid starts 12 bytes into the name index
         //MsfDirectory dir = new MsfDirectory(reader, head, bits);
-        //DbiModuleInfo[] modules = null;
-        //Dictionary<string, PdbSource> sourceCache = new Dictionary<string, PdbSource>();
+        // => DataStream type
+
+        ////DbiModuleInfo[] modules = null;
+        ////Dictionary<string, PdbSource> sourceCache = new Dictionary<string, PdbSource>();
         //dir.streams[1].Read(reader, bits);
         //Dictionary<string, int> nameIndex = LoadNameIndex(bits, out pdbInfo.Age, out pdbInfo.Guid);
+        // Guid starts 12 bytes into the name index
 
         ok
 
