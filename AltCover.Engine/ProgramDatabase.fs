@@ -82,7 +82,9 @@ module internal ProgramDatabase =
       && minor = 0
 
     let checkPdb (b: BinaryReader) =
+      let stream = b.BaseStream
       let start = b.ReadInt32()
+
       if start = 0x424a5342 // portable format
       then
         let major = b.ReadInt16()
@@ -92,78 +94,103 @@ module internal ProgramDatabase =
         let version = b.ReadBytes(versionSize)
         let flags = b.ReadInt16()
         let streams = b.ReadInt16() |> int // # of stream headers
+
         let headers =
-          {1..streams}
-          |> Seq.map (fun _ -> let offset = b.ReadInt32()
-                               let size = b.ReadInt32()
-                               let name = Seq.initInfinite id
-                                          |> Seq.map (fun _ -> b.ReadInt32())
-                                          |> Seq.takeWhile (fun x -> x > 0xffffff)
-                                          |> Seq.toArray
-                               (offset, size, name))
+          { 1..streams }
+          |> Seq.map (fun _ ->
+            let offset = b.ReadInt32()
+            let size = b.ReadInt32()
+
+            let name =
+              Seq.initInfinite id
+              |> Seq.map (fun _ -> b.ReadInt32())
+              |> Seq.takeWhile (fun x -> x > 0xffffff)
+              |> Seq.toArray
+
+            (offset, size, name))
           |> Seq.toArray
 
         // don't expect any other #Pdb??? streams
-        let guid = headers |> Seq.tryFind (fun (_, _, x) -> x = [| 0x62645023 |] )
+        let guid =
+          headers
+          |> Seq.tryFind (fun (_, _, x) -> x = [| 0x62645023 |])
+
         let ok = guid.IsSome
 
-        if ok
-        then
-          let (o, _, _ ) = guid.Value
-          b.BaseStream.Seek(int64 o, SeekOrigin.Begin) |> ignore
+        if ok then
+          let (o, _, _) = guid.Value
+          stream.Seek(int64 o, SeekOrigin.Begin) |> ignore
 
-        ok &&
-        reserved = 0 &&
-        (int flags) = 0
+        ok && reserved = 0 && (int flags) = 0
 
       else
         // windows native
         // subset internal static PdbInfo LoadFunctions(Stream read)
-        let binding = BindingFlags.NonPublic ||| BindingFlags.Instance
-        b.BaseStream.Seek((int64)0, SeekOrigin.Begin) |> ignore
+        let binding =
+          BindingFlags.NonPublic ||| BindingFlags.Instance
 
-        let nreader = typeof<Mono.Cecil.Pdb.NativePdbReader>
-        let bitaccess = nreader.Assembly.GetType("Microsoft.Cci.Pdb.BitAccess")
-        let makeba = bitaccess.GetConstructor(binding, null, [| typeof<int> |], [||])
-        let bits = makeba.Invoke([| 65536 :> obj |])
+        stream.Seek((int64) 0, SeekOrigin.Begin) |> ignore
 
-        let pdbheader = nreader.Assembly.GetType("Microsoft.Cci.Pdb.PdbFileHeader")
-        let makeph = pdbheader.GetConstructor(binding, null, [| typeof<Stream>; bits.GetType() |], [||])
-        let head = makeph.Invoke([| b.BaseStream; bits |])
+        let nreader =
+          typeof<Mono.Cecil.Pdb.NativePdbReader>.Assembly
 
-        let pageSize = pdbheader.GetField("pageSize", binding).GetValue(head) :?> int
+        let construct name parameters =
+          let classtype = nreader.GetType name
+          let constructor = classtype.GetConstructor(binding, null, parameters |> Array.map (fun x -> x.GetType()), [||])
+          let instance = constructor.Invoke parameters
+          (classtype, instance)
 
-        let pdbreader = nreader.Assembly.GetType("Microsoft.Cci.Pdb.PdbReader")
-        let makereader = pdbreader.GetConstructor(binding, null, [| typeof<Stream>; typeof<int> |], [||])
-        let reader = makereader.Invoke([| b.BaseStream; pageSize|])
+        let bitaccess =
+          nreader.GetType()
 
-        let msfdirectory = nreader.Assembly.GetType("Microsoft.Cci.Pdb.MsfDirectory")
-        let makedir = msfdirectory.GetConstructor(binding, null, [| reader.GetType(); head.GetType(); bits.GetType() |], [||])
-        let dir = makedir.Invoke([| reader; head; bits |])
-        let stream = msfdirectory.GetField("streams", binding).GetValue(dir) :?> System.Collections.IEnumerable
-                     |> Seq.cast |> Seq.skip 1 |> Seq.head
+        let makeba =
+          bitaccess.GetConstructor(binding, null, [| typeof<int> |], [||])
 
-        let page0 = stream.GetType().GetField("pages", binding).GetValue(stream) :?> int array |> Seq.head
+        let _, bits = construct "Microsoft.Cci.Pdb.BitAccess" [| 65536 :> obj |]
+        let pdbheader, head = construct "Microsoft.Cci.Pdb.PdbFileHeader" [| stream; bits |]
+
+        let field (t: Type) name instance =
+          t.GetField(name, binding).GetValue(instance)
+
+        let pageSize = (field pdbheader "pageSize" head) :?> int
+
+        let _, reader = construct "Microsoft.Cci.Pdb.PdbReader" [| stream; pageSize |]
+
+        let msfdirectory, dir = construct "Microsoft.Cci.Pdb.MsfDirectory" [| reader; head; bits |]
+
+        let datastream =
+          (field msfdirectory "streams" dir)
+          :?> System.Collections.IEnumerable
+          |> Seq.cast
+          |> Seq.skip 1
+          |> Seq.head
+
+        let page0 =
+          (field (datastream.GetType()) "pages" datastream)
+          :?> int array
+          |> Seq.head
 
         // Position stream 12 bytes into the page
-        b.BaseStream.Seek((int64)(page0 * pageSize + 12), SeekOrigin.Begin) |> ignore
+        stream.Seek((int64) (page0 * pageSize + 12), SeekOrigin.Begin)
+        |> ignore
 
         true // or would have thrown
 
     let symbolMatch tokens (path: String) =
+      let isNotPdb =
+        (Path.GetExtension path) != ".pdb"
+
       use s =
-        (if (Path.GetExtension path) <> ".pdb" then
-           path + ".mdb"
-         else
-           path)
+        (if isNotPdb then path + ".mdb" else path)
         |> File.OpenRead
 
       PathOperation.DoPathOperation
         (fun () ->
           use b =
             new BinaryReader(s, System.Text.Encoding.UTF8, true)
+
           let (ok, guids) =
-            if (Path.GetExtension path) <> ".pdb" then
+            if isNotPdb then
               (checkMdb b, [ fst tokens ])
             else
               (checkPdb b, snd tokens)
@@ -174,8 +201,7 @@ module internal ProgramDatabase =
           sprintf "Symbol file %s GUID = %A" path g
           |> Output.verbose
 
-          ok
-          && guids |> Seq.exists (fun t -> t = g))
+          ok && guids |> Seq.exists (fun t -> t = g))
         (fun _ -> false)
 
   // "Public" API
@@ -183,40 +209,45 @@ module internal ProgramDatabase =
     let tokens = I.getAssemblyTokens assembly
 
     (tokens,
-      Some assembly.MainModule
-      |> Option.filter (fun x -> x.HasDebugHeader)
-      |> Option.map (fun x -> x.GetDebugHeader())
-      |> Option.filter (fun x -> x.HasEntries)
-      |> Option.bind (fun x ->
-        x.Entries
-        |> Seq.filter (fun e -> e.Data.Length > 0x18 &&
-                                e.Directory.Type = ImageDebugType.CodeView)
-        |> Seq.map (fun x -> x.Data)
-        //|> Seq.filter (fun x -> x.Length > 0x18)
-        |> Seq.map (fun x ->
-          let g = x |> Array.skip 4 |> Array.take 16 |> System.Guid
-          sprintf "Assembly symbol GUID = %A mvid = %A" g assembly.MainModule.Mvid
-          |> Output.verbose
-          let s = x
-                  |> Seq.skip 0x18 // size of the debug header
-                  |> Seq.takeWhile (fun x -> x <> byte 0)
-                  |> Seq.toArray
-                  |> System.Text.Encoding.UTF8.GetString
-          s, g)
-        |> Seq.filter (fun (s, g) -> s.Length > 0)
-        |> Seq.filter (fun (s, g) ->
-          // printfn "Path to check %A for %A" s assembly
-          ([
-            Path.IsPathRooted
+     Some assembly.MainModule
+     |> Option.filter (fun x -> x.HasDebugHeader)
+     |> Option.map (fun x -> x.GetDebugHeader())
+     |> Option.filter (fun x -> x.HasEntries)
+     |> Option.bind (fun x ->
+       x.Entries
+       |> Seq.filter (fun e ->
+         e.Data.Length > 0x18
+         && e.Directory.Type = ImageDebugType.CodeView)
+       |> Seq.map (fun x -> x.Data)
+       //|> Seq.filter (fun x -> x.Length > 0x18)
+       |> Seq.map (fun x ->
+         let g =
+           x |> Array.skip 4 |> Array.take 16 |> System.Guid
+
+         sprintf "Assembly symbol GUID = %A mvid = %A" g assembly.MainModule.Mvid
+         |> Output.verbose
+
+         let s =
+           x
+           |> Seq.skip 0x18 // size of the debug header
+           |> Seq.takeWhile (fun x -> x <> byte 0)
+           |> Seq.toArray
+           |> System.Text.Encoding.UTF8.GetString
+
+         s, g)
+       |> Seq.filter (fun (s, g) -> s.Length > 0)
+       |> Seq.filter (fun (s, g) ->
+         // printfn "Path to check %A for %A" s assembly
+         ([ Path.IsPathRooted
             File.Exists
-            I.symbolMatch tokens
-           ]
-           |> List.forall(fun f -> f s))
-          || (s == (assembly.Name.Name + ".pdb")
-              && (assembly |> I.getEmbeddedPortablePdbEntry)
-                .IsNotNull))
-        |> Seq.map fst
-        |> Seq.tryHead))
+            I.symbolMatch tokens ]
+          |> List.forall (fun f -> f s))
+         || (s == (assembly.Name.Name + ".pdb")
+             && (assembly |> I.getEmbeddedPortablePdbEntry)
+               .IsNotNull))
+       |> Seq.map fst
+       |> Seq.tryHead))
+
   let internal getPdbWithFallback (assembly: AssemblyDefinition) =
     let path = assembly.MainModule.FileName
 

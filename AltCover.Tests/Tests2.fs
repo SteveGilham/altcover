@@ -481,6 +481,7 @@ module AltCoverTests2 =
         >= 0)
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
+
         let resolved =
           AssemblyResolver.ResolveFromNugetCache () f
 
@@ -497,6 +498,7 @@ module AltCoverTests2 =
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
         AssemblyConstants.resolutionTable.[f.ToString()] <- raw
+
         let resolved =
           AssemblyResolver.ResolveFromNugetCache () f
 
@@ -513,6 +515,7 @@ module AltCoverTests2 =
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
         AssemblyConstants.resolutionTable.[f.ToString()] <- raw
+
         let resolved =
           raw.MainModule.AssemblyResolver.Resolve f
 
