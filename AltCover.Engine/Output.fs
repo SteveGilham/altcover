@@ -9,9 +9,9 @@ open AltCover.Shared
 open Mono.Options
 
 module PathOperation =
-  let DoPathOperation (f: unit -> 'a) (handle: exn -> 'a) =
+  let DoPathOperation (operation: unit -> 'TAny) (handle: exn -> 'TAny) =
     try
-      f ()
+      operation ()
     with
     | x when
       (x :? ArgumentException)

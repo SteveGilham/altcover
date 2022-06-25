@@ -304,3 +304,15 @@ module internal ProgramDatabase =
     |> Seq.map (fun s -> s.Document)
     |> Seq.distinctBy (fun d -> d.Url)
     |> Seq.toList
+
+[<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
+                                                            "InstantiateArgumentExceptionCorrectlyRule",
+                                                            Scope = "member", // MethodDefinition
+                                                            Target = "AltCover.ProgramDatabase/I/construct@138::Invoke(System.String,System.Object[])",
+                                                            Justification = "Compiler generated")>]
+[<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
+                                                            "CA2208:InstantiateArgumentExceptionsCorrectly",
+                                                            Scope="member",
+                                                            Target="AltCover.ProgramDatabase+I+construct@138.#Invoke(System.String,System.Object[])",
+                                                            Justification = "Compiler generated")>]
+()
