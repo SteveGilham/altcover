@@ -90,6 +90,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldHaveExpectedOptions () =
@@ -2962,6 +2963,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let OutputToReallyNewPlaceIsOK () =
@@ -3025,6 +3027,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let InPlaceToExistingPlaceFails () =
@@ -3067,6 +3070,7 @@ module AltCoverTests3 =
       CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let InPlaceOperationIsAsExpected () =
@@ -3144,6 +3148,7 @@ module AltCoverTests3 =
       CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ImageLoadResilientPassesThrough () =
@@ -3512,6 +3517,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let StoresAsExpected () =
@@ -3568,6 +3574,7 @@ module AltCoverTests3 =
     //Assert.That(result, Is.EqualTo(expected))
     finally
       Console.SetOut saved
+      Output.verbose <- ignore
 
   [<Test>]
   let VersionIsAsExpected () =
@@ -3608,6 +3615,7 @@ module AltCoverTests3 =
       )
     finally
       Console.SetOut saved
+      Output.verbose <- ignore
 
   [<Test>]
   let UsageIsAsExpected () =
@@ -3647,6 +3655,7 @@ module AltCoverTests3 =
       )
     finally
       Console.SetError saved
+      Output.verbose <- ignore
 
 #if !NET472
   [<Test>]

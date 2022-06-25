@@ -776,6 +776,7 @@ module AltCoverRunnerTests =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldHaveExpectedOptions () =
@@ -2504,6 +2505,7 @@ module AltCoverRunnerTests =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldNoOp () =
@@ -2723,6 +2725,7 @@ module AltCoverRunnerTests =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Runner.workingDirectory <- None
+      Output.verbose <- ignore
 
   [<Test>]
   let WriteLeavesExpectedTraces () =

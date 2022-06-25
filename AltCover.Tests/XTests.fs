@@ -703,6 +703,7 @@ module AltCoverXTests =
     finally
       Output.info <- save1
       CommandLine.verbosity <- save2
+      Output.verbose <- ignore
 
   [<Test>]
   let ADotNetDryRunLooksAsExpected () =
