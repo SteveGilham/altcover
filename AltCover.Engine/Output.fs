@@ -8,6 +8,20 @@ open System.Resources
 open AltCover.Shared
 open Mono.Options
 
+module PathOperation =
+  let DoPathOperation (f: unit -> 'a) (handle: exn -> 'a) =
+    try
+      f ()
+    with
+    | x when
+      (x :? ArgumentException)
+      || (x :? NotSupportedException)
+      || (x :? IOException)
+      || (x :? System.Security.SecurityException)
+      || (x :? UnauthorizedAccessException)
+      ->
+      handle (x)
+
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage;
   NoComparison;
   AutoSerializable(false)>]

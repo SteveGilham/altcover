@@ -280,6 +280,7 @@ module ExpectoTestManifest =
        "Tests.ShouldGetEmbeddedPdbFromImage"
        Tests.AltCoverTests.ShouldGetNoMdbFromMonoImage,
        "Tests.ShouldGetNoMdbFromMonoImage"
+       Tests.AltCoverTests.ShouldGetGUIDfromNativePdb, "Tests.ShouldGetGUIDfromNativePdb"
        Tests.AltCoverTests.ShouldGetPdbWithFallback, "Tests.ShouldGetPdbWithFallback"
        Tests.AltCoverTests.ShouldGetForeignPdbWithFallback,
        "Tests.ShouldGetForeignPdbWithFallback"

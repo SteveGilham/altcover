@@ -187,7 +187,7 @@ module internal CommandLine =
         exceptions <- e :: exceptions
 
     let internal doPathOperation (f: unit -> 'a) (defaultValue: 'a) store =
-      Abstraction.DoPathOperation f (fun x ->
+      PathOperation.DoPathOperation f (fun x ->
         x |> (logException store)
         defaultValue)
 

@@ -11,6 +11,7 @@ open Mono.Cecil.Pdb
 open Mono.Cecil.Rocks
 
 open AltCover.Shared
+open System.Reflection
 
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
@@ -117,61 +118,37 @@ module internal ProgramDatabase =
 
       else
         // windows native
-        // new PdbFileHeader()
-        let magic = b.ReadBytes(28)
-        let pageSize = b.ReadInt32()
-        let freePageMap = b.ReadInt32()
-        let pagesUsed = b.ReadInt32()
-        let directorySize  = b.ReadInt32()
-        let zero  = b.ReadInt32()
+        // subset internal static PdbInfo LoadFunctions(Stream read)
+        let binding = BindingFlags.NonPublic ||| BindingFlags.Instance
+        b.BaseStream.Seek((int64)0, SeekOrigin.Begin) |> ignore
 
-        let ok =
-                  zero = 0 &&
-                  start = 0x7263694d &&
-                  magic = [| 111uy; 115uy; 111uy; 102uy; 116uy; 32uy;
-                              67uy; 47uy; 67uy; 43uy; 43uy; 32uy; 77uy; 83uy; 70uy; 32uy;
-                              55uy; 46uy; 48uy; 48uy; 13uy; 10uy; 26uy; 68uy; 83uy; 0uy;
-                              0uy; 0uy |]
+        let nreader = typeof<Mono.Cecil.Pdb.NativePdbReader>
+        let bitaccess = nreader.Assembly.GetType("Microsoft.Cci.Pdb.BitAccess")
+        let makeba = bitaccess.GetConstructor(binding, null, [| typeof<int> |], [||])
+        let bits = makeba.Invoke([| 65536 :> obj |])
 
-        printfn "native ok %A" ok
+        let pdbheader = nreader.Assembly.GetType("Microsoft.Cci.Pdb.PdbFileHeader")
+        let makeph = pdbheader.GetConstructor(binding, null, [| typeof<Stream>; bits.GetType() |], [||])
+        let head = makeph.Invoke([| b.BaseStream; bits |])
 
-        let directoryPages = ((directorySize + pageSize - 1) / pageSize * 4 + pageSize - 1) / pageSize
-        printfn "pageSize %A directorySize %A" pageSize directorySize
-        let directoryRoot =
-          {1..directoryPages}
-          |> Seq.map (fun _ -> b.ReadInt32())
-          |> Seq.toArray
+        let pageSize = pdbheader.GetField("pageSize", binding).GetValue(head) :?> int
 
-        directoryRoot
-        |> Seq.iter (printfn "directoryRoot %A")
+        let pdbreader = nreader.Assembly.GetType("Microsoft.Cci.Pdb.PdbReader")
+        let makereader = pdbreader.GetConstructor(binding, null, [| typeof<Stream>; typeof<int> |], [||])
+        let reader = makereader.Invoke([| b.BaseStream; pageSize|])
 
-        let pages = (directorySize + pageSize - 1)/pageSize
-        let pagesPerPage = pageSize / 4
-        let mutable pagesToGo = pages
-        let streamData =
-          directoryRoot
-          |> Seq.map (fun page -> b.BaseStream.Seek((int64)(page * pageSize), SeekOrigin.Begin) |> ignore
-                                  let pagesInThisPage = Math.Min (pagesToGo, pagesPerPage)
-                                  pagesToGo <- pagesToGo - pagesPerPage
-                                  {1..pagesInThisPage}
-                                  |> Seq.map (fun _ -> b.ReadInt32())
-                                  |> Seq.toArray)
-          |> Seq.toArray
-          |> Array.concat
+        let msfdirectory = nreader.Assembly.GetType("Microsoft.Cci.Pdb.MsfDirectory")
+        let makedir = msfdirectory.GetConstructor(binding, null, [| reader.GetType(); head.GetType(); bits.GetType() |], [||])
+        let dir = makedir.Invoke([| reader; head; bits |])
+        let stream = msfdirectory.GetField("streams", binding).GetValue(dir) :?> System.Collections.IEnumerable
+                     |> Seq.cast |> Seq.skip 1 |> Seq.head
 
-        streamData
-        |> Seq.iter (printfn "streamData %A")
+        let page0 = stream.GetType().GetField("pages", binding).GetValue(stream) :?> int array |> Seq.head
 
-        //MsfDirectory dir = new MsfDirectory(reader, head, bits);
-        // => DataStream type
+        // Position stream 12 bytes into the page
+        b.BaseStream.Seek((int64)(page0 * pageSize + 12), SeekOrigin.Begin) |> ignore
 
-        ////DbiModuleInfo[] modules = null;
-        ////Dictionary<string, PdbSource> sourceCache = new Dictionary<string, PdbSource>();
-        //dir.streams[1].Read(reader, bits);
-        //Dictionary<string, int> nameIndex = LoadNameIndex(bits, out pdbInfo.Age, out pdbInfo.Guid);
-        // Guid starts 12 bytes into the name index
-
-        ok
+        true // or would have thrown
 
     let symbolMatch tokens (path: String) =
       use s =
@@ -181,7 +158,7 @@ module internal ProgramDatabase =
            path)
         |> File.OpenRead
 
-      Abstraction.DoPathOperation
+      PathOperation.DoPathOperation
         (fun () ->
           use b =
             new BinaryReader(s, System.Text.Encoding.UTF8, true)
