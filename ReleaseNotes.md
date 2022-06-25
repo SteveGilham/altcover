@@ -5,7 +5,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 # 8.3.8xx (Habu series release 14)
 * [VISUALIZER] Fix off-by-one error in markup for the very last line of the file
 * [BUGFIX] -- Fake API fix for ZipFile, MethodPoint, SingleVisit, SourceLink to enable their activation
-* [BUGFIX] -- work around the behaviour of `dotnet test` with an argument ending `.dll` or `.exe`, directly through API and in docs for direct use.
+* [BUGFIX] -- `--dependency` and `/p:AltCoverDependencyList` -- work around the behaviour of `dotnet test` with an argument ending `.dll` or `.exe`, directly through API and in docs for direct use.
+* Make explicit dependencies through `--dependency` have priority over other assembly resolution; this allows explicit specification of GAC'd assemblies to be found by .net core AltCover builds in place of the .net core stubs (works around Mono.Cecil issue #863).
 * Add a `--verbose`option for AltCover, the converse of `-q`.  Away from the command line, adds meaning to the `Verbosity` option value `System.Diagnostics.TraceLevel.Verbose`.  Currently `Verbose` output shows more of the selection of files for instrumentation, noting when files are excluded from the process.
 * Add a matching field, `ILoggingOptions.Verbose`, to the API as a sink to capture verbose output.
 * Other minor build process asjustments for SDK 6.0.300/F# 6.0.4 and later
