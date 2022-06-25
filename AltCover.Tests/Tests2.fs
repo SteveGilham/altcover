@@ -90,8 +90,7 @@ module AltCoverTests2 =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     Assert.That(def.Name.HasPublicKey)
     let key0 = def.Name.PublicKey
@@ -111,8 +110,7 @@ module AltCoverTests2 =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let key0 = def.Name.PublicKey
     let token0 = def.Name.PublicKeyToken
@@ -153,8 +151,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
     finally
@@ -168,8 +165,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownKey def.Name))
@@ -184,8 +180,7 @@ module AltCoverTests2 =
       let path =
         typeof<System.IO.FileAccess>.Assembly.Location
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
@@ -202,8 +197,7 @@ module AltCoverTests2 =
           .Assembly
           .Location
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let key =
         KeyStore.arrayToIndex def.Name.PublicKey
@@ -229,8 +223,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
       provideKeyPair () |> CoverageParameters.add
@@ -249,8 +242,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       Assert.That(Option.isNone (Instrument.I.knownToken def.Name))
     finally
@@ -267,8 +259,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownToken def.Name))
@@ -286,8 +277,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
       provideKeyPair () |> CoverageParameters.add
@@ -304,8 +294,7 @@ module AltCoverTests2 =
       let path =
         typeof<System.IO.FileAccess>.Assembly.Location
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let key =
         KeyStore.arrayToIndex def.Name.PublicKey
@@ -324,8 +313,7 @@ module AltCoverTests2 =
           .Assembly
           .Location
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let key =
         KeyStore.arrayToIndex def.Name.PublicKey
@@ -454,26 +442,34 @@ module AltCoverTests2 =
     AssemblyConstants.resolutionTable.Clear()
 
     try
-      Assert.That(raw.MainModule.AssemblyResolver.GetType(), Is.EqualTo typeof<AssemblyResolver>)
+      Assert.That(
+        raw.MainModule.AssemblyResolver.GetType(),
+        Is.EqualTo typeof<AssemblyResolver>
+      )
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         let resolved =
           raw.MainModule.AssemblyResolver.Resolve(f)
 
+        printfn "1 %A" AssemblyConstants.resolutionTable.Keys
         test' <@ resolved.IsNotNull @> <| f.ToString())
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
+        f.Name.IndexOf("Mono.Cecil.Pdb", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
 
-        let resolved = AssemblyResolver.ResolveFromNugetCache () f
+        printfn "2 %A" AssemblyConstants.resolutionTable.Keys
+        let resolved =
+          AssemblyResolver.ResolveFromNugetCache () f
+        printfn "3 %A" AssemblyConstants.resolutionTable.Keys
+
         test' <@ resolved |> isNull @> <| f.ToString())
 
       let found =
@@ -493,16 +489,22 @@ module AltCoverTests2 =
 
       raw.MainModule.AssemblyReferences
       |> Seq.filter (fun f ->
-        f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal)
+        f.Name.IndexOf("Mono.Cecil.Rocks", StringComparison.Ordinal)
         >= 0)
       |> Seq.iter (fun f ->
         f.Version <- System.Version("666.666.666.666")
+        printfn "4 %A" AssemblyConstants.resolutionTable.Keys
 
         let resolved =
           raw.MainModule.AssemblyResolver.Resolve(f)
+        printfn "5 %A" AssemblyConstants.resolutionTable.Keys
+
         test' <@ resolved.IsNotNull @> <| f.ToString()
 
-        let r2 = AssemblyResolver.ResolveFromNugetCache(f)
+        let r2 =
+          AssemblyResolver.ResolveFromNugetCache(f)
+        printfn "6 %A" AssemblyConstants.resolutionTable.Keys
+
         test' <@ r2.IsNotNull @> <| f.ToString())
     finally
       AssemblyConstants.resolutionTable.Clear()
@@ -519,8 +521,7 @@ module AltCoverTests2 =
       let prepared =
         Instrument.I.prepareAssembly (File.OpenRead path)
 
-      use raw =
-        AssemblyResolver.ReadAssembly path
+      use raw = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols raw
       Assert.That(prepared.Name.Name, Is.EqualTo(raw.Name.Name + ".g"))
@@ -1044,8 +1045,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let save = CoverageParameters.theReportPath
 
       try
-        use def =
-          AssemblyResolver.ReadAssembly path
+        use def = AssemblyResolver.ReadAssembly path
 
         ProgramDatabase.readSymbols def
 
@@ -1146,8 +1146,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldUpdateHandlerOK ([<NUnit.Framework.Range(0, 31)>] selection) =
     let path = AltCoverTests.sample1path
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -1256,8 +1255,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1291,8 +1289,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1334,8 +1331,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1375,8 +1371,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -1414,8 +1409,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2076,8 +2070,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2174,8 +2167,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(Path.GetDirectoryName(where), "Sample16.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     CoverageParameters.coalesceBranches.Value <- true
@@ -2267,8 +2259,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let path = AltCoverTests.sample1path
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2389,8 +2380,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2423,8 +2413,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2483,8 +2472,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -2535,8 +2523,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let token0 = def.Name.PublicKeyToken
@@ -2571,8 +2558,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, Path.GetFileName(here))
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let token0 = def.Name.PublicKeyToken
@@ -2622,8 +2608,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let token0 = def.Name.PublicKeyToken
@@ -2659,8 +2644,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2685,8 +2669,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def |> ignore
 
@@ -2721,8 +2704,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def |> ignore
 
@@ -2774,8 +2756,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2819,8 +2800,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2863,8 +2843,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2895,8 +2874,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2924,8 +2902,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -2953,8 +2930,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 
@@ -3025,8 +3001,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -3050,8 +3025,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule.GetType("N.DU")
@@ -3109,8 +3083,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let path =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       ProgramDatabase.readSymbols def
 

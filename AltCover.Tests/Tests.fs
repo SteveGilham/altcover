@@ -236,8 +236,7 @@ module AltCoverTests =
       <> "testhost")
     |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
     |> Seq.iter (fun x ->
-      use def =
-        AssemblyResolver.ReadAssembly x
+      use def = AssemblyResolver.ReadAssembly x
 
       let pdb =
         AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -274,8 +273,7 @@ module AltCoverTests =
       let dll = Path.ChangeExtension(p, ".dll")
 
       try
-        use def =
-          AssemblyResolver.ReadAssembly dll
+        use def = AssemblyResolver.ReadAssembly dll
 
         let pdb =
           AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -322,8 +320,7 @@ module AltCoverTests =
         |> ProgramDatabase.symbolFolders.Add
 
         try
-          use def =
-            AssemblyResolver.ReadAssembly dll
+          use def = AssemblyResolver.ReadAssembly dll
 
           let pdb =
             AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -354,8 +351,7 @@ module AltCoverTests =
       x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
       || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun x ->
-      use def =
-        AssemblyResolver.ReadAssembly x
+      use def = AssemblyResolver.ReadAssembly x
 
       let mdb =
         AltCover.ProgramDatabase.getPdbWithFallback (def)
@@ -452,8 +448,7 @@ module AltCoverTests =
       x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
       || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun x ->
-      use def =
-        AssemblyResolver.ReadAssembly x
+      use def = AssemblyResolver.ReadAssembly x
 
       AltCover.ProgramDatabase.readSymbols def
       Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
@@ -1027,8 +1022,7 @@ module AltCoverTests =
       CoverageParameters.showGenerated.Value <- true
       let path = Path.Combine(dir, "Sample4.dll")
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let items =
         def.MainModule.GetAllTypes()
@@ -2284,8 +2278,7 @@ module AltCoverTests =
 
     let path = sample1path
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2344,8 +2337,7 @@ module AltCoverTests =
   let BranchPointsAreComputedForSwitch () =
     let path = Path.Combine(dir, "Sample16.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2427,8 +2419,7 @@ module AltCoverTests =
   let BranchPointsAreComputedForMatch () =
     let path = Path.Combine(dir, "Sample17.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2495,8 +2486,7 @@ module AltCoverTests =
 
     let path = sample1path
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2567,8 +2557,7 @@ module AltCoverTests =
 
     let path = sample1path
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let module' = def.MainModule
@@ -2625,8 +2614,7 @@ module AltCoverTests =
 
       let path = sample1path
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
 
@@ -2869,8 +2857,7 @@ module AltCoverTests =
   let TrackingDetectsTests () =
     let path = Path.Combine(dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2899,8 +2886,7 @@ module AltCoverTests =
   let TrackingDetectsExpectedTests () =
     let path = Path.Combine(dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2932,8 +2918,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -2971,8 +2956,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -3056,8 +3040,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3082,8 +3065,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3108,8 +3090,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3135,8 +3116,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3174,8 +3154,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3230,8 +3209,7 @@ module AltCoverTests =
 
     let path = Path.Combine(dir, "Sample3.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let names =
       def.MainModule.GetAllTypes()
@@ -3371,8 +3349,7 @@ module AltCoverTests =
             Identity = Hallmark.Build()
             Destinations = [] })
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let xml = TTBaseline
 
@@ -4261,8 +4238,7 @@ module AltCoverTests =
             Identity = Hallmark.Build()
             Destinations = [] })
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let xml = TTBaseline
 
@@ -4312,8 +4288,7 @@ module AltCoverTests =
             Identity = Hallmark.Build()
             Destinations = [] })
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let xml =
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -4366,8 +4341,7 @@ module AltCoverTests =
             Identity = Hallmark.Build()
             Destinations = [] })
 
-      use def =
-        AssemblyResolver.ReadAssembly path
+      use def = AssemblyResolver.ReadAssembly path
 
       let xml =
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -4404,8 +4378,7 @@ module AltCoverTests =
         "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0/Sample3.dll"
       )
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let target =
       def
@@ -4443,8 +4416,7 @@ module AltCoverTests =
         "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0/Sample3.dll"
       )
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     let target =
       def
@@ -4485,8 +4457,7 @@ module AltCoverTests =
     let path =
       Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -4540,8 +4511,7 @@ module AltCoverTests =
     let path =
       Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
 
-    use def =
-      AssemblyResolver.ReadAssembly path
+    use def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 

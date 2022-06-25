@@ -1130,8 +1130,7 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
-    let def =
-      AssemblyResolver.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     use recstream =
       AltCoverTests2.recorderStream ()
@@ -1189,8 +1188,7 @@ module AltCoverXTests =
     let path = monoSample1path
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
-    let def =
-      AssemblyResolver.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     use recstream =
       AltCoverTests2.recorderStream ()
@@ -1248,8 +1246,7 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-    let def =
-      AssemblyResolver.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1289,8 +1286,7 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
-    let def =
-      AssemblyResolver.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 

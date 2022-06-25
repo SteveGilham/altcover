@@ -4011,6 +4011,7 @@ module AltCoverTests3 =
           level
         ))
     finally
+      CommandLine.verbosity <- 0
       Main.effectiveMain <- save
       Output.info <- fst saved
       Output.error <- snd saved
@@ -4219,6 +4220,7 @@ module AltCoverTests3 =
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo([ "Runner"; "--collect" ] @ q), level))
     finally
+      CommandLine.verbosity <- 0
       Main.effectiveMain <- save
       Output.info <- fst saved
       Output.error <- snd saved
@@ -4457,6 +4459,7 @@ module AltCoverTests3 =
     write.SetValue(subject, Some(fun (s: string) -> ()))
     Assert.That(subject.Execute(), Is.False)
     Assert.That(subject.Extended, Is.Empty)
+    CommandLine.verbosity <- 0
 
   let template =
     """<?xml version="1.0" encoding="utf-8"?>
