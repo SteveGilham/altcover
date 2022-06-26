@@ -137,7 +137,7 @@ module internal ProgramDatabase =
         let nreader =
           typeof<Mono.Cecil.Pdb.NativePdbReader>.Assembly
 
-        let construct name parameters =
+        let construct name parameters = // memoize??
           let classtype = nreader.GetType name // line for static analysis
 
           let constructor =

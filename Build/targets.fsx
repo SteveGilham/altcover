@@ -30,7 +30,7 @@ open Fake.Tools.Git
 open NUnit.Framework
 open Swensen.Unquote
 
-let fsharpCore = "6.0.4" // maybe automate
+let fsharpCore = "6.0.5" // maybe automate
 let Copyright = ref String.Empty
 let Version = ref String.Empty
 
@@ -1551,6 +1551,7 @@ _Target "JustUnitTest" (fun _ ->
         let baseArgs =
             [ "--noheader"
               "--work=."
+              "--labels=All"
               "--result=./_Reports/JustUnitTestReport.xml"
               Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
               Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
@@ -6920,7 +6921,6 @@ _Target "Issue156" (fun _ ->
 
         Shell.mkdir folder
         Actions.CleanDir folder)
-
 
 // AOB
 

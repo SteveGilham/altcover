@@ -594,7 +594,7 @@ type InvokeAltCoverCommand() =
   member val SummaryFormat: Summary array = [||] with get, set
 
   /// <summary>
-  /// <para type="description">Selects output level of the command</para>
+  /// <para type="description">Selects output level of the command.  Each level writes to the matching PowerShell Write-[Level] channel</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,

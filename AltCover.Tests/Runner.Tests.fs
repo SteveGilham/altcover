@@ -2572,6 +2572,7 @@ module AltCoverRunnerTests =
       )
     finally
       Console.SetError saved
+      Output.verbose <- ignore
 
   let synchronized = Object()
 
