@@ -191,15 +191,15 @@ module internal ProgramDatabase =
         true // or would have thrown
 
     let symbolMatch tokens (path: String) =
-      let isNotPdb =
-        (Path.GetExtension path) != ".pdb"
-
-      use s =
-        (if isNotPdb then path + ".mdb" else path)
-        |> File.OpenRead
-
       PathOperation.DoPathOperation
         (fun () ->
+          let isNotPdb =
+            (Path.GetExtension path) != ".pdb"
+
+          use s =
+            (if isNotPdb then path + ".mdb" else path)
+            |> File.OpenRead
+
           use b =
             new BinaryReader(s, System.Text.Encoding.UTF8, true)
 

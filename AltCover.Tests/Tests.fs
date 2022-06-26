@@ -177,14 +177,18 @@ module AltCoverTests =
       | Some name ->
         printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
 
-        if name
+        let seperatePdb =
+           name
            |> Path.GetDirectoryName
            |> String.IsNullOrEmpty
-           |> not then
-          Assert.That(
+           |> not
+
+        Assert.That(
             AltCover.ProgramDatabase.I.symbolMatch tokens name,
+            Is.EqualTo seperatePdb,
             f |> Path.GetFileName
           )
+
         //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
         let probe = Path.ChangeExtension(f, ".pdb")
         let file = FileInfo(probe)
