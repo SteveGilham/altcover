@@ -56,6 +56,9 @@ module internal ProgramDatabase =
       ||| ((int bytes[2]) <<< 16)
       ||| ((int bytes[3]) <<< 24)
 
+    let extractGuid =
+      (Array.skip 4) >> (Array.take 16) >> System.Guid
+
     let getAssemblyTokens (assembly: AssemblyDefinition) =
       let m = assembly.MainModule
 
@@ -66,7 +69,7 @@ module internal ProgramDatabase =
           && e.Directory.Type = ImageDebugType.CodeView)
         |> Seq.map (fun x -> x.Data)
         |> Seq.filter (fun x -> lead x = 1396986706)
-        |> Seq.map (fun x -> x |> Array.skip 4 |> Array.take 16 |> System.Guid)
+        |> Seq.map extractGuid
         |> Seq.toList
 
       (m.Mvid, t)
@@ -135,39 +138,50 @@ module internal ProgramDatabase =
           typeof<Mono.Cecil.Pdb.NativePdbReader>.Assembly
 
         let construct name parameters =
-          let classtype = nreader.GetType name
-          let constructor = classtype.GetConstructor(binding, null, parameters |> Array.map (fun x -> x.GetType()), [||])
+          let classtype = nreader.GetType name // line for static analysis
+
+          let constructor =
+            classtype.GetConstructor(
+              binding,
+              null,
+              parameters |> Array.map (fun x -> x.GetType()),
+              [||]
+            )
+
           let instance = constructor.Invoke parameters
           (classtype, instance)
 
-        let bitaccess =
-          nreader.GetType()
+        let bitaccess = nreader.GetType()
 
         let makeba =
           bitaccess.GetConstructor(binding, null, [| typeof<int> |], [||])
 
-        let _, bits = construct "Microsoft.Cci.Pdb.BitAccess" [| 65536 :> obj |]
-        let pdbheader, head = construct "Microsoft.Cci.Pdb.PdbFileHeader" [| stream; bits |]
+        let _, bits =
+          construct "Microsoft.Cci.Pdb.BitAccess" [| 65536 :> obj |]
+
+        let pdbheader, head =
+          construct "Microsoft.Cci.Pdb.PdbFileHeader" [| stream; bits |]
 
         let field (t: Type) name instance =
           t.GetField(name, binding).GetValue(instance)
 
-        let pageSize = (field pdbheader "pageSize" head) :?> int
+        let pageSize =
+          (field pdbheader "pageSize" head) :?> int
 
-        let _, reader = construct "Microsoft.Cci.Pdb.PdbReader" [| stream; pageSize |]
+        let _, reader =
+          construct "Microsoft.Cci.Pdb.PdbReader" [| stream; pageSize |]
 
-        let msfdirectory, dir = construct "Microsoft.Cci.Pdb.MsfDirectory" [| reader; head; bits |]
+        let msfdirectory, dir =
+          construct "Microsoft.Cci.Pdb.MsfDirectory" [| reader; head; bits |]
 
         let datastream =
-          (field msfdirectory "streams" dir)
-          :?> System.Collections.IEnumerable
+          (field msfdirectory "streams" dir) :?> System.Collections.IEnumerable
           |> Seq.cast
           |> Seq.skip 1
           |> Seq.head
 
         let page0 =
-          (field (datastream.GetType()) "pages" datastream)
-          :?> int array
+          (field (datastream.GetType()) "pages" datastream) :?> int array
           |> Seq.head
 
         // Position stream 12 bytes into the page
@@ -218,11 +232,9 @@ module internal ProgramDatabase =
        |> Seq.filter (fun e ->
          e.Data.Length > 0x18
          && e.Directory.Type = ImageDebugType.CodeView)
-       |> Seq.map (fun x -> x.Data)
-       //|> Seq.filter (fun x -> x.Length > 0x18)
-       |> Seq.map (fun x ->
-         let g =
-           x |> Array.skip 4 |> Array.take 16 |> System.Guid
+       |> Seq.map (fun entry ->
+         let x = entry.Data
+         let g = x |> I.extractGuid
 
          sprintf "Assembly symbol GUID = %A mvid = %A" g assembly.MainModule.Mvid
          |> Output.verbose
@@ -307,12 +319,12 @@ module internal ProgramDatabase =
 
 [<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
                                                             "InstantiateArgumentExceptionCorrectlyRule",
-                                                            Scope = "member", // MethodDefinition
-                                                            Target = "AltCover.ProgramDatabase/I/construct@138::Invoke(System.String,System.Object[])",
+                                                            Scope = "member",  // MethodDefinition
+                                                            Target = "AltCover.ProgramDatabase/I/construct@141::Invoke(System.String,System.Object[])",
                                                             Justification = "Compiler generated")>]
 [<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
                                                             "CA2208:InstantiateArgumentExceptionsCorrectly",
-                                                            Scope="member",
-                                                            Target="AltCover.ProgramDatabase+I+construct@138.#Invoke(System.String,System.Object[])",
+                                                            Scope = "member",
+                                                            Target = "AltCover.ProgramDatabase+I+construct@141.#Invoke(System.String,System.Object[])",
                                                             Justification = "Compiler generated")>]
 ()
