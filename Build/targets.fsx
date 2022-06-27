@@ -4830,7 +4830,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
         Assert.That(vcs |> List.map fst, Is.EqualTo [ -2; 0 ], "Expect -2, 0")
-        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [3; 17], "Expect [3; 17]")
+        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 3; 17 ], "Expect [3; 17]")
 
     let prep =
         AltCover.PrepareOptions.Primitive(
@@ -4967,8 +4967,7 @@ _Target "JsonReporting" (fun _ ->
 
     let x = Path.getFullName "./_Reports/JsonReporting.json"
 
-    let o =
-        Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/net6.0"
+    let o = Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/net6.0"
 
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net6.0"
 
@@ -5565,7 +5564,12 @@ group NetcoreBuild
             "run ./DriveApi.fsx" // "-v run ./DriveApi.fsx" for verbose mode
             "running fake script returned with a non-zero exit code"
 
-        let x = Path.getFullName ("./_ApiUse/_DotnetTest/coverage." + netTarget + ".xml")
+        let x =
+            Path.getFullName (
+                "./_ApiUse/_DotnetTest/coverage."
+                + netTarget
+                + ".xml"
+            )
 
         Actions.CheckSample4 before x
     finally
@@ -6742,8 +6746,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
         printfn "Execute the instrumented tests"
 
-        let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "net6.0") String.Empty
+        let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") String.Empty
 
         let collect =
             AltCover.CollectOptions.Primitive
@@ -6891,15 +6894,15 @@ _Target "Issue156" (fun _ ->
 
         let p0 =
             { Primitive.PrepareOptions.Create() with
-                Dependencies = ["C:\\WINDOWS\\Microsoft.NET\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll" ]
+                Dependencies =
+                    [ "C:\\WINDOWS\\Microsoft.NET\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll" ]
                 //Dependencies = ["WindowsBase.dll"]
                 AssemblyFilter =
                     [| "nunit"
                        "Adapter"
                        "FSharp"
                        "AltCover" |]
-                SingleVisit = true
-                }
+                SingleVisit = true }
 
         let pp0 = AltCover.PrepareOptions.Primitive p0
         let c0 = Primitive.CollectOptions.Create()
