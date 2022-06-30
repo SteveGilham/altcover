@@ -1,6 +1,6 @@
 # PrepareExtension class
 
-no doc &lt;summary&gt; `Abstract.IPrepareOptions` extension methods &lt;/summary&gt;
+&lt;summary&gt; `Abstract.IPrepareOptions` extension methods &lt;/summary&gt;
 
 ```csharp
 public static class PrepareExtension

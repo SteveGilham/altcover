@@ -2,7 +2,8 @@
 
 ```csharp
 public LoggingOptions(FSharpFunc<string, Unit> info, FSharpFunc<string, Unit> warn, 
-    FSharpFunc<string, Unit> failure, FSharpFunc<string, Unit> echo)
+    FSharpFunc<string, Unit> failure, FSharpFunc<string, Unit> echo, 
+    FSharpFunc<string, Unit> verbose)
 ```
 
 ## See Also
