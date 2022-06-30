@@ -7432,7 +7432,7 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "Issue114" ==> "Deployment"
 
 "Unpack" ==> "Issue156"
-=?> ("Deployment"", Environment.isWindows)
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "DotnetGlobalIntegration"
