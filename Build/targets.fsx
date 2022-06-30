@@ -7128,6 +7128,7 @@ _Target "BulkReport" (fun _ ->
           "__AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
           "AltCover.Tests/Sample21.coverage.opencover.xml"
           "AltCover.Tests/Sample4.coverlet.xml" ]
+          @ if Environment.isWindows then [ "_Issue156/Tests/coverage.xml" ] else []
 
     let o3expect = // embeds
         !!(@"./**/JsonWithPartials*Xml.xml") |> Seq.toList
@@ -7432,7 +7433,7 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "Issue114" ==> "Deployment"
 
 "Unpack" ==> "Issue156"
-=?> ("Deployment", Environment.isWindows)
+=?> ("Deployment", Environment.isWindows) // WPF
 
 "Unpack"
 ==> "DotnetGlobalIntegration"
