@@ -776,12 +776,13 @@ module AltCoverRunnerTests =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldHaveExpectedOptions () =
     Runner.init ()
     let options = Runner.declareOptions ()
-    let optionCount = 11
+    let optionCount = 12
 
     let optionNames =
       options
@@ -816,11 +817,11 @@ module AltCoverRunnerTests =
     // swap "collect" and "commandline"
     Assert.That(
       primitiveNames |> List.length,
-      Is.EqualTo optionCount,
+      Is.EqualTo(optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got primitives "
       + String.Join("; ", primitiveNames)
     )
 
@@ -833,11 +834,11 @@ module AltCoverRunnerTests =
 
     Assert.That(
       typesafeNames |> List.length,
-      Is.EqualTo optionCount,
+      Is.EqualTo(optionCount - 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got typesafe "
       + String.Join("; ", typesafeNames)
     )
 
@@ -862,22 +863,22 @@ module AltCoverRunnerTests =
     // adds Runner and the trailing command line arguments
     Assert.That(
       commandFragments |> List.length,
-      Is.EqualTo(optionCount + 2),
+      Is.EqualTo(optionCount + 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got fragments "
       + String.Join("; ", typesafeNames)
     ) // todo
 
     // Adds "Tag", "IsPrimitive", "IsTypeSafe"
     Assert.That(
       fsapiNames |> Seq.length,
-      Is.EqualTo(optionCount + fsapiCases + 1),
+      Is.EqualTo(optionCount + fsapiCases), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got apinames "
       + String.Join("; ", fsapiNames)
     )
 
@@ -893,11 +894,11 @@ module AltCoverRunnerTests =
     // gains summary (output)
     Assert.That(
       taskNames |> Seq.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got tasks "
       + String.Join("; ", taskNames)
     )
 
@@ -929,7 +930,7 @@ module AltCoverRunnerTests =
     //       N/A,         N/A,        N/A,              fixed,      N/A
     Assert.That(
       attributeNames |> Seq.length,
-      Is.EqualTo(optionCount - 5),
+      Is.EqualTo(optionCount - 6), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
@@ -2096,12 +2097,52 @@ module AltCoverRunnerTests =
       CommandLine.verbosity <- 0
 
   [<Test>]
+  let ParsingVerboseWorks () =
+    Runner.init ()
+
+    try
+      let options = Runner.declareOptions ()
+      let input = [| "--verbose" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo -1)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
   let ParsingMultiQuietWorks () =
     Runner.init ()
 
     try
       let options = Runner.declareOptions ()
       let input = [| "-q"; "-q"; "-q" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
+  let ParsingMixedQuietWorks () =
+    Runner.init ()
+
+    try
+      let options = Runner.declareOptions ()
+      let input = [| "-qqq"; "--verbose"; "-q" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2346,7 +2387,7 @@ module AltCoverRunnerTests =
     let path =
       Path.Combine(
         SolutionRoot.location,
-        "_Binaries/Sample12/Debug+AnyCPU/netcoreapp2.0/Sample12.dll"
+        "_Binaries/Sample12/Debug+AnyCPU/net6.0/Sample12.dll"
       )
 #endif
 
@@ -2464,6 +2505,7 @@ module AltCoverRunnerTests =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldNoOp () =
@@ -2530,6 +2572,7 @@ module AltCoverRunnerTests =
       )
     finally
       Console.SetError saved
+      Output.verbose <- ignore
 
   let synchronized = Object()
 
@@ -2683,6 +2726,7 @@ module AltCoverRunnerTests =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Runner.workingDirectory <- None
+      Output.verbose <- ignore
 
   [<Test>]
   let WriteLeavesExpectedTraces () =
@@ -4803,14 +4847,14 @@ module AltCoverRunnerTests =
             Runner.threshold <- None
         //printfn "%s" <| builder.ToString()
 
-        // 23.81% coverage > threshold so expect return code coming in
+        // 25% coverage > threshold so expect return code coming in
         Assert.That(r, Is.EqualTo(42, 0, String.Empty))
 
         Assert.That(
           builder.ToString(),
           Is.EqualTo(
-            "Visited Classes 4 of 6 (66.67)|Visited Methods 5 of 10 (50)|Visited Points 5 of 21 (23.81)|Visited Branches 5 of 10 (50)|"
-            + "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='4']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='21']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='5']|"
+            "Visited Classes 4 of 6 (66.67)|Visited Methods 5 of 10 (50)|Visited Points 5 of 20 (25)|Visited Branches 5 of 10 (50)|"
+            + "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='4']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='20']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='5']|"
           )
         ))
     finally
@@ -5670,7 +5714,7 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\\", "/")
           .Replace(
-            """version="3.0.0.0""",
+            """version="8.2.0.0""",
             "version=\""
             + typeof<SummaryFormat>
               .Assembly.GetName()
@@ -6343,7 +6387,7 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\\", "/")
           .Replace(
-            """version="3.0.0.0""",
+            """version="8.2.0.0""",
             "version=\""
             + typeof<SummaryFormat>
               .Assembly.GetName()

@@ -2,6 +2,16 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.3.838 (Habu series release 14)
+* [VISUALIZER] Fix off-by-one error in markup for the very last line of the file
+* [BUGFIX] -- Out-of-process APIs generating `dotnet test`: fix to allow activating ZipFile, MethodPoint, SingleVisit and SourceLink
+* [BUGFIX] -- Issue #156: Out-of-process APIs generating `dotnet test`: fix `/p:AltCoverDependencyList` to work around the behaviour of `dotnet test` with an argument ending `.dll` or `.exe`.  Users rolling their own command lines, note that the assembly list is separated _and terminated_ with `'|'` characters.  The `--dependency` command line argument for the tool is not affected.
+* [BUGFIX] -- Issue #156: Make explicit dependencies through `--dependency` have priority over other assembly resolution lookup.  This works around a Mono.Cecil misfeature (Mono.Cecil issue #863) where the `netstandard2.0` Cecil binaries do not consider the GAC for Framework system assemblies, but instead will find stubs in `dotnet/shared/Microsoft.NETCore.App` for e.g. .net Framework WPF related assemblies
+* [BUGFIX] -- Improve selection of non-embedded symbol files (between location in assembly debug header, the same directory as the assembly and any `--symbolDirectory` values) to avoid symbol mismatch when there are multiple possible files on offer
+* Add a `--verbose`option for AltCover, the converse of `-q`.  Away from the command line, adds meaning to the `Verbosity` option value `System.Diagnostics.TraceLevel.Verbose`.  Currently `Verbose` output shows more of the selection of files for instrumentation, noting when files are excluded from the process, symbol file selection etc.
+* Add a matching field, `ILoggingOptions.Verbose`, to the API as a sink to capture verbose output.
+* Other minor build process adjustments for SDK 6.0.300/F# 6.0.4, 6.0.5
+
 # 8.2.837 (Habu series release 13)
 * [VISUALIZER] Critical bug fixes for GTK and Avalonia : mismatched new icon names causing crashes
 * [VISUALIZER] Use new coverage data icon for the coverage report file, not a generic report icon

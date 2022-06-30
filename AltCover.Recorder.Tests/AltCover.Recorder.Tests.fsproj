@@ -41,14 +41,20 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-    <PackageReference Include="NUnit" Version="3.13.2" Condition="'$(TargetFramework)' != 'net20'" />
-    <!-- last net2.0 support here -->
-    <PackageReference Include="NUnit" Version="3.11.0" Condition="'$(TargetFramework)' == 'net20'" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
+    <PackageReference Include="NUnit" Version="3.13.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net20'">
+    <!-- last net2.0 support here : v 3.11.0 -->
+    <PackageReference Include="NUnit" Version="3.11.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,7 +75,7 @@
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Update="FSharp.Core" Version="6.0.3" Condition="'$(TargetFramework)' != 'net20'">
+    <PackageReference Update="FSharp.Core" Version="6.0.5" Condition="'$(TargetFramework)' != 'net20'">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />

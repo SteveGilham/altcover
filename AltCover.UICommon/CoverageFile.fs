@@ -244,12 +244,12 @@ module Transformer =
           document.Validate(schemas, null)
           Right document
     with
-    | :? ArgumentNullException as x -> Left(x :> Exception)
-    | :? NullReferenceException as x -> Left(x :> Exception)
-    | :? IOException as x -> Left(x :> Exception)
-    | :? XsltException as x -> Left(x :> Exception)
-    | :? XmlSchemaValidationException as x -> Left(x :> Exception)
-    | :? ArgumentException as x -> Left(x :> Exception)
+    | :? ArgumentNullException as x -> Left(x)
+    | :? NullReferenceException as x -> Left(x)
+    | :? IOException as x -> Left(x)
+    | :? XsltException as x -> Left(x)
+    | :? XmlSchemaValidationException as x -> Left(x)
+    | :? ArgumentException as x -> Left(x)
 
   let internal firstChar file =
     use stream = File.OpenRead file

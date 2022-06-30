@@ -594,7 +594,7 @@ type InvokeAltCoverCommand() =
   member val SummaryFormat: Summary array = [||] with get, set
 
   /// <summary>
-  /// <para type="description">Selects output level of the command</para>
+  /// <para type="description">Selects output level of the command.  Each level writes to the matching PowerShell Write-[Level] channel</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,
@@ -686,6 +686,7 @@ type InvokeAltCoverCommand() =
       { Primitive.LoggingOptions.Create() with
           Failure = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))
+          Verbose = (fun s -> self.WriteVerbose(s))
           Warn = (fun s -> self.WriteWarning s) }
 
   member private self.Dispatch() =

@@ -113,4 +113,7 @@
                                off informational messages, twice to switch off
                                warnings as well, three (or more) times to
                                switch off all messages.
+      --verbose              Optional, multiple: Verbose mode -- once to switch
+                               on detailed messages (or undo one level of -q if
+                               any have been set)
   -?, --help, -h             Prints out the options.

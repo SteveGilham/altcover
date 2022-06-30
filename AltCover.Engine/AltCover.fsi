@@ -116,7 +116,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member SummaryFormat : System.String
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         member Verbosity : System.Diagnostics.TraceLevel
 // ```
@@ -305,7 +305,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member ShowGenerated : bool
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         member Verbosity : System.Diagnostics.TraceLevel
 // ```
@@ -363,6 +363,10 @@ namespace AltCoverFake.DotNet.Testing
         member Error : (System.String -> unit)
         ///<summary>
         /// Sink for command line/usage messages
+        ///</summary>
+        member Verbose : (System.String -> unit)
+        ///<summary>
+        /// Sink for detailed messages
         ///</summary>
         member Echo : (System.String -> unit)
         ///<summary>

@@ -19,8 +19,8 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
           .GetExecutingAssembly()
           .GetManifestResourceStream("AltCover.UICommon." + name + ".png")
       ))
-  //with
-  //| x -> System.InvalidOperationException(name, x) |> raise
+      //with
+      //| x -> CommunityToolkit.Diagnostics.ThrowHelper.ThrowInvalidOperationException<'TIcon>(name, x)
 
   member self.Report = makeIcon "RawCodeCoverageDataFile"
 

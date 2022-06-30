@@ -85,7 +85,7 @@
       OutputDirectories="@(AltCoverOutputDirectory)"
       InPlace="$(AltCoverInPlace)"
       SymbolDirectories="$(AltCoverSymbolDirectories.Split('|'))"
-      Dependencies="$(AltCoverDependencyList.Split('|'))"
+      Dependencies="$(AltCoverDependencyList.Trim('|').Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"
       StrongNameKey="$(AltCoverStrongNameKey)"
       Report="$(AltCoverReport2)"

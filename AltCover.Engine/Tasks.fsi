@@ -1,8 +1,8 @@
-﻿// Both the .net framework/mono and .net core releases publish MSBuild tasks from the main assembly (AltCover.exe or AltCover.dll, respectively) that wrap the command-line functionality (as documented here under [Usage](https://github.com/SteveGilham/altcover/wiki/Usage)).
+﻿// Both the .net framework/mono and .net core releases publish MSBuild tasks from the engine assembly (AltCover.Engine.dll) that wrap the command-line functionality (as documented here under [Usage](https:github.com/SteveGilham/altcover/wiki/Usage)).
 //
 // # namespace `AltCover`
 //
-// For the C# programmer,  attributes have the extran angle-brackets, while `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
+// For the C# programmer,  attributes have the extra angle-brackets, while `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
 //
 //
 // For `AltCover.Prepare` and `AltCover.Collect`, the task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, `SingleVisit` represents the `--single` option, `ExposeReturnCode` is the converse of the command line option `dropReturnCode`, and `CommandLine` is everything after a `--` .  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
@@ -166,7 +166,7 @@ type Prepare =
     ///</summary>
     member ShowGenerated : bool with get, set
     ///<summary>
-    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
@@ -236,7 +236,7 @@ type Collect =
     ///</summary>
     member SummaryFormat : string with get, set
     ///<summary>
-    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end

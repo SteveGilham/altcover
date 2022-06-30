@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="native.pdb" />
     <None Include="Sample31.dll">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
@@ -124,7 +125,7 @@
   <ItemGroup>
     <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
@@ -140,13 +141,13 @@
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="6.0.3">
+    <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

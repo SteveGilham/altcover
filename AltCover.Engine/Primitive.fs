@@ -135,13 +135,15 @@ module Primitive =
     { Info: String -> unit
       Warn: String -> unit
       Failure: String -> unit
-      Echo: String -> unit }
+      Echo: String -> unit
+      Verbose: String -> unit }
 
     static member Create() : LoggingOptions =
       { Info = ignore
         Warn = ignore
         Failure = ignore
-        Echo = ignore }
+        Echo = ignore
+        Verbose = ignore }
 #endif
 
 #if RUNNER

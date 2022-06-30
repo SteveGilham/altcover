@@ -11,6 +11,7 @@
     <ApplicationIcon>AltCover.ico</ApplicationIcon>
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
+    <TargetLatestRuntimePatch Condition="'$(TargetFramework)' == 'netcoreapp2.0'">true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -54,7 +55,7 @@
 
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="6.0.3">
+    <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

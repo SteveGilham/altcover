@@ -15,6 +15,14 @@ open AltCover.Shared
 open Mono.Cecil
 open Mono.Options
 
+[<AutoOpen>]
+module internal ThrowHelper =
+  type FormatException with
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(message: string) : 'T = message |> FormatException |> raise
+
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SummaryFormat =
   | Default
@@ -61,7 +69,7 @@ type internal SummaryFormat =
              | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
              | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
              | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
-             | _ -> raise (s |> FormatException))
+             | _ -> s |> FormatException.Throw)
            (Many [])
     with
     | :? FormatException -> Default
@@ -332,7 +340,7 @@ module internal Runner =
                       Justification = "AvoidSpeculativeGenerality too")>]
     let internal altSummary go extra (report: XDocument) =
       "Alternative"
-      |> CommandLine.resources.GetString
+      |> Output.resources.GetString
       |> if go || extra then write else ignore
 
       let classes =
@@ -844,6 +852,7 @@ module internal Runner =
              CommandLine.Format.Local("MultiplesNotAllowed", "--summary")
              :: CommandLine.error))
       ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
+      ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -853,14 +862,14 @@ module internal Runner =
            :: CommandLine.error)) ] // default end stop
     |> List.fold
          (fun (o: OptionSet) (p, a) ->
-           o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
+           o.Add(p, Output.resources.GetString(p), new System.Action<string>(a)))
          (OptionSet())
 
   let internal requireRecorderTest recordingDirectory success fail =
     match recordingDirectory with
     | None ->
       CommandLine.error <-
-        (CommandLine.resources.GetString "recorderRequired")
+        (Output.resources.GetString "recorderRequired")
         :: CommandLine.error
 
       fail
@@ -892,7 +901,7 @@ module internal Runner =
         | (None, false)
         | (Some _, true) ->
           CommandLine.error <-
-            (CommandLine.resources.GetString "executableRequired")
+            (Output.resources.GetString "executableRequired")
             :: CommandLine.error
 
           Left("UsageError", options)
@@ -935,7 +944,7 @@ module internal Runner =
         Path.Combine(Option.get recordingDirectory, recorderName)
 
       let definition =
-        AssemblyDefinition.ReadAssembly recorderPath
+        AssemblyResolver.ReadAssembly recorderPath
 
       (definition, definition.MainModule.GetType("AltCover.Recorder.Instance"))
 
