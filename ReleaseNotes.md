@@ -2,7 +2,7 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.3.8xx (Habu series release 14)
+# 8.3.838 (Habu series release 14)
 * [VISUALIZER] Fix off-by-one error in markup for the very last line of the file
 * [BUGFIX] -- Out-of-process APIs generating `dotnet test`: fix to allow activating ZipFile, MethodPoint, SingleVisit and SourceLink
 * [BUGFIX] -- Issue #156: Out-of-process APIs generating `dotnet test`: fix `/p:AltCoverDependencyList` to work around the behaviour of `dotnet test` with an argument ending `.dll` or `.exe`.  Users rolling their own command lines, note that the assembly list is separated _and terminated_ with `'|'` characters.  The `--dependency` command line argument for the tool is not affected.
