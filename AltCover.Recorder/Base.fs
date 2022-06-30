@@ -78,6 +78,13 @@ and [<NoComparison; ExcludeFromCodeCoverage>] internal PointVisit =
 
 [<RequireQualifiedAccess>]
 module internal Counter =
+  type System.NotSupportedException with
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidMethodWithUnusedGenericTypeRule",
+                       Justification = "Matches clause type")>]
+    static member Throw<'T>(message : string) : 'T =
+      message |> NotSupportedException |> raise
+
   // "Public" "fields"
 
   // // <summary>
@@ -171,7 +178,7 @@ module internal Counter =
       | ReportFormat.OpenCoverWithTracking
       | ReportFormat.OpenCover -> openCoverXml
       | ReportFormat.NCover -> nCoverXml
-      | _ -> raise (format |> (sprintf "%A") |> NotSupportedException)
+      | _ -> format |> (sprintf "%A") |> NotSupportedException.Throw
 
     let internal minTime (t1: DateTime) (t2: DateTime) = if t1 < t2 then t1 else t2
 

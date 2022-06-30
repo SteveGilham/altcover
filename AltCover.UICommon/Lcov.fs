@@ -1,10 +1,11 @@
 ﻿namespace AltCover
 
-open System.Diagnostics.CodeAnalysis
-
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
+
+open CommunityToolkit.Diagnostics
 
 module internal Lcov =
 
@@ -26,6 +27,11 @@ module internal Lcov =
   [<Sealed>]
   type LcovParseException(e: exn) =
     inherit exn(e.Message, e)
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(e: exn) : 'T =
+       raise <| LcovParseException(e)
 
   type LRecord =
     //SF:<absolute path to the source file>
@@ -59,13 +65,13 @@ module internal Lcov =
       | FN _
       | DA _
       | BRDA _ -> true
-      | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
+      | _ -> r |> sprintf "%A" |> ThrowHelper.ThrowInvalidDataException<bool>)
     |> Seq.sortBy (fun r ->
       match r with
       | FN (a, _) -> 4 * a
       | DA (a, _) -> (4 * a) + 1
       | BRDA (a, _, _, _) -> (4 * a) + 2
-      | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
+      | _ ->  r |> sprintf "%A" |> ThrowHelper.ThrowInvalidDataException<int>)
     |> Seq.fold
          (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
            match r with
@@ -137,7 +143,7 @@ module internal Lcov =
 
              x.Add br
              x
-           | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
+           | _ -> r |> sprintf "%A" |> ThrowHelper.ThrowInvalidDataException<XElement>)
          null
     |> ignore
 
@@ -149,7 +155,7 @@ module internal Lcov =
   let ofLines (lines: string array) =
     try
       lines
-      |> Seq.map (fun line ->
+      |> Seq.map (fun line -> // <-- here
         match line with
         | l when l.StartsWith("SF:", StringComparison.Ordinal) -> SF(l.Substring 3)
         | l when l.StartsWith("FN:", StringComparison.Ordinal) ->
@@ -161,7 +167,7 @@ module internal Lcov =
         | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
           match (l.Substring 3).Split(',') |> Array.toList with
           | n :: v :: _ -> DA(n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
-          | _ -> raise (line |> sprintf "%A" |> InvalidDataException)
+          | _ -> line |> sprintf "%A" |> ThrowHelper.ThrowInvalidDataException<LRecord>
         | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
           match (l.Substring 5).Split(',') |> Array.toList with
           | n :: v :: x :: y :: _ ->
@@ -171,7 +177,7 @@ module internal Lcov =
               x |> Int32.TryParse |> snd,
               y |> Int32.TryParse |> snd
             )
-          | _ -> raise (line |> sprintf "%A" |> InvalidDataException)
+          | _ -> line |> sprintf "%A" |> ThrowHelper.ThrowInvalidDataException<LRecord>
         | _ -> Other)
       |> Seq.fold
            (fun (i, l) r ->
@@ -187,7 +193,7 @@ module internal Lcov =
       |> Seq.map (fun (_, l) -> buildModule l)
       |> Seq.toArray
     with
-    | x -> raise <| LcovParseException(x)
+    | x -> x |> LcovParseException.Throw
 
   let toXml file =
     let root =
@@ -207,6 +213,6 @@ module internal Lcov =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Lcov/Pipe #1 stage #1 at line 152@152::Invoke(System.String)",
+                            Target = "AltCover.Lcov/Pipe #1 stage #1 at line 158@158::Invoke(System.String)",
                             Justification = "Compiler generated")>]
 ()

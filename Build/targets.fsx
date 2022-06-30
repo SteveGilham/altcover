@@ -30,6 +30,7 @@ open Fake.Tools.Git
 open NUnit.Framework
 open Swensen.Unquote
 
+let fsharpCore = "6.0.5" // maybe automate
 let Copyright = ref String.Empty
 let Version = ref String.Empty
 
@@ -302,6 +303,11 @@ let withWorkingDirectoryVN dir o =
     { dotnetOptions o with
         WorkingDirectory = Path.getFullName dir
         Verbosity = Some DotNet.Verbosity.Normal }
+
+let withWorkingDirectoryVDet dir o =
+    { dotnetOptions o with
+        WorkingDirectory = Path.getFullName dir
+        Verbosity = Some DotNet.Verbosity.Detailed }
 
 let withWorkingDirectoryOnly dir o =
     { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
@@ -1273,12 +1279,18 @@ _Target "FxCop" (fun _ ->
                              + (dd.Item "blackfox.commandline")
                              + "/lib/netstandard2.0"
                           nugetCache
+                          @@ "blackfox.vswhere/1.1.0/lib/netstandard2.0"
+                          nugetCache
                           @@ "cake.common/"
                              + (dd.Item "cake.common")
                              + "/lib/netstandard2.0"
                           nugetCache
                           @@ "cake.core/"
                              + (dd.Item "cake.core")
+                             + "/lib/netstandard2.0"
+                          nugetCache
+                          @@ "communitytoolkit.diagnostics/"
+                             + (dd.Item "communitytoolkit.diagnostics")
                              + "/lib/netstandard2.0"
                           nugetCache
                           @@ "fake.core.environment/"
@@ -1539,6 +1551,7 @@ _Target "JustUnitTest" (fun _ ->
         let baseArgs =
             [ "--noheader"
               "--work=."
+              "--labels=All"
               "--result=./_Reports/JustUnitTestReport.xml"
               Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
               Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
@@ -2557,6 +2570,7 @@ _Target "FSharpTypes" (fun _ ->
     let prep =
         AltCover.PrepareOptions.Primitive(
             { Primitive.PrepareOptions.Create() with
+                // Verbosity = System.Diagnostics.TraceLevel.Verbose
                 Report = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
                 AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
@@ -2642,7 +2656,7 @@ _Target "FSharpTests" (fun _ ->
         coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
         |> Seq.toList
 
-    Assert.That(refs |> Seq.length, Is.EqualTo 64, "ref count wrong")
+    Assert.That(refs |> Seq.length, Is.EqualTo 56, "ref count wrong")
 
     refs
     |> Seq.iter (fun tmr ->
@@ -3064,7 +3078,7 @@ _Target "CSharpDotNetWithDotNet" (fun _ ->
 
     let o = Path.getFullName "./_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
 
-    let i = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let i = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net6.0"
 
     let prep =
         AltCover.PrepareOptions.Primitive(
@@ -3097,7 +3111,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
 
     let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472"
 
-    let sampleRoot = Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let sampleRoot = Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/net6.0"
 
     let instrumented =
         Path.getFullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
@@ -3768,7 +3782,7 @@ _Target "Packaging" (fun _ ->
          ("FAKE.Core.Process", "5.21.0")
          ("FAKE.DotNet.Cli", "5.21.0")
          ("System.Collections.Immutable", "1.7.1")
-         ("FSharp.Core", "6.0.1") ],
+         ("FSharp.Core", fsharpCore) ],
        "_Packaging.fake",
        "./_Generated/altcover.fake.nuspec",
        "altcover.fake") ]
@@ -4258,7 +4272,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
         (Path.getFullName "./_Reports")
         @@ ("ReleaseDotNetWithFramework.xml")
 
-    let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net6.0"
 
     let instrumented =
         sampleRoot
@@ -4332,7 +4346,7 @@ _Target "ReleaseDotNetWithDotNet" (fun _ ->
     let o =
         Path.getFullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
 
-    let i = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let i = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net6.0"
 
     let prep =
         AltCover.PrepareOptions.Primitive(
@@ -4522,9 +4536,9 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
 
     let o =
-        Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesDotNetRunner_Sample4/Debug+AnyCPU/netcoreapp2.1"
+        Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesDotNetRunner_Sample4/Debug+AnyCPU/net6.0"
 
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net6.0"
 
     Shell.cleanDir o
 
@@ -4537,6 +4551,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
                 InputDirectories = [ i ]
                 AssemblyFilter = [ "xunit" ]
                 InPlace = false
+                LocalSource = true
                 ReportFormat = "NCover"
                 Save = false }
         )
@@ -4556,7 +4571,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
 
     let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
 
-    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") sample4
 
     // Run
     let collect =
@@ -4691,9 +4706,9 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
     let x3 = Path.getFullName "./_Reports/ShowGeneratedRun.xml"
 
     let o =
-        Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesShowVisualized_Sample4/Debug+AnyCPU/netcoreapp2.1"
+        Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesShowVisualized_Sample4/Debug+AnyCPU/net6.0"
 
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net6.0"
 
     Shell.cleanDir o
 
@@ -4707,6 +4722,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
                 AssemblyFilter = [ "xunit" ]
                 InPlace = false
                 ReportFormat = "NCover"
+                LocalSource = true
                 Save = false
                 ShowStatic = "+" }
         )
@@ -4734,7 +4750,9 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
         Assert.That(vcs |> List.map fst, Is.EqualTo [ -3; 0 ], "-3 or 0 only")
-        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 18; 27 ], "10 and 28")
+        let expected = [ 2; 20 ]
+        let actual = vcs |> List.map (snd >> Seq.length)
+        Assert.That(actual, Is.EqualTo expected, sprintf "1) Expected %A but got %A" expected actual)
 
     let prep =
         AltCover.PrepareOptions.Primitive(
@@ -4744,6 +4762,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
                 InputDirectories = [ i ]
                 AssemblyFilter = [ "xunit" ]
                 InPlace = false
+                LocalSource = true
                 ReportFormat = "NCover"
                 Save = false
                 ShowStatic = "++" }
@@ -4772,7 +4791,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
         Assert.That(vcs |> List.map fst, Is.EqualTo [ 0 ])
-        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 45 ])
+        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 22 ])
 
     let prep =
         AltCover.PrepareOptions.Primitive(
@@ -4782,6 +4801,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
                 InputDirectories = [ i ]
                 AssemblyFilter = [ "xunit" ]
                 InPlace = false
+                LocalSource = true
                 ReportFormat = "NCover"
                 Save = false
                 ShowGenerated = true }
@@ -4810,7 +4830,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
         Assert.That(vcs |> List.map fst, Is.EqualTo [ -2; 0 ], "Expect -2, 0")
-        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 6; 21 ], "Expect 6, 21")
+        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 3; 17 ], "Expect [3; 17]")
 
     let prep =
         AltCover.PrepareOptions.Primitive(
@@ -4820,6 +4840,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
                 InputDirectories = [ i ]
                 AssemblyFilter = [ "xunit" ]
                 InPlace = false
+                LocalSource = true
                 ReportFormat = "NCover"
                 Save = false
                 ShowGenerated = true }
@@ -4838,7 +4859,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
 
     let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
 
-    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") sample4
 
     // Run
     let collect =
@@ -4872,8 +4893,8 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
 
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
-        Assert.That(vcs |> List.map fst, Is.EqualTo [ -2; 0; 1; 2 ], "expect [ -2; 0; 1; 2]")
-        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 3; 12; 11; 1 ], "expect [3 ; 12; 11; 1]"))
+        Assert.That(vcs |> List.map fst, Is.EqualTo [ 0; 1; 2 ], "expect [ 0; 1; 2 ]")
+        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 8; 11; 1 ], "expect [ 8; 11; 1 ]"))
 
 _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
     Directory.ensure "./_Reports"
@@ -4883,9 +4904,9 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
 
     let o =
-        Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesDotNetFullRunner_Sample4/Debug+AnyCPU/netcoreapp2.1"
+        Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesDotNetFullRunner_Sample4/Debug+AnyCPU/net6.0"
 
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net6.0"
 
     Shell.cleanDir o
     let before = Actions.ticksNow ()
@@ -4898,6 +4919,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
                 InputDirectories = [ i ]
                 CallContext = [ "0"; "[Fact]" ]
                 AssemblyFilter = [ "xunit" ]
+                LocalSource = true
                 InPlace = false
                 Save = false }
         )
@@ -4917,7 +4939,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
 
     let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
 
-    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") sample4
 
     // Run
     let collect =
@@ -4945,10 +4967,9 @@ _Target "JsonReporting" (fun _ ->
 
     let x = Path.getFullName "./_Reports/JsonReporting.json"
 
-    let o =
-        Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let o = Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/net6.0"
 
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net6.0"
 
     // Test data gathering only
     //let x = Path.getFullName "./AltCover.Tests/Sample5.native.json"
@@ -4968,6 +4989,7 @@ _Target "JsonReporting" (fun _ ->
                 InputDirectories = [ i ]
                 CallContext = [ "0"; "[Fact]" ]
                 AssemblyFilter = [ "xunit" ]
+                LocalSource = true
                 InPlace = false
                 Save = false }
         )
@@ -5021,7 +5043,7 @@ _Target "JsonReporting" (fun _ ->
 
     let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
 
-    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") sample4
 
     // Run
     let collect =
@@ -5053,7 +5075,8 @@ _Target "JsonReporting" (fun _ ->
             |> Seq.map (fun s -> s.VC)
             |> Seq.toList
 
-        let expected = "0 1 1 0 1 0 1 0 1 0 0 0 0 0 1 1 1 0 0 0 0 2 0 1 0 1 1"
+        let expected = "0 1 1 1 1 1 0 0 0 0 0 1 1 1 0 0 2 1 1 1"
+        //"0 1 1 0 1 0 1 0 1 0 0 0 0 0 1 1 1 0 0 0 0 2 0 1 0 1 1"
         //"0 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 2 0 1 0 1 1"
 
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
@@ -5343,7 +5366,9 @@ _Target "ApiUse" (fun _ ->
             fsproj.Descendants(XName.Get("TargetFrameworks"))
             |> Seq.head
 
-        targets.SetValue "netcoreapp2.1"
+        let netTarget = "net6.0"
+
+        targets.SetValue netTarget
 
         let pack =
             fsproj.Descendants(XName.Get("PackageReference"))
@@ -5353,7 +5378,9 @@ _Target "ApiUse" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover.api"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "Version", Version.Value),
+                XElement(XName.Get "PrivateAssets", "all"),
+                XElement(XName.Get "IncludeAssets", "build")
             )
 
         pack.AddBeforeSelf inject
@@ -5429,6 +5456,7 @@ _Target "DoIt"
 
   let p2 =
     { AltCover.Primitive.PrepareOptions.Create() with
+        LocalSource = true
         CallContext = [| "[Fact]"; "0" |]
         AssemblyFilter = [| "xunit" |] }
 
@@ -5511,7 +5539,7 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   storage: none
   source https://api.nuget.org/v3/index.json
-  nuget FSharp.Core = 6.0.1
+  nuget FSharp.Core = {3}
   nuget Fake.Core.Target >= 5.21.0
   nuget Fake.DotNet.Cli >= 5.21.0
   source {0}
@@ -5525,7 +5553,8 @@ group NetcoreBuild
                 dependencies,
                 Path.getFullName "./_Packaging.api",
                 Version.Value,
-                Path.getFullName "./_Packaging.fake"
+                Path.getFullName "./_Packaging.fake",
+                fsharpCore
             )
         )
 
@@ -5535,7 +5564,12 @@ group NetcoreBuild
             "run ./DriveApi.fsx" // "-v run ./DriveApi.fsx" for verbose mode
             "running fake script returned with a non-zero exit code"
 
-        let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.netcoreapp2.1.xml"
+        let x =
+            Path.getFullName (
+                "./_ApiUse/_DotnetTest/coverage."
+                + netTarget
+                + ".xml"
+            )
 
         Actions.CheckSample4 before x
     finally
@@ -5815,7 +5849,8 @@ _Target "DotnetTestIntegration" (fun _ ->
                 |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                 |> Seq.toList
 
-            Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;0;1;1;1;1;1;0", xx)
+            Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;1;1;1;1;0;1;1;1;1;1;0", xx)
+            //"1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;0;1;1;1;1;1;0"
 
         try
             DotNet.test
@@ -5848,7 +5883,8 @@ _Target "DotnetTestIntegration" (fun _ ->
                 |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                 |> Seq.toList
 
-            Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;1;1;1;1;1;0;0;1;1;1;1;1;1;0", xxa)
+            Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;1;1;0;0;1;1;1;1;1;1;0", xxa)
+            //"1;1;1;1;1;1;1;1;1;1;1;1;1;0;0;1;1;1;1;1;1;0"
 
         printfn "optest failing test fast ------------------------------------------------"
 
@@ -5897,7 +5933,7 @@ _Target "DotnetTestIntegration" (fun _ ->
                 |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                 |> Seq.toList
 
-            Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0", xx)
+            Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0", xx)
 
         try
             DotNet.test
@@ -5931,7 +5967,7 @@ _Target "DotnetTestIntegration" (fun _ ->
                 |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                 |> Seq.toList
 
-            Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0", xxa)
+            Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0", xxa)
 
         printfn "optest line cover ------------------------------------------------"
 
@@ -6641,7 +6677,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
             fsproj.Descendants(XName.Get("TargetFrameworks"))
             |> Seq.head
 
-        targets.SetValue "netcoreapp2.1"
+        targets.SetValue "net6.0"
         targets.AddAfterSelf(XElement(XName.Get "DocumentationFile"))
 
         fsproj.Descendants(XName.Get("HintPath"))
@@ -6677,7 +6713,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
         let x = Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
 
-        let o = Path.getFullName "./_Binaries/_DotnetGlobalTest/Debug+AnyCPU/netcoreapp2.1"
+        let o = Path.getFullName "./_Binaries/_DotnetGlobalTest/Debug+AnyCPU/net6.0"
 
         [ AltCoverCommand.ArgumentType.ImportModule
           AltCoverCommand.ArgumentType.GetVersion ]
@@ -6697,6 +6733,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
                     InputDirectories = [ o ]
                     CallContext = [ "0"; "[Fact]" ]
                     AssemblyFilter = [| "xunit" |]
+                    LocalSource = true
                     InPlace = true
                     Save = false }
             )
@@ -6709,8 +6746,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
         printfn "Execute the instrumented tests"
 
-        let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "netcoreapp2.1") String.Empty
+        let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") String.Empty
 
         let collect =
             AltCover.CollectOptions.Primitive
@@ -6811,6 +6847,80 @@ _Target "Issue114" (fun _ ->
             ""
     finally
         let folder = (nugetCache @@ "altcover.api") @@ Version.Value
+
+        Shell.mkdir folder
+        Actions.CleanDir folder)
+
+_Target "Issue156" (fun _ ->
+    try
+        Directory.ensure "./_Issue156"
+        Shell.cleanDir ("./_Issue156")
+        Directory.ensure "./_Issue156/Tests"
+        Directory.ensure "./_Issue156/ClassLibrary1"
+
+        let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+
+        let repo = config.Descendants(XName.Get("add")) |> Seq.head
+
+        repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+        config.Save "./_Issue156/NuGet.config"
+
+        let csproj = XDocument.Load "./RegressionTesting/issue156/Tests/Tests.csproj"
+
+        let pack =
+            csproj.Descendants(XName.Get("PackageReference"))
+            |> Seq.head
+
+        let inject =
+            XElement(
+                XName.Get "PackageReference",
+                XAttribute(XName.Get "Include", "altcover"),
+                XAttribute(XName.Get "Version", Version.Value)
+            )
+
+        pack.AddBeforeSelf inject
+        csproj.Save "./_Issue156/Tests/Issue156.csproj"
+        Shell.copy "./_Issue156/Tests" (!! "./RegressionTesting/issue156/Tests/*.cs")
+        Shell.copy "./_Issue156/ClassLibrary1" (!! "./RegressionTesting/issue156/ClassLibrary1/*.cs*")
+
+        DotNet.restore
+            (fun o ->
+                let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue156/Tests")
+
+                let mparams = { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+
+                { tmp with MSBuildParams = mparams })
+            ""
+
+        let p0 =
+            { Primitive.PrepareOptions.Create() with
+                Dependencies =
+                    [ "C:\\WINDOWS\\Microsoft.NET\\assembly\\GAC_MSIL\\WindowsBase\\v4.0_4.0.0.0__31bf3856ad364e35\\WindowsBase.dll" ]
+                //Dependencies = ["WindowsBase.dll"]
+                AssemblyFilter =
+                    [| "nunit"
+                       "Adapter"
+                       "FSharp"
+                       "AltCover" |]
+                SingleVisit = true }
+
+        let pp0 = AltCover.PrepareOptions.Primitive p0
+        let c0 = Primitive.CollectOptions.Create()
+        let cc0 = AltCover.CollectOptions.Primitive c0
+
+        DotNet.test
+            (fun p ->
+                (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
+                      Configuration = DotNet.BuildConfiguration.Debug
+                      NoBuild = false })
+                     .WithAltCoverOptions
+                     pp0
+                     cc0
+                     ForceTrueOnly)
+                |> testWithCLIArguments)
+            ""
+    finally
+        let folder = (nugetCache @@ "altcover") @@ Version.Value
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -7018,6 +7128,7 @@ _Target "BulkReport" (fun _ ->
           "__AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
           "AltCover.Tests/Sample21.coverage.opencover.xml"
           "AltCover.Tests/Sample4.coverlet.xml" ]
+          @ if Environment.isWindows then [ "_Issue156/Tests/coverage.xml" ] else []
 
     let o3expect = // embeds
         !!(@"./**/JsonWithPartials*Xml.xml") |> Seq.toList
@@ -7320,6 +7431,9 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "Issue20" ==> "Deployment"
 
 "Unpack" ==> "Issue114" ==> "Deployment"
+
+"Unpack" ==> "Issue156"
+=?> ("Deployment", Environment.isWindows) // WPF
 
 "Unpack"
 ==> "DotnetGlobalIntegration"

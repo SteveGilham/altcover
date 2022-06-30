@@ -100,58 +100,6 @@ module internal Zip =
 
 type internal StringSink = Action<String>
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage;
-  NoComparison;
-  AutoSerializable(false)>]
-type internal UsageInfo =
-  { Intro: String
-    Options: OptionSet
-    Options2: OptionSet }
-
-module internal Output =
-  let mutable internal info: String -> unit =
-    ignore
-
-  let mutable internal warn: String -> unit =
-    ignore
-
-  let mutable internal echo: String -> unit =
-    ignore
-
-  let mutable internal error: String -> unit =
-    ignore
-
-  let mutable internal usage: UsageInfo -> unit =
-    ignore
-
-  let internal warnOn x = if x then warn else info
-
-  let internal logExceptionToFile path e =
-    Directory.CreateDirectory(path |> Path.GetDirectoryName)
-    |> ignore
-
-    use stream =
-      File.Open(path, FileMode.Append, FileAccess.Write)
-
-    use writer = new StreamWriter(stream)
-
-    let rec logException padding ex =
-      ex.ToString() |> writer.WriteLine
-
-      ex.GetType().GetProperties()
-      |> Seq.filter (fun p ->
-        [ "Message"; "StackTrace" ]
-        |> Seq.exists (fun n -> n == p.Name)
-        |> not)
-      |> Seq.iter (fun p ->
-        (padding + p.Name + " = ") |> writer.WriteLine
-
-        match p.GetValue(ex) with
-        | :? Exception as exx -> logException ("  " + padding) exx
-        | v -> v |> sprintf "%A" |> writer.WriteLine)
-
-    logException String.Empty e
-
 module internal CommandLine =
 
   let mutable internal verbosity = 0
@@ -163,9 +111,6 @@ module internal CommandLine =
 
   let internal dropReturnCode = ref false // ddFlag
 
-  let internal resources =
-    ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
-
   [<SuppressMessage("Gendarme.Rules.Design",
                     "AbstractTypesShouldNotHavePublicConstructorsRule",
                     Justification = "The compiler ignores the 'private ()' declaration")>]
@@ -173,7 +118,7 @@ module internal CommandLine =
   [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
   type internal Format private () =
     static member Local(resource, [<ParamArray>] args) =
-      String.Format(CultureInfo.CurrentCulture, resources.GetString resource, args)
+      String.Format(CultureInfo.CurrentCulture, Output.resources.GetString resource, args)
 
   module internal I =
     let internal conditionalOutput condition output = if condition () then output ()
@@ -242,19 +187,9 @@ module internal CommandLine =
         exceptions <- e :: exceptions
 
     let internal doPathOperation (f: unit -> 'a) (defaultValue: 'a) store =
-      let mutable result = defaultValue
-
-      try
-        result <- f ()
-      with
-      | :? ArgumentException as a -> a :> Exception |> (logException store)
-      | :? NotSupportedException as n -> n :> Exception |> (logException store)
-      | :? IOException as i -> i :> Exception |> (logException store)
-      | :? System.Security.SecurityException as s ->
-        s :> Exception |> (logException store)
-      | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
-
-      result
+      PathOperation.DoPathOperation f (fun x ->
+        x |> (logException store)
+        defaultValue)
 
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
@@ -263,18 +198,16 @@ module internal CommandLine =
       try
         action f
       with
-      | x ->
-        match x with
-        | :? IOException
-        | :? System.Security.SecurityException
-        | :? UnauthorizedAccessException ->
-          if depth < limit then
-            Threading.Thread.Sleep(rest)
-            doRetry action log limit rest (depth + 1) f
-          else
-            x.ToString() |> log
-
-        | _ -> reraise ()
+      | x when
+        (x :? IOException)
+        || (x :? System.Security.SecurityException)
+        || (x :? UnauthorizedAccessException)
+        ->
+        if depth < limit then
+          Threading.Thread.Sleep(rest)
+          doRetry action log limit rest (depth + 1) f
+        else
+          x.ToString() |> log
 
     let logExceptionsToFile name extend =
       let path =
@@ -319,21 +252,18 @@ module internal CommandLine =
     let internal validateFile file x =
       validateFileSystemEntity File.Exists fnf file x
 
-    let internal findAssemblyName f =
-      try
-        (AssemblyName.GetAssemblyName f).ToString()
-      with
-      | :? ArgumentException
-      | :? FileNotFoundException
-      | :? System.Security.SecurityException
-      | :? BadImageFormatException
-      | :? FileLoadException -> String.Empty
+    type SecurityException with
+      [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                        "AvoidMethodWithUnusedGenericTypeRule",
+                        Justification = "Matches clause type")>]
+      static member Throw<'T>(e: exn) : 'T =
+        (e.Message, e) |> SecurityException |> raise
 
     let internal transformCryptographicException f =
       try
         f ()
       with
-      | :? CryptographicException as c -> raise ((c.Message, c) |> SecurityException)
+      | :? CryptographicException as c -> c |> SecurityException.Throw
 
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
@@ -391,6 +321,9 @@ module internal CommandLine =
     | fail -> fail
 
   let internal applyVerbosity () =
+    if verbosity >= 0 then
+      Output.verbose <- ignore
+
     if verbosity >= 1 then
       Output.info <- ignore
       Output.echo <- ignore
@@ -407,7 +340,7 @@ module internal CommandLine =
       (fun () ->
         tag |> String.IsNullOrWhiteSpace |> not
         && error |> List.isEmpty |> not)
-      (fun () -> tag |> resources.GetString |> Output.error)
+      (fun () -> tag |> Output.resources.GetString |> Output.error)
 
     error |> List.iter Output.error
 
@@ -454,7 +387,8 @@ module internal CommandLine =
 
   let internal validateAssembly assembly x =
     if I.validateFile assembly x then
-      let name = I.findAssemblyName x
+      let name =
+        AssemblyConstants.findAssemblyName x
 
       if String.IsNullOrWhiteSpace name then
         error <-
@@ -489,9 +423,6 @@ module internal CommandLine =
   let internal doPathOperation =
     I.doPathOperation
 
-  let internal findAssemblyName =
-    I.findAssemblyName
-
   let internal validateDirectory dir x =
     I.validateFileSystemEntity Directory.Exists I.dnf dir x
 
@@ -517,25 +448,25 @@ module internal CommandLine =
 
   let internal usageBase u =
     I.writeColoured Console.Error ConsoleColor.Yellow (fun w ->
-      w.WriteLine(resources.GetString u.Intro)
+      w.WriteLine(Output.resources.GetString u.Intro)
       u.Options.WriteOptionDescriptions(w)
 
       if u.Options.Any() && u.Options2.Any() then
-        w.WriteLine(resources.GetString "orbinder")
+        w.WriteLine(Output.resources.GetString "orbinder")
 
       if u.Options2.Any() then
         w.WriteLine("  Runner")
         u.Options2.WriteOptionDescriptions(w)
 
-      w.WriteLine(resources.GetString "orbinder")
-      w.WriteLine(resources.GetString "ImportModule")
-      w.WriteLine(resources.GetString "orbinder")
-      w.WriteLine(resources.GetString "Version")
-      w.WriteLine(resources.GetString "orglobal")
-      w.WriteLine(resources.GetString "TargetsPath"))
+      w.WriteLine(Output.resources.GetString "orbinder")
+      w.WriteLine(Output.resources.GetString "ImportModule")
+      w.WriteLine(Output.resources.GetString "orbinder")
+      w.WriteLine(Output.resources.GetString "Version")
+      w.WriteLine(Output.resources.GetString "orglobal")
+      w.WriteLine(Output.resources.GetString "TargetsPath"))
 
   let internal writeResource =
-    resources.GetString >> Output.info
+    Output.resources.GetString >> Output.info
 
   let internal writeResourceWithFormatItems s x warn =
     Format.Local(s, x) |> (Output.warnOn warn)
@@ -550,4 +481,5 @@ module internal CommandLine =
     Output.usage <- usageBase
     Output.echo <- writeErr
     Output.info <- writeOut
+    Output.verbose <- writeOut
     Output.warn <- writeOut

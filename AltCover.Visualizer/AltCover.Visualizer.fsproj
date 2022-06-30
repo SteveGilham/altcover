@@ -38,19 +38,19 @@
     <Compile Include="Visualizer.fs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.24.24.34" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Mono.Options" Version="6.12.0.148" Condition="'$(TargetFramework)' != 'net472'" />
-    <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net472'">
-      <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
-    </Reference>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <PackageReference Include="GtkSharp" Version="3.24.24.38" />
+    <PackageReference Include="Mono.Options" Version="6.12.0.148" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="Mono.Options">
+      <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="atk-sharp">
+      <HintPath>..\ThirdParty\gtk-sharp2\atk-sharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="gdk-sharp">
       <HintPath>..\ThirdParty\gtk-sharp2\gdk-sharp.dll</HintPath>
       <Private>false</Private>
@@ -72,9 +72,6 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -86,8 +83,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="6.0.3">
+    <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

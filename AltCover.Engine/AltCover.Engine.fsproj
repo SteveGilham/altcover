@@ -23,12 +23,14 @@
     <Compile Include="Compatibility.fs" />
     <Compile Include="Exemption.fs" />
     <Compile Include="Abstraction.fs" />
+    <Compile Include="Output.fs" />
     <Compile Include="Canonical.fs" />
     <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Metadata.fs" />
+    <Compile Include="CecilEx.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
@@ -36,7 +38,6 @@
     <Compile Include="OpenCover.fs" />
     <Compile Include="NativeJson.fs" />
     <Compile Include="CommandLine.fs" />
-    <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="LCov.fs" />
     <Compile Include="Cobertura.fs" />
@@ -102,7 +103,7 @@
 
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="6.0.3">
+    <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

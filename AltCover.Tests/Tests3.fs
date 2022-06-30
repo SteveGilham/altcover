@@ -90,12 +90,13 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ShouldHaveExpectedOptions () =
     Main.init ()
     let options = Main.I.declareOptions ()
-    let optionCount = 34
+    let optionCount = 35
 
     let optionNames =
       options
@@ -130,11 +131,11 @@ module AltCoverTests3 =
     // add "commandline"
     Assert.That(
       primitiveNames |> List.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got primitive "
       + String.Join("; ", primitiveNames)
     )
 
@@ -147,11 +148,11 @@ module AltCoverTests3 =
 
     Assert.That(
       typesafeNames |> List.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got typesafe "
       + String.Join("; ", typesafeNames)
     )
 
@@ -183,22 +184,22 @@ module AltCoverTests3 =
 
     Assert.That(
       commandFragments |> List.length,
-      Is.EqualTo optionCount,
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", optionNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got fragments "
       + String.Join("; ", commandFragments)
     )
 
     // Adds "Tag", "IsPrimitive", "IsTypeSafe"
     Assert.That(
       fsapiNames |> Seq.length,
-      Is.EqualTo(optionCount + 1 + fsapiCases + 1),
+      Is.EqualTo(optionCount + fsapiCases + 1), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got fsapi "
       + String.Join("; ", fsapiNames)
     )
 
@@ -213,11 +214,11 @@ module AltCoverTests3 =
 
     Assert.That(
       taskNames |> Seq.length,
-      Is.EqualTo(optionCount + 1),
+      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got tasks "
       + String.Join("; ", taskNames)
     )
 
@@ -250,11 +251,11 @@ module AltCoverTests3 =
     // inplace is explicitly hard-coded
     Assert.That(
       attributeNames |> Seq.length,
-      Is.EqualTo(optionCount - 3),
+      Is.EqualTo(optionCount - 4), // drop -q/--verbose => verbosity
       "expected "
       + String.Join("; ", primitiveNames)
       + Environment.NewLine
-      + "but got  "
+      + "but got targets "
       + String.Join("; ", attributeNames)
     )
 
@@ -407,8 +408,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Attribute -> true
-          | _ -> false)
+          | FilterScope.Attribute -> true)
       )
 
       Assert.That(
@@ -507,8 +507,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Method -> true
-          | _ -> false)
+          | FilterScope.Method -> true)
       )
 
       Assert.That(
@@ -568,8 +567,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Type -> true
-          | _ -> false)
+          | FilterScope.Type -> true)
       )
 
       Assert.That(
@@ -630,8 +628,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Assembly -> true
-          | _ -> false)
+          | FilterScope.Assembly -> true)
       )
 
       Assert.That(
@@ -692,8 +689,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Assembly -> true
-          | _ -> false)
+          | FilterScope.Assembly -> true)
       )
 
       Assert.That(
@@ -752,8 +748,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Module -> true
-          | _ -> false)
+          | FilterScope.Module -> true)
       )
 
       Assert.That(
@@ -813,8 +808,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.File -> true
-          | _ -> false)
+          | FilterScope.File -> true)
       )
 
       Assert.That(
@@ -874,8 +868,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters
         |> Seq.forall (fun x ->
           match x.Scope with
-          | FilterScope.Path -> true
-          | _ -> false)
+          | FilterScope.Path -> true)
       )
 
       Assert.That(
@@ -1411,7 +1404,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
       let options = Main.I.declareOptions ()
 
       let here =
@@ -1431,8 +1424,8 @@ module AltCoverTests3 =
         Assert.That(x, Is.Empty)
 
       let expected =
-        Instrument.resolutionTable.Keys
-        |> Seq.map (fun a -> Instrument.resolutionTable.[a].Name.Name)
+        AssemblyConstants.resolutionTable.Keys
+        |> Seq.map (fun a -> AssemblyConstants.resolutionTable.[a].Name.Name)
         |> Seq.sort
 
       Assert.That(
@@ -1440,7 +1433,7 @@ module AltCoverTests3 =
         Is.EqualTo("AltCover.Engine AltCover.Tests")
       )
     finally
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
 
   //let ParsingNoDependencyGivesFailure() =
   //  Main.init()
@@ -1461,7 +1454,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
       let options = Main.I.declareOptions ()
 
       let unique =
@@ -1477,7 +1470,7 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
-      Instrument.resolutionTable.Clear()
+      AssemblyConstants.resolutionTable.Clear()
 
   [<Test>]
   let ParsingNonDependencyGivesFailure () =
@@ -2773,12 +2766,52 @@ module AltCoverTests3 =
       CommandLine.verbosity <- 0
 
   [<Test>]
+  let ParsingVerboseWorks () =
+    Main.init ()
+
+    try
+      let options = Main.I.declareOptions ()
+      let input = [| "--verbose" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo -1)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
   let ParsingMultiQuietWorks () =
     Main.init ()
 
     try
       let options = Main.I.declareOptions ()
       let input = [| "-q"; "-q"; "-q" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Right (x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+
+      Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+    finally
+      CommandLine.verbosity <- 0
+
+  [<Test>]
+  let ParsingMixedQuietWorks () =
+    Main.init ()
+
+    try
+      let options = Main.I.declareOptions ()
+      let input = [| "-qq"; "--verbose"; "-qq" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2930,6 +2963,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let OutputToReallyNewPlaceIsOK () =
@@ -2993,6 +3027,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let InPlaceToExistingPlaceFails () =
@@ -3035,6 +3070,7 @@ module AltCoverTests3 =
       CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let InPlaceOperationIsAsExpected () =
@@ -3112,14 +3148,15 @@ module AltCoverTests3 =
       CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let ImageLoadResilientPassesThrough () =
     Main.init ()
     let one = ref false
     let two = ref false
-    let set2 () = two.Value <- true
-    Main.I.imageLoadResilient (fun () -> one.Value <- true) set2
+    let set2 _ = two.Value <- true
+    Main.I.imageLoadResilient (fun _ -> one.Value <- true) set2
     Assert.That(one.Value)
     Assert.That(two.Value, Is.False)
     set2 ()
@@ -3135,9 +3172,13 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let io () = IOException("fail") |> raise
+    let io = IOException("fail")
+    let fio () = io |> raise
 
-    Main.I.imageLoadResilient (set1 io) (fun () -> two.Value <- true)
+    Main.I.imageLoadResilient (set1 fio) (fun x ->
+      Assert.That(x, Is.SameAs io)
+      two.Value <- true)
+
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3153,10 +3194,13 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let bif () =
-      BadImageFormatException("fail") |> raise
+    let bif = BadImageFormatException("fail")
+    let fbif () = bif |> raise
 
-    Main.I.imageLoadResilient (set1 bif) (fun () -> two.Value <- true)
+    Main.I.imageLoadResilient (set1 fbif) (fun x ->
+      Assert.That(x, Is.SameAs bif)
+      two.Value <- true)
+
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3172,9 +3216,13 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let arg () = ArgumentException("fail") |> raise
+    let arg = ArgumentException("fail")
+    let farg () = arg |> raise
 
-    Main.I.imageLoadResilient (set1 arg) (fun () -> two.Value <- true)
+    Main.I.imageLoadResilient (set1 farg) (fun x ->
+      Assert.That(x, Is.SameAs arg)
+      two.Value <- true)
+
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3236,7 +3284,7 @@ module AltCoverTests3 =
         use stream = File.OpenRead(f)
 
         use def =
-          Mono.Cecil.AssemblyDefinition.ReadAssembly(stream)
+          AssemblyResolver.ReadAssembly(stream)
 
         ProgramDatabase.readSymbols def
 
@@ -3259,7 +3307,7 @@ module AltCoverTests3 =
         Path.Combine(here, "Sample4.dll")
 
       use assembly =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly second
+        AssemblyResolver.ReadAssembly second
 
       assembly.MainModule.AssemblyReferences.Add(prepared.Name)
 
@@ -3381,8 +3429,9 @@ module AltCoverTests3 =
         f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
         || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
       |> Seq.filter (
-        Mono.Cecil.AssemblyDefinition.ReadAssembly
+        AssemblyResolver.ReadAssembly
         >> ProgramDatabase.getPdbFromImage
+        >> snd // TODO
         >> Option.isSome
       )
       |> Seq.sort
@@ -3469,6 +3518,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Output.verbose <- ignore
 
   [<Test>]
   let StoresAsExpected () =
@@ -3525,6 +3575,7 @@ module AltCoverTests3 =
     //Assert.That(result, Is.EqualTo(expected))
     finally
       Console.SetOut saved
+      Output.verbose <- ignore
 
   [<Test>]
   let VersionIsAsExpected () =
@@ -3565,6 +3616,7 @@ module AltCoverTests3 =
       )
     finally
       Console.SetOut saved
+      Output.verbose <- ignore
 
   [<Test>]
   let UsageIsAsExpected () =
@@ -3604,6 +3656,7 @@ module AltCoverTests3 =
       )
     finally
       Console.SetError saved
+      Output.verbose <- ignore
 
 #if !NET472
   [<Test>]
@@ -3640,12 +3693,12 @@ module AltCoverTests3 =
 
       test
         <@ stdout
-          .ToString()
-          .Equals(
-            expected.Replace("\\\\", "\\")
-            + Environment.NewLine,
-            StringComparison.Ordinal
-          ) @>
+             .ToString()
+             .Equals(
+               expected.Replace("\\\\", "\\")
+               + Environment.NewLine,
+               StringComparison.Ordinal
+             ) @>
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
@@ -3703,12 +3756,13 @@ module AltCoverTests3 =
       )
 
       let helptext =
-        CommandLine
+        Output
           .resources
           .GetString("HelpText")
           .Replace("\r\n", "\n")
 
-      let fixup (s: String) =
+      let fixupBase (s: String) =
+
         let valued =
           s.EndsWith("=", StringComparison.Ordinal)
 
@@ -3739,16 +3793,22 @@ module AltCoverTests3 =
         else
           "[--" + core + "]"
 
+      let fixup (s: String) =
+        if s.Length < 2 then
+          sprintf "[-%s]" s
+        else
+          fixupBase s
+
       let mainHelp =
         Main.I.declareOptions ()
         |> Seq.map (fun o -> o.Prototype)
-        |> Seq.filter (fun s -> s.Length > 2)
+        |> Seq.filter (fun s -> s.Length <> 2)
         |> Seq.map fixup
 
       let runnerHelp =
         Runner.declareOptions ()
         |> Seq.map (fun o -> o.Prototype)
-        |> Seq.filter (fun s -> s.Length > 2)
+        |> Seq.filter (fun s -> s.Length <> 2)
         |> Seq.map fixup
 
       let synthetic =
@@ -3760,6 +3820,7 @@ module AltCoverTests3 =
         + "or, for the global tool only\nAltCover TargetsPath\n\n"
         + "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
+      Assert.That(synthetic, Is.EqualTo helptext)
       test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
@@ -3806,12 +3867,14 @@ module AltCoverTests3 =
     member val Warn: Action<String> = null with get, set
     member val Failure: Action<String> = null with get, set
     member val Echo: Action<String> = null with get, set
+    member val Verbose: Action<String> = null with get, set
 
     interface Abstract.ILoggingOptions with
       member self.Info = self.Info
       member self.Warn = self.Warn
       member self.Failure = self.Failure
       member self.Echo = self.Echo
+      member self.Verbose = self.Verbose
 
   [<Test>]
   let LoggingCanBeExercised () =
@@ -3832,17 +3895,20 @@ module AltCoverTests3 =
     AltCover.LoggingOptions.Create().Warn "32"
     AltCover.LoggingOptions.Create().Error "32"
     AltCover.LoggingOptions.Create().Echo "32"
+    AltCover.LoggingOptions.Create().Verbose "32"
 
     let o = Logging()
     o.Info <- null
     o.Warn <- null
     o.Failure <- null
     o.Echo <- null
+    o.Verbose <- null
 
     Assert.That(o.Info, Is.Null)
     Assert.That(o.Warn, Is.Null)
     Assert.That(o.Failure, Is.Null)
     Assert.That(o.Echo, Is.Null)
+    Assert.That(o.Verbose, Is.Null)
 
     let p = AltCover.LoggingOptions.Translate o
     Assert.That(p.Warn, Is.Not.Null)
@@ -3851,6 +3917,7 @@ module AltCoverTests3 =
     p2.Warn "32"
     p2.Error "32"
     p2.Echo "32"
+    p2.Verbose "32"
 
   [<Test>]
   let EmptyInstrumentIsJustTheDefaults () =
@@ -3921,7 +3988,7 @@ module AltCoverTests3 =
     try
       // subject.ACLog <- Some <| FSApi.Logging.Create()
       [ "Off", [ "-q"; "-q"; "-q" ]
-        "Verbose", []
+        "Verbose", [ "--verbose" ]
         "NoneOfTheAbove", []
         "Info", []
         "Warning", [ "-q" ]
@@ -3954,6 +4021,7 @@ module AltCoverTests3 =
           level
         ))
     finally
+      CommandLine.verbosity <- 0
       Main.effectiveMain <- save
       Output.info <- fst saved
       Output.error <- snd saved
@@ -4139,7 +4207,7 @@ module AltCoverTests3 =
 
     try
       [ "Off", [ "-q"; "-q"; "-q" ]
-        "Verbose", []
+        "Verbose", [ "--verbose" ]
         "NoneOfTheAbove", []
         "Info", []
         "Warning", [ "-q" ]
@@ -4162,6 +4230,7 @@ module AltCoverTests3 =
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo([ "Runner"; "--collect" ] @ q), level))
     finally
+      CommandLine.verbosity <- 0
       Main.effectiveMain <- save
       Output.info <- fst saved
       Output.error <- snd saved
@@ -4400,6 +4469,7 @@ module AltCoverTests3 =
     write.SetValue(subject, Some(fun (s: string) -> ()))
     Assert.That(subject.Execute(), Is.False)
     Assert.That(subject.Extended, Is.Empty)
+    CommandLine.verbosity <- 0
 
   let template =
     """<?xml version="1.0" encoding="utf-8"?>
@@ -4665,7 +4735,7 @@ module AltCoverTests3 =
       Path.Combine(
         SolutionRoot.location,
 #if !NET472
-        "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+        "_Binaries/Sample4/Debug+AnyCPU/net6.0"
       )
 #else
         "_Binaries/Sample4/Debug+AnyCPU/net472"
@@ -4717,8 +4787,8 @@ module AltCoverTests3 =
 
       test
         <@ builder
-          .ToString()
-          .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
+             .ToString()
+             .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
 
     let builder = System.Text.StringBuilder()
     let monitor (s: string) = s |> builder.Append |> ignore

@@ -39,7 +39,7 @@ module internal Main =
     CoverageParameters.theOutputDirectories.Clear()
     CoverageParameters.configurationHash <- None
     ProgramDatabase.symbolFolders.Clear()
-    Instrument.resolutionTable.Clear()
+    AssemblyConstants.resolutionTable.Clear()
     Instrument.modules.Clear()
 
     CoverageParameters.keys.Clear()
@@ -112,7 +112,7 @@ module internal Main =
       CommandLine.error <-
         String.Format(
           CultureInfo.CurrentCulture,
-          CommandLine.resources.GetString "InvalidValue",
+          Output.resources.GetString "InvalidValue",
           "--callContext",
           x
         )
@@ -184,7 +184,8 @@ module internal Main =
                  CommandLine.validateAssembly "--dependency" path
 
                if ok then
-                 Instrument.resolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
+                 AssemblyResolver.Register name path)
+
              ()
              false))
 
@@ -317,6 +318,7 @@ module internal Main =
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
         ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
+        ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
         ("<>",
@@ -326,7 +328,7 @@ module internal Main =
              :: CommandLine.error)) ] // default end stop
       |> List.fold
            (fun (o: OptionSet) (p, a) ->
-             o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
+             o.Add(p, Output.resources.GetString(p), new System.Action<string>(a)))
            (OptionSet())
 
     let private echoDirectories (outputDirectory: string, inputDirectory: string) =
@@ -398,14 +400,17 @@ module internal Main =
           )
       | Left intro -> Left intro
 
-    let internal imageLoadResilient (f: unit -> 'a) (tidy: unit -> 'a) =
+    let internal imageLoadResilient (f: unit -> 'a) (tidy: exn -> 'a) =
       try
         f ()
       with
-      | :? Mono.Cecil.Cil.SymbolsNotMatchingException
-      | :? BadImageFormatException
-      | :? ArgumentException
-      | :? IOException -> tidy ()
+      | x when
+        (x :? Mono.Cecil.Cil.SymbolsNotMatchingException)
+        || (x :? BadImageFormatException)
+        || (x :? ArgumentException)
+        || (x :? IOException)
+        ->
+        tidy (x)
 
     let internal matchType =
       Maybe
@@ -467,9 +472,15 @@ module internal Main =
         let files =
           inputInfo.GetFiles("*", SearchOption.AllDirectories)
           |> Seq.filter (fun i ->
-            outputInfos
-            |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
-            |> not)
+            let ok =
+              outputInfos
+              |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
+              |> not
+
+            sprintf "%s : ** is in output tree **" i.FullName
+            |> (Output.maybeVerbose (not ok))
+
+            ok)
 
         // mutable bucket
         let filemap =
@@ -510,7 +521,11 @@ module internal Main =
 // #endif
 
         filemap
-        |> Seq.iter (fun kvp -> File.Copy(kvp.Key, kvp.Value, true)))
+        |> Seq.iter (fun kvp ->
+          sprintf "Copying input %s to output %s" kvp.Key kvp.Value
+          |> Output.verbose
+
+          File.Copy(kvp.Key, kvp.Value, true)))
 
       // Track the symbol-bearing assemblies
       let assemblies =
@@ -521,22 +536,42 @@ module internal Main =
                (fun (accumulator: AssemblyInfo list) info ->
                  let fullName = info.FullName
 
+                 fullName
+                 |> sprintf "%s : beginning process"
+                 |> Output.verbose
+
                  imageLoadResilient
                    (fun () ->
                      use stream = File.OpenRead(fullName)
 
                      use def =
-                       AssemblyDefinition.ReadAssembly(stream)
+                       AssemblyResolver.ReadAssembly(stream)
 
                      ProgramDatabase.readSymbols def
 
                      Some def
                      |> Option.bind (screenAssembly fullName)
                      |> Option.filter (fun def ->
-                       def.MainModule.HasSymbols
-                       && (def.IsIncluded).IsInstrumented
-                       && (def.MainModule.Attributes
-                           &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly))
+                       let symbols = def.MainModule.HasSymbols
+
+                       let passesFilter =
+                         (def.IsIncluded).IsInstrumented
+
+                       let pureIL =
+                         def.MainModule.Attributes
+                         &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly
+
+                       let ok = symbols && passesFilter && pureIL
+
+                       sprintf
+                         "%s : ** Failed one of : symbols %A/ pass filter %A/ ILOnly %A **"
+                         def.MainModule.FileName
+                         symbols
+                         passesFilter
+                         pureIL
+                       |> (Output.maybeVerbose (not ok))
+
+                       ok)
                      |> Option.map (fun def ->
                        CommandLine.Format.Local("instrumenting", fullName)
                        |> Output.info
@@ -555,7 +590,11 @@ module internal Main =
                            |> Seq.toList }
                        :: accumulator)
                      |> Option.defaultValue accumulator)
-                   (fun () -> accumulator))
+                   (fun x ->
+                     sprintf "%s : ** not a valid assembly because %A **" info.FullName x
+                     |> Output.verbose
+
+                     accumulator))
                [])
         |> Seq.toList
         |> Seq.concat

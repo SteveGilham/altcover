@@ -17,7 +17,8 @@ module Trace =
           Info = Trace.trace
           Warn = Trace.traceImportant
           Failure = Trace.traceError
-          Echo = Trace.traceVerbose }
+          Echo = Trace.traceVerbose
+          Verbose = Trace.traceVerbose }
 
   let internal doDefault (log: AltCover.LoggingOptions option) =
     match log with

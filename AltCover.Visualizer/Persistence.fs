@@ -180,14 +180,14 @@ module internal Persistence =
     let names =
       fileKey.GetValueNames()
       |> Array.filter (fun (s: string) -> s.Length = 1 && Char.IsDigit(s.Chars(0)))
-      |> Array.sortBy (fun s -> Int32.TryParse(s) |> snd)
+      |> Array.sortBy (Int32.TryParse >> snd)
 
     let files =
       names
       |> Array.map (keyToValue fileKey)
       |> Seq.cast<string>
-      |> Seq.filter (fun n -> not (String.IsNullOrWhiteSpace(n)))
-      |> Seq.filter (fun n -> File.Exists(n))
+      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+      |> Seq.filter File.Exists
       |> Seq.toList
 
     handler.CoverageFiles <- files

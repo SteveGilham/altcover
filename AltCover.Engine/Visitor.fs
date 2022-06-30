@@ -692,7 +692,7 @@ module internal Visitor =
               Identity = path.Identity }
 
         path.AssemblyPath
-        |> (AssemblyDefinition.ReadAssembly
+        |> (AssemblyResolver.ReadAssembly
             >> makeInspection
             >> buildSequence))
 

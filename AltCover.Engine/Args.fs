@@ -96,7 +96,8 @@ module internal Args =
     |> List.collect (fun (a, b) -> flag a b)
 
   let internal countItems (args: Abstract.IPrepareOptions) =
-    [ ("-q", 2 - (int args.Verbosity)) ]
+    let v = int args.Verbosity
+    [ ("-q", 2 - v); ("--verbose", v - 4) ]
 
   let internal counts (args: Abstract.IPrepareOptions) =
     args
@@ -135,7 +136,9 @@ module internal Args =
 
     let exe = args.Executable
 
-    let countItems (args: Abstract.ICollectOptions) = [ ("-q", 2 - (int args.Verbosity)) ]
+    let countItems (args: Abstract.ICollectOptions) =
+      let v = int args.Verbosity
+      [ ("-q", 2 - v); ("--verbose", v - 4) ]
 
     let counts (args: Abstract.ICollectOptions) =
       args

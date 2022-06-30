@@ -67,9 +67,9 @@ module AltCoverXTests =
         | "document" ->
           test'
             <@ a1
-              .Value
-              .Replace("\\", "/")
-              .EndsWith(a2.Value.Replace("\\", "/")) @>
+                 .Value
+                 .Replace("\\", "/")
+                 .EndsWith(a2.Value.Replace("\\", "/")) @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -137,16 +137,16 @@ module AltCoverXTests =
         | "fullPath" ->
           test'
             <@ a1
-              .Value
-              .Replace("\\", "/")
-              .Replace("altcover", "AltCover")
-              .Replace("Samples/", String.Empty)
-              .EndsWith(
-                a2
-                  .Value
-                  .Replace("\\", "/")
-                  .Replace("altcover", "AltCover")
-              ) @>
+                 .Value
+                 .Replace("\\", "/")
+                 .Replace("altcover", "AltCover")
+                 .Replace("Samples/", String.Empty)
+                 .EndsWith(
+                   a2
+                     .Value
+                     .Replace("\\", "/")
+                     .Replace("altcover", "AltCover")
+                 ) @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -171,6 +171,7 @@ module AltCoverXTests =
     let subject =
       { Primitive.CollectOptions.Create() with
           Threshold = "23"
+          Verbosity = System.Diagnostics.TraceLevel.Error
           CommandLine = null }
 
     let instance =
@@ -179,7 +180,14 @@ module AltCoverXTests =
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
-    test <@ instance |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+
+    test
+      <@ instance |> Args.collect = [ "Runner"
+                                      "-t"
+                                      "23"
+                                      "--collect"
+                                      "-q"
+                                      "-q" ] @>
     // hack
     let rerun =
       AltCover.CollectOptions.Abstract instance
@@ -187,7 +195,14 @@ module AltCoverXTests =
     let scan = rerun.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (rerun.GetHashCode() :> obj).IsNotNull @>
-    test <@ rerun |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+
+    test
+      <@ rerun |> Args.collect = [ "Runner"
+                                   "-t"
+                                   "23"
+                                   "--collect"
+                                   "-q"
+                                   "-q" ] @>
 
   [<Test>]
   let TypeSafeEmptyThresholdCanBeValidated () =
@@ -212,6 +227,7 @@ module AltCoverXTests =
       { TypeSafe.CollectOptions.Create() with
           Threshold = TypeSafe.Threshold t
           SummaryFormat = TypeSafe.BPlus
+          Verbosity = System.Diagnostics.TraceLevel.Verbose
           Executable = TypeSafe.Tool "dotnet" }
 
     let instance =
@@ -228,13 +244,14 @@ module AltCoverXTests =
                                       "dotnet"
                                       "-t"
                                       "S23B16M7C3"
-                                      "--summary:BOC" ] @>
+                                      "--summary:BOC"
+                                      "--verbose" ] @>
 
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @>
 
     test
-      <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC" @>
+      <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC --verbose" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated () =
@@ -661,6 +678,34 @@ module AltCoverXTests =
          |> not @>
 
   [<Test>]
+  let OutputVerbose () =
+    let save1 = Output.info
+    let save2 = CommandLine.verbosity
+
+    try
+      let mutable buffer = String.Empty
+      Output.verbose <- ignore
+
+      Output.maybeVerbose false "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Output.maybeVerbose true "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Output.verbose <- fun x -> buffer <- x
+
+      Output.maybeVerbose false "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Output.maybeVerbose true "OutputVerbose"
+      test <@ buffer = "OutputVerbose" @>
+
+    finally
+      Output.info <- save1
+      CommandLine.verbosity <- save2
+      Output.verbose <- ignore
+
+  [<Test>]
   let ADotNetDryRunLooksAsExpected () =
     let where =
       Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
@@ -668,7 +713,7 @@ module AltCoverXTests =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net6.0")
 
     let key0 =
       Path.Combine(here, "Build/SelfTest.snk")
@@ -732,6 +777,7 @@ module AltCoverXTests =
            "-s=nunit"
            "-e=Sample"
            "-c=[Test]"
+           "--localSource"
            "--save" |]
 
       let result = Main.I.doInstrumentation args
@@ -786,12 +832,18 @@ module AltCoverXTests =
 
       let expected =
         [ "AltCover.Recorder.g.dll"
+          "FSharp.Core.dll"
+          "Newtonsoft.Json.dll"
+          "NuGet.Frameworks.dll"
           "Sample4.deps.json"
           "Sample4.dll"
-          "Sample4.runtimeconfig.dev.json"
           "Sample4.runtimeconfig.json"
           "Sample4.pdb"
           "Unquote.dll"
+          "xunit.abstractions.dll"
+          "xunit.assert.dll"
+          "xunit.core.dll"
+          "xunit.execution.dotnet.dll"
           "xunit.runner.reporters.netcoreapp10.dll"
           "xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
@@ -1079,14 +1131,13 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
-    let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     use recstream =
       AltCoverTests2.recorderStream ()
 
     use recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1138,14 +1189,13 @@ module AltCoverXTests =
     let path = monoSample1path
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
-    let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     use recstream =
       AltCoverTests2.recorderStream ()
 
     use recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+      AssemblyResolver.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1197,8 +1247,7 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-    let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1238,8 +1287,7 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
-    let def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let def = AssemblyResolver.ReadAssembly path
 
     ProgramDatabase.readSymbols def
 
@@ -1249,7 +1297,7 @@ module AltCoverXTests =
         .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     use recorder =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly from
+      AssemblyResolver.ReadAssembly from
 
     ProgramDatabase.readSymbols recorder
 

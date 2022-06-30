@@ -256,7 +256,7 @@ using System.Runtime.CompilerServices;
             |> Seq.toList
 
         let expected =
-            ".ctor Invoke as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"
+            ".ctor as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"
 
         Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
 
@@ -278,7 +278,8 @@ using System.Runtime.CompilerServices;
             |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
             |> Seq.toList
 
-        let expected = "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        let expected = "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+        //"0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
@@ -400,6 +401,7 @@ using System.Runtime.CompilerServices;
         let prep =
             AltCover.PrepareOptions.Primitive
                 { Primitive.PrepareOptions.Create() with
+                    // Verbosity = System.Diagnostics.TraceLevel.Verbose
                     TypeFilter = [ """System\.""" ]
                     Report = simpleReport
                     OutputDirectories = [| "./" + instrumented |]
@@ -585,7 +587,8 @@ a:hover {color: #ecc;}
             |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
             |> Seq.toList
 
-        let expected = "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        let expected = "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+        //"0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         // "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A in %s" recorded path)

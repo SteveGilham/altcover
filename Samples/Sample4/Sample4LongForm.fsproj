@@ -40,7 +40,7 @@
   </Target>
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="6.0.3" />
+    <PackageReference Include="FSharp.Core" Version="6.0.5" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -66,8 +66,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\netcoreapp2.1\.NETCoreApp,Version=v2.1.AssemblyAttributes.fs" />
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\netcoreapp2.1\Sample4.AssemblyInfo.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\Sample4.AssemblyInfo.fs" />
   </ItemGroup>
   
   <ItemGroup>

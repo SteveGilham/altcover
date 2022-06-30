@@ -1,5 +1,8 @@
 ﻿namespace AltCover
 
+open System
+open System.IO
+
 [<AutoOpen>]
 module Abstraction =
 

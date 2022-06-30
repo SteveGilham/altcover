@@ -1301,11 +1301,13 @@ module FSApiTests =
       |> AltCover.AltCover.CollectOptions.Primitive
 
     let prep2 =
-      { pprep with Verbosity = TraceLevel.Error }
+      { pprep with
+          Verbosity = TraceLevel.Error
+          Dependencies = [ "nonesuch.dll" ] }
       |> AltCover.AltCover.PrepareOptions.Primitive
 
     test
-      <@ DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+      <@ DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
 
   [<Test>]
   let MergeRejectsNonCoverage () =
