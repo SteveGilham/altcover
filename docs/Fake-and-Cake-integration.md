@@ -1,4 +1,4 @@
-# F# Fake and Cake integration v7.x and up
+# F# Fake and Cake integration v7.x and later
 
 APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` and `AltCover.Fake.dll` assemblies, which are present in the `AltCover.Api` nuget package
 
