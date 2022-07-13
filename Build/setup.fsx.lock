@@ -130,7 +130,7 @@ NUGET
     Microsoft.NET.StringTools (1.0)
       System.Memory (>= 4.5.4)
       System.Runtime.CompilerServices.Unsafe (>= 5.0)
-    Microsoft.NETCore.Platforms (6.0.4) - restriction: || (&& (== net6.0) (< netcoreapp3.1)) (&& (== net6.0) (< netstandard1.2)) (&& (== net6.0) (< netstandard1.3)) (&& (== net6.0) (< netstandard1.5)) (== netstandard2.0)
+    Microsoft.NETCore.Platforms (6.0.5) - restriction: || (&& (== net6.0) (< netcoreapp3.1)) (&& (== net6.0) (< netstandard1.2)) (&& (== net6.0) (< netstandard1.3)) (&& (== net6.0) (< netstandard1.5)) (== netstandard2.0)
     Microsoft.NETCore.Targets (5.0) - restriction: || (&& (== net6.0) (< netcoreapp3.1)) (&& (== net6.0) (< netstandard1.2)) (&& (== net6.0) (< netstandard1.3)) (&& (== net6.0) (< netstandard1.5)) (== netstandard2.0)
     Microsoft.Win32.Registry (5.0)
       System.Buffers (>= 4.5.1) - restriction: || (&& (== net6.0) (>= monoandroid) (< netstandard1.3)) (&& (== net6.0) (>= monotouch)) (&& (== net6.0) (< netcoreapp2.0)) (&& (== net6.0) (>= xamarinios)) (&& (== net6.0) (>= xamarinmac)) (&& (== net6.0) (>= xamarintvos)) (&& (== net6.0) (>= xamarinwatchos)) (== netstandard2.0)
