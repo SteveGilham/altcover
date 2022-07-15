@@ -2,6 +2,9 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.3.8xx (Habu series release 15)
+* [BUGFIX] -- Issue #161: Add retry logic to `ContingentCopy` task 
+
 # 8.3.838 (Habu series release 14)
 * [GTK-VISUALIZER] Fix off-by-one error in markup for the very last line of the file
 * [BUGFIX] -- Out-of-process APIs generating `dotnet test`: fix to allow activating ZipFile, MethodPoint, SingleVisit and SourceLink
