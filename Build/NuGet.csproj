@@ -23,7 +23,7 @@
     <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->
     <PackageReference Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.15.2" />
     <PackageReference Include="OpenCover" version="4.7.1221" />
-    <PackageReference Include="xunit.runner.console" version="2.4.1" />
+    <PackageReference Include="xunit.runner.console" version="2.4.2" />
     <PackageReference Include="Pester" version="5.3.3" />
     <PackageReference Include="AltCode.Dixon" version="2022.1.8.13182" />
     <PackageReference Include="altcode.gendarme" version="2022.5.17.8260" />
