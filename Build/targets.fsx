@@ -6800,14 +6800,9 @@ _Target "Issue114" (fun _ ->
             csproj.Descendants(XName.Get("PackageReference"))
             |> Seq.head
 
-        let inject =
-            XElement(
-                XName.Get "PackageReference",
-                XAttribute(XName.Get "Include", "altcover.api"),
-                XAttribute(XName.Get "Version", Version.Value)
-            )
-
-        pack.AddBeforeSelf inject
+        // Bump API version
+        Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "AltCover.Api")
+        pack.Attribute(XName.Get "Version").Value <- Version.Value
         csproj.Save "./_Issue114/Sample26.fsproj"
         Shell.copy "./_Issue114" (!! "./Samples/Sample26/*.fs")
 
