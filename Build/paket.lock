@@ -172,21 +172,21 @@ NUGET
       Microsoft.Build.Tasks.Core (>= 16.10) - restriction: >= netstandard2.0
       Microsoft.Build.Utilities.Core (>= 16.10) - restriction: >= netstandard2.0
     Newtonsoft.Json (13.0.1) - restriction: >= netstandard2.0
-    NuGet.Common (6.2.1) - restriction: >= netstandard2.0
-      NuGet.Frameworks (>= 6.2.1) - restriction: || (>= net45) (>= netstandard2.0)
-    NuGet.Configuration (6.2.1) - restriction: >= netstandard2.0
-      NuGet.Common (>= 6.2.1) - restriction: || (>= net45) (>= netstandard2.0)
-      System.Security.Cryptography.ProtectedData (>= 4.4) - restriction: && (< net45) (>= netstandard2.0)
-    NuGet.Frameworks (6.2.1) - restriction: >= netstandard2.0
-    NuGet.Packaging (6.2.1) - restriction: >= netstandard2.0
+    NuGet.Common (6.3) - restriction: >= netstandard2.0
+      NuGet.Frameworks (>= 6.3) - restriction: >= netstandard2.0
+    NuGet.Configuration (6.3) - restriction: >= netstandard2.0
+      NuGet.Common (>= 6.3) - restriction: >= netstandard2.0
+      System.Security.Cryptography.ProtectedData (>= 4.4) - restriction: && (< net472) (>= netstandard2.0)
+    NuGet.Frameworks (6.3) - restriction: >= netstandard2.0
+    NuGet.Packaging (6.3) - restriction: >= netstandard2.0
       Newtonsoft.Json (>= 13.0.1) - restriction: >= netstandard2.0
-      NuGet.Configuration (>= 6.2.1) - restriction: >= netstandard2.0
-      NuGet.Versioning (>= 6.2.1) - restriction: >= netstandard2.0
+      NuGet.Configuration (>= 6.3) - restriction: >= netstandard2.0
+      NuGet.Versioning (>= 6.3) - restriction: >= netstandard2.0
       System.Security.Cryptography.Cng (>= 5.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net5.0)
       System.Security.Cryptography.Pkcs (>= 5.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net5.0)
-    NuGet.Protocol (6.2.1) - restriction: >= netstandard2.0
-      NuGet.Packaging (>= 6.2.1) - restriction: >= netstandard2.0
-    NuGet.Versioning (6.2.1) - restriction: >= netstandard2.0
+    NuGet.Protocol (6.3) - restriction: >= netstandard2.0
+      NuGet.Packaging (>= 6.3) - restriction: >= netstandard2.0
+    NuGet.Versioning (6.3) - restriction: >= netstandard2.0
     System.Buffers (4.5.1) - restriction: || (&& (>= monoandroid) (< netstandard1.1) (>= netstandard2.0)) (&& (>= monoandroid) (< netstandard1.3) (>= netstandard2.0)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard2.0) (< win8)) (&& (>= monotouch) (>= netstandard2.0)) (&& (< net45) (< netcoreapp2.0) (>= netstandard2.0)) (>= net461) (&& (>= net5.0) (< netstandard2.1)) (&& (< net6.0) (>= netstandard2.0)) (&& (< net6.0) (>= netstandard2.1)) (&& (< netstandard1.1) (>= netstandard2.0) (>= win8)) (&& (>= netstandard2.0) (< netstandard2.1)) (&& (>= netstandard2.0) (>= xamarintvos)) (&& (>= netstandard2.0) (>= xamarinwatchos)) (>= xamarinios) (>= xamarinmac)
     System.CodeDom (6.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net6.0)
     System.Collections.Immutable (6.0)
@@ -238,11 +238,11 @@ NUGET
       System.Memory (>= 4.5.4) - restriction: && (< net461) (>= netstandard2.0) (< netstandard2.1)
       System.Security.Cryptography.Cng (>= 5.0) - restriction: || (&& (< net461) (>= netstandard2.0) (< netstandard2.1)) (&& (< net6.0) (>= netcoreapp3.1)) (&& (< netcoreapp3.1) (>= netstandard2.1))
     System.Security.Cryptography.Primitives (4.3) - restriction: || (&& (< monoandroid) (< net46) (< netstandard1.4) (>= netstandard2.0)) (&& (< monoandroid) (< net46) (< netstandard1.6) (>= netstandard2.0)) (&& (< monoandroid) (>= net5.0) (< netstandard1.4)) (&& (< monoandroid) (>= net5.0) (< netstandard1.6)) (&& (< monoandroid) (>= net5.0) (< netstandard2.0) (< xamarintvos) (< xamarinwatchos)) (&& (>= net46) (>= net5.0) (< netstandard1.4)) (&& (>= net46) (< netstandard1.4) (>= netstandard2.0)) (&& (< net46) (>= net461) (< netstandard1.6) (>= netstandard2.0)) (&& (< net46) (>= net47) (>= netstandard2.0)) (&& (>= net461) (< net462) (< netstandard1.6) (>= netstandard2.0)) (&& (>= net461) (>= net5.0) (< netstandard1.4)) (&& (>= net461) (>= net5.0) (< netstandard1.6)) (&& (>= net461) (< netstandard1.4) (>= netstandard2.0)) (&& (>= net462) (>= net5.0) (< netstandard1.4)) (&& (>= net462) (>= net5.0) (< netstandard1.6)) (&& (>= net462) (< netstandard1.4) (>= netstandard2.0)) (&& (>= net462) (< netstandard1.6) (>= netstandard2.0)) (&& (>= net463) (>= net5.0) (< netstandard1.4)) (&& (>= net463) (>= net5.0) (< netstandard1.6)) (&& (>= net463) (>= net5.0) (< netstandard2.0)) (&& (>= net463) (< netstandard1.4) (>= netstandard2.0)) (&& (>= net463) (< netstandard1.6) (>= netstandard2.0)) (&& (>= net47) (< net472) (>= netstandard2.0)) (&& (>= net47) (>= net5.0)) (&& (>= net47) (< netstandard1.4) (>= netstandard2.0)) (&& (>= net47) (< netstandard1.6) (>= netstandard2.0))
-    System.Security.Cryptography.ProtectedData (6.0) - restriction: || (&& (< net45) (>= netstandard2.0)) (&& (< net461) (>= net472)) (>= net6.0)
-    System.Security.Cryptography.Xml (6.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net6.0)
+    System.Security.Cryptography.ProtectedData (6.0) - restriction: || (&& (< net461) (>= net472)) (&& (< net472) (>= netstandard2.0)) (>= net6.0)
+    System.Security.Cryptography.Xml (6.0.1) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net6.0)
       System.Memory (>= 4.5.4) - restriction: && (< net461) (< net6.0) (>= netstandard2.0)
       System.Security.AccessControl (>= 6.0) - restriction: || (>= net461) (>= netstandard2.0)
-      System.Security.Cryptography.Pkcs (>= 6.0) - restriction: || (&& (< net461) (>= netstandard2.0)) (>= net6.0)
+      System.Security.Cryptography.Pkcs (>= 6.0.1) - restriction: || (&& (< net461) (>= netstandard2.0)) (>= net6.0)
     System.Security.Permissions (6.0) - restriction: >= netstandard2.0
       System.Security.AccessControl (>= 6.0) - restriction: || (>= net461) (>= netstandard2.0)
       System.Windows.Extensions (>= 6.0) - restriction: >= netcoreapp3.1
