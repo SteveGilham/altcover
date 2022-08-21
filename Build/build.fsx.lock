@@ -160,7 +160,7 @@ NUGET
       System.Net.Http (>= 4.3.3)
       System.Reflection.Emit (>= 4.3)
       System.ValueTuple (>= 4.5)
-    Markdig (0.30.2)
+    Markdig (0.30.3)
       System.Memory (>= 4.5.4) - restriction: || (&& (== net6.0) (>= net452)) (&& (== net6.0) (< netstandard2.1)) (== netstandard2.0)
     Microsoft.Build (17.2)
       Microsoft.Build.Framework (>= 17.2) - restriction: || (== net6.0) (&& (== netstandard2.0) (>= net472)) (&& (== netstandard2.0) (>= net6.0))

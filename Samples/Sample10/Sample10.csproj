@@ -21,8 +21,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-  </ItemGroup>
-
 </Project>

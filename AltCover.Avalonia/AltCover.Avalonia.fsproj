@@ -41,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.17" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.17" />
+    <PackageReference Include="Avalonia" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -57,7 +57,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>

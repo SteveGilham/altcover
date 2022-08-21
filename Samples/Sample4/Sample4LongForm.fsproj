@@ -9,25 +9,25 @@
     <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
     <OutputPathWithoutEndSlash>$(BuildDir)$(ProjectBuildDirectoryName)/legacy</OutputPathWithoutEndSlash>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Tailcalls>false</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
-  
+
   <Import Project="..\..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="..\..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.2\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets" Condition="Exists('..\..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" />
   <Import Project="..\..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
-  
+
   <Target Name="AfterBuild" Condition="'$(MSBuildTest)' != 'true'">
     <ItemGroup>
       <FSharpXml Include="$(OutputPath)/FSharp.*.xml" />
     </ItemGroup>
     <Delete Files="@(FSharpXml)" />
   </Target>
-  
+
   <Target Name="AfterBuildMigrated">
     <ItemGroup>
       <AssemblyFilter Include="xunit" />
@@ -38,9 +38,9 @@
     <Delete Files="@(FSharpXml)" />
     <AltCover.Prepare Condition="'$(MSBuildTest)' == 'true'" InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" />
   </Target>
-  
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="xunit" Version="2.4.2" />
@@ -51,24 +51,24 @@
     <PackageReference Include="xunit.extensibility.core" Version="2.4.2" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.4.2" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Include="Tests.fs" />
     <Compile Include="..\..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="Unquote">
       <HintPath>..\..\ThirdParty\Unquote5.dll</HintPath>
     </Reference>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.fs" />
     <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\Sample4.AssemblyInfo.fs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Strings.eo.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -77,9 +77,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.5" />
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
   </ItemGroup>
 </Project>

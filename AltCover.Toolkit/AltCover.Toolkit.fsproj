@@ -53,7 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
