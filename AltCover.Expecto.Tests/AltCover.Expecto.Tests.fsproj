@@ -20,8 +20,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Expecto" Version="9.0.4" />
-    <PackageReference Include="Expecto.TestResults" Version="8.13.2" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="1.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
   </ItemGroup>
