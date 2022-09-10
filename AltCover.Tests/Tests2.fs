@@ -923,7 +923,13 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let size = finish.Offset + finish.GetSize()
 
+    let f = pathGetterDef.Body.Instructions.[2].Operand :?> FieldDefinition
+    let primitive = f.FieldType
+    let np = ArrayType(primitive, 23)
+
     pathGetterDef.DebugInformation.Scope <- rescope
+
+    let bexpect = System.Text.StringBuilder()
 
     [ -1
       4
@@ -935,9 +941,21 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let s = ScopeDebugInformation(start, null)
       s.Start <- InstructionOffset(i)
       s.End <- InstructionOffset(size)
+      let n = i.ToString().Replace("-", "_")
+      s.Constants.Add <| ConstantDebugInformation("I"+n, primitive, null)
+      s.Constants.Add <| ConstantDebugInformation("A"+n, np, null)
+
+      sprintf "Null Primitive Constant I%s in method System.Boolean Sample31.Class3/Class4::get_Defer()" n
+      |> bexpect.AppendLine
+      |> ignore
       rescope.Scopes.Add s)
 
     rescope.Scopes.Add rescope
+
+    let save = Output.warn
+    let b = System.Text.StringBuilder()
+
+    Output.warn <- b.AppendLine >> ignore
 
     prepareLocalScopes pathGetterDef
 
@@ -966,6 +984,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
       |> Seq.toList
 
     test <@ result = expected @>
+    test <@ b.ToString() = bexpect.ToString() @>
+
+    Output.warn <- save
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =
