@@ -13,6 +13,7 @@ open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
+open Mono.Cecil.Metadata
 
 module AssemblyConstants =
   let internal nugetCache =
@@ -190,11 +191,37 @@ module internal CecilExtension =
        System.Reflection.BindingFlags.Instance
        ||| System.Reflection.BindingFlags.NonPublic)
 
+  let etypeField =
+    typeof<TypeReference>.GetField
+      ("etype",
+       System.Reflection.BindingFlags.Instance
+       ||| System.Reflection.BindingFlags.NonPublic)
+
   let internal offsetTable =
     System.Collections.Generic.SortedDictionary<int, Instruction>()
 
   let unresolved (point: InstructionOffset) =
     isResolvedProp.GetValue(point) :?> bool |> not
+
+  let checkScopeConstants (m: MethodDefinition) =
+    scopesSeen
+    |> Seq.iter(fun scope -> let sus = scope.Constants
+                                       |> Seq.filter (fun c -> (isNull c.Value) &&
+                                                               match etypeField.GetValue(c.ConstantType) :?> byte with
+                                                               | 0x14uy // ElementType.Array
+                                                               | 0x1duy // ElementType.SzArray
+                                                               | 0x12uy // ElementType.Class
+                                                               | 0x1cuy // ElementType.Object
+                                                               | 0x00uy // ElementType.None
+                                                               | 0x13uy // ElementType.Var
+                                                               | 0x1euy // ElementType.MVar
+                                                               | 0x0euy // ElementType.String
+                                                                   -> false
+                                                               | _ -> not c.ConstantType.IsPrimitive)
+                                      |> Seq.toList
+                             sus |> Seq.iter (fun c -> scope.Constants.Remove c |> ignore
+                                                       sprintf "Null Constant %s elided in method %s" c.Name m.FullName
+                                                       |> Output.verbose))
 
   let prepareLocalScopes (m: MethodDefinition) =
     offsetTable.Clear()
@@ -238,6 +265,9 @@ module internal CecilExtension =
             scope.End <- resolvePoint scope.End
 
     m.DebugInformation.Scope |> resolveScope
+
+    checkScopeConstants m
+
     pruneLocalScopes m
 
   // Adjust the IL for exception handling

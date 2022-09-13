@@ -1,6 +1,6 @@
 # Collect.Verbosity property
 
-Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
 
 ```csharp
 public string Verbosity { get; set; }

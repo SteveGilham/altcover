@@ -102,5 +102,6 @@ command line and usage warninings only.
     abstract member Warn : Action<String> with get
     abstract member Failure : Action<String> with get
     abstract member Echo : Action<String> with get
+    abstract member Verbose : Action<String> with get
     end
 

@@ -1,6 +1,6 @@
 # TypeSafe.PrepareOptions.Verbosity property
 
-Corresponds to command line option ` -q`
+Corresponds to command line options `-q` and `--verbose`
 
 ```csharp
 public TraceLevel Verbosity { get; }

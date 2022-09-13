@@ -96,10 +96,10 @@ The members correspond to the like-named command line options for `AltCover`, ex
         ShowStatic: string
         ShowGenerated: bool
         Verbosity : System.Diagnostics.TraceLevel
-}
-      with
+      }
+    with
         static member Create : unit -> PrepareOptions
-      end
+    end
 ```
 `Create()` returns an instance that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
 
@@ -114,14 +114,15 @@ command line and usage warninings only.
 ```
     [<NoComparison; NoEquality>]
     type LoggingOptions =
-      {
+        {
         Info : System.String -> unit
         Warn : System.String -> unit
         Failure : System.String -> unit
-        Echo : System.String -> unit }
-      with
+        Echo : System.String -> unit
+        Verbose : System.String -> unit }
+    with
         static member Create : unit -> LoggingOptions
-      end
+    end
 ```
 `Create()` returns an instance that just discards all strings input.  For your particular use, direct message severities appropriately.  `Echo` is used to echo the synthetic command line in case of inconsistent inputs.
 

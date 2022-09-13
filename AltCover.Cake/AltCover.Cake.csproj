@@ -39,7 +39,4 @@
     <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-  </ItemGroup>
 </Project>

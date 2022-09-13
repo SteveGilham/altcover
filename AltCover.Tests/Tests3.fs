@@ -4757,6 +4757,17 @@ module AltCoverTests3 =
     test <@ subject.Execute() @>
     test <@ target2 |> File.Exists @>
 
+    let write =
+      subject
+        .GetType()
+        .GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
+
+    let ex =
+      Assert.Throws<TargetInvocationException> (fun () ->
+        write.Invoke(subject, [| "xx" |]) |> ignore)
+
+    test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
+
   [<Test>]
   let RetryDeleteTest () =
     Main.init ()

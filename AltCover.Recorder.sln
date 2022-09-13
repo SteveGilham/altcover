@@ -23,11 +23,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
 		Build\common-rules.xml = Build\common-rules.xml
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		.config\dotnet-tools.json = .config\dotnet-tools.json
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk
 		Build\msbuildtest.proj = Build\msbuildtest.proj
+		OutputBuildProps.props = OutputBuildProps.props
+		OutputBuildTargets.props = OutputBuildTargets.props
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\powershell.ps1 = Build\powershell.ps1
@@ -40,7 +44,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample25", "Samples\Sample25\Sample25.fsproj", "{54E57C76-339C-496E-B6EF-832534C7D545}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Async", "AltCover.Async\AltCover.Async.fsproj", "{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Async", "AltCover.Async\AltCover.Async.fsproj", "{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

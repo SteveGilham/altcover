@@ -23,10 +23,10 @@ namespace AltCoverFake.DotNet.Testing
 //
 // ### Individual files and directories
 // ```
-    [<NoComparison>]
     ///<summary>
     /// Corresponds to a file or executable tool
     ///</summary>
+    [<NoComparison>]
     type FilePath =
       ///<summary>
       /// A named `dotnet` tool, carried unaltered
@@ -177,10 +177,10 @@ namespace AltCoverFake.DotNet.Testing
 // ```
 // ### Yes/No choices
 // ```
-    [<NoComparison>]
     ///<summary>
     /// Corresponds to a yes/no choice
     ///</summary>
+    [<NoComparison>]
     type Flag =
       ///<summary>
       /// A type-safe boolean

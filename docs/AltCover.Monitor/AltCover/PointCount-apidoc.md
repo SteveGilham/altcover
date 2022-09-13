@@ -1,6 +1,6 @@
 # PointCount structure
 
-A simple data type tp hold sequence and branch point counts.
+A simple data type to hold sequence and branch point counts.
 
 ```csharp
 public struct PointCount
