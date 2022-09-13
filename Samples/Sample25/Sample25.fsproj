@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.2">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

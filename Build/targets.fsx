@@ -6351,14 +6351,9 @@ _Target "Issue23" (fun _ ->
             csproj.Descendants(XName.Get("PackageReference"))
             |> Seq.head
 
-        let inject =
-            XElement(
-                XName.Get "PackageReference",
-                XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
-            )
-
-        pack.AddBeforeSelf inject
+        // Bump the version
+        Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
+        pack.Attribute(XName.Get "Version").Value <- Version.Value
         csproj.Save "./_Issue23/sample9.csproj"
         Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.cs")
         Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.json")
@@ -6415,20 +6410,15 @@ _Target "Issue67" (fun _ ->
             csproj.Descendants(XName.Get("TargetFramework"))
             |> Seq.head
 
-        target.SetValue "netcoreapp2.1"
+        target.SetValue "net6.0"
 
         let pack =
             csproj.Descendants(XName.Get("PackageReference"))
             |> Seq.head
 
-        let inject =
-            XElement(
-                XName.Get "PackageReference",
-                XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
-            )
-
-        pack.AddBeforeSelf inject
+        // Bump the version
+        Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
+        pack.Attribute(XName.Get "Version").Value <- Version.Value
         csproj.Save "./_Issue67/sample9.csproj"
         Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.cs")
         Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.json")
@@ -6800,14 +6790,9 @@ _Target "Issue114" (fun _ ->
             csproj.Descendants(XName.Get("PackageReference"))
             |> Seq.head
 
-        let inject =
-            XElement(
-                XName.Get "PackageReference",
-                XAttribute(XName.Get "Include", "altcover.api"),
-                XAttribute(XName.Get "Version", Version.Value)
-            )
-
-        pack.AddBeforeSelf inject
+        // Bump API version
+        Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "AltCover.Api")
+        pack.Attribute(XName.Get "Version").Value <- Version.Value
         csproj.Save "./_Issue114/Sample26.fsproj"
         Shell.copy "./_Issue114" (!! "./Samples/Sample26/*.fs")
 

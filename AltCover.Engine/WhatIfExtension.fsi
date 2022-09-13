@@ -7,31 +7,31 @@ open System.Runtime.CompilerServices /// no doc
 // ```
 // ## module `PrepareExtension` and module `CollectExtension`
 // ```
-[<Extension>]
 ///<summary>
 /// `Abstract.IPrepareOptions` extension methods
 ///</summary>
+[<Extension>]
 module PrepareExtension = begin
-  [<Extension>]
   ///<summary>
   /// Validates the supplied options
   ///</summary>
   /// <param name="prepare">The options</param>
   /// <returns>The validation outcome.</returns>
+  [<Extension>]
   val WhatIf : prepare:Abstract.IPrepareOptions -> AltCover.ValidatedCommandLine
 end
-[<Extension>]
 ///<summary>
 /// `Abstract.ICollectOptions` extension methods
 ///</summary>
+[<Extension>]
 module CollectExtension = begin
-  [<Extension>]
   ///<summary>
   /// Validates the supplied options
   ///</summary>
   /// <param name="collect">The options</param>
   /// <param name="afterPreparation">Values indicating whether the instrumentation has already taken place</param>
   /// <returns>The validation outcome.</returns>
+  [<Extension>]
   val WhatIf :
     collect:Abstract.ICollectOptions ->
       afterPreparation:bool -> AltCover.ValidatedCommandLine
@@ -43,10 +43,10 @@ end
 //
 // ## module `WhatIfExtension`
 // ```
-[<AutoOpen>]
 ///<summary>
 /// F#-style I&lt;Whatever&gt;Options extension methods
 ///</summary>
+[<AutoOpen>]
 module WhatIfExtension = begin
   ///<summary>
   /// F# style `Abstract.ICollectOptions` extension methods

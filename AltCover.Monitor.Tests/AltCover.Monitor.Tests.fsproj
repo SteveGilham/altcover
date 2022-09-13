@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿       <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
@@ -19,13 +19,13 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
     <PackageReference Include="Unquote" Version="6.1.0" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="1.0.0" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -49,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="FSharp.Core" Version="6.0.5">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>

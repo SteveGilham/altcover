@@ -1,6 +1,6 @@
 # Abstract.ICollectOptions.Verbosity property
 
-Corresponds to command line option ` -q`
+Corresponds to command line option `-q`
 
 ```csharp
 public TraceLevel Verbosity { get; }

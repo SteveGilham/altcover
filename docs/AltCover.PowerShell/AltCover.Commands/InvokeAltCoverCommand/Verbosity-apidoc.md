@@ -1,6 +1,6 @@
 # InvokeAltCoverCommand.Verbosity property
 
-Selects output level of the command
+Selects output level of the command. Each level writes to the matching PowerShell Write-[Level] channel
 
 ```csharp
 public TraceLevel Verbosity { get; set; }

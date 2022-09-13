@@ -1666,7 +1666,7 @@ Accept wildcard characters?  false
 ```
 
 #### `-Verbosity <TraceLevel>` 
-Selects output level of the command
+Selects output level of the command. Each level writes to the matching PowerShell Write-[Level] channel
 
 Possible values: Off, Error, Warning, Info, Verbose
 

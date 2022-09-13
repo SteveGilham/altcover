@@ -43,7 +43,7 @@ public class Prepare : Task
 | [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } | Corresponds to command line option `--typetoplevel=VALUE` |
-| [Verbosity](Prepare/Verbosity-apidoc) { get; set; } | Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values) |
+| [Verbosity](Prepare/Verbosity-apidoc) { get; set; } | Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values) |
 | [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } | Corresponds to command line option ` -v, --visibleBranches` |
 | [ZipFile](Prepare/ZipFile-apidoc) { get; set; } | Corresponds to command line option `--zipfile` |
 | override [Execute](Prepare/Execute-apidoc)() | Perform the operation |

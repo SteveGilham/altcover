@@ -462,6 +462,9 @@ type ContingentCopy() =
   [<Required>]
   member val InstrumentDirectory = String.Empty with get, set
 
+  member internal self.Write message =
+    ``base``.Log.LogMessage(MessageImportance.High, message)
+
   override self.Execute() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "Project dir %A" self.ProjectDir)
     //base.Log.LogMessage(MessageImportance.High, sprintf "Relative dir %A" self.RelativeDir)
@@ -503,7 +506,9 @@ type ContingentCopy() =
         if toDir |> Directory.Exists |> not then
           toDir |> Directory.CreateDirectory |> ignore
 
-        File.Copy(from, toFile, true)
+        let copy x = File.Copy(x, toFile, true)
+        from
+        |> CommandLine.I.doRetry copy self.Write 10 1000 0
 
     true
 
