@@ -217,11 +217,11 @@ module internal CecilExtension =
                                                                | 0x1euy // ElementType.MVar
                                                                | 0x0euy // ElementType.String
                                                                    -> false
-                                                               | _ -> true)
+                                                               | _ -> not c.ConstantType.IsPrimitive)
                                       |> Seq.toList
                              sus |> Seq.iter (fun c -> scope.Constants.Remove c |> ignore
-                                                       sprintf "Null Primitive Constant %s in method %s" c.Name m.FullName
-                                                       |> Output.warn))
+                                                       sprintf "Null Constant %s elided in method %s" c.Name m.FullName
+                                                       |> Output.verbose))
 
   let prepareLocalScopes (m: MethodDefinition) =
     offsetTable.Clear()

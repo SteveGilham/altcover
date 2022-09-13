@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 8.3.8xx (Habu series release 15)
 * [BUGFIX] -- Issue #161: Add retry logic to `ContingentCopy` task 
+* [BUGFIX] -- Issue #165: Work around Cecil issue #873 by omitting debug information for constants that cause that issue. **N.B.** will not catch cases in methods that are not instrumented.
 
 # 8.3.838 (Habu series release 14)
 * [GTK-VISUALIZER] Fix off-by-one error in markup for the very last line of the file

@@ -834,10 +834,44 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
   [<Test>]
+  let ShouldHandleNullConstantsOK () =
+    // Workround for Cecil 11.4
+    let path = // Use a known good (bad) build rather than a local new one each time
+      Path.Combine(SolutionRoot.location, "AltCover.Tests/NullConst.dll")
+    use ``module`` =
+      AssemblyResolver.ReadAssembly path
+
+    ProgramDatabase.readSymbols ``module``
+
+    // big test -- if we can write w/o crashing when the rescope is removed
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+
+    let writer = WriterParameters()
+    writer.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider()
+    writer.WriteSymbols <- true
+
+    let save = Output.verbose
+    let b = System.Text.StringBuilder()
+
+    Output.verbose <- b.AppendLine >> ignore
+
+    let def =
+      ``module``.MainModule.GetTypes()
+      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.find (fun m -> m.Name.Equals("MakeConst"))
+    prepareLocalScopes def
+    Output.verbose <- save
+    test <@ b.ToString() = "Null Constant thing elided in method System.Void NullConst.Program::MakeConst()" + Environment.NewLine @>
+
+    use sink =
+      File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
+    ``module``.Write(sink, writer)
+
+  [<Test>]
   let ShouldRescopeMonoMethodOK () =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
-      // Path.Combine(SolutionRoot.location, "_Mono/Sample31/Sample31.dll")
       Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
 
     use ``module`` =
@@ -878,7 +912,7 @@ module AltCoverTests2 =
 
     let writer = WriterParameters()
     writer.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider()
-    //Mono.Cecil.Mdb.MdbWriterProvider()
+
     writer.WriteSymbols <- true
 
     use sink =
@@ -929,8 +963,6 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     pathGetterDef.DebugInformation.Scope <- rescope
 
-    let bexpect = System.Text.StringBuilder()
-
     [ -1
       4
       finish.Offset
@@ -944,18 +976,14 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let n = i.ToString().Replace("-", "_")
       s.Constants.Add <| ConstantDebugInformation("I"+n, primitive, null)
       s.Constants.Add <| ConstantDebugInformation("A"+n, np, null)
-
-      sprintf "Null Primitive Constant I%s in method System.Boolean Sample31.Class3/Class4::get_Defer()" n
-      |> bexpect.AppendLine
-      |> ignore
       rescope.Scopes.Add s)
 
     rescope.Scopes.Add rescope
 
-    let save = Output.warn
+    let save = Output.verbose
     let b = System.Text.StringBuilder()
 
-    Output.warn <- b.AppendLine >> ignore
+    Output.verbose <- b.AppendLine >> ignore
 
     prepareLocalScopes pathGetterDef
 
@@ -984,9 +1012,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
       |> Seq.toList
 
     test <@ result = expected @>
-    test <@ b.ToString() = bexpect.ToString() @>
+    test <@ b.ToString() = String.Empty @>
 
-    Output.warn <- save
+    Output.verbose <- save
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =
