@@ -8,7 +8,7 @@ open System.IO.Compression
 open Mono.Cecil.Cil
 
 module internal Metadata =
-  let private squash (source: byte []) =
+  let private squash (source: byte[]) =
     use squashed = new MemoryStream()
     // Get deflation working with this one weird trick
     // Dispose the deflate stream w/o closing the one it points at!

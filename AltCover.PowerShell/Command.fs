@@ -196,7 +196,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val CommandLine: string array = [||] with get, set
 
@@ -209,7 +210,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val InputDirectory: string array = [||] with get, set
 
@@ -222,7 +224,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val OutputDirectory: string array = [||] with get, set
 
@@ -235,7 +238,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val SymbolDirectory: string array = [||] with get, set
 
@@ -248,7 +252,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val Dependency: string array = [||] with get, set
 
@@ -261,7 +266,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val Key: string array = [||] with get, set
 
@@ -292,7 +298,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val FileFilter: string array = [||] with get, set
 
@@ -305,7 +312,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val PathFilter: string array = [||] with get, set
 
@@ -318,7 +326,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val AssemblyFilter: string array = [||] with get, set
 
@@ -331,7 +340,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val AssemblyExcludeFilter: string array = [||] with get, set
 
@@ -344,7 +354,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val TypeFilter: string array = [||] with get, set
 
@@ -357,7 +368,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val MethodFilter: string array = [||] with get, set
 
@@ -370,7 +382,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val AttributeFilter: string array = [||] with get, set
 
@@ -383,7 +396,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val AttributeTopLevel: string array = [||] with get, set
 
@@ -396,7 +410,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val TypeTopLevel: string array = [||] with get, set
 
@@ -409,7 +424,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val MethodTopLevel: string array = [||] with get, set
 
@@ -425,7 +441,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val CallContext: string array = [||] with get, set
 
@@ -587,7 +604,8 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance",
                     "CA1819:PropertiesShouldNotReturnArrays",
                     Justification = "Same as above.")>]
@@ -707,10 +725,12 @@ type InvokeAltCoverCommand() =
          || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
             |> File.Exists
 
-       if (self.ShouldProcess(
-             "Command Line : "
-             + task.WhatIf(recording).ToString()
-           )) then
+       if
+         (self.ShouldProcess(
+           "Command Line : "
+           + task.WhatIf(recording).ToString()
+         ))
+       then
          Command.Collect task
        else
          zero

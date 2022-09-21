@@ -58,7 +58,7 @@ module AltCoverRunnerTests =
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
-    Assert.Throws<NotSupportedException> (fun () ->
+    Assert.Throws<NotSupportedException>(fun () ->
       ignore (ReportFormat.NativeJson |> Counter.I.xmlByFormat))
     |> ignore
 
@@ -282,16 +282,17 @@ module AltCoverRunnerTests =
       after.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
       |> Seq.map (fun x -> x.GetAttribute("vc")),
-      Is.EquivalentTo [ "11"
-                        "10"
-                        "9"
-                        "8"
-                        "7"
-                        "6"
-                        "4"
-                        "3"
-                        "2"
-                        "1" ]
+      Is.EquivalentTo
+        [ "11"
+          "10"
+          "9"
+          "8"
+          "7"
+          "6"
+          "4"
+          "3"
+          "2"
+          "1" ]
     )
 
     Assert.That(
@@ -383,16 +384,17 @@ module AltCoverRunnerTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       maybeDeleteFile reportFile
@@ -484,16 +486,17 @@ module AltCoverRunnerTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       maybeDeleteFile reportFile
@@ -565,11 +568,13 @@ module AltCoverRunnerTests =
       //  (result.Replace("\r",String.Empty).Replace("\n",String.Empty),
       //  Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
       test
-        <@ result
-          .Replace("\r", String.Empty)
-          .Replace("\n", String.Empty) = expected
-          .Replace("\r", String.Empty)
-          .Replace("\n", String.Empty) @>
+        <@
+          result
+            .Replace("\r", String.Empty)
+            .Replace("\n", String.Empty) = expected
+            .Replace("\r", String.Empty)
+            .Replace("\n", String.Empty)
+        @>
     finally
       Json.path.Value <- None
 
@@ -646,15 +651,17 @@ module AltCoverRunnerTests =
       //  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
       //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
       test
-        <@ result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) @>
+        <@
+          result
+            .Replace('\r', '\u00FF')
+            .Replace('\n', '\u00FF')
+            .Replace("\u00FF\u00FF", "\u00FF")
+            .Trim([| '\u00FF' |]) = expected
+            .Replace('\r', '\u00FF')
+            .Replace('\n', '\u00FF')
+            .Replace("\u00FF\u00FF", "\u00FF")
+            .Trim([| '\u00FF' |])
+        @>
     finally
       Json.path.Value <- None
 
@@ -1002,9 +1009,10 @@ module AltCoverRunnerTests =
     lock Runner.executable (fun () ->
       Runner.executable.Value <- None
 
-      match CommandLine.parseCommandLine [| "/x"; "x" |] options
-            |> CommandLine.processHelpOption
-        with
+      match
+        CommandLine.parseCommandLine [| "/x"; "x" |] options
+        |> CommandLine.processHelpOption
+      with
       | Right (x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty))
@@ -1034,9 +1042,10 @@ module AltCoverRunnerTests =
     lock Runner.executable (fun () ->
       Runner.executable.Value <- None
 
-      match CommandLine.parseCommandLine [| "/x"; "x" |] options
-            |> CommandLine.processHelpOption
-        with
+      match
+        CommandLine.parseCommandLine [| "/x"; "x" |] options
+        |> CommandLine.processHelpOption
+      with
       | Right (x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty))
@@ -2821,16 +2830,17 @@ module AltCoverRunnerTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       maybeDeleteFile reportFile
@@ -3096,16 +3106,17 @@ module AltCoverRunnerTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       Assert.That(junkfile |> File.Exists |> not)
@@ -3747,9 +3758,11 @@ module AltCoverRunnerTests =
     )
 
     test
-      <@ processed = expected
-        .Replace("\r", String.Empty)
-        .Replace("\n", String.Empty) @>
+      <@
+        processed = expected
+          .Replace("\r", String.Empty)
+          .Replace("\n", String.Empty)
+      @>
 
   [<Test>]
   let PostprocessShouldRestoreKnownOpenCoverState () =
@@ -3919,9 +3932,11 @@ module AltCoverRunnerTests =
       el.SetAttribute("visitedClasses", "0")
       el.SetAttribute("visitedMethods", "0")
 
-      if el.GetAttribute "minCrapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        el.GetAttribute "minCrapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         el.SetAttribute("minCrapScore", "0")
         el.SetAttribute("maxCrapScore", "0"))
 
@@ -3932,9 +3947,11 @@ module AltCoverRunnerTests =
       el.SetAttribute("sequenceCoverage", "0")
       el.SetAttribute("branchCoverage", "0")
 
-      if el.GetAttribute "crapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        el.GetAttribute "crapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         el.SetAttribute("crapScore", "0"))
 
     let empty =
@@ -4003,9 +4020,11 @@ module AltCoverRunnerTests =
       el.SetAttribute("visitedClasses", "0")
       el.SetAttribute("visitedMethods", "0")
 
-      if el.GetAttribute "minCrapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        el.GetAttribute "minCrapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         el.SetAttribute("minCrapScore", "0")
         el.SetAttribute("maxCrapScore", "0"))
 
@@ -4016,9 +4035,11 @@ module AltCoverRunnerTests =
       el.SetAttribute("sequenceCoverage", "0")
       el.SetAttribute("branchCoverage", "0")
 
-      if el.GetAttribute "crapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        el.GetAttribute "crapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         el.SetAttribute("crapScore", "0"))
 
     let empty =
@@ -4089,9 +4110,11 @@ module AltCoverRunnerTests =
       setAttribute el "visitedClasses" "0"
       setAttribute el "visitedMethods" "0"
 
-      if getAttribute el "minCrapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        getAttribute el "minCrapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         setAttribute el "minCrapScore" "0"
         setAttribute el "maxCrapScore" "0")
 
@@ -4101,9 +4124,11 @@ module AltCoverRunnerTests =
       setAttribute el "sequenceCoverage" "0"
       setAttribute el "branchCoverage" "0"
 
-      if getAttribute el "crapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        getAttribute el "crapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         setAttribute el "crapScore" "0")
 
     let counts =
@@ -5492,18 +5517,19 @@ module AltCoverRunnerTests =
 
     Assert.That(
       result,
-      Is.EquivalentTo [ ("a",
-                         [ """<x><seqpnt line="4" /></x>|<seqpnt line="4" />"""
-                           """<x><seqpnt line="7" /></x>|<seqpnt line="7" />"""
-                           """<x><seqpnt line="9" /></x>|<seqpnt line="9" />""" ])
+      Is.EquivalentTo
+        [ ("a",
+           [ """<x><seqpnt line="4" /></x>|<seqpnt line="4" />"""
+             """<x><seqpnt line="7" /></x>|<seqpnt line="7" />"""
+             """<x><seqpnt line="9" /></x>|<seqpnt line="9" />""" ])
 
-                        ("m",
-                         [ """<x><seqpnt line="1" /></x>|<seqpnt line="1" />"""
-                           """<x><seqpnt line="2" /></x>|<seqpnt line="2" />"""
-                           """<x><seqpnt line="3" /></x>|<seqpnt line="3" />""" ])
-                        ("z",
-                         [ """<x><seqpnt line="3" /></x>|<seqpnt line="3" />"""
-                           """<x><seqpnt line="5" /></x>|<seqpnt line="5" />""" ]) ]
+          ("m",
+           [ """<x><seqpnt line="1" /></x>|<seqpnt line="1" />"""
+             """<x><seqpnt line="2" /></x>|<seqpnt line="2" />"""
+             """<x><seqpnt line="3" /></x>|<seqpnt line="3" />""" ])
+          ("z",
+           [ """<x><seqpnt line="3" /></x>|<seqpnt line="3" />"""
+             """<x><seqpnt line="5" /></x>|<seqpnt line="5" />""" ]) ]
     )
 
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
@@ -6149,15 +6175,17 @@ module AltCoverRunnerTests =
     )
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let JsonWithPartialsShouldGeneratePlausibleXml () =
@@ -6230,15 +6258,17 @@ module AltCoverRunnerTests =
     //)
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let NCoverShouldGeneratePlausibleCoberturaWithMissingFullName () =

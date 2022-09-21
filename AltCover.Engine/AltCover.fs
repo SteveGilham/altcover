@@ -40,16 +40,11 @@ module AltCover =
       Errors: string seq }
     override self.ToString() =
       let cl =
-        String.Join(
-          " ",
-          Seq.concat [ [ "altcover" ]
-                       self.Command ]
-        )
+        String.Join(" ", Seq.concat [ [ "altcover" ]; self.Command ])
 
       String.Join(
         Environment.NewLine,
-        Seq.concat [ [| cl |] |> Array.toSeq
-                     self.Errors ]
+        Seq.concat [ [| cl |] |> Array.toSeq; self.Errors ]
       )
 #endif
 

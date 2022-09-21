@@ -32,7 +32,8 @@ module internal Cobertura =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+                                                      Justification =
+                                                        "AvoidSpeculativeGenerality too")>]
     let internal addSources
       (report: XDocument)
       (target: XElement)
@@ -234,10 +235,9 @@ module internal Cobertura =
           copyup "branches-valid" b
           copyup "branches-covered" bv
 
-          target.Attribute("complexity".X).Value <- (summary.Attribute(
-            "maxCyclomaticComplexity".X
-          ))
-            .Value
+          target.Attribute("complexity".X).Value <-
+            (summary.Attribute("maxCyclomaticComplexity".X))
+              .Value
 
       let doBranch bec bev uspid (line: XElement) =
         let pc =

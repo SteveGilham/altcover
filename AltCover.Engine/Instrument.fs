@@ -21,8 +21,10 @@ open AltCover.Shared
                             "CA1307:SpecifyStringComparison",
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Engine>.$Instrument.#.cctor()",
-                            MessageId = "System.String.Replace(System.String,System.String)",
-                            Justification = "No suitable overload in netstandard2.0/net472")>]
+                            MessageId =
+                              "System.String.Replace(System.String,System.String)",
+                            Justification =
+                              "No suitable overload in netstandard2.0/net472")>]
 ()
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -258,7 +260,8 @@ module internal Instrument =
     // returns>A key, if we have a match.</returns>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+                                                      Justification =
+                                                        "AvoidSpeculativeGenerality too")>]
     let internal knownKey (name: AssemblyNameDefinition) =
       if not name.HasPublicKey then
         None
@@ -290,13 +293,13 @@ module internal Instrument =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+                                                      Justification =
+                                                        "AvoidSpeculativeGenerality too")>]
     let guard (assembly: AssemblyDefinition) (f: unit -> unit) =
       try
         f ()
         assembly
-      with
-      | _ ->
+      with _ ->
         (assembly :> IDisposable).Dispose()
         reraise ()
 
@@ -317,9 +320,11 @@ module internal Instrument =
 
         definition.MainModule.GetTypes()
         |> Seq.iter (fun t ->
-          if t.IsPublic
-             && (not
-                 <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
+          if
+            t.IsPublic
+            && (not
+                <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal))
+          then
             t.IsPublic <- false)
 
         injectInstrumentation
@@ -365,7 +370,7 @@ module internal Instrument =
           initialBody |> Seq.iter worker.Remove
           pruneLocalScopes pathGetterDef)
 
-        [ ("get_Timer",  // set the timer interval in ticks
+        [ ("get_Timer", // set the timer interval in ticks
            CoverageParameters.interval ()) ]
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
@@ -389,7 +394,8 @@ module internal Instrument =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
-                                                      Justification = "Return confusing Gendarme -- TODO")>]
+                                                      Justification =
+                                                        "Return confusing Gendarme -- TODO")>]
     let internal prepareAssembly (assembly: Stream) =
       let definition =
         AssemblyResolver.ReadAssembly(assembly)
@@ -397,29 +403,29 @@ module internal Instrument =
       prepareAssemblyDefinition definition
 
     // #if IDEMPOTENT_INSTRUMENT
-//     let internal safeWait (mutex: System.Threading.WaitHandle) =
-//       try
-//         mutex.WaitOne() |> ignore
-//       with
-//       | :? System.Threading.AbandonedMutexException -> ()
+    //     let internal safeWait (mutex: System.Threading.WaitHandle) =
+    //       try
+    //         mutex.WaitOne() |> ignore
+    //       with
+    //       | :? System.Threading.AbandonedMutexException -> ()
 
     //     let internal withFileMutex (p: string) f =
-//       let key =
-//         p
-//         |> System.Text.Encoding.UTF8.GetBytes
-//         |> CoverageParameters.hash.ComputeHash
-//         |> Convert.ToBase64String
+    //       let key =
+    //         p
+    //         |> System.Text.Encoding.UTF8.GetBytes
+    //         |> CoverageParameters.hash.ComputeHash
+    //         |> Convert.ToBase64String
 
     //       use mutex =
-//         new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
+    //         new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
 
     //       safeWait mutex
 
     //       try
-//         f ()
-//       finally
-//         mutex.ReleaseMutex()
-// #endif
+    //         f ()
+    //       finally
+    //         mutex.ReleaseMutex()
+    // #endif
 
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
@@ -443,18 +449,18 @@ module internal Instrument =
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
         // #if IDEMPOTENT_INSTRUMENT
-//         let write (a: AssemblyDefinition) (p: string) pk =
-//           withFileMutex
-//             p
-//             (fun () ->
-//               if p |> File.Exists |> not
-//                  || DateTime.Now.Year > 2000 // TODO -- check hashes
-//               then
-//                 use sink =
-//                   File.Open(p, FileMode.Create, FileAccess.ReadWrite)
+        //         let write (a: AssemblyDefinition) (p: string) pk =
+        //           withFileMutex
+        //             p
+        //             (fun () ->
+        //               if p |> File.Exists |> not
+        //                  || DateTime.Now.Year > 2000 // TODO -- check hashes
+        //               then
+        //                 use sink =
+        //                   File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
         //                 a.Write(sink, pk))
-// #else
+        // #else
         let write (a: AssemblyDefinition) p pk =
           use sink =
             File.Open(p, FileMode.Create, FileAccess.ReadWrite)
@@ -597,9 +603,10 @@ module internal Instrument =
             (JsonValue.Parse dependencies).Object
             |> Seq.find (fun p -> p.Key == "dependencies")
 
-          match app
-                |> Seq.tryFind (fun p -> p.Key == "dependencies")
-            with
+          match
+            app
+            |> Seq.tryFind (fun p -> p.Key == "dependencies")
+          with
           | None -> app |> addFirst [ rawDependencies ]
           | Some p ->
             let recorder =
@@ -694,7 +701,10 @@ module internal Instrument =
       match m.Inspection.IsInstrumented with
       | true ->
         let mt = m.Method
-        if mt.HasBody then prepareLocalScopes mt
+
+        if mt.HasBody then
+          prepareLocalScopes mt
+
         let body = mt.Body
 
         { state with
@@ -742,7 +752,7 @@ module internal Instrument =
 
         let updateSwitch update =
           let operands =
-            branch.Start.Operand :?> Instruction []
+            branch.Start.Operand :?> Instruction[]
 
           branch.Indexes
           |> Seq.filter (fun i -> i >= 0)
@@ -788,7 +798,7 @@ module internal Instrument =
           // Next
           let target =
             if branch.Start.OpCode = OpCodes.Switch then
-              branch.Start.Operand :?> Instruction []
+              branch.Start.Operand :?> Instruction[]
               |> Seq.skip (branch.Indexes.Head)
               |> Seq.head
             else
@@ -887,8 +897,10 @@ module internal Instrument =
 
              let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
-               if unhandled
-                  && asyncChecks |> Seq.forall invokePredicate then
+               if
+                 unhandled
+                 && asyncChecks |> Seq.forall invokePredicate
+               then
                  // the instruction list is
                  // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
                  // IL_0000: stloc V_1 <<== This one
@@ -1047,7 +1059,8 @@ module internal Instrument =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+                                                      Justification =
+                                                        "AvoidSpeculativeGenerality too")>]
     let private visitAfterAssembly (state: InstrumentContext) (assembly: AssemblyEntry) =
       let ``module`` =
         assembly.Assembly.MainModule
@@ -1086,7 +1099,8 @@ module internal Instrument =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
-                                                      Justification = "Record return confusing Gendarme -- TODO")>]
+                                                      Justification =
+                                                        "Record return confusing Gendarme -- TODO")>]
     let private visitStart state =
       let stream =
         Assembly
@@ -1252,8 +1266,10 @@ module internal Instrument =
                i.Operand <-
                  let mr = (i.Operand :?> MethodReference)
 
-                 if mr.DeclaringType.FullName
-                    == old.CallTrack.FullName then
+                 if
+                   mr.DeclaringType.FullName
+                   == old.CallTrack.FullName
+                 then
                    old.GetValue :> MethodReference
                  else
                    mr |> m.ImportReference
@@ -1408,8 +1424,7 @@ module internal Instrument =
       =
       try
         core state node
-      with
-      | _ ->
+      with _ ->
         match node with
         | Finish -> ()
         | _ ->

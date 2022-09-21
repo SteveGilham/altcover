@@ -37,13 +37,14 @@ module TestCommon =
     | :? System.UnauthorizedAccessException
     | :? IOException -> ()
 
-  let maybeDeleteFile f = if File.Exists f then File.Delete f
+  let maybeDeleteFile f =
+    if File.Exists f then
+      File.Delete f
 
   let maybeReraise f g =
     try
       f ()
-    with
-    | _ ->
+    with _ ->
       g ()
       reraise ()
 
@@ -54,8 +55,7 @@ module TestCommon =
   let test' x message =
     try
       test x
-    with
-    | fail ->
+    with fail ->
       Swensen.Unquote.AssertionFailedException(
         message + Environment.NewLine + fail.Message,
         fail
@@ -114,7 +114,7 @@ module TestCommonTests =
       fun () -> test <@ false @>)
     |> ignore
 
-    Assert.Throws<Swensen.Unquote.AssertionFailedException> (fun () ->
+    Assert.Throws<Swensen.Unquote.AssertionFailedException>(fun () ->
       test' <@ false @> "junk")
     |> ignore
 

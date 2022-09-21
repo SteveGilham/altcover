@@ -23,8 +23,8 @@ module DU =
         | Bop t -> Bar(string t)
         // New cases go in here
         | _ -> this
-      with
-      | _ -> Bar "none"
+      with _ ->
+        Bar "none"
 
     member this.MyBar = this.as_bar
 

@@ -156,7 +156,8 @@ module internal PostProcess =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal lookUpVisitsByToken token (dict: Dictionary<int, PointVisit>) =
     let (ok, index) =
       Int32.TryParse(
@@ -203,7 +204,8 @@ module internal PostProcess =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal tryGetValue (d: Dictionary<'a, 'b>) (key: 'a) =
     match d with
     | null -> (false, Unchecked.defaultof<'b>)
@@ -474,7 +476,7 @@ module internal PostProcess =
           match
             (tryGetValue counts)
             <| ``module``.GetAttribute("hash")
-            with
+          with
           | (false, _) -> Dictionary<int, PointVisit>()
           | (true, d) -> d
 
@@ -510,7 +512,8 @@ module internal PostProcess =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.PostProcess/Pipe #2 stage #1 at line 329@330-1::Invoke(AltCover.XmlElementAbstraction)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.PostProcess/Pipe #2 stage #1 at line 331@332-1::Invoke(AltCover.XmlElementAbstraction)",
                             Justification = "Compiler generated")>]
 ()

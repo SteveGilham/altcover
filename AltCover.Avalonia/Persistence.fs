@@ -33,7 +33,7 @@ module Persistence =
     Configuration.SaveGeometry (fun () -> p.X, p.Y) (fun () -> w.Width, w.Height)
 
   let internal readGeometry (w: Window) =
-    Configuration.ReadGeometry (fun (width, height) (x, y) ->
+    Configuration.ReadGeometry(fun (width, height) (x, y) ->
       w.Height <- float height
       w.Width <- float width
 

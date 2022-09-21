@@ -127,9 +127,10 @@ module internal Filter =
               x.GetBlob() |> Seq.skip 2 |> Seq.head
             ) // (x.ConstructorArguments |> Seq.head).Value
 
-          match (arg1 :?> SourceConstructFlags)
-                &&& SourceConstructFlags.KindMask
-            with
+          match
+            (arg1 :?> SourceConstructFlags)
+            &&& SourceConstructFlags.KindMask
+          with
           | SourceConstructFlags.SumType
           | SourceConstructFlags.RecordType -> true
           | _ -> false)
@@ -259,25 +260,37 @@ module internal Filter =
 [<assembly: SuppressMessage("Microsoft.Globalization",
                             "CA1307:SpecifyStringComparison",
                             Scope = "member",
-                            Target = "AltCover.Filter+I+isFSharpAutoProperty@174.#Invoke(Mono.Cecil.Cil.Instruction)",
-                            MessageId = "System.String.Replace(System.String,System.String)",
-                            Justification = "No suitable overload in netstandard2.0/net472")>]
+                            Target =
+                              "AltCover.Filter+I+isFSharpAutoProperty@174.#Invoke(Mono.Cecil.Cil.Instruction)",
+                            MessageId =
+                              "System.String.Replace(System.String,System.String)",
+                            Justification =
+                              "No suitable overload in netstandard2.0/net472")>]
 [<assembly: SuppressMessage("Microsoft.Globalization",
                             "CA1307:SpecifyStringComparison",
                             Scope = "member",
-                            Target = "AltCover.Filter+I+isFSharpAutoProperty@182-2.#Invoke(Mono.Cecil.Cil.Instruction)",
-                            MessageId = "System.String.Replace(System.String,System.String)",
-                            Justification = "No suitable overload in netstandard2.0/net472")>]
+                            Target =
+                              "AltCover.Filter+I+isFSharpAutoProperty@182-2.#Invoke(Mono.Cecil.Cil.Instruction)",
+                            MessageId =
+                              "System.String.Replace(System.String,System.String)",
+                            Justification =
+                              "No suitable overload in netstandard2.0/net472")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            MessageId = "System.String.Replace(System.String,System.String)",
-                            Target = "AltCover.Filter/I/Pipe #1 stage #2 at line 185@185::Invoke(Mono.Cecil.Cil.Instruction)",
-                            Justification = "No suitable overload in netstandard2.0/net472")>]
+                            Scope = "member",
+                            MessageId =
+                              "System.String.Replace(System.String,System.String)",
+                            Target =
+                              "AltCover.Filter/I/Pipe #1 stage #2 at line 186@186::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Justification =
+                              "No suitable overload in netstandard2.0/net472")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            MessageId = "System.String.Replace(System.String,System.String)",
-                            Target = "AltCover.Filter/I/Pipe #2 stage #2 at line 196@196::Invoke(Mono.Cecil.Cil.Instruction)",
-                            Justification = "No suitable overload in netstandard2.0/net472")>]
+                            Scope = "member",
+                            MessageId =
+                              "System.String.Replace(System.String,System.String)",
+                            Target =
+                              "AltCover.Filter/I/Pipe #2 stage #2 at line 197@197::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Justification =
+                              "No suitable overload in netstandard2.0/net472")>]
 ()

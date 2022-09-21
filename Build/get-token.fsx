@@ -11,15 +11,10 @@ let pair = StrongNameKeyPair(stream)
 // get the public key token as 8 bytes from the end of a SHA1 hash of the key material
 let hash = new SHA1CryptoServiceProvider()
 
-let token =
-    hash.ComputeHash(pair.PublicKey)
-    |> Array.rev
-    |> Seq.take 8
+let token = hash.ComputeHash(pair.PublicKey) |> Array.rev |> Seq.take 8
 
 let patchArray s =
-    s
-    |> Seq.map (fun (x: byte) -> x.ToString("X2").ToLower())
-    |> Seq.toList
+    s |> Seq.map (fun (x: byte) -> x.ToString("X2").ToLower()) |> Seq.toList
 
 let rec chunkArray (s: string list) =
     let chunk = 39

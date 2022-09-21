@@ -339,9 +339,10 @@ module AltCoverTests3 =
       Assert.That(x, Is.EqualTo "HelpText")
       Assert.That(y, Is.SameAs options)
     // a "not sticky" test
-    match CommandLine.parseCommandLine [| "/t"; "x" |] options
-          |> CommandLine.processHelpOption
-      with
+    match
+      CommandLine.parseCommandLine [| "/t"; "x" |] options
+      |> CommandLine.processHelpOption
+    with
     | Right (x, y) ->
       Assert.That(y, Is.SameAs options)
       Assert.That(x, Is.Empty)
@@ -368,9 +369,10 @@ module AltCoverTests3 =
       Assert.That(x, Is.EqualTo "UsageError")
       Assert.That(y, Is.SameAs options)
     // a "not sticky" test
-    match CommandLine.parseCommandLine [| "/t"; "x" |] options
-          |> CommandLine.processHelpOption
-      with
+    match
+      CommandLine.parseCommandLine [| "/t"; "x" |] options
+      |> CommandLine.processHelpOption
+    with
     | Right (x, y) ->
       Assert.That(y, Is.SameAs options)
       Assert.That(x, Is.Empty)
@@ -1036,9 +1038,10 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
-      match CoverageParameters.theInputDirectories
-            |> Seq.toList
-        with
+      match
+        CoverageParameters.theInputDirectories
+        |> Seq.toList
+      with
       | [ x ] -> Assert.That(x, Is.EqualTo(canonicalDirectory unique))
     finally
       CoverageParameters.theInputDirectories.Clear()
@@ -1079,8 +1082,9 @@ module AltCoverTests3 =
 
         CoverageParameters.outputDirectories ()
         |> Seq.toList
-        |> List.zip [ canonicalDirectory "maybe"
-                      ".." |> (pcom "__Saved") ]
+        |> List.zip
+             [ canonicalDirectory "maybe"
+               ".." |> (pcom "__Saved") ]
         |> List.iter Assert.AreEqual
 
     finally
@@ -1176,9 +1180,10 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
-      match CoverageParameters.outputDirectories ()
-            |> Seq.toList
-        with
+      match
+        CoverageParameters.outputDirectories ()
+        |> Seq.toList
+      with
       | [ x ] -> Assert.That(canonicalDirectory x, Is.EqualTo(canonicalDirectory unique))
     finally
       CoverageParameters.theOutputDirectories.Clear()
@@ -2891,9 +2896,10 @@ module AltCoverTests3 =
 
         Assert.That(
           CommandLine.error,
-          Is.EquivalentTo [ "From and to directories "
-                            + here
-                            + " are identical" ]
+          Is.EquivalentTo
+            [ "From and to directories "
+              + here
+              + " are identical" ]
         )
 
         Assert.That(stdout.ToString(), Is.Empty)
@@ -3061,10 +3067,11 @@ module AltCoverTests3 =
 
         Assert.That(
           CommandLine.error,
-          Is.EquivalentTo [ "Output directory for saved files "
-                            + (CoverageParameters.outputDirectories ()
-                               |> Seq.head)
-                            + " already exists" ]
+          Is.EquivalentTo
+            [ "Output directory for saved files "
+              + (CoverageParameters.outputDirectories ()
+                 |> Seq.head)
+              + " already exists" ]
         )
     finally
       CoverageParameters.inplace.Value <- false
@@ -3692,13 +3699,15 @@ module AltCoverTests3 =
         |> Path.GetFullPath
 
       test
-        <@ stdout
-             .ToString()
-             .Equals(
-               expected.Replace("\\\\", "\\")
-               + Environment.NewLine,
-               StringComparison.Ordinal
-             ) @>
+        <@
+          stdout
+            .ToString()
+            .Equals(
+              expected.Replace("\\\\", "\\")
+              + Environment.NewLine,
+              StringComparison.Ordinal
+            )
+        @>
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
@@ -3954,10 +3963,11 @@ module AltCoverTests3 =
 
       Assert.That(
         args,
-        Is.EquivalentTo [ "--reportFormat"
-                          "OpenCover"
-                          "--save"
-                          "--defer" ]
+        Is.EquivalentTo
+          [ "--reportFormat"
+            "OpenCover"
+            "--save"
+            "--defer" ]
       )
     finally
       Main.effectiveMain <- save
@@ -4057,19 +4067,20 @@ module AltCoverTests3 =
 
       Assert.That(
         args,
-        Is.EquivalentTo [ "-y"
-                          "a"
-                          "-y"
-                          "b"
-                          "--reportFormat"
-                          "Ncover"
-                          "--save"
-                          "--defer"
-                          "--"
-                          "testing"
-                          "1"
-                          "2"
-                          "3" ]
+        Is.EquivalentTo
+          [ "-y"
+            "a"
+            "-y"
+            "b"
+            "--reportFormat"
+            "Ncover"
+            "--save"
+            "--defer"
+            "--"
+            "testing"
+            "1"
+            "2"
+            "3" ]
       )
     finally
       Main.effectiveMain <- save
@@ -4099,19 +4110,20 @@ module AltCoverTests3 =
 
       Assert.That(
         args,
-        Is.EquivalentTo [ "-y"
-                          "a"
-                          "-y"
-                          "b"
-                          "--reportFormat"
-                          "ncover"
-                          "--save"
-                          "--defer"
-                          "--"
-                          "testing"
-                          "1"
-                          "2"
-                          "3" ]
+        Is.EquivalentTo
+          [ "-y"
+            "a"
+            "-y"
+            "b"
+            "--reportFormat"
+            "ncover"
+            "--save"
+            "--defer"
+            "--"
+            "testing"
+            "1"
+            "2"
+            "3" ]
       )
 
       let message =
@@ -4120,7 +4132,7 @@ module AltCoverTests3 =
           .GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
       let x =
-        Assert.Throws<System.Reflection.TargetInvocationException> (fun () ->
+        Assert.Throws<System.Reflection.TargetInvocationException>(fun () ->
           ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
@@ -4174,11 +4186,7 @@ module AltCoverTests3 =
       let result = subject.Execute()
       Assert.That(result, Is.False)
 
-      Assert.That(
-        args,
-        Is.EquivalentTo [ "Runner"
-                          "--collect" ]
-      )
+      Assert.That(args, Is.EquivalentTo [ "Runner"; "--collect" ])
     finally
       Main.effectiveMain <- save
       Output.info <- fst saved
@@ -4257,11 +4265,12 @@ module AltCoverTests3 =
 
       Assert.That(
         args,
-        Is.EquivalentTo [ "Runner"
-                          "-x"
-                          "dotnet"
-                          "--"
-                          "test" ]
+        Is.EquivalentTo
+          [ "Runner"
+            "-x"
+            "dotnet"
+            "--"
+            "test" ]
       )
 
       let message =
@@ -4270,7 +4279,7 @@ module AltCoverTests3 =
           .GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
       let x =
-        Assert.Throws<System.Reflection.TargetInvocationException> (fun () ->
+        Assert.Throws<System.Reflection.TargetInvocationException>(fun () ->
           ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
@@ -4670,9 +4679,11 @@ module AltCoverTests3 =
     test <@ subject.Execute() @>
 
     test
-      <@ subject.InstrumentDirectory
-         |> Directory.Exists
-         |> not @>
+      <@
+        subject.InstrumentDirectory
+        |> Directory.Exists
+        |> not
+      @>
 
     subject.FileName <- "Sample2.pdb"
 
@@ -4682,41 +4693,51 @@ module AltCoverTests3 =
     test <@ from |> File.Exists @>
 
     test
-      <@ subject.InstrumentDirectory
-         |> Directory.Exists
-         |> not @>
+      <@
+        subject.InstrumentDirectory
+        |> Directory.Exists
+        |> not
+      @>
 
     test <@ subject.Execute() @>
 
     test
-      <@ subject.InstrumentDirectory
-         |> Directory.Exists
-         |> not @>
+      <@
+        subject.InstrumentDirectory
+        |> Directory.Exists
+        |> not
+      @>
 
     subject.RelativeDir <- relative
     test <@ subject.Execute() @>
 
     test
-      <@ subject.InstrumentDirectory
-         |> Directory.Exists
-         |> not @>
+      <@
+        subject.InstrumentDirectory
+        |> Directory.Exists
+        |> not
+      @>
 
     subject.RelativeDir <- String.Empty
     subject.CopyToOutputDirectory <- "Always"
     test <@ subject.Execute() @>
 
     test
-      <@ subject.InstrumentDirectory
-         |> Directory.Exists
-         |> not @>
+      <@
+        subject.InstrumentDirectory
+        |> Directory.Exists
+        |> not
+      @>
 
     subject.RelativeDir <- where
     test <@ subject.Execute() @>
 
     test
-      <@ subject.InstrumentDirectory
-         |> Directory.Exists
-         |> not @>
+      <@
+        subject.InstrumentDirectory
+        |> Directory.Exists
+        |> not
+      @>
 
     subject.RelativeDir <- relative
     test <@ subject.Execute() @>
@@ -4750,8 +4771,10 @@ module AltCoverTests3 =
       Path.Combine(subject.InstrumentDirectory, "Data/Deeper/Foo.txt")
 
     test
-      <@ Path.Combine(builddir, "Data/Deeper/Foo.txt")
-         |> File.Exists @>
+      <@
+        Path.Combine(builddir, "Data/Deeper/Foo.txt")
+        |> File.Exists
+      @>
 
     test <@ target2 |> File.Exists |> not @>
     test <@ subject.Execute() @>
@@ -4763,7 +4786,7 @@ module AltCoverTests3 =
         .GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
 
     let ex =
-      Assert.Throws<TargetInvocationException> (fun () ->
+      Assert.Throws<TargetInvocationException>(fun () ->
         write.Invoke(subject, [| "xx" |]) |> ignore)
 
     test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
@@ -4797,14 +4820,16 @@ module AltCoverTests3 =
       CommandLine.I.doRetry (fun _ -> raise ex) (builder.Append >> ignore) 2 0 0 target
 
       test
-        <@ builder
-             .ToString()
-             .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
+        <@
+          builder
+            .ToString()
+            .StartsWith(ex.GetType().FullName, StringComparison.Ordinal)
+        @>)
 
     let builder = System.Text.StringBuilder()
     let monitor (s: string) = s |> builder.Append |> ignore
 
-    Assert.Throws<InvalidDataException> (fun () ->
+    Assert.Throws<InvalidDataException>(fun () ->
       CommandLine.I.doRetry
         (fun _ -> raise <| InvalidDataException())
         monitor
@@ -4825,7 +4850,7 @@ module AltCoverTests3 =
         .GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
 
     let ex =
-      Assert.Throws<TargetInvocationException> (fun () ->
+      Assert.Throws<TargetInvocationException>(fun () ->
         write.Invoke(subject, [| "xx" |]) |> ignore)
 
     test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>

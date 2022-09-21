@@ -80,9 +80,9 @@ and [<NoComparison; ExcludeFromCodeCoverage>] internal PointVisit =
 module internal Counter =
   type System.NotSupportedException with
     [<SuppressMessage("Gendarme.Rules.Design.Generic",
-                       "AvoidMethodWithUnusedGenericTypeRule",
-                       Justification = "Matches clause type")>]
-    static member Throw<'T>(message : string) : 'T =
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(message: string) : 'T =
       message |> NotSupportedException |> raise
 
   // "Public" "fields"
@@ -138,8 +138,8 @@ module internal Counter =
 
       try
         doc.Load(stream)
-      with
-      | :? XmlException -> doc.LoadXml "<null/>"
+      with :? XmlException ->
+        doc.LoadXml "<null/>"
 
       doc
 
@@ -178,7 +178,10 @@ module internal Counter =
       | ReportFormat.OpenCoverWithTracking
       | ReportFormat.OpenCover -> openCoverXml
       | ReportFormat.NCover -> nCoverXml
-      | _ -> format |> (sprintf "%A") |> NotSupportedException.Throw
+      | _ ->
+        format
+        |> (sprintf "%A")
+        |> NotSupportedException.Throw
 
     let internal minTime (t1: DateTime) (t2: DateTime) = if t1 < t2 then t1 else t2
 
@@ -222,8 +225,10 @@ module internal Counter =
       let startTimeNode =
         root.GetAttributeNode("startTime")
 
-      if format = ReportFormat.NCover
-         && Object.ReferenceEquals(startTimeNode, null) |> not then
+      if
+        format = ReportFormat.NCover
+        && Object.ReferenceEquals(startTimeNode, null) |> not
+      then
         let startTimeAttr = startTimeNode.Value
 
         let measureTimeAttr =
@@ -524,8 +529,7 @@ module internal Counter =
           result
         finally
           zip.Close()
-      with
-      | :? ZipException ->
+      with :? ZipException ->
         use reader = new MemoryStream()
         I.doFlush postProcess pointProcess own counts format reader target
 

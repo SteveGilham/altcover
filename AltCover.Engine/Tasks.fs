@@ -21,7 +21,8 @@ module internal TaskHelpers =
 
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "AvoidLargeClassesRule",
-                  Justification = "So many options available, so many compiler generated fields");
+                  Justification =
+                    "So many options available, so many compiler generated fields");
   AutoSerializable(false)>]
 type Prepare() =
   inherit Task(null)
@@ -314,9 +315,11 @@ type Echo() =
   // member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
-    if self.Text |> String.IsNullOrWhiteSpace |> not
-       && (self.Verbosity |> TaskHelpers.parse |> int)
-          >= int System.Diagnostics.TraceLevel.Info then
+    if
+      self.Text |> String.IsNullOrWhiteSpace |> not
+      && (self.Verbosity |> TaskHelpers.parse |> int)
+         >= int System.Diagnostics.TraceLevel.Info
+    then
       let original = Console.ForegroundColor
 
       try
@@ -366,10 +369,12 @@ type RunSettings() =
 
     try
       let settings =
-        if self.TestSetting
-           |> String.IsNullOrWhiteSpace
-           |> not
-           && self.TestSetting |> File.Exists then
+        if
+          self.TestSetting
+          |> String.IsNullOrWhiteSpace
+          |> not
+          && self.TestSetting |> File.Exists
+        then
           try
             use s = File.OpenRead(self.TestSetting)
             XDocument.Load(s)
@@ -474,23 +479,27 @@ type ContingentCopy() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
 
     let relativeDir =
-      if self.ProjectDir
-         |> String.IsNullOrWhiteSpace
-         |> not
-         && self.ProjectDir |> Path.IsPathRooted
-         && self.RelativeDir |> Path.IsPathRooted then
+      if
+        self.ProjectDir
+        |> String.IsNullOrWhiteSpace
+        |> not
+        && self.ProjectDir |> Path.IsPathRooted
+        && self.RelativeDir |> Path.IsPathRooted
+      then
         Visitor.I.getRelativeDirectoryPath self.ProjectDir self.RelativeDir
       else
         self.RelativeDir
 
     // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
 
-    if (self.CopyToOutputDirectory == "Always"
-        || self.CopyToOutputDirectory == "PreserveNewest")
-       && (relativeDir |> Path.IsPathRooted |> not)
-       //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
-       && (relativeDir |> String.IsNullOrWhiteSpace |> not)
-       && (self.FileName |> String.IsNullOrWhiteSpace |> not) then
+    if
+      (self.CopyToOutputDirectory == "Always"
+       || self.CopyToOutputDirectory == "PreserveNewest")
+      && (relativeDir |> Path.IsPathRooted |> not)
+      //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
+      && (relativeDir |> String.IsNullOrWhiteSpace |> not)
+      && (self.FileName |> String.IsNullOrWhiteSpace |> not)
+    then
       let toDir =
         Path.Combine(self.InstrumentDirectory, relativeDir)
 
@@ -507,6 +516,7 @@ type ContingentCopy() =
           toDir |> Directory.CreateDirectory |> ignore
 
         let copy x = File.Copy(x, toFile, true)
+
         from
         |> CommandLine.I.doRetry copy self.Write 10 1000 0
 

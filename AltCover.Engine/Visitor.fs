@@ -191,9 +191,10 @@ type internal StrongNameKeyData =
       |> Seq.take 4
       |> Seq.toList
 
-    Seq.concat [ lead
-                 exponent
-                 this.Parameters.Modulus |> Seq.toList |> List.rev ]
+    Seq.concat
+      [ lead
+        exponent
+        this.Parameters.Modulus |> Seq.toList |> List.rev ]
 
   static member Make(data: byte array) =
     use csp =
@@ -259,7 +260,8 @@ module internal KeyStore =
 [<ExcludeFromCodeCoverage;
   SuppressMessage("Gendarme.Rules.Design.Generic",
                   "AvoidDeclaringCustomDelegatesRule",
-                  Justification = "Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
+                  Justification =
+                    "Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
 [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Anonymous parameter")>]
 type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
@@ -402,11 +404,15 @@ module internal CoverageParameters =
   let internal reportFormat () =
     let fmt = reportKind ()
 
-    if fmt = ReportFormat.OpenCover
-       && (trackingNames.Any() || interval () > 0) then
+    if
+      fmt = ReportFormat.OpenCover
+      && (trackingNames.Any() || interval () > 0)
+    then
       ReportFormat.OpenCoverWithTracking
-    else if fmt = ReportFormat.NativeJson
-            && (trackingNames.Any() || interval () > 0) then
+    else if
+      fmt = ReportFormat.NativeJson
+      && (trackingNames.Any() || interval () > 0)
+    then
       ReportFormat.NativeJsonWithTracking
     else
       fmt
@@ -497,9 +503,11 @@ module internal Inspector =
 
   type System.Object with
     member nameProvider.IsIncluded =
-      if (CoverageParameters.nameFilters
-          |> Seq.exists (Filter.``match`` nameProvider))
-         || nameProvider.LocalFilter then
+      if
+        (CoverageParameters.nameFilters
+         |> Seq.exists (Filter.``match`` nameProvider))
+        || nameProvider.LocalFilter
+      then
         Inspections.Ignore
       else
         Inspections.Instrument
@@ -579,8 +587,8 @@ module internal Visitor =
         && (response :?> System.Net.HttpWebResponse)
              .StatusCode
            |> int < 400
-      with
-      | :? WebException -> false
+      with :? WebException ->
+        false
 
     let internal findClosestMatch file (dict: Dictionary<string, string>) =
       dict.Keys
@@ -626,8 +634,10 @@ module internal Visitor =
             (fun x a ->
               let fn = a.AttributeType.FullName
 
-              if fn
-                 == "Microsoft.FSharp.Core.AbstractClassAttribute" then
+              if
+                fn
+                == "Microsoft.FSharp.Core.AbstractClassAttribute"
+              then
                 x ||| 1
               else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
                 x ||| 2
@@ -679,8 +689,10 @@ module internal Visitor =
 
           let included =
             inspection
-            ||| if inspection = Inspections.Instrument
-                   && CoverageParameters.isTracking () then
+            ||| if
+                  inspection = Inspections.Instrument
+                  && CoverageParameters.isTracking ()
+                then
                   Inspections.Track
                 else
                   Inspections.Ignore
@@ -718,10 +730,12 @@ module internal Visitor =
       )
 
     let internal selectAutomatic items exemption =
-      if items
-         |> Seq.exists (fun t' ->
-           (CoverageParameters.generationFilter
-            |> Seq.exists (Filter.``match`` t'))) then
+      if
+        items
+        |> Seq.exists (fun t' ->
+          (CoverageParameters.generationFilter
+           |> Seq.exists (Filter.``match`` t')))
+      then
         Exemption.Automatic
       else
         exemption
@@ -811,11 +825,13 @@ module internal Visitor =
             else
               stripped + "Attribute"
 
-          if m.HasCustomAttributes
-             && m.CustomAttributes
-                |> Seq.map (fun a -> a.AttributeType)
-                |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
-                |> Option.isSome then
+          if
+            m.HasCustomAttributes
+            && m.CustomAttributes
+               |> Seq.map (fun a -> a.AttributeType)
+               |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
+               |> Option.isSome
+          then
             Some n
           else
             None
@@ -978,8 +994,12 @@ module internal Visitor =
 
         s
         |> Seq.takeWhile (fun c ->
-          if c = '<' then nesting <- nesting + 1
-          if c = '>' then nesting <- nesting - 1
+          if c = '<' then
+            nesting <- nesting + 1
+
+          if c = '>' then
+            nesting <- nesting - 1
+
           nesting > 0)
         |> Seq.length
 
@@ -1026,13 +1046,14 @@ module internal Visitor =
         else if charIndexOf n '@' >= 0 then
           let tx =
             if n.EndsWith("T", StringComparison.Ordinal) then
-              match t.Methods
-                    |> Seq.tryFind (fun m ->
-                      m.IsConstructor
-                      && m.HasParameters
-                      && (m.Parameters.Count = 1))
-                    |> Option.map (fun m -> m.Parameters |> Seq.head)
-                with
+              match
+                t.Methods
+                |> Seq.tryFind (fun m ->
+                  m.IsConstructor
+                  && m.HasParameters
+                  && (m.Parameters.Count = 1))
+                |> Option.map (fun m -> m.Parameters |> Seq.head)
+              with
               | None -> t :> TypeReference
               | Some other -> other.ParameterType
             else
@@ -1131,9 +1152,11 @@ module internal Visitor =
       =
       match seq with
       | null ->
-        if genuine = FakeAtReturn
-           && instruction.IsNotNull
-           && instruction.OpCode = OpCodes.Ret then
+        if
+          genuine = FakeAtReturn
+          && instruction.IsNotNull
+          && instruction.OpCode = OpCodes.Ret
+        then
           SequencePoint(instruction, Document(null))
         else
           null
@@ -1162,19 +1185,25 @@ module internal Visitor =
       let rec accumulate (state: Instruction) l =
         let gendarme = l
 
-        if state.OpCode = OpCodes.Br
-           || state.OpCode = OpCodes.Br_S then
+        if
+          state.OpCode = OpCodes.Br
+          || state.OpCode = OpCodes.Br_S
+        then
           let target = (state.Operand :?> Instruction)
           accumulate target (target :: l)
-        else if (state.Offset > terminal.Offset
-                 || state.OpCode.FlowControl = FlowControl.Cond_Branch
-                 || state.OpCode.FlowControl = FlowControl.Branch // Leave or Leave_S
-                 || state.OpCode.FlowControl = FlowControl.Break
-                 || state.OpCode.FlowControl = FlowControl.Throw
-                 || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
-                 || isNull state.Next) then
-          (if CoverageParameters.coalesceBranches.Value
-              && state <> l.Head then
+        else if
+          (state.Offset > terminal.Offset
+           || state.OpCode.FlowControl = FlowControl.Cond_Branch
+           || state.OpCode.FlowControl = FlowControl.Branch // Leave or Leave_S
+           || state.OpCode.FlowControl = FlowControl.Break
+           || state.OpCode.FlowControl = FlowControl.Throw
+           || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
+           || isNull state.Next)
+        then
+          (if
+             CoverageParameters.coalesceBranches.Value
+             && state <> l.Head
+           then
              state :: l
            else
              l)
@@ -1213,8 +1242,10 @@ module internal Visitor =
     let rec internal lastOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
       let n = i.Next
 
-      if n |> isNull
-         || n |> dbg.GetSequencePoint |> isSequencePoint then
+      if
+        n |> isNull
+        || n |> dbg.GetSequencePoint |> isSequencePoint
+      then
         i
       else
         lastOfSequencePoint dbg n
@@ -1231,7 +1262,7 @@ module internal Visitor =
 
       if i.OpCode = OpCodes.Switch then
         (i, getJumpChain terminal next, next.Offset, -1)
-        :: (i.Operand :?> Instruction []
+        :: (i.Operand :?> Instruction[]
             |> Seq.mapi (fun k d -> i, getJumpChain terminal d, d.Offset, k)
             |> Seq.toList)
       else
@@ -1241,9 +1272,10 @@ module internal Visitor =
         // Eliminate the "all inside one SeqPnt" jumps
         // This covers a multitude of compiler generated branching cases
         // TODO can we simplify
-        match (CoverageParameters.coalesceBranches.Value,
-               includedSequencePoint dbg toNext toJump)
-          with
+        match
+          (CoverageParameters.coalesceBranches.Value,
+           includedSequencePoint dbg toNext toJump)
+        with
         | (true, _)
         | (_, Some _) ->
           [ (i, toNext, next.Offset, -1)
@@ -1287,7 +1319,8 @@ module internal Visitor =
         )
         |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
         |> Seq.mapi (fun i b ->
-          if i = 0 then path <- 0
+          if i = 0 then
+            path <- 0
 
           if (b |> Seq.head).Representative = Reporting.Representative then
             let p = path
@@ -1488,9 +1521,10 @@ module internal Visitor =
       | _ -> Seq.empty<Node>
 
     and internal sequenceBuilder node =
-      Seq.concat [ toSeq node
-                   deeper node
-                   node.After() ]
+      Seq.concat
+        [ toSeq node
+          deeper node
+          node.After() ]
 
     let internal invoke (node: Node) (visitor: Fix<Node>) = visitor.Invoke(node)
 
@@ -1531,7 +1565,8 @@ module internal Visitor =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidMessageChainsRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Visitor/I/generated@1335::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Visitor/I/generated@1368::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 ()

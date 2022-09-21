@@ -135,12 +135,13 @@ type MainWindow() as this =
     this.ShowMessageBox status caption message
 
   member private this.ShowMessageBox (status: MessageType) caption message =
-    Dispatcher.UIThread.Post (fun _ ->
-      this.FindControl<Image>("Status").Source <- (match status with
-                                                   | MessageType.Info -> icons.Info
-                                                   | MessageType.Warning -> icons.Warn
-                                                   | _ -> icons.Error)
-        .Force()
+    Dispatcher.UIThread.Post(fun _ ->
+      this.FindControl<Image>("Status").Source <-
+        (match status with
+         | MessageType.Info -> icons.Info
+         | MessageType.Warning -> icons.Warn
+         | _ -> icons.Error)
+          .Force()
 
       this.FindControl<TextBlock>("Caption").Text <- caption
       this.FindControl<TextBox>("Message").Text <- message
@@ -169,11 +170,12 @@ type MainWindow() as this =
 
     listitem.IsEnabled <- active
 
-    this.FindControl<Image>("ListImage").Source <- (if active then
-                                                      icons.MRU
-                                                    else
-                                                      icons.MRUInactive)
-      .Force()
+    this.FindControl<Image>("ListImage").Source <-
+      (if active then
+         icons.MRU
+       else
+         icons.MRUInactive)
+        .Force()
 
     active
 
@@ -224,8 +226,7 @@ type MainWindow() as this =
   member private this.CatchAllAndWarn f =
     try
       f ()
-    with
-    | x ->
+    with x ->
       let caption =
         Resource.GetResourceString "LoadError"
 
@@ -283,7 +284,7 @@ type MainWindow() as this =
       let pad = (h - 16.0) / 2.0
       let margin = Thickness(0.0, pad)
 
-      Dispatcher.UIThread.Post (fun _ ->
+      Dispatcher.UIThread.Post(fun _ ->
         stack.Children.Clear()
 
         for l in 1 .. lines.Length do
@@ -341,7 +342,7 @@ type MainWindow() as this =
         )
 
       let showSource (info: Source) (line: int) =
-        this.CatchAllAndWarn (fun () ->
+        this.CatchAllAndWarn(fun () ->
           this.UpdateTextFonts text text2
           text.Text <- info.ReadAllText().Replace('\t', '\u2192')
 
@@ -374,7 +375,7 @@ type MainWindow() as this =
           async {
             Threading.Thread.Sleep(300)
 
-            Dispatcher.UIThread.Post (fun _ ->
+            Dispatcher.UIThread.Post(fun _ ->
               text.FormattedText.Spans <- formats
               text.Tag <- formats
               text.InvalidateVisual()
@@ -689,20 +690,22 @@ type MainWindow() as this =
 
       Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
 
-    this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "
-                                                   + AssemblyVersionInformation.AssemblyFileVersion
+    this.FindControl<TextBlock>("Program").Text <-
+      "AltCover.Visualizer "
+      + AssemblyVersionInformation.AssemblyFileVersion
 
-    this.FindControl<TextBlock>("Description").Text <- Resource.GetResourceString
-                                                         "aboutVisualizer.Comments"
+    this.FindControl<TextBlock>("Description").Text <-
+      Resource.GetResourceString "aboutVisualizer.Comments"
 
     let copyright =
       AssemblyVersionInformation.AssemblyCopyright
 
-    this.FindControl<TextBlock>("Copyright").Text <- String.Format(
-      CultureInfo.InvariantCulture,
-      Resource.GetResourceString "aboutVisualizer.Copyright",
-      copyright
-    )
+    this.FindControl<TextBlock>("Copyright").Text <-
+      String.Format(
+        CultureInfo.InvariantCulture,
+        Resource.GetResourceString "aboutVisualizer.Copyright",
+        copyright
+      )
 
     let link =
       this.FindControl<TextBlock>("Link")
@@ -717,22 +720,25 @@ type MainWindow() as this =
       Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
         "http://www.github.com/SteveGilham/altcover")
 
-    this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString
-                                                          "AboutDialog.About"
+    this.FindControl<TabItem>("AboutDetails").Header <-
+      Resource.GetResourceString "AboutDialog.About"
 
-    this.FindControl<TabItem>("License").Header <- Resource.GetResourceString
-                                                     "AboutDialog.License"
+    this.FindControl<TabItem>("License").Header <-
+      Resource.GetResourceString "AboutDialog.License"
 
-    this.FindControl<TextBlock>("MIT").Text <- String.Format(
-      CultureInfo.InvariantCulture,
-      Resource.GetResourceString "License",
-      copyright
-    )
+    this.FindControl<TextBlock>("MIT").Text <-
+      String.Format(
+        CultureInfo.InvariantCulture,
+        Resource.GetResourceString "License",
+        copyright
+      )
 
     this.Closing
     |> Event.add (fun e ->
-      if this.FindControl<DockPanel>("Grid").IsVisible
-         |> not then
+      if
+        this.FindControl<DockPanel>("Grid").IsVisible
+        |> not
+      then
         this.FindControl<StackPanel>("AboutBox").IsVisible <- false
         this.FindControl<StackPanel>("MessageBox").IsVisible <- false
         this.FindControl<Menu>("Menu").IsVisible <- true
@@ -777,6 +783,8 @@ type MainWindow() as this =
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 531@532::Invoke(Microsoft.FSharp.Core.Unit)",
-                            Justification = "Local of type 'Task`1' is not disposed of. Hmm.")>]
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 532@533::Invoke(Microsoft.FSharp.Core.Unit)",
+                            Justification =
+                              "Local of type 'Task`1' is not disposed of. Hmm.")>]
 ()

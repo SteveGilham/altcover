@@ -66,10 +66,12 @@ module AltCoverXTests =
         | "measureTime" -> ()
         | "document" ->
           test'
-            <@ a1
-                 .Value
-                 .Replace("\\", "/")
-                 .EndsWith(a2.Value.Replace("\\", "/")) @>
+            <@
+              a1
+                .Value
+                .Replace("\\", "/")
+                .EndsWith(a2.Value.Replace("\\", "/"))
+            @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -136,17 +138,19 @@ module AltCoverXTests =
         | "hash" -> ()
         | "fullPath" ->
           test'
-            <@ a1
-                 .Value
-                 .Replace("\\", "/")
-                 .Replace("altcover", "AltCover")
-                 .Replace("Samples/", String.Empty)
-                 .EndsWith(
-                   a2
-                     .Value
-                     .Replace("\\", "/")
-                     .Replace("altcover", "AltCover")
-                 ) @>
+            <@
+              a1
+                .Value
+                .Replace("\\", "/")
+                .Replace("altcover", "AltCover")
+                .Replace("Samples/", String.Empty)
+                .EndsWith(
+                  a2
+                    .Value
+                    .Replace("\\", "/")
+                    .Replace("altcover", "AltCover")
+                )
+            @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -182,12 +186,14 @@ module AltCoverXTests =
     test <@ (instance.GetHashCode() :> obj).IsNotNull @>
 
     test
-      <@ instance |> Args.collect = [ "Runner"
-                                      "-t"
-                                      "23"
-                                      "--collect"
-                                      "-q"
-                                      "-q" ] @>
+      <@
+        instance |> Args.collect = [ "Runner"
+                                     "-t"
+                                     "23"
+                                     "--collect"
+                                     "-q"
+                                     "-q" ]
+      @>
     // hack
     let rerun =
       AltCover.CollectOptions.Abstract instance
@@ -197,12 +203,14 @@ module AltCoverXTests =
     test <@ (rerun.GetHashCode() :> obj).IsNotNull @>
 
     test
-      <@ rerun |> Args.collect = [ "Runner"
-                                   "-t"
-                                   "23"
-                                   "--collect"
-                                   "-q"
-                                   "-q" ] @>
+      <@
+        rerun |> Args.collect = [ "Runner"
+                                  "-t"
+                                  "23"
+                                  "--collect"
+                                  "-q"
+                                  "-q" ]
+      @>
 
   [<Test>]
   let TypeSafeEmptyThresholdCanBeValidated () =
@@ -239,19 +247,23 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
 
     test
-      <@ instance |> Args.collect = [ "Runner"
-                                      "-x"
-                                      "dotnet"
-                                      "-t"
-                                      "S23B16M7C3"
-                                      "--summary:BOC"
-                                      "--verbose" ] @>
+      <@
+        instance |> Args.collect = [ "Runner"
+                                     "-x"
+                                     "dotnet"
+                                     "-t"
+                                     "S23B16M7C3"
+                                     "--summary:BOC"
+                                     "--verbose" ]
+      @>
 
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @>
 
     test
-      <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC --verbose" @>
+      <@
+        validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC --verbose"
+      @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated () =
@@ -264,9 +276,10 @@ module AltCoverXTests =
         TypeSafe.C
         TypeSafe.N
         TypeSafe.O
-        TypeSafe.Many [ TypeSafe.BPlus
-                        TypeSafe.R
-                        TypeSafe.O ] ]
+        TypeSafe.Many
+          [ TypeSafe.BPlus
+            TypeSafe.R
+            TypeSafe.O ] ]
 
     let expected =
       [ String.Empty
@@ -376,22 +389,24 @@ module AltCoverXTests =
       Assembly.GetExecutingAssembly().Location
 
     test
-      <@ rendered = [ "-i"
-                      here
-                      "-o"
-                      here
-                      "-y"
-                      here
-                      "-d"
-                      location
-                      "-p"
-                      "ok"
-                      "-c"
-                      "[Fact]"
-                      "--reportFormat"
-                      "OpenCover"
-                      "--inplace"
-                      "--save" ] @>
+      <@
+        rendered = [ "-i"
+                     here
+                     "-o"
+                     here
+                     "-y"
+                     here
+                     "-d"
+                     location
+                     "-p"
+                     "ok"
+                     "-c"
+                     "[Fact]"
+                     "--reportFormat"
+                     "OpenCover"
+                     "--inplace"
+                     "--save" ]
+      @>
 
     // hack
     let rerun =
@@ -403,22 +418,24 @@ module AltCoverXTests =
     let rendered = rerun |> Args.prepare
 
     test
-      <@ rendered = [ "-i"
-                      here
-                      "-o"
-                      here
-                      "-y"
-                      here
-                      "-d"
-                      location
-                      "-p"
-                      "ok"
-                      "-c"
-                      "[Fact]"
-                      "--reportFormat"
-                      "OpenCover"
-                      "--inplace"
-                      "--save" ] @>
+      <@
+        rendered = [ "-i"
+                     here
+                     "-o"
+                     here
+                     "-y"
+                     here
+                     "-d"
+                     location
+                     "-p"
+                     "ok"
+                     "-c"
+                     "[Fact]"
+                     "--reportFormat"
+                     "OpenCover"
+                     "--inplace"
+                     "--save" ]
+      @>
 
   [<Test>]
   let TypeSafePrepareOptionsCanBeValidated () =
@@ -430,8 +447,10 @@ module AltCoverXTests =
     test <@ (TypeSafe.FilePath ".").AsString() = ("." |> Path.GetFullPath) @>
 
     test
-      <@ ("fred" |> Regex |> TypeSafe.NegateMatchItem)
-        .AsString() = "?fred" @>
+      <@
+        ("fred" |> Regex |> TypeSafe.NegateMatchItem)
+          .AsString() = "?fred"
+      @>
 
     let subject =
       { TypeSafe.PrepareOptions.Create() with
@@ -440,18 +459,20 @@ module AltCoverXTests =
             TypeSafe.DirectoryPaths [| TypeSafe.DInfo(DirectoryInfo(here)) |]
           SymbolDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
           Dependencies =
-            TypeSafe.FilePaths [| TypeSafe.FilePath
-                                  <| Assembly.GetExecutingAssembly().Location |]
+            TypeSafe.FilePaths
+              [| TypeSafe.FilePath
+                 <| Assembly.GetExecutingAssembly().Location |]
           CallContext =
-            TypeSafe.Context [| TypeSafe.AttributeName "Fact"
-                                TypeSafe.AttributeKind typeof<SerializableAttribute>
-                                TypeSafe.Caller(
-                                  Assembly
-                                    .GetExecutingAssembly()
-                                    .GetType("Tests.AltCoverXTests")
-                                    .GetMethod("TypeSafePrepareOptionsCanBeValidated")
-                                )
-                                TypeSafe.CallerName "Test" |]
+            TypeSafe.Context
+              [| TypeSafe.AttributeName "Fact"
+                 TypeSafe.AttributeKind typeof<SerializableAttribute>
+                 TypeSafe.Caller(
+                   Assembly
+                     .GetExecutingAssembly()
+                     .GetType("Tests.AltCoverXTests")
+                     .GetMethod("TypeSafePrepareOptionsCanBeValidated")
+                 )
+                 TypeSafe.CallerName "Test" |]
           MethodPoint = TypeSafe.Set
           InPlace = TypeSafe.Set
           PathFilter = TypeSafe.Unfiltered.Join [| TypeSafe.Raw "ok" |] }
@@ -468,29 +489,31 @@ module AltCoverXTests =
       Assembly.GetExecutingAssembly().Location
 
     test
-      <@ instance |> Args.prepare = [ "-i"
-                                      here
-                                      "-o"
-                                      here
-                                      "-y"
-                                      here
-                                      "-d"
-                                      location
-                                      "-p"
-                                      "ok"
-                                      "-c"
-                                      "[Fact]"
-                                      "-c"
-                                      "[System.SerializableAttribute]"
-                                      "-c"
-                                      "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated"
-                                      "-c"
-                                      "Test"
-                                      "--reportFormat"
-                                      "OpenCover"
-                                      "--inplace"
-                                      "--save"
-                                      "--methodpoint" ] @>
+      <@
+        instance |> Args.prepare = [ "-i"
+                                     here
+                                     "-o"
+                                     here
+                                     "-y"
+                                     here
+                                     "-d"
+                                     location
+                                     "-p"
+                                     "ok"
+                                     "-c"
+                                     "[Fact]"
+                                     "-c"
+                                     "[System.SerializableAttribute]"
+                                     "-c"
+                                     "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated"
+                                     "-c"
+                                     "Test"
+                                     "--reportFormat"
+                                     "OpenCover"
+                                     "--inplace"
+                                     "--save"
+                                     "--methodpoint" ]
+      @>
 
     let validate =
       (AltCover.PrepareOptions.TypeSafe subject)
@@ -498,16 +521,18 @@ module AltCoverXTests =
         .ToString()
 
     test
-      <@ validate = "altcover -i "
-                    + here
-                    + " -o "
-                    + here
-                    + " -y "
-                    + here
-                    + " -d "
-                    + location
-                    + " -p ok -c [Fact] -c [System.SerializableAttribute] -c "
-                    + "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated -c Test --reportFormat OpenCover --inplace --save --methodpoint" @>
+      <@
+        validate = "altcover -i "
+                   + here
+                   + " -o "
+                   + here
+                   + " -y "
+                   + here
+                   + " -d "
+                   + location
+                   + " -p ok -c [Fact] -c [System.SerializableAttribute] -c "
+                   + "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated -c Test --reportFormat OpenCover --inplace --save --methodpoint"
+      @>
 
   [<Test>]
   let TypeSafePrepareOptionsCanBeValidatedAgain () =
@@ -522,8 +547,9 @@ module AltCoverXTests =
             TypeSafe.DirectoryPaths [| TypeSafe.DInfo(DirectoryInfo(here)) |]
           SymbolDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
           Dependencies =
-            TypeSafe.FilePaths [| TypeSafe.FilePath
-                                  <| Assembly.GetExecutingAssembly().Location |]
+            TypeSafe.FilePaths
+              [| TypeSafe.FilePath
+                 <| Assembly.GetExecutingAssembly().Location |]
           CommandLine = TypeSafe.CommandArguments [| TypeSafe.CommandArgument "[Fact]" |]
           ReportFormat = TypeSafe.ReportFormat.NCover
           PathFilter =
@@ -540,22 +566,24 @@ module AltCoverXTests =
       Assembly.GetExecutingAssembly().Location
 
     test
-      <@ (AltCover.PrepareOptions.TypeSafe subject)
-         |> Args.prepare = [ "-i"
-                             here
-                             "-o"
-                             here
-                             "-y"
-                             here
-                             "-d"
-                             location
-                             "-p"
-                             "ok"
-                             "--reportFormat"
-                             "NCover"
-                             "--save"
-                             "--"
-                             "[Fact]" ] @>
+      <@
+        (AltCover.PrepareOptions.TypeSafe subject)
+        |> Args.prepare = [ "-i"
+                            here
+                            "-o"
+                            here
+                            "-y"
+                            here
+                            "-d"
+                            location
+                            "-p"
+                            "ok"
+                            "--reportFormat"
+                            "NCover"
+                            "--save"
+                            "--"
+                            "[Fact]" ]
+      @>
 
   [<Test>]
   let PrepareOptionsStrongNamesCanBeValidated () =
@@ -630,14 +658,16 @@ module AltCoverXTests =
     let rendered = subject |> Args.prepare
 
     test
-      <@ rendered = [ "-c"
-                      "0"
-                      "--reportFormat"
-                      "OpenCover"
-                      "--save"
-                      "--single"
-                      "--linecover"
-                      "--branchcover" ] @>
+      <@
+        rendered = [ "-c"
+                     "0"
+                     "--reportFormat"
+                     "OpenCover"
+                     "--save"
+                     "--single"
+                     "--linecover"
+                     "--branchcover" ]
+      @>
 
   [<Test>]
   let TypeSafePrepareStaticCanBeValidated () =
@@ -672,10 +702,12 @@ module AltCoverXTests =
   [<Test>]
   let ValidateAssemblyOption () =
     test
-      <@ Assembly.GetExecutingAssembly()
-         |> Some
-         |> Main.I.isMSBuild
-         |> not @>
+      <@
+        Assembly.GetExecutingAssembly()
+        |> Some
+        |> Main.I.isMSBuild
+        |> not
+      @>
 
   [<Test>]
   let OutputVerbose () =
@@ -800,18 +832,24 @@ module AltCoverXTests =
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       test
-        <@ (expected.Replace("\\", "/")) = stdout
-          .ToString()
-          .Replace("\r\n", "\n")
-          .Replace("\\", "/") @>
+        <@
+          (expected.Replace("\\", "/")) = stdout
+            .ToString()
+            .Replace("\r\n", "\n")
+            .Replace("\\", "/")
+        @>
 
       test
-        <@ CoverageParameters.outputDirectories ()
-           |> Seq.head = canonicalDirectory output @>
+        <@
+          CoverageParameters.outputDirectories ()
+          |> Seq.head = canonicalDirectory output
+        @>
 
       test
-        <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = ((canonicalDirectory input).Replace("\\", "/")) @>
+        <@
+          (CoverageParameters.inputDirectories () |> Seq.head)
+            .Replace("\\", "/") = ((canonicalDirectory input).Replace("\\", "/"))
+        @>
 
       test <@ CoverageParameters.reportPath () = report @>
 
@@ -939,11 +977,13 @@ module AltCoverXTests =
       |> Set.ofSeq
 
     test
-      <@ (aux
-          |> Set.contains (
-            "AltCover.Recorder.g/"
-            + AltCover.AssemblyVersionInformation.AssemblyVersion
-          )) @>
+      <@
+        (aux
+         |> Set.contains (
+           "AltCover.Recorder.g/"
+           + AltCover.AssemblyVersionInformation.AssemblyVersion
+         ))
+      @>
 
     let libraries =
       (o.Properties()
@@ -957,11 +997,13 @@ module AltCoverXTests =
       |> Set.ofSeq
 
     test
-      <@ (lib
-          |> Set.contains (
-            "AltCover.Recorder.g/"
-            + AltCover.AssemblyVersionInformation.AssemblyVersion
-          )) @>
+      <@
+        (lib
+         |> Set.contains (
+           "AltCover.Recorder.g/"
+           + AltCover.AssemblyVersionInformation.AssemblyVersion
+         ))
+      @>
 
   [<Test>]
   let ADryRunLooksAsExpected () =
@@ -1056,15 +1098,21 @@ module AltCoverXTests =
       let console = stdout.ToString()
 
       test
-        <@ console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/")) @>
+        <@
+          console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/"))
+        @>
 
       test
-        <@ CoverageParameters.outputDirectories ()
-           |> Seq.head = (canonicalDirectory output) @>
+        <@
+          CoverageParameters.outputDirectories ()
+          |> Seq.head = (canonicalDirectory output)
+        @>
 
       test
-        <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = ((canonicalDirectory path).Replace("\\", "/")) @>
+        <@
+          (CoverageParameters.inputDirectories () |> Seq.head)
+            .Replace("\\", "/") = ((canonicalDirectory path).Replace("\\", "/"))
+        @>
 
       test <@ CoverageParameters.reportPath () = report @>
 

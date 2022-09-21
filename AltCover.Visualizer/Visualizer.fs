@@ -185,15 +185,34 @@ module private Gui =
 
 #if !VIS_PERCENT
     handler.classStructureTree.Model <-
-            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<Gdk.Pixbuf>, typeof<string>,
-                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
-                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                          typeof<Gdk.Pixbuf>)
+      new TreeStore(
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>
+      )
+
     handler.auxModel <-
-            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<Gdk.Pixbuf>, typeof<string>,
-                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
-                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                          typeof<Gdk.Pixbuf>)
+      new TreeStore(
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>
+      )
 #endif
 
 #if !NET472
@@ -363,7 +382,7 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name, (*pc,*) icon.Force()) // VIS_PERCENT
+              model.AppendValues(name (*pc,*) , icon.Force()) // VIS_PERCENT
 
             if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)
@@ -389,7 +408,9 @@ module private Gui =
     let makeSelection (ofd: FileOpenDialog) x =
 
 #if !NET472
-      if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
+      if
+        Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok
+      then
 #else
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
 #endif
@@ -566,7 +587,7 @@ module private Gui =
       else
         0.0
 
-    Handler.InvokeOnGuiThread (fun () ->
+    Handler.InvokeOnGuiThread(fun () ->
       balanceLines h
       va.Value <- adjust)
 
@@ -891,7 +912,9 @@ module private Gui =
 
       selector.Font <- Persistence.readFont ()
 
-      if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+      if
+        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok
+      then
         let font = selector.Font
 #else
       use selector =
@@ -900,7 +923,9 @@ module private Gui =
       selector.SetFontName(Persistence.readFont ())
       |> ignore
 
-      if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+      if
+        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok
+      then
         let font = selector.FontName
 #endif
 
@@ -935,12 +960,13 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
                             Justification = "Compiler generated")>]
 #if NET472
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
+                            Scope = "member",
                             Target = "AltCover.Gui::prepareOpenFileDialog(a)",
                             Justification = "Replace overload not available this platform")>]
 #endif

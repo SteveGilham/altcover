@@ -144,7 +144,7 @@ module DotNet =
       [
         // poss s <> Info
         fromValue,
-        "Verbosity",  //=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
+        "Verbosity", //=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
         verbosity :> obj,
         verbosity <> System.Diagnostics.TraceLevel.Info ]
 
@@ -161,8 +161,8 @@ module DotNet =
       [ arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
         arg, "FailFast", "true", options.FailFast ] //=true|false` to skip coverage collection if the unit tests fail
 
-// "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
-// "GetVersion" //=true|false` to emit the current AltCover version
+  // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
+  // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
   let ToTestArgumentList

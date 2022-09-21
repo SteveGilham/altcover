@@ -119,8 +119,7 @@ module Transformer =
         |> Int32.TryParse
         |> snd
 
-      { 1..second
-      }
+      { 1..second }
       |> Seq.iteri (fun i _ ->
         let vc = if i < first then "1" else "0"
 
@@ -234,8 +233,10 @@ module Transformer =
       | _ ->
         let root = document.Root
 
-        if root.Name.LocalName == "coverage"
-           && root.Attribute(XName.Get "line-rate").IsNotNull then
+        if
+          root.Name.LocalName == "coverage"
+          && root.Attribute(XName.Get "line-rate").IsNotNull
+        then
           // Cobertura
           processCobertura helper schemas document ocreader
         else
@@ -324,7 +325,8 @@ module Extensions =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+                            Target =
+                              "AltCover.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
                             MessageId = "x",
                             Justification = "Trivial usage")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
@@ -341,12 +343,14 @@ module Extensions =
                             Justification = "It is jargon")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/transformFromCobertura@96-2::Invoke(System.Xml.Linq.XElement)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Transformer/transformFromCobertura@96-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/lineOnly@170::Invoke(System.Xml.Linq.XElement)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Transformer/lineOnly@169::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()

@@ -23,8 +23,10 @@ module internal Canonical =
     let last = path |> Seq.last
 
     canonicalPath (
-      if last = Path.DirectorySeparatorChar
-         || last = Path.AltDirectorySeparatorChar then
+      if
+        last = Path.DirectorySeparatorChar
+        || last = Path.AltDirectorySeparatorChar
+      then
         path
       else
         path + Path.DirectorySeparatorChar.ToString()

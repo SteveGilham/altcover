@@ -22,8 +22,10 @@ type SimpleTest() =
 
     filepath <-
       Path.Combine(
-        (if (heredir |> Path.GetFileName)
-              .StartsWith("__Instrumented", StringComparison.Ordinal) then
+        (if
+           (heredir |> Path.GetFileName)
+             .StartsWith("__Instrumented", StringComparison.Ordinal)
+         then
            heredir |> Path.GetDirectoryName
          else
            heredir),

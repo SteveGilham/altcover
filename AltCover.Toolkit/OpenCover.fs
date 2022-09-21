@@ -27,8 +27,10 @@ module OpenCover =
       m.Descendants(XName.Get "BranchPoint")
       |> Seq.toList
 
-    if sp |> List.isEmpty |> not
-       && bp |> List.isEmpty |> not then
+    if
+      sp |> List.isEmpty |> not
+      && bp |> List.isEmpty |> not
+    then
       let tail =
         XElement(XName.Get "SequencePoint")
 
@@ -94,9 +96,7 @@ module OpenCover =
                               totalVisits.ToString(CultureInfo.InvariantCulture)
                             )
 
-                            (List.concat [ ki
-                                           bz |> Seq.tail |> Seq.toList ],
-                             h :: ke))
+                            (List.concat [ ki; bz |> Seq.tail |> Seq.toList ], h :: ke))
                           ([], [])
 
                    kill |> Seq.iter (fun b -> b.Remove())
@@ -182,10 +182,11 @@ module OpenCover =
       |> Seq.toList
 
     let visited =
-      Seq.concat [ seqpts
-                   m.Descendants(XName.Get "MethodPoint")
-                   |> Seq.toList
-                   brapts ]
+      Seq.concat
+        [ seqpts
+          m.Descendants(XName.Get "MethodPoint")
+          |> Seq.toList
+          brapts ]
       |> Seq.exists filterVisted
 
     let boolString b = if b then "true" else "false"
@@ -265,17 +266,14 @@ module OpenCover =
         |> Seq.filter (fun s -> s.IsHidden |> not)
         |> Seq.tryHead
         |> Option.iter (fun s ->
-          x.Attribute(XName.Get "sc").Value <- s.StartColumn.ToString(
-            CultureInfo.InvariantCulture
-          )
+          x.Attribute(XName.Get "sc").Value <-
+            s.StartColumn.ToString(CultureInfo.InvariantCulture)
 
-          x.Attribute(XName.Get "ec").Value <- s.EndColumn.ToString(
-            CultureInfo.InvariantCulture
-          )
+          x.Attribute(XName.Get "ec").Value <-
+            s.EndColumn.ToString(CultureInfo.InvariantCulture)
 
-          x.Attribute(XName.Get "offset").Value <- s.Offset.ToString(
-            CultureInfo.InvariantCulture
-          ))))
+          x.Attribute(XName.Get "offset").Value <-
+            s.Offset.ToString(CultureInfo.InvariantCulture))))
 
     // Fix sequence points as best we can
     debugInfo
@@ -300,8 +298,10 @@ module OpenCover =
              let filter (d: Cil.SequencePoint) = d.StartLine <= line
 
              let next =
-               if (ok
-                   && maybeDbg |> Option.filter filter |> Option.isSome) then
+               if
+                 (ok
+                  && maybeDbg |> Option.filter filter |> Option.isSome)
+               then
                  let dbgline = maybeDbg |> Option.get
                  let offset' = dbgline.Offset
                  (dbgpts |> List.skipWhile filter, offset')
@@ -894,8 +894,10 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                branchPoints modu group
 
              // bec, bev heuristic
-             if newsps |> Seq.isEmpty |> not
-                && newbps |> Seq.isEmpty |> not then
+             if
+               newsps |> Seq.isEmpty |> not
+               && newbps |> Seq.isEmpty |> not
+             then
                branchEntryHeuristic newsps newbps
 
              let (mp, mpv) = methodPoints modu group
@@ -1201,8 +1203,8 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
         try
           let format = XmlUtilities.discoverFormat x
           format = ReportFormat.OpenCover
-        with
-        | :? XmlSchemaValidationException -> false)
+        with :? XmlSchemaValidationException ->
+          false)
       |> Seq.toList
 
     match inputs with
@@ -1247,12 +1249,14 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.OpenCover/Pipe #6 stage #1 at line 50@51::Invoke(System.Tuple`2<System.Xml.Linq.XElement,Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>>,System.Xml.Linq.XElement)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.OpenCover/Pipe #6 stage #1 at line 52@53::Invoke(System.Tuple`2<System.Xml.Linq.XElement,Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 747@748::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.OpenCover/Pipe #4 stage #1 at line 747@748::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

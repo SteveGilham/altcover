@@ -16,16 +16,14 @@ let getFileExists f =
     else
       eprintfn "File %s does not exist" full
       None
-  with
-  | x ->
+  with x ->
     eprintfn "Treating %s as a file caused %A" f x
     None
 
 let loadInCecil (path: string) =
   try
     path |> AssemblyDefinition.ReadAssembly |> Some
-  with
-  | x ->
+  with x ->
     eprintfn "Treating %s as an assembly caused %A" path x
     None
 
@@ -42,11 +40,13 @@ let checkCalls (m: MethodDefinition) =
   |> Seq.iter (fun v ->
     let p = v.Previous
 
-    if p
-         .OpCode
-         .ToString()
-         .StartsWith("ldc.i4", StringComparison.OrdinalIgnoreCase)
-       |> not then
+    if
+      p
+        .OpCode
+        .ToString()
+        .StartsWith("ldc.i4", StringComparison.OrdinalIgnoreCase)
+      |> not
+    then
       eprintfn "Suspicious call in %s - visit number = %A" m.FullName p
 
     let p2 = p.Previous
@@ -70,7 +70,7 @@ let checkCalls (m: MethodDefinition) =
         if target.Offset = p.Offset then
           eprintfn "Suspicious jump in %s from %A to %A" m.FullName o p
       | OperandType.InlineSwitch ->
-        let targets = o.Operand :?> Instruction []
+        let targets = o.Operand :?> Instruction[]
 
         targets
         |> Seq.iter (fun target ->

@@ -88,7 +88,8 @@ module internal ProgramDatabase =
       let stream = b.BaseStream
       let start = b.ReadInt32()
 
-      if start = 0x424a5342 // portable format
+      if
+        start = 0x424a5342 // portable format
       then
         let major = b.ReadInt16()
         let minor = b.ReadInt16()
@@ -319,12 +320,16 @@ module internal ProgramDatabase =
 
 [<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
                                                             "InstantiateArgumentExceptionCorrectlyRule",
-                                                            Scope = "member",  // MethodDefinition
-                                                            Target = "AltCover.ProgramDatabase/I/construct@141::Invoke(System.String,System.Object[])",
-                                                            Justification = "Compiler generated")>]
+                                                            Scope = "member",
+                                                            Target =
+                                                              "AltCover.ProgramDatabase/I/construct@142::Invoke(System.String,System.Object[])",
+                                                            Justification =
+                                                              "Compiler generated")>]
 [<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
                                                             "CA2208:InstantiateArgumentExceptionsCorrectly",
                                                             Scope = "member",
-                                                            Target = "AltCover.ProgramDatabase+I+construct@141.#Invoke(System.String,System.Object[])",
-                                                            Justification = "Compiler generated")>]
+                                                            Target =
+                                                              "AltCover.ProgramDatabase+I+construct@142.#Invoke(System.String,System.Object[])",
+                                                            Justification =
+                                                              "Compiler generated")>]
 ()
