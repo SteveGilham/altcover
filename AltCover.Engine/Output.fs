@@ -52,7 +52,9 @@ module internal Output =
   let mutable internal verbose: String -> unit =
     ignore
 
-  let internal maybeVerbose p message = if p then verbose message
+  let internal maybeVerbose p message =
+    if p then
+      verbose message
 
   let internal warnOn x = if x then warn else info
 

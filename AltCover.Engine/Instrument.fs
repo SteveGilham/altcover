@@ -661,8 +661,8 @@ module internal Instrument =
 
       o
         .GetIndentedString()
-        .Replace("		", "  ")
-        .Replace("	", "  ")
+        .Replace("\t\t", "  ")
+        .Replace("\t", "  ")
         .Replace(" :", ":")
 
     let private visitModule (state: InstrumentContext) (m: ModuleEntry) =

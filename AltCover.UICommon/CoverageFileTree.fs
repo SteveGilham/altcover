@@ -616,6 +616,7 @@ module CoverageFileTree =
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
-                            Target = "AltCover.CoverageFileTree/applyMethod@157::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                            Target =
+                              "AltCover.CoverageFileTree/applyMethod@157::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
                             Justification = "Possibly too much work")>]
 ()

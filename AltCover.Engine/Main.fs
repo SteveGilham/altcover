@@ -194,7 +194,8 @@ module internal Main =
            let (pair, ok) =
              CommandLine.validateStrongNameKey "--key" x
 
-           if ok then CoverageParameters.add pair))
+           if ok then
+             CoverageParameters.add pair))
         ("sn|strongNameKey=",
          (fun x ->
            let (pair, ok) =
@@ -332,7 +333,8 @@ module internal Main =
            (OptionSet())
 
     let private echoDirectories (outputDirectory: string, inputDirectory: string) =
-      if CommandLine.verbosity < 1 // implement it early here
+      if
+        CommandLine.verbosity < 1 // implement it early here
       then
         if CoverageParameters.inplace.Value then
           Output.info
@@ -371,9 +373,11 @@ module internal Main =
             let found =
               outputDirectories |> Seq.filter Directory.Exists
 
-            if CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
-               && CommandLine.error |> List.isEmpty
-               && found.Any() then
+            if
+              CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
+              && CommandLine.error |> List.isEmpty
+              && found.Any()
+            then
               found
               |> Seq.iter (fun toDirectory ->
                 CommandLine.error <-
@@ -434,14 +438,16 @@ module internal Main =
       |> Option.defaultValue false
 
     let internal screenAssembly (fullName: String) (a: AssemblyDefinition) =
-      if a.CustomAttributes
-         |> Seq.exists (fun a ->
-           a.AttributeType.FullName
-           == "AltCover.Recorder.InstrumentationAttribute")
-         || a.MainModule.AssemblyReferences
-            |> Seq.cast<AssemblyNameReference>
-            |> Seq.exists checkKey
-         || checkKey a.Name then
+      if
+        a.CustomAttributes
+        |> Seq.exists (fun a ->
+          a.AttributeType.FullName
+          == "AltCover.Recorder.InstrumentationAttribute")
+        || a.MainModule.AssemblyReferences
+           |> Seq.cast<AssemblyNameReference>
+           |> Seq.exists checkKey
+        || checkKey a.Name
+      then
         CommandLine.Format.Local("alreadyInstrumented", fullName)
         |> Output.warn
 
@@ -508,17 +514,17 @@ module internal Main =
         // filter no-ops here
 
         // maybe mutex??
-// #if IDEMPOTENT_INSTRUMENT
-//                     Instrument.I.withFileMutex
-//                       fullName
-//                       (fun () ->
-//                         if copy |> File.Exists |> not
-//                            || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
-//                                                                 fullName) then
-//                           File.Copy(fullName, copy, true))))
-// #else
-//                     File.Copy(fullName, copy, true)))
-// #endif
+        // #if IDEMPOTENT_INSTRUMENT
+        //                     Instrument.I.withFileMutex
+        //                       fullName
+        //                       (fun () ->
+        //                         if copy |> File.Exists |> not
+        //                            || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
+        //                                                                 fullName) then
+        //                           File.Copy(fullName, copy, true))))
+        // #else
+        //                     File.Copy(fullName, copy, true)))
+        // #endif
 
         filemap
         |> Seq.iter (fun kvp ->
