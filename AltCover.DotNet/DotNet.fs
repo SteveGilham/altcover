@@ -47,18 +47,19 @@ module DotNet =
       | Abstract a -> a.FailFast
 
     member self.ShowSummary =
+      let select (s: CLIOptions seq) =
+        s
+        |> Seq.map (fun f -> f.ShowSummary)
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.tryHead
+
       match self with
       | Summary b -> b
       | Fail _
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
       | Many s ->
-        match
-          s
-          |> Seq.map (fun f -> f.ShowSummary)
-          |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-          |> Seq.tryHead
-        with
+        match select s with
         | Some x -> x
         | _ -> String.Empty
 
