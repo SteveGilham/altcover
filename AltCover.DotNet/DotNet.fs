@@ -53,11 +53,12 @@ module DotNet =
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
       | Many s ->
-        match s
-              |> Seq.map (fun f -> f.ShowSummary)
-              |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-              |> Seq.tryHead
-          with
+        match
+          s
+          |> Seq.map (fun f -> f.ShowSummary)
+          |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+          |> Seq.tryHead
+        with
         | Some x -> x
         | _ -> String.Empty
 

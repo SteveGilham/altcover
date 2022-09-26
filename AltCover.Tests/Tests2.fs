@@ -3053,17 +3053,19 @@ has been prefixed with Ldc_I4_1 (1 byte)
         @>
 
       test
-        <@ { result with
-               RecordingMethodRef =
-                 { Visit = null
-                   Push = null
-                   Pop = null } } = { state' with
-                                        ModuleId = def.MainModule.Mvid.ToString()
-                                        RecordingMethod = visit
-                                        RecordingMethodRef =
-                                          { Visit = null
-                                            Push = null
-                                            Pop = null } } @>
+        <@
+          { result with
+              RecordingMethodRef =
+                { Visit = null
+                  Push = null
+                  Pop = null } } = { state' with
+                                       ModuleId = def.MainModule.Mvid.ToString()
+                                       RecordingMethod = visit
+                                       RecordingMethodRef =
+                                         { Visit = null
+                                           Push = null
+                                           Pop = null } }
+        @>
     finally
       CoverageParameters.theReportFormat <- None
 
