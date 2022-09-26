@@ -194,18 +194,18 @@ module internal CommandLine =
         x |> (logException store)
         defaultValue)
 
+    let private handledRetryFault (x: exn) =
+      (x :? IOException)
+      || (x :? System.Security.SecurityException)
+      || (x :? UnauthorizedAccessException)
+
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
                       Justification = "Long enough but no longer")>]
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
-      with
-      | x when
-        (x :? IOException)
-        || (x :? System.Security.SecurityException)
-        || (x :? UnauthorizedAccessException)
-        ->
+      with x when handledRetryFault x ->
         if depth < limit then
           Threading.Thread.Sleep(rest)
           doRetry action log limit rest (depth + 1) f

@@ -404,16 +404,16 @@ module internal Main =
           )
       | Left intro -> Left intro
 
+    let private handledImageLoadFault (x: exn) =
+      (x :? Mono.Cecil.Cil.SymbolsNotMatchingException)
+      || (x :? BadImageFormatException)
+      || (x :? ArgumentException)
+      || (x :? IOException)
+
     let internal imageLoadResilient (f: unit -> 'a) (tidy: exn -> 'a) =
       try
         f ()
-      with
-      | x when
-        (x :? Mono.Cecil.Cil.SymbolsNotMatchingException)
-        || (x :? BadImageFormatException)
-        || (x :? ArgumentException)
-        || (x :? IOException)
-        ->
+      with x when handledImageLoadFault x ->
         tidy (x)
 
     let internal matchType =

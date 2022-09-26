@@ -9,17 +9,17 @@ open AltCover.Shared
 open Mono.Options
 
 module PathOperation =
+  let private handledPathOperationFault (x: exn) =
+    (x :? ArgumentException)
+    || (x :? NotSupportedException)
+    || (x :? IOException)
+    || (x :? System.Security.SecurityException)
+    || (x :? UnauthorizedAccessException)
+
   let DoPathOperation (operation: unit -> 'TAny) (handle: exn -> 'TAny) =
     try
       operation ()
-    with
-    | x when
-      (x :? ArgumentException)
-      || (x :? NotSupportedException)
-      || (x :? IOException)
-      || (x :? System.Security.SecurityException)
-      || (x :? UnauthorizedAccessException)
-      ->
+    with x when handledPathOperationFault x ->
       handle (x)
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage;
