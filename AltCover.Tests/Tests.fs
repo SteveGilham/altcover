@@ -2801,6 +2801,27 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
+  let TestExceptionWrapping () =
+    let deeper =
+      Visitor.I.deeper
+      <| Node.Start
+           [ { AssemblyPath = sample1path
+               Identity = Hallmark.Build()
+               Destinations = [] } ]
+      |> Seq.toList
+
+    deeper
+    |> List.iter (fun n ->
+      let text = sprintf "%A" n
+      let unique = Guid.NewGuid().ToString()
+      let op _ = raise <| IOException(unique)
+
+      let x =
+        Assert.Throws<InvalidOperationException>(fun () -> (Visitor.I.wrap op n) |> ignore)
+
+      test <@ x.Message = "'" + unique + "' while visiting '" + text + "'" @>)
+
+  [<Test>]
   let TestFixPointInvoke () =
     let mutable called = 0
 

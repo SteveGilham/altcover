@@ -19,6 +19,7 @@ open Mono.Cecil.Rocks
 open System.Net
 
 open AltCover.Shared
+open System.Globalization
 
 [<Flags>]
 [<SuppressMessage("Gendarme.Rules.Design",
@@ -1510,15 +1511,37 @@ module internal Visitor =
       branchNumber <- branchNumber + List.length bp
       Seq.append sp bp
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+                      Justification = "Wrap & rethrow")>]
+    let internal wrap op node =
+      try
+        op node
+      with x ->
+        let where = sprintf "%A" node
+
+        let message =
+          String.Format(
+            CultureInfo.CurrentCulture,
+            Output.resources.GetString "%s while visiting %A",
+            x.Message,
+            where
+          )
+
+        raise (InvalidOperationException(message, x))
+
     let rec internal deeper node =
-      // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
-      match node with
-      | Start paths -> startVisit paths sequenceBuilder
-      | Assembly a -> visitAssembly a.Assembly a.Inspection sequenceBuilder
-      | Module m -> visitModule m sequenceBuilder
-      | Type t -> visitType t sequenceBuilder
-      | Method m -> visitMethod m
-      | _ -> Seq.empty<Node>
+      let visit n =
+        // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
+        match n with
+        | Start paths -> startVisit paths sequenceBuilder
+        | Assembly a -> visitAssembly a.Assembly a.Inspection sequenceBuilder
+        | Module m -> visitModule m sequenceBuilder
+        | Type t -> visitType t sequenceBuilder
+        | Method m -> visitMethod m
+        | _ -> Seq.empty<Node>
+
+      wrap visit node
 
     and internal sequenceBuilder node =
       Seq.concat
@@ -1567,6 +1590,6 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1368::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1369::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 ()

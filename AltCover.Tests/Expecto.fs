@@ -396,6 +396,7 @@ module ExpectoTestManifest =
        "Tests.AssembliesAreDeeperThanPaths"
        Tests.AltCoverTests.FilteredAssembliesDoNotHaveSequencePoints,
        "Tests.FilteredAssembliesDoNotHaveSequencePoints"
+       Tests.AltCoverTests.TestExceptionWrapping, "Tests.TestExceptionWrapping"
        Tests.AltCoverTests.TestFixPointInvoke, "Tests.TestFixPointInvoke"
        Tests.AltCoverTests.TestFixPointApply, "Tests.TestFixPointApply"
        Tests.AltCoverTests.PathsAreDeeperThanAVisit, "Tests.PathsAreDeeperThanAVisit"

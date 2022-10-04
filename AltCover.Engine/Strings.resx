@@ -463,4 +463,7 @@ If the option is not present, then the default is 'OC'.</value>
   <data name="verbose" xml:space="preserve">
     <value>Optional, multiple: Verbose mode -- once to switch on detailed messages (or undo one level of -q if any have been set)</value>
   </data>
+  <data name="%s while visiting %A" xml:space="preserve">
+    <value>'{0}' while visiting '{1}'</value>
+  </data>
 </root>

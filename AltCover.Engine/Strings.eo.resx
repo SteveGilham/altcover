@@ -459,4 +459,7 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   <data name="verbose" xml:space="preserve">
     <value>Laŭvola, multobla: Vorta reĝimo -- unufoje por ŝalti detalajn mesaĝojn (aŭ malfari unu nivelon de -q se iu estas agordita)</value>
   </data>
+  <data name="%s while visiting %A" xml:space="preserve">
+    <value>'{0}' vizitante '{1}'</value>
+  </data>
 </root>
