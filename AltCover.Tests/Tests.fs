@@ -2812,7 +2812,15 @@ module AltCoverTests =
 
     deeper
     |> List.iter (fun n ->
-      let text = sprintf "%A" n
+      let text =
+        (sprintf "%A" n)
+          .Replace(
+            "Mono.Cecil.Cil.Document",
+            Path
+              .Combine(SolutionRoot.location, "Samples/Sample1/Program.cs")
+              .Replace('/', Path.DirectorySeparatorChar)
+          )
+
       let unique = Guid.NewGuid().ToString()
       let op _ = raise <| IOException(unique)
 

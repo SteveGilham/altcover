@@ -1514,11 +1514,22 @@ module internal Visitor =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
                       Justification = "Wrap & rethrow")>]
+    [<SuppressMessage("Gendarme.Rules.Globalization",
+                      "PreferStringComparisonOverrideRule",
+                      Justification = "No suitable overload in netstandard2.0/net472")>]
     let internal wrap op node =
       try
         op node
       with x ->
-        let where = sprintf "%A" node
+        let raw = sprintf "%A" node
+
+        let where =
+          match node with
+          | MethodPoint p when Option.isSome p.SeqPnt ->
+            raw.Replace("Mono.Cecil.Cil.Document", p.SeqPnt.Value.Document.Url)
+          | BranchPoint b ->
+            raw.Replace("Mono.Cecil.Cil.Document", b.SequencePoint.Document.Url)
+          | _ -> raw
 
         let message =
           String.Format(
