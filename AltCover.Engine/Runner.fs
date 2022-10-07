@@ -759,7 +759,10 @@ module internal Runner =
       | [] -> best
       | _ -> possibles |> List.maxBy (fun (a, _, _) -> a)
 
-    let mutable internal summaries: (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
+    let mutable internal summaries: (DocumentType
+      -> ReportFormat
+      -> int
+      -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary () = summaries <- LCov.summary :: summaries
