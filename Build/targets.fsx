@@ -894,8 +894,9 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
     Directory.ensure "./_Reports"
 
     [ ("./Build/common-rules.xml",
-       [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
-         "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+       [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ])
+      ("./Build/common-rules.xml",
+       [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
          "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
          "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
          "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"

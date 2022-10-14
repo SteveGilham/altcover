@@ -1371,7 +1371,7 @@ module internal Visitor =
 
       // possibly add MoveNext filtering
       let generated (i: Instruction) =
-        let before = firstOfSequencePoint dbg i
+        let before = firstOfSequencePoint dbg i // This line in suppress
         let sp = dbg.GetSequencePoint before
 
         before.OpCode = OpCodes.Ldloc_0
@@ -1641,6 +1641,6 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1369::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1374::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 ()
