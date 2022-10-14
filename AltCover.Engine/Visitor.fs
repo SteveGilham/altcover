@@ -488,7 +488,9 @@ module internal CoverageParameters =
            |> Option.map KeyStore.keyToIndex
            |> string)
         "--key\t"
-        + String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort) ]
+        + String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort)
+        if trivia.Value then "--trivia\t" + string trivia.Value else String.Empty
+      ]
 
     configurationHash <-
       String.Join("\n", components)
