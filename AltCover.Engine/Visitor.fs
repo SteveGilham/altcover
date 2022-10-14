@@ -1438,6 +1438,37 @@ module internal Visitor =
       let s = dbg.GetSequencePoint x
       s.IsNotNull && (s.IsHidden |> not)
 
+    let internal trivial =
+      [ OpCodes.Ret
+        OpCodes.Br
+        OpCodes.Br_S
+        OpCodes.Leave
+        OpCodes.Leave_S ]
+      |> List.map (fun x -> x.Value)
+      |> Set.ofList
+
+    let internal isNonTrivialSeqPnt (dbg: MethodDebugInformation) (x: Instruction) =
+      if CoverageParameters.trivia.Value then
+        let rest =
+          Seq.unfold
+            (fun (i: Instruction) ->
+              if i |> dbg.GetSequencePoint |> isNull then
+                None
+              else
+                Some(i, i))
+            x.Next
+
+        let span =
+          x :: (rest |> Seq.toList)
+          |> List.map (fun x -> x.OpCode.Value)
+
+        span
+        |> List.forall (fun v -> Set.contains v trivial)
+        |> not
+
+      else
+        true
+
     let private visitMethod (m: MethodEntry) =
       let rawInstructions =
         m.Method.Body.Instructions
@@ -1451,6 +1482,7 @@ module internal Visitor =
         |> Seq.filter (fun (x: Instruction) ->
           if dbg.HasSequencePoints then
             validateInstruction dbg x
+            && isNonTrivialSeqPnt dbg x
           else
             false)
         |> Seq.toList
