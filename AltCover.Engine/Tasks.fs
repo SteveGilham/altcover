@@ -137,6 +137,7 @@ type Prepare() =
   member val ShowGenerated = false with get, set
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
+  member val Trivia = false with get, set
 
   member private self.Message text =
     ``base``.Log.LogMessage(MessageImportance.High, text)
@@ -188,7 +189,8 @@ type Prepare() =
           VisibleBranches = self.VisibleBranches
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated
-          Verbosity = TaskHelpers.parse self.Verbosity }
+          Verbosity = TaskHelpers.parse self.Verbosity
+          Trivia = self.Trivia }
 
     Command.Prepare task log = 0
 

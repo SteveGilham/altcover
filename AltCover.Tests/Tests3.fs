@@ -96,7 +96,7 @@ module AltCoverTests3 =
   let ShouldHaveExpectedOptions () =
     Main.init ()
     let options = Main.I.declareOptions ()
-    let optionCount = 35
+    let optionCount = 36
 
     let optionNames =
       options

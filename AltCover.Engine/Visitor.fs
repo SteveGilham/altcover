@@ -312,6 +312,7 @@ module internal CoverageParameters =
 
   let internal sourcelink = ref false // ddFlag
   let internal defer = ref false
+  let internal trivia = ref false
 
   let internal deferOpCode () =
     if defer.Value then

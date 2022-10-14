@@ -119,7 +119,8 @@ module AltCoverCommand =
           VisibleBranches = a.VisibleBranches
           ShowStatic = a.ShowStatic
           ShowGenerated = a.ShowGenerated
-          Verbosity = a.Verbosity }
+          Verbosity = a.Verbosity
+          Trivia = a.Trivia }
 
       AltCover.PrepareOptions.Primitive copy
     | AltCover.PrepareOptions.TypeSafe t ->

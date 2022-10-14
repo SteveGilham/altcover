@@ -132,6 +132,7 @@ module DotNet =
         (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
         (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
+        (arg, "Trivia", "true", prepare.Trivia) //=true|false` to omit trivial sequence points
         (arg, "InPlace", "true", prepare.InPlace) ] //=true|false` to test in-place (meaning extra file copies)
 
     let internal toCollectFromArgArgumentList (collect: Abstract.ICollectOptions) =

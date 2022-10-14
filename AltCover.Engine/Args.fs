@@ -90,7 +90,8 @@ module internal Args =
       ("--defer", args.Defer)
       ("--localSource", args.LocalSource)
       ("--visibleBranches", args.VisibleBranches)
-      ("--showGenerated", args.ShowGenerated) ]
+      ("--showGenerated", args.ShowGenerated)
+      ("--trivia", args.Trivia) ]
 
   let internal flags (args: Abstract.IPrepareOptions) =
     args

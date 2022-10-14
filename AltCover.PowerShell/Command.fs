@@ -587,6 +587,15 @@ type InvokeAltCoverCommand() =
   member val ShowGenerated: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
+  /// <para type="description">Omit trivial sequence points</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument",
+              Mandatory = false,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Trivia: SwitchParameter = SwitchParameter(false) with get, set
+
+  /// <summary>
   /// <para type="description">Instrument and show code that is by default skipped as trivial.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
@@ -697,7 +706,8 @@ type InvokeAltCoverCommand() =
         VisibleBranches = self.VisibleBranches.IsPresent
         ShowStatic = showStatic.[self.ShowStatic |> int]
         ShowGenerated = self.ShowGenerated.IsPresent
-        Verbosity = self.Verbosity }
+        Verbosity = self.Verbosity
+        Trivia = self.Trivia.IsPresent }
 
   member private self.Log() =
     AltCover.LoggingOptions.Primitive

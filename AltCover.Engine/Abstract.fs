@@ -264,6 +264,10 @@ module Abstract =
     /// Corresponds to command line option `-q`
     ///</summary>
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
+    ///<summary>
+    /// Corresponds to command line option ` --trivia`
+    ///</summary>
+    abstract member Trivia: bool with get
   end
 // ```
 #if RUNNER

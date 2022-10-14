@@ -111,7 +111,8 @@
       VisibleBranches="$(AltCoverVisibleBranches)"
       ShowStatic="$(AltCoverShowStatic)"
       ShowGenerated="$(AltCoverShowGenerated)"
-      Verbosity="$(AltCoverVerbosity)" />
+      Verbosity="$(AltCoverVerbosity)"
+      Trivia="$(AltCoverTrivia)" />
   </Target>
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->

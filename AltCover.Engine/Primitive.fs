@@ -91,7 +91,8 @@ module Primitive =
       VisibleBranches: bool
       ShowStatic: string
       ShowGenerated: bool
-      Verbosity: System.Diagnostics.TraceLevel }
+      Verbosity: System.Diagnostics.TraceLevel
+      Trivia: bool }
     static member Create() =
       { InputDirectories = Seq.empty
         OutputDirectories = Seq.empty
@@ -127,7 +128,8 @@ module Primitive =
         VisibleBranches = false
         ShowStatic = "-"
         ShowGenerated = false
-        Verbosity = System.Diagnostics.TraceLevel.Info }
+        Verbosity = System.Diagnostics.TraceLevel.Info
+        Trivia = false }
 
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false)>]

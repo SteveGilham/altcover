@@ -305,7 +305,8 @@ module TypeSafe =
       VisibleBranches: Flag
       ShowStatic: StaticFormat
       ShowGenerated: Flag
-      Verbosity: System.Diagnostics.TraceLevel }
+      Verbosity: System.Diagnostics.TraceLevel
+      Trivia: Flag }
     static member Create() =
       { InputDirectories = NoDirectories
         OutputDirectories = NoDirectories
@@ -341,7 +342,8 @@ module TypeSafe =
         VisibleBranches = Clear
         ShowStatic = StaticFormat.Default
         ShowGenerated = Clear
-        Verbosity = System.Diagnostics.TraceLevel.Info }
+        Verbosity = System.Diagnostics.TraceLevel.Info
+        Trivia = Clear }
 
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",

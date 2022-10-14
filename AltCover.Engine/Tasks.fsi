@@ -169,6 +169,10 @@ type Prepare =
     /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
+    ///<summary>
+    /// Corresponds to command line option ` --trivia`
+    ///</summary>
+    member Trivia: bool with get, set
   end
 // ```
 // ## Task `AltCover.Collect`
