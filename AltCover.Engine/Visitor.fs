@@ -1432,6 +1432,10 @@ module internal Visitor =
       |> Seq.map BranchPoint
       |> Seq.toList
 
+    let internal validateInstruction (dbg: MethodDebugInformation) (x: Instruction) =
+      let s = dbg.GetSequencePoint x
+      s.IsNotNull && (s.IsHidden |> not)
+
     let private visitMethod (m: MethodEntry) =
       let rawInstructions =
         m.Method.Body.Instructions
@@ -1444,8 +1448,7 @@ module internal Visitor =
         |> Seq.concat
         |> Seq.filter (fun (x: Instruction) ->
           if dbg.HasSequencePoints then
-            let s = dbg.GetSequencePoint x
-            s.IsNotNull && (s.IsHidden |> not)
+            validateInstruction dbg x
           else
             false)
         |> Seq.toList
