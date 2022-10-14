@@ -1439,13 +1439,13 @@ module internal Visitor =
       s.IsNotNull && (s.IsHidden |> not)
 
     let internal trivial =
-      [ OpCodes.Ret
-        OpCodes.Br
-        OpCodes.Br_S
-        OpCodes.Leave
-        OpCodes.Leave_S ]
-      |> List.map (fun x -> x.Value)
-      |> Set.ofList
+      HashSet(
+        [ OpCodes.Ret
+          OpCodes.Br
+          OpCodes.Br_S
+          OpCodes.Leave
+          OpCodes.Leave_S ]
+      )
 
     let internal isNonTrivialSeqPnt (dbg: MethodDebugInformation) (x: Instruction) =
       if CoverageParameters.trivia.Value then
@@ -1458,12 +1458,8 @@ module internal Visitor =
                 Some(i, i))
             x.Next
 
-        let span =
-          x :: (rest |> Seq.toList)
-          |> List.map (fun x -> x.OpCode.Value)
-
-        span
-        |> List.forall (fun v -> Set.contains v trivial)
+        x :: (rest |> Seq.toList)
+        |> List.forall (fun v -> trivial.Contains v.OpCode)
         |> not
 
       else
