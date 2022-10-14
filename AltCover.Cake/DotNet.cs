@@ -81,7 +81,7 @@ namespace AltCover.Cake
           foreach (var arg in pabIn.Skip(2))
             pabOut.Append(arg);
         }
-        
+
         return pabOut;
       };
     }
@@ -127,12 +127,14 @@ namespace AltCover.Cake
     /// <param name="coverageSettings">The `CoverageSettings` for the test instrumentation</param>
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")]
-    [SuppressMessage("Microsoft.Design", 
+    [SuppressMessage("Microsoft.Design",
       "CA1011:ConsiderPassingBaseTypesAsParameters",
       Justification = "The Cake.Core.IO.FilePath won't be any other Cake.Core.IO.Path subclass")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static void DotNetCoreTest(
                 this ICakeContext context,
                 FilePath project,
