@@ -76,6 +76,7 @@ module internal Main =
     CoverageParameters.coalesceBranches.Value <- false // ddFlag
     CoverageParameters.staticFilter <- None
     CoverageParameters.showGenerated.Value <- false
+    CoverageParameters.trivia.Value <- false
 
   let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then

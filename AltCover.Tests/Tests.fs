@@ -3461,6 +3461,7 @@ module AltCoverTests =
       Report.reportGenerator ()
 
     let path = sample1path
+    Main.init()
 
     try
       "Main"
@@ -3502,7 +3503,7 @@ module AltCoverTests =
       test
         <@
           CoverageParameters.configurationHash = Some
-                                                   "2QsURwpbBG6MQhnmFGfWowB0iwhnatSDEy5d7h6d6X0="
+                                                   "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
         @>
     finally
       CoverageParameters.nameFilters.Clear()
