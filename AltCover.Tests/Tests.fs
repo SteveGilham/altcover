@@ -3349,6 +3349,20 @@ module AltCoverTests =
 </module>
 </coverage>"
 
+  let TriviaBaseline =
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
+<coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
+<module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
+<method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"true\" instrumented=\"false\" >
+<seqpnt visitcount=\"1\" line=\"12\" column=\"4\" endline=\"12\" endcolumn=\"27\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"13\" column=\"4\" endline=\"13\" endcolumn=\"24\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"15\" column=\"5\" endline=\"15\" endcolumn=\"77\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"19\" column=\"5\" endline=\"19\" endcolumn=\"50\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+</method>
+</module>
+</coverage>"
+
   let rec private recursiveValidate result expected depth zero =
     let rcount = result |> Seq.length
     let ecount = expected |> Seq.length
@@ -3440,6 +3454,60 @@ module AltCoverTests =
       recursiveValidate result expected 0 true
     finally
       CoverageParameters.nameFilters.Clear()
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet () =
+    let visitor, document =
+      Report.reportGenerator ()
+
+    let path = sample1path
+
+    try
+      "Main"
+      |> (Regex
+          >> FilterRegex.Exclude
+          >> FilterClass.Build FilterScope.Method
+          >> CoverageParameters.nameFilters.Add)
+
+      CoverageParameters.trivia.Value <- true
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      use def = AssemblyResolver.ReadAssembly path
+
+      let xml = TriviaBaseline
+
+      let xml' =
+        xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+
+      let xml'' =
+        xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
+
+      let baseline =
+        XDocument.Load(new System.IO.StringReader(xml''))
+
+      let result =
+        (makeDocument document).Elements()
+
+      let expected = baseline.Elements()
+      recursiveValidate result expected 0 true
+
+      CoverageParameters.makeConfiguration ()
+
+      test
+        <@
+          CoverageParameters.configurationHash = Some
+                                                   "2QsURwpbBG6MQhnmFGfWowB0iwhnatSDEy5d7h6d6X0="
+        @>
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.trivia.Value <- false
+      CoverageParameters.configurationHash <- None
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportWithEmbeds () =

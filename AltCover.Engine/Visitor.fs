@@ -495,7 +495,7 @@ module internal CoverageParameters =
           String.Empty ]
 
     configurationHash <-
-      String.Join("\n", components)
+      String.Join("\n", components).TrimEnd()
       |> System.Text.Encoding.ASCII.GetBytes
       |> hash.ComputeHash
       |> Convert.ToBase64String
@@ -1444,7 +1444,8 @@ module internal Visitor =
           OpCodes.Br
           OpCodes.Br_S
           OpCodes.Leave
-          OpCodes.Leave_S ]
+          OpCodes.Leave_S
+          OpCodes.Nop ]
       )
 
     let internal isNonTrivialSeqPnt (dbg: MethodDebugInformation) (x: Instruction) =
@@ -1452,16 +1453,21 @@ module internal Visitor =
         let rest =
           Seq.unfold
             (fun (i: Instruction) ->
-              if i |> dbg.GetSequencePoint |> isNull then
+              if
+                i |> isNull
+                || i |> dbg.GetSequencePoint |> isNull |> not
+              then
                 None
               else
-                Some(i, i))
+                Some(i, i.Next))
             x.Next
 
-        x :: (rest |> Seq.toList)
-        |> List.forall (fun v -> trivial.Contains v.OpCode)
-        |> not
+        let nt =
+          x :: (rest |> Seq.toList)
+          |> List.filter (fun v -> v.OpCode |> trivial.Contains |> not)
+          |> List.tryHead
 
+        Option.isSome nt
       else
         true
 
