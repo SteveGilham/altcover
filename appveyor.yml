@@ -7,8 +7,11 @@ skip_tags: true
 image: Visual Studio 2022
 clone_depth: 2
 environment:
+# 15-Oct-22
   COVERALLS_REPO_TOKEN:
-    secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
+    secure: cf48BJkDZ42Dz3XtO7cejjzwmczYCfgyZA098rUOawLjuN+XEtAKRvOeVXBo469FATbY6kGWNKazXFRrheAbO+2wO5MzgsybOdkjzkFQCSI=
+# Old one
+#    secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
 #  COVERALLS_API_TOKEN_DEC2020:
 #    secure: sU5H5yaJLCQnrQh2qrADmH2eWgKJa+GQnP2aN2P8dTwHTfhpYRN8W2XGnSmLiKNu    
 nuget:
