@@ -3,8 +3,8 @@ Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimpl
 
 ## Never mind the fluff -- how do I get started?
 
-Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide)
-Read the [FAQ](https://github.com/SteveGilham/altcover/wiki/FAQ)
+* Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide)
+* Read the [FAQ](https://github.com/SteveGilham/altcover/wiki/FAQ)
 
 The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget packages](#nuget-packages).
 
