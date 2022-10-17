@@ -78,6 +78,7 @@ Task("Build")
     public string ShowStatic => String.Empty;
     public bool ShowGenerated => false;
     public System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
+    public bool Trivia => false;
   }
 
   class TestCollectOptions : AltCover.Abstract.ICollectOptions

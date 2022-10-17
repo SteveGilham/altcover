@@ -23,16 +23,17 @@ module AltCoverCoreTests =
   let maybeIOException f =
     try
       f ()
-    with
-    | :? IOException -> ()
+    with :? IOException ->
+      ()
 
-  let maybeDeleteFile f = if File.Exists f then File.Delete f
+  let maybeDeleteFile f =
+    if File.Exists f then
+      File.Delete f
 
   let maybeReraise f g =
     try
       f ()
-    with
-    | _ ->
+    with _ ->
       g ()
       reraise ()
 

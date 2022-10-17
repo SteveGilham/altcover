@@ -169,9 +169,8 @@ module CoverageFormats =
 
           let visits = (max 0 v) + (max 0 vc)
 
-          sp.Attribute(XName.Get "vc").Value <- visits.ToString(
-            System.Globalization.CultureInfo.InvariantCulture
-          ))))
+          sp.Attribute(XName.Get "vc").Value <-
+            visits.ToString(System.Globalization.CultureInfo.InvariantCulture))))
 
     // This is done at generation time now
     // There is no filtering done here

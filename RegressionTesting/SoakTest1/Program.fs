@@ -52,7 +52,9 @@ module ThreadLevel =
       lock (synchronize) (fun _ -> printfn "push on %A state = %A" here CallTrack.Instance)
 
       Thread.Yield() |> ignore
-      if i < 10 then stack1 (i + 1)
+
+      if i < 10 then
+        stack1 (i + 1)
     finally
       pop () |> ignore
       lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here CallTrack.Instance)
@@ -109,7 +111,9 @@ module AsyncLevel =
         <| CallTrack.Instance())
 
       Thread.Yield() |> ignore
-      if i < 10 then stack1 (i + 1)
+
+      if i < 10 then
+        stack1 (i + 1)
     finally
       pop () |> ignore
 

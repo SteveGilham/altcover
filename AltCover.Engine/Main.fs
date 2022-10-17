@@ -76,6 +76,7 @@ module internal Main =
     CoverageParameters.coalesceBranches.Value <- false // ddFlag
     CoverageParameters.staticFilter <- None
     CoverageParameters.showGenerated.Value <- false
+    CoverageParameters.trivia.Value <- false
 
   let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -194,7 +195,8 @@ module internal Main =
            let (pair, ok) =
              CommandLine.validateStrongNameKey "--key" x
 
-           if ok then CoverageParameters.add pair))
+           if ok then
+             CoverageParameters.add pair))
         ("sn|strongNameKey=",
          (fun x ->
            let (pair, ok) =
@@ -317,6 +319,7 @@ module internal Main =
                CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
+        (CommandLine.ddFlag "trivia" CoverageParameters.trivia)
         ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
         ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
@@ -332,7 +335,8 @@ module internal Main =
            (OptionSet())
 
     let private echoDirectories (outputDirectory: string, inputDirectory: string) =
-      if CommandLine.verbosity < 1 // implement it early here
+      if
+        CommandLine.verbosity < 1 // implement it early here
       then
         if CoverageParameters.inplace.Value then
           Output.info
@@ -371,9 +375,11 @@ module internal Main =
             let found =
               outputDirectories |> Seq.filter Directory.Exists
 
-            if CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
-               && CommandLine.error |> List.isEmpty
-               && found.Any() then
+            if
+              CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
+              && CommandLine.error |> List.isEmpty
+              && found.Any()
+            then
               found
               |> Seq.iter (fun toDirectory ->
                 CommandLine.error <-
@@ -400,16 +406,16 @@ module internal Main =
           )
       | Left intro -> Left intro
 
+    let private handledImageLoadFault (x: exn) =
+      (x :? Mono.Cecil.Cil.SymbolsNotMatchingException)
+      || (x :? BadImageFormatException)
+      || (x :? ArgumentException)
+      || (x :? IOException)
+
     let internal imageLoadResilient (f: unit -> 'a) (tidy: exn -> 'a) =
       try
         f ()
-      with
-      | x when
-        (x :? Mono.Cecil.Cil.SymbolsNotMatchingException)
-        || (x :? BadImageFormatException)
-        || (x :? ArgumentException)
-        || (x :? IOException)
-        ->
+      with x when handledImageLoadFault x ->
         tidy (x)
 
     let internal matchType =
@@ -434,14 +440,16 @@ module internal Main =
       |> Option.defaultValue false
 
     let internal screenAssembly (fullName: String) (a: AssemblyDefinition) =
-      if a.CustomAttributes
-         |> Seq.exists (fun a ->
-           a.AttributeType.FullName
-           == "AltCover.Recorder.InstrumentationAttribute")
-         || a.MainModule.AssemblyReferences
-            |> Seq.cast<AssemblyNameReference>
-            |> Seq.exists checkKey
-         || checkKey a.Name then
+      if
+        a.CustomAttributes
+        |> Seq.exists (fun a ->
+          a.AttributeType.FullName
+          == "AltCover.Recorder.InstrumentationAttribute")
+        || a.MainModule.AssemblyReferences
+           |> Seq.cast<AssemblyNameReference>
+           |> Seq.exists checkKey
+        || checkKey a.Name
+      then
         CommandLine.Format.Local("alreadyInstrumented", fullName)
         |> Output.warn
 
@@ -508,17 +516,17 @@ module internal Main =
         // filter no-ops here
 
         // maybe mutex??
-// #if IDEMPOTENT_INSTRUMENT
-//                     Instrument.I.withFileMutex
-//                       fullName
-//                       (fun () ->
-//                         if copy |> File.Exists |> not
-//                            || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
-//                                                                 fullName) then
-//                           File.Copy(fullName, copy, true))))
-// #else
-//                     File.Copy(fullName, copy, true)))
-// #endif
+        // #if IDEMPOTENT_INSTRUMENT
+        //                     Instrument.I.withFileMutex
+        //                       fullName
+        //                       (fun () ->
+        //                         if copy |> File.Exists |> not
+        //                            || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
+        //                                                                 fullName) then
+        //                           File.Copy(fullName, copy, true))))
+        // #else
+        //                     File.Copy(fullName, copy, true)))
+        // #endif
 
         filemap
         |> Seq.iter (fun kvp ->

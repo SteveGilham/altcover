@@ -650,8 +650,10 @@ module
       preamble
       postamble
       =
-      if collection.IsNotNull
-         && collection |> Seq.isEmpty |> not then
+      if
+        collection.IsNotNull
+        && collection |> Seq.isEmpty |> not
+      then
         let mutable first = true
 
         preamble
@@ -816,21 +818,17 @@ module
       m2)
 
   let internal makeSummary (nb: int) (vb: int) (ns: int) (vs: int) (sd: XElement) =
-    sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(
-      CultureInfo.InvariantCulture
-    )
+    sd.Attribute(XName.Get "numBranchPoints").Value <-
+      nb.ToString(CultureInfo.InvariantCulture)
 
-    sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(
-      CultureInfo.InvariantCulture
-    )
+    sd.Attribute(XName.Get "visitedBranchPoints").Value <-
+      vb.ToString(CultureInfo.InvariantCulture)
 
-    sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(
-      CultureInfo.InvariantCulture
-    )
+    sd.Attribute(XName.Get "numSequencePoints").Value <-
+      ns.ToString(CultureInfo.InvariantCulture)
 
-    sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(
-      CultureInfo.InvariantCulture
-    )
+    sd.Attribute(XName.Get "visitedSequencePoints").Value <-
+      vs.ToString(CultureInfo.InvariantCulture)
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
@@ -905,8 +903,9 @@ module
           |> Seq.distinctBy (fun bx -> bx.EndOffset)
           |> Seq.length)
 
-      m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets)
-        .ToString(CultureInfo.InvariantCulture)
+      m.Attribute(XName.Get "cyclomaticComplexity").Value <-
+        (1 + targets)
+          .ToString(CultureInfo.InvariantCulture)
 
     if value.SeqPnts.IsNotNull then
       value.SeqPnts
@@ -1421,8 +1420,10 @@ type internal DocumentType =
   | Unknown
   static member internal LoadReport format report =
     if File.Exists report then
-      if format = ReportFormat.NativeJson
-         || format = ReportFormat.NativeJsonWithTracking then
+      if
+        format = ReportFormat.NativeJson
+        || format = ReportFormat.NativeJsonWithTracking
+      then
         report |> NativeJson.fileToJson |> JSON
       else
         report |> XDocument.Load |> XML
@@ -1436,7 +1437,8 @@ type internal DocumentType =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-UICommon>.$NativeJson.#.cctor()",
+                            Target =
+                              "<StartupCode$AltCover-UICommon>.$NativeJson.#.cctor()",
                             Justification = "Compiler Generated")>]
 #endif
 
@@ -1449,13 +1451,15 @@ type internal DocumentType =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
+                            Target =
+                              "AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
                             MessageId = "t",
                             Justification = "Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
+                            Target =
+                              "AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
                             MessageId = "Pnts",
                             Justification = "Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
@@ -1467,19 +1471,22 @@ type internal DocumentType =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
+                            Target =
+                              "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
                             MessageId = "e",
                             Justification = "Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
+                            Target =
+                              "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
                             MessageId = "s",
                             Justification = "Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
+                            Target =
+                              "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
                             MessageId = "v",
                             Justification = "Smaller JSON")>]
 ()

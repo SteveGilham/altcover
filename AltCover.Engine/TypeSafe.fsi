@@ -672,6 +672,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
+        ///<summary>
+        /// Corresponds to command line option ` --trivia`
+        ///</summary>
+        Trivia: Flag
  }
       with
         ///<summary>

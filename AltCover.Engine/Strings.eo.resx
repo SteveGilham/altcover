@@ -155,7 +155,7 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/r[eport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [-q] [--verbose] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/r[eport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--trivia] [-q] [--verbose] [--?|help|h] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/summary|teamcity[=VALO]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 aŭ
@@ -394,16 +394,16 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
     <value>{0} estis jam specifita por {1}</value>
   </data>
   <data name="l|localSource" xml:space="preserve">
-    <value>Ne instrumentu kodon por kiu la fontdosiero ne ĉeestas.</value>
+    <value>Laŭvola: Ne instrumentu kodon por kiu la fontdosiero ne ĉeestas.</value>
   </data>
   <data name="v|visibleBranches" xml:space="preserve">
-    <value>Kaŝu kompleksajn internajn IL-branĉajn efektivigajn detalojn en ŝaltilo / matĉaj konstruaĵoj, kaj nur montru, kion implicas la fontnivela logiko.</value>
+    <value>Laŭvola: Kaŝu kompleksajn internajn IL-branĉajn efektivigajn detalojn en ŝaltilo / matĉaj konstruaĵoj, kaj nur montru, kion implicas la fontnivela logiko.</value>
   </data>
   <data name="showstatic:" xml:space="preserve">
     <value>Laŭvola: Instrumenta kaj spektakla kodo defaŭlte saltis kiel bagatela. --showstatic:- egalas al preterlasado de la parametro; --spektakla au --showstatic:+ fiksas la nevideblan kalkulon al negativa valoro interpretita de la vidigilo (sed traktata kiel nulo de ReportGenerator); --showstatic: ++ agordas la nevideblan nombron al nulo.</value>
   </data>
   <data name="showGenerated" xml:space="preserve">
-    <value>Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
+    <value>Laŭvola: Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
   </data>
   <data name="zipfile" xml:space="preserve">
     <value>Laŭvola: Resendu la kovra-raporton ene de zip-arkivo.</value>
@@ -458,5 +458,11 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   </data>
   <data name="verbose" xml:space="preserve">
     <value>Laŭvola, multobla: Vorta reĝimo -- unufoje por ŝalti detalajn mesaĝojn (aŭ malfari unu nivelon de -q se iu estas agordita)</value>
+  </data>
+  <data name="%s while visiting %A" xml:space="preserve">
+    <value>'{0}' vizitante '{1}'</value>
+  </data>
+  <data name="trivia" xml:space="preserve">
+    <value>Laŭvola: Forlasu bagatelajn sinsekvopunktojn</value>
   </data>
 </root>

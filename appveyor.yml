@@ -1,4 +1,4 @@
-version: 8.3.{build}
+version: 8.4.{build}
 branches:
   only:
   - /release.*/
@@ -7,15 +7,18 @@ skip_tags: true
 image: Visual Studio 2022
 clone_depth: 2
 environment:
+# 15-Oct-22
   COVERALLS_REPO_TOKEN:
-    secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
+    secure: cf48BJkDZ42Dz3XtO7cejjzwmczYCfgyZA098rUOawLjuN+XEtAKRvOeVXBo469FATbY6kGWNKazXFRrheAbO+2wO5MzgsybOdkjzkFQCSI=
+# Old one
+#    secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
 #  COVERALLS_API_TOKEN_DEC2020:
 #    secure: sU5H5yaJLCQnrQh2qrADmH2eWgKJa+GQnP2aN2P8dTwHTfhpYRN8W2XGnSmLiKNu    
 nuget:
   disable_publish_on_pr: true
 install:
   # SDK version fix
-  - cinst dotnet-sdk --version 6.0.400
+  - cinst dotnet-sdk --version 6.0.402
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'

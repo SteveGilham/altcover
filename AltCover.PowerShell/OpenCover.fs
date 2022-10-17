@@ -136,9 +136,11 @@ type CompressBranchingCommand() =
           self.WithinSequencePoint.IsPresent
           self.SameSpan.IsPresent
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         xmlDocument.Save(self.OutputFile)
 
       self.WriteObject xmlDocument
@@ -161,10 +163,12 @@ type CompressBranchingCommand() =
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell",
                   "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
-                  Justification = "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
+                  Justification =
+                    "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
 [<SuppressMessage("Microsoft.PowerShell",
                   "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
-                  Justification = "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
+                  Justification =
+                    "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
 type MergeOpenCoverCommand() =
   inherit PSCmdlet()
 
@@ -191,7 +195,8 @@ type MergeOpenCoverCommand() =
   [<ValidateNotNull; ValidateCount(1, Int32.MaxValue)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val XDocument: XDocument array = [||] with get, set
 
@@ -206,7 +211,8 @@ type MergeOpenCoverCommand() =
   [<ValidateNotNull; ValidateCount(1, Int32.MaxValue)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val InputFile: string array = [||] with get, set
 
@@ -242,9 +248,11 @@ type MergeOpenCoverCommand() =
       let xmlDocument =
         AltCover.OpenCover.Merge self.Files
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         xmlDocument.Save(self.OutputFile)
 
       self.WriteObject xmlDocument)

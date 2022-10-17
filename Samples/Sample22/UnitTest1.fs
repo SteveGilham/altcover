@@ -59,16 +59,18 @@ let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
       | "hash" -> ()
       | "fullPath" ->
         test'
-          <@ a1
-            .Value
-            .Replace("\\", "/")
-            .Replace("altcover", "AltCover")
-            .EndsWith(
-              a2
-                .Value
-                .Replace("\\", "/")
-                .Replace("altcover", "AltCover")
-            ) @>
+          <@
+            a1
+              .Value
+              .Replace("\\", "/")
+              .Replace("altcover", "AltCover")
+              .EndsWith(
+                a2
+                  .Value
+                  .Replace("\\", "/")
+                  .Replace("altcover", "AltCover")
+              )
+          @>
           (a1.Name.ToString()
            + " : "
            + r.ToString()

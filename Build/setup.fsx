@@ -42,10 +42,7 @@ DotNet.restore
     "./Build/NuGet.csproj"
 
 let toolPackages =
-    let xml =
-        "./Build/NuGet.csproj"
-        |> Path.getFullName
-        |> XDocument.Load
+    let xml = "./Build/NuGet.csproj" |> Path.getFullName |> XDocument.Load
 
     xml.Descendants(XName.Get("PackageReference"))
     |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
@@ -56,24 +53,18 @@ let packageVersion (p: string) =
     p.ToLowerInvariant() + "/" + (toolPackages.Item p)
 
 let nuget =
-    ("./packages/"
-     + (packageVersion "NuGet.CommandLine")
-     + "/tools/NuGet.exe")
+    ("./packages/" + (packageVersion "NuGet.CommandLine") + "/tools/NuGet.exe")
     |> Path.getFullName
 
 let dixon =
-    ("./packages/"
-     + (packageVersion "AltCode.Dixon")
-     + "/tools")
+    ("./packages/" + (packageVersion "AltCode.Dixon") + "/tools")
     |> Path.getFullName
 
 let fxcop =
     if Environment.isWindows then
         BlackFox.VsWhere.VsInstances.getAll ()
         |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 17)
-        |> Seq.map (fun i ->
-            i.InstallationPath
-            @@ "Team Tools/Static Analysis Tools/FxCop")
+        |> Seq.map (fun i -> i.InstallationPath @@ "Team Tools/Static Analysis Tools/FxCop")
         |> Seq.filter Directory.Exists
         |> Seq.tryHead
     else
@@ -155,14 +146,11 @@ _Target "FxCop" (fun _ ->
             let destination = t @@ (f.Substring pf)
             // printfn "%A" destination
             destination |> File.Exists |> not
-            && destination |> Path.GetFileName
-               <> "SecurityTransparencyRules.dll"
+            && destination |> Path.GetFileName <> "SecurityTransparencyRules.dll"
 
         Shell.copyDir target fx (check target prefix)
 
-        Shell.copyDir target dixon (fun f ->
-            Path.GetFileNameWithoutExtension f
-            <> "AltCode.Dixon")
+        Shell.copyDir target dixon (fun f -> Path.GetFileNameWithoutExtension f <> "AltCode.Dixon")
 
         let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
         // Maybe process here...

@@ -32,7 +32,9 @@ type TestAttribute() =
 module TestCommon =
   let SolutionDir () = AltCover.SolutionRoot.location
 
-  let maybeIgnore f = if f () then Assert.Ignore()
+  let maybeIgnore f =
+    if f () then
+      Assert.Ignore()
 
   let maybeIOException f =
     try
@@ -41,13 +43,14 @@ module TestCommon =
     | :? System.UnauthorizedAccessException
     | :? IOException -> ()
 
-  let maybeDeleteFile f = if File.Exists f then File.Delete f
+  let maybeDeleteFile f =
+    if File.Exists f then
+      File.Delete f
 
   let maybeReraise f g =
     try
       f ()
-    with
-    | _ ->
+    with _ ->
       g ()
       reraise ()
 
@@ -56,8 +59,7 @@ module TestCommon =
   let test' x message =
     try
       test x
-    with
-    | fail ->
+    with fail ->
       Swensen.Unquote.AssertionFailedException(
         message + Environment.NewLine + fail.Message,
         fail
@@ -117,18 +119,20 @@ module TestCommonTests =
     test <@ true @>
 
 #if !NET472   // remove for fantomas
-    Assert.Throws<Expecto.AssertException>(
+    Assert.Throws<Expecto.AssertException>
+      (
 #else  // remove for fantomas
 #if (ValidateGendarmeEmulation || GUI || Monitor)  // remove for fantomas
     Assert.Throws<NUnit.Framework.AssertionException>(  // remove for fantomas
 #else  // remove for fantomas
-    Assert.Throws<Xunit.Sdk.TrueException>(  // remove for fantomas
+    Assert.Throws<Xunit.Sdk.TrueException>
+      ( // remove for fantomas
 #endif  // remove for fantomas
 #endif  // remove for fantomas
       fun () -> test <@ false @>)
     |> ignore
 
-    Assert.Throws<Swensen.Unquote.AssertionFailedException> (fun () ->
+    Assert.Throws<Swensen.Unquote.AssertionFailedException>(fun () ->
       test' <@ false @> "junk")
     |> ignore
 
@@ -215,7 +219,7 @@ module ExpectoTestCommon =
 
                try
                  f ()
-               with
-               | :? NUnit.Framework.IgnoreException -> ()))))
+               with :? NUnit.Framework.IgnoreException ->
+                 ()))))
         @ specials)
 #endif

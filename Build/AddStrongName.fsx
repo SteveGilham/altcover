@@ -37,8 +37,7 @@ let options =
 let rest =
     try
         options.Parse(fsi.CommandLineArgs)
-    with
-    | :? OptionException ->
+    with :? OptionException ->
         Usage "Error - usage is:" options
         new List<String>()
 
@@ -52,9 +51,7 @@ let definition = AssemblyDefinition.ReadAssembly(assemblyName.Value)
 
 // Do what CorFlags /32BIT+ /Force does if required
 if cor32plus.Value then
-    definition.MainModule.Attributes <-
-        ModuleAttributes.Required32Bit
-        ||| definition.MainModule.Attributes
+    definition.MainModule.Attributes <- ModuleAttributes.Required32Bit ||| definition.MainModule.Attributes
 // The headline section : strong-naming ---------------------------------
 // (Re-)apply the strong name
 definition.Name.HasPublicKey <- true

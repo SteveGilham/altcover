@@ -70,6 +70,8 @@ module VisualizerTests =
     //Assert.That(after.ToString().Replace("\r", String.Empty),
     //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
     test
-      <@ after.ToString().Replace("\r", String.Empty) = expect
-        .ToString()
-        .Replace("\r", String.Empty) @>
+      <@
+        after.ToString().Replace("\r", String.Empty) = expect
+          .ToString()
+          .Replace("\r", String.Empty)
+      @>

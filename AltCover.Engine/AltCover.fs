@@ -40,16 +40,11 @@ module AltCover =
       Errors: string seq }
     override self.ToString() =
       let cl =
-        String.Join(
-          " ",
-          Seq.concat [ [ "altcover" ]
-                       self.Command ]
-        )
+        String.Join(" ", Seq.concat [ [ "altcover" ]; self.Command ])
 
       String.Join(
         Environment.NewLine,
-        Seq.concat [ [| cl |] |> Array.toSeq
-                     self.Errors ]
+        Seq.concat [ [| cl |] |> Array.toSeq; self.Errors ]
       )
 #endif
 
@@ -433,6 +428,12 @@ module AltCover =
       | Abstract a -> a.Verbosity
       | TypeSafe t -> t.Verbosity
 
+    member self.Trivia =
+      match self with
+      | Primitive p -> p.Trivia
+      | Abstract a -> a.Trivia
+      | TypeSafe t -> t.Trivia.AsBool()
+
     interface Abstract.IPrepareOptions with
       member self.InputDirectories =
         self.InputDirectories |> PrepareOptions.ToSeq
@@ -510,6 +511,7 @@ module AltCover =
       member self.ShowStatic = self.ShowStatic
       member self.ShowGenerated = self.ShowGenerated
       member self.Verbosity = self.Verbosity
+      member self.Trivia = self.Trivia
 
 #if RUNNER
     static member private ValidateArray a f key =

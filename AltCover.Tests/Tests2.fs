@@ -80,9 +80,10 @@ module AltCoverTests2 =
       AltCover.Instrument.I.recordingMethod def
 
     recorder
-    |> List.zip [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
-                  "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
-                  "System.Void AltCover.Recorder.Instance.Pop()" ]
+    |> List.zip
+         [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
+           "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
+           "System.Void AltCover.Recorder.Instance.Pop()" ]
     |> List.iter (fun (n, m) -> test <@ Naming.fullMethodName m = n @>)
 
   [<Test>]
@@ -341,7 +342,7 @@ module AltCoverTests2 =
     let bang =
       fun () -> InvalidOperationException("Bang") |> raise
 
-    Assert.Throws<InvalidOperationException> (fun () ->
+    Assert.Throws<InvalidOperationException>(fun () ->
       Instrument.I.guard prepared bang |> ignore)
     |> ignore
 
@@ -349,7 +350,7 @@ module AltCoverTests2 =
     let outputdll = output + ".dll"
 
     try
-      Assert.Throws<ArgumentException> (fun () ->
+      Assert.Throws<ArgumentException>(fun () ->
         Instrument.I.writeAssembly prepared outputdll)
       |> ignore
     finally
@@ -838,6 +839,7 @@ module AltCoverTests2 =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
       Path.Combine(SolutionRoot.location, "AltCover.Tests/NullConst.dll")
+
     use ``module`` =
       AssemblyResolver.ReadAssembly path
 
@@ -860,12 +862,19 @@ module AltCoverTests2 =
       ``module``.MainModule.GetTypes()
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.find (fun m -> m.Name.Equals("MakeConst"))
+
     prepareLocalScopes def
     Output.verbose <- save
-    test <@ b.ToString() = "Null Constant thing elided in method System.Void NullConst.Program::MakeConst()" + Environment.NewLine @>
+
+    test
+      <@
+        b.ToString() = "Null Constant thing elided in method System.Void NullConst.Program::MakeConst()"
+                       + Environment.NewLine
+      @>
 
     use sink =
       File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
+
     ``module``.Write(sink, writer)
 
   [<Test>]
@@ -957,7 +966,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let size = finish.Offset + finish.GetSize()
 
-    let f = pathGetterDef.Body.Instructions.[2].Operand :?> FieldDefinition
+    let f =
+      pathGetterDef.Body.Instructions.[2].Operand :?> FieldDefinition
+
     let primitive = f.FieldType
     let np = ArrayType(primitive, 23)
 
@@ -974,8 +985,13 @@ has been prefixed with Ldc_I4_1 (1 byte)
       s.Start <- InstructionOffset(i)
       s.End <- InstructionOffset(size)
       let n = i.ToString().Replace("-", "_")
-      s.Constants.Add <| ConstantDebugInformation("I"+n, primitive, null)
-      s.Constants.Add <| ConstantDebugInformation("A"+n, np, null)
+
+      s.Constants.Add
+      <| ConstantDebugInformation("I" + n, primitive, null)
+
+      s.Constants.Add
+      <| ConstantDebugInformation("A" + n, np, null)
+
       rescope.Scopes.Add s)
 
     rescope.Scopes.Add rescope
@@ -1384,7 +1400,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   // work around weird compiler error with array indexing
   let private asIArray (x: obj) (i: int) =
-    (x :?> Instruction [])
+    (x :?> Instruction[])
     |> Seq.mapi (fun index instr -> (index, instr))
     |> Seq.filter (fun (x, y) -> x = i)
     |> Seq.map snd
@@ -1420,7 +1436,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       | :? (Instruction array) -> true
       | _ -> false)
     |> Seq.collect (fun i ->
-      i.Operand :?> Instruction []
+      i.Operand :?> Instruction[]
       |> Seq.mapi (fun o t -> (i, o, t)))
     |> Seq.iter (fun (i, o, t) ->
       Assert.That(asIArray i.Operand o, (Is.SameAs t))
@@ -1461,11 +1477,11 @@ has been prefixed with Ldc_I4_1 (1 byte)
       | _ -> false)
     |> Seq.iter (fun i ->
       let before =
-        (i.Operand :?> Instruction []) |> Seq.toList
+        (i.Operand :?> Instruction[]) |> Seq.toList
 
       CecilExtension.substituteInstructionOperand i newValue i
 
-      Seq.zip (i.Operand :?> Instruction []) before
+      Seq.zip (i.Operand :?> Instruction[]) before
       |> Seq.iter (fun (after, before) -> Assert.That(after, Is.SameAs before)))
 
   [<Test>]
@@ -2085,14 +2101,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     //     |> Seq.iter (printfn "%A")
     Assert.That(next, Is.EqualTo expected)
 
-    Assert.That(
-      targets2,
-      Is.EquivalentTo [ next
-                        n2
-                        next
-                        n2
-                        next ]
-    )
+    Assert.That(targets2, Is.EquivalentTo [ next; n2; next; n2; next ])
 
   [<Test>]
   let ShouldNotChangeAnUntrackedMethod () =
@@ -2201,7 +2210,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(inject.Length, Is.EqualTo 8)
 
       let switches =
-        branches.Head.Start.Operand :?> Instruction []
+        branches.Head.Start.Operand :?> Instruction[]
         |> Seq.toList
 
       Assert.That(switches.[0], Is.EqualTo inject.[1])
@@ -2840,8 +2849,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     let state =
-      InstrumentContext.Build [ "nunit.framework"
-                                "nonesuch" ]
+      InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
     let visited =
       Node.Assembly
@@ -2884,8 +2892,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     let state =
-      InstrumentContext.Build [ "nunit.framework"
-                                "nonesuch" ]
+      InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
     let visited =
       Node.Assembly
@@ -2917,8 +2924,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Ignore }
 
       let state =
-        InstrumentContext.Build [ "nunit.framework"
-                                  "nonesuch" ]
+        InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
       let result =
         Instrument.I.instrumentationVisitor state visited
@@ -2948,8 +2954,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Ignore }
 
       let state =
-        InstrumentContext.Build [ "nunit.framework"
-                                  "nonesuch" ]
+        InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
       let result =
         Instrument.I.instrumentationVisitor state visited
@@ -2976,8 +2981,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Ignore }
 
       let state =
-        InstrumentContext.Build [ "nunit.framework"
-                                  "nonesuch" ]
+        InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
       let result =
         Instrument.I.instrumentationVisitor state visited
@@ -3004,8 +3008,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Instrument }
 
       let state =
-        InstrumentContext.Build [ "nunit.framework"
-                                  "nonesuch" ]
+        InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
       use recstream = recorderStream ()
 
@@ -3034,29 +3037,35 @@ has been prefixed with Ldc_I4_1 (1 byte)
       test <@ string result.RecordingMethodRef.Visit = (visit |> Seq.head |> string) @>
 
       test
-        <@ string result.RecordingMethodRef.Push = (visit
-                                                    |> Seq.skip 1
-                                                    |> Seq.head
-                                                    |> string) @>
-
-      test
-        <@ string result.RecordingMethodRef.Pop = (visit
-                                                   |> Seq.skip 2
+        <@
+          string result.RecordingMethodRef.Push = (visit
+                                                   |> Seq.skip 1
                                                    |> Seq.head
-                                                   |> string) @>
+                                                   |> string)
+        @>
 
       test
-        <@ { result with
-               RecordingMethodRef =
-                 { Visit = null
-                   Push = null
-                   Pop = null } } = { state' with
-                                        ModuleId = def.MainModule.Mvid.ToString()
-                                        RecordingMethod = visit
-                                        RecordingMethodRef =
-                                          { Visit = null
-                                            Push = null
-                                            Pop = null } } @>
+        <@
+          string result.RecordingMethodRef.Pop = (visit
+                                                  |> Seq.skip 2
+                                                  |> Seq.head
+                                                  |> string)
+        @>
+
+      test
+        <@
+          { result with
+              RecordingMethodRef =
+                { Visit = null
+                  Push = null
+                  Pop = null } } = { state' with
+                                       ModuleId = def.MainModule.Mvid.ToString()
+                                       RecordingMethod = visit
+                                       RecordingMethodRef =
+                                         { Visit = null
+                                           Push = null
+                                           Pop = null } }
+        @>
     finally
       CoverageParameters.theReportFormat <- None
 
@@ -3157,8 +3166,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Instrument }
 
       let state =
-        InstrumentContext.Build [ "nunit.framework"
-                                  "nonesuch" ]
+        InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
 
       use recstream = recorderStream ()
 
@@ -3405,7 +3413,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { InstrumentContext.Build [] with RecordingAssembly = prepared }
 
-    Assert.Throws<InvalidOperationException> (fun () ->
+    Assert.Throws<InvalidOperationException>(fun () ->
       ignore (
         Instrument.I.instrumentationVisitorWrapper
           (fun _ _ -> InvalidOperationException("Bang") |> raise)
@@ -3418,7 +3426,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let outputdll = output + ".dll"
 
     try
-      Assert.Throws<ArgumentException> (fun () ->
+      Assert.Throws<ArgumentException>(fun () ->
         Instrument.I.writeAssembly prepared outputdll)
       |> ignore
     finally
@@ -3452,7 +3460,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           RecordingAssembly = prepared
           AsyncSupport = Some support }
 
-    Assert.Throws<InvalidOperationException> (fun () ->
+    Assert.Throws<InvalidOperationException>(fun () ->
       ignore (
         Instrument.I.instrumentationVisitorWrapper
           (fun _ _ -> InvalidOperationException("Bang") |> raise)
@@ -3466,7 +3474,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let outputdll = output + ".dll"
 
     try
-      Assert.Throws<ArgumentException> (fun () ->
+      Assert.Throws<ArgumentException>(fun () ->
         Instrument.I.writeAssembly prepared outputdll)
       |> ignore
     finally
@@ -3484,7 +3492,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { InstrumentContext.Build [] with RecordingAssembly = null }
     // Would be NullreferenceException if we tried it
-    Assert.Throws<InvalidOperationException> (fun () ->
+    Assert.Throws<InvalidOperationException>(fun () ->
       ignore (
         Instrument.I.instrumentationVisitorWrapper
           (fun _ _ -> InvalidOperationException("Bang") |> raise)
@@ -3506,7 +3514,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     ProgramDatabase.readSymbols prepared
 
-    Assert.Throws<InvalidOperationException> (fun () ->
+    Assert.Throws<InvalidOperationException>(fun () ->
       ignore (
         Instrument.I.instrumentationVisitorWrapper
           (fun _ _ -> InvalidOperationException("Bang") |> raise)
@@ -3582,29 +3590,35 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Options2 = Mono.Options.OptionSet() }
 
         test
-          <@ [ Output.info :> obj
-               Output.echo :> obj
-               Output.warn :> obj
-               Output.error :> obj
-               Output.usage :> obj ]
-             |> List.zip first
-             |> List.map (fun (a, b) -> Object.ReferenceEquals(a, b)) = expect @>
+          <@
+            [ Output.info :> obj
+              Output.echo :> obj
+              Output.warn :> obj
+              Output.error :> obj
+              Output.usage :> obj ]
+            |> List.zip first
+            |> List.map (fun (a, b) -> Object.ReferenceEquals(a, b)) = expect
+          @>
 
         test
-          <@ stdout
-            .ToString()
-            .Trim()
-            .Replace(Environment.NewLine, "|") = toOut @>
+          <@
+            stdout
+              .ToString()
+              .Trim()
+              .Replace(Environment.NewLine, "|") = toOut
+          @>
 
         if toErr.Length = 0 then
           test <@ stderr.ToString().Length = 0 @>
         else
           test
-            <@ stderr
-                 .ToString()
-                 .Trim()
-                 .Replace(Environment.NewLine, "|")
-                 .StartsWith(toErr, StringComparison.Ordinal) @>
+            <@
+              stderr
+                .ToString()
+                .Trim()
+                .Replace(Environment.NewLine, "|")
+                .StartsWith(toErr, StringComparison.Ordinal)
+            @>
 
       )
     finally
@@ -3697,7 +3711,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         t.GetType().GetProperty("DeclaredConstructors")
 
       let c =
-        p.GetValue(t, null) :?> ConstructorInfo []
+        p.GetValue(t, null) :?> ConstructorInfo[]
 
       let c0 = c |> Seq.head
       let p = c0.GetParameters().Length

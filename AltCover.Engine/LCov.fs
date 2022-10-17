@@ -10,7 +10,8 @@ open AltCover.Shared
 
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
                                                   "AvoidSpeculativeGeneralityRule",
-                                                  Justification = "Delegation = first class functions")>]
+                                                  Justification =
+                                                    "Delegation = first class functions")>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
                                                   "CA1704",
                                                   Justification = "'LCov' is jargon")>]

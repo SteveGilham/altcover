@@ -23,7 +23,8 @@ module internal Json =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal getMethodRecords
     (modul: NativeJson.Documents)
     (doc: string * string)
@@ -56,7 +57,8 @@ module internal Json =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal getMethodRecord
     (modul: NativeJson.Documents)
     (doc: string * string)
@@ -286,7 +288,8 @@ module internal Json =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal opencoverToJson (report: XElement) =
     let json = NativeJson.Modules()
 

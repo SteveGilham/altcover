@@ -126,22 +126,21 @@ type AddAcceleratorCommand() =
       )
 
     if
-      self.ShouldProcess
-        (
-          "Command Line : "
-          + (if List.isEmpty finalmap then
-               String.Empty
-             else
-               (" -Mapping @{" + display + "}"))
-          + (if self.XDocument.IsPresent then
-               " -XDocument"
-             else
-               String.Empty)
-          + (if self.Accelerator.IsPresent then
-               " -Accelerator"
-             else
-               String.Empty)
-        )
+      self.ShouldProcess(
+        "Command Line : "
+        + (if List.isEmpty finalmap then
+             String.Empty
+           else
+             (" -Mapping @{" + display + "}"))
+        + (if self.XDocument.IsPresent then
+             " -XDocument"
+           else
+             String.Empty)
+        + (if self.Accelerator.IsPresent then
+             " -Accelerator"
+           else
+             String.Empty)
+      )
     then
       finalmap
       |> Seq.iter (fun kv ->

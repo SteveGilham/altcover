@@ -67,7 +67,7 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
-    Assert.Throws<NotSupportedException> (fun () ->
+    Assert.Throws<NotSupportedException>(fun () ->
       ReportFormat.NativeJson
       |> Counter.I.xmlByFormat
       |> ignore)
@@ -102,8 +102,7 @@ module AltCoverTests =
 
     lock Adapter.Lock (fun () ->
       try
-        Adapter.ModuleReset [| "module"
-                               "newmodule" |]
+        Adapter.ModuleReset [| "module"; "newmodule" |]
 
         Assert.True(Adapter.addSample ("module", 23, Null), "Test 1")
         Assert.True(Adapter.addSample ("module", 24, Null), "Test 2")
@@ -130,7 +129,7 @@ module AltCoverTests =
         // out of band example
         Assert.True(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
 
-        Assert.Throws<InvalidDataException> (fun () ->
+        Assert.Throws<InvalidDataException>(fun () ->
           Adapter.addSample ("module", 23, Table null)
           |> ignore)
         |> ignore
@@ -303,11 +302,7 @@ module AltCoverTests =
     Instance.Pop()
     Assert.True(Instance.I.callerId () |> Option.isNone)
 
-    Assert.That(
-      Instance.I.visits.Keys,
-      Is.EquivalentTo [ Track.Entry
-                        Track.Exit ]
-    )
+    Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [ Track.Entry; Track.Exit ])
 
     Assert.That(Instance.I.visits.[Track.Entry].Keys, Is.EquivalentTo [ 4321; 6789 ])
     Assert.That(Instance.I.visits.[Track.Exit].Keys, Is.EquivalentTo [ 4321; 6789 ])
@@ -372,9 +367,7 @@ module AltCoverTests =
 
         Assert.That(
           Instance.I.visits.Keys,
-          Is.EquivalentTo [ key
-                            Track.Entry
-                            Track.Exit ]
+          Is.EquivalentTo [ key; Track.Entry; Track.Exit ]
         )
 
         Assert.That(
@@ -436,10 +429,11 @@ module AltCoverTests =
 
     lines
     |> Seq.take 4
-    |> Seq.zip [ "ModuleId = \"a\""
-                 "hitPointId = \"b\""
-                 "context = \"c\""
-                 "exception = ex" ]
+    |> Seq.zip
+         [ "ModuleId = \"a\""
+           "hitPointId = \"b\""
+           "context = \"c\""
+           "exception = ex" ]
     |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo b))
 
     let third =
@@ -476,11 +470,12 @@ module AltCoverTests =
 
     lines
     |> Seq.take 4
-    |> Seq.zip [ "ModuleId = \"b\""
-                 "hitPointId = \"c\""
-                 "context = \"d\""
-                 "exception = System.NullReferenceException: "
-                 + unique ]
+    |> Seq.zip
+         [ "ModuleId = \"b\""
+           "hitPointId = \"c\""
+           "context = \"d\""
+           "exception = System.NullReferenceException: "
+           + unique ]
     |> Seq.iter (fun (a, b) -> Assert.That(b, Is.EqualTo a))
 
     let third =
@@ -529,7 +524,7 @@ module AltCoverTests =
       System.Guid.NewGuid().ToString()
 
     let exn =
-      Assert.Throws<InvalidOperationException> (fun () ->
+      Assert.Throws<InvalidOperationException>(fun () ->
         Adapter.invokeIssue71Wrapper<InvalidOperationException> (unique, pair))
 
     Assert.That(pair |> Seq.head, Is.False)
@@ -572,10 +567,11 @@ module AltCoverTests =
 
         lines
         |> Seq.take 4
-        |> Seq.zip [ "ModuleId = \" \""
-                     "hitPointId = 23"
-                     "context = Null"
-                     "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
+        |> Seq.zip
+             [ "ModuleId = \" \""
+               "hitPointId = 23"
+               "context = Null"
+               "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
         |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
 
         let third =
@@ -602,10 +598,7 @@ module AltCoverTests =
 
         Assert.That(
           Instance.I.visits.Keys,
-          Is.EquivalentTo [ key
-                            "key"
-                            Track.Entry
-                            Track.Exit ]
+          Is.EquivalentTo [ key; "key"; Track.Entry; Track.Exit ]
         )
       finally
         Adapter.HardReset())
@@ -625,9 +618,7 @@ module AltCoverTests =
 
         Assert.That(
           Instance.I.visits.Keys,
-          Is.EquivalentTo [ key
-                            Track.Entry
-                            Track.Exit ]
+          Is.EquivalentTo [ key; Track.Entry; Track.Exit ]
         )
 
         Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
@@ -1061,16 +1052,17 @@ module AltCoverTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       ))
 
     getMyMethodName "<="
@@ -1119,16 +1111,17 @@ module AltCoverTests =
         after.SelectNodes("//SequencePoint")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("vc")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
 
       Assert.That(
@@ -1162,8 +1155,8 @@ module AltCoverTests =
   let trywith<'a when 'a :> exn> f g =
     try
       f ()
-    with
-    | :? 'a -> g ()
+    with :? 'a ->
+      g ()
 
   let trywithrelease<'a when 'a :> exn> f = trywith f Instance.I.mutex.ReleaseMutex
 
@@ -1260,16 +1253,17 @@ module AltCoverTests =
             after.SelectNodes("//seqpnt")
             |> Seq.cast<XmlElement>
             |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-            Is.EquivalentTo [ "1"
-                              "1"
-                              "1"
-                              "1"
-                              "1"
-                              "1"
-                              "0"
-                              String.Empty
-                              "X"
-                              "-1" ]
+            Is.EquivalentTo
+              [ "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "0"
+                String.Empty
+                "X"
+                "-1" ]
           )
         finally
           Instance.I.trace <- save
@@ -1364,16 +1358,17 @@ module AltCoverTests =
             after.SelectNodes("//seqpnt")
             |> Seq.cast<XmlElement>
             |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-            Is.EquivalentTo [ "1"
-                              "1"
-                              "1"
-                              "1"
-                              "1"
-                              "1"
-                              "0"
-                              String.Empty
-                              "X"
-                              "-1" ]
+            Is.EquivalentTo
+              [ "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "0"
+                String.Empty
+                "X"
+                "-1" ]
           )
         finally
           Adapter.HardReset()
@@ -1466,16 +1461,17 @@ module AltCoverTests =
             after.SelectNodes("//seqpnt")
             |> Seq.cast<XmlElement>
             |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-            Is.EquivalentTo [ "11"
-                              "10"
-                              "9"
-                              "8"
-                              "7"
-                              "6"
-                              "4"
-                              "3"
-                              "2"
-                              "1" ]
+            Is.EquivalentTo
+              [ "11"
+                "10"
+                "9"
+                "8"
+                "7"
+                "6"
+                "4"
+                "3"
+                "2"
+                "1" ]
           )
         finally
           Instance.I.trace <- save
@@ -1560,16 +1556,17 @@ module AltCoverTests =
             after.SelectNodes("//seqpnt")
             |> Seq.cast<XmlElement>
             |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-            Is.EquivalentTo [ "1"
-                              "1"
-                              "1"
-                              "1"
-                              "1"
-                              "1"
-                              "0"
-                              String.Empty
-                              "X"
-                              "-1" ]
+            Is.EquivalentTo
+              [ "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "0"
+                String.Empty
+                "X"
+                "-1" ]
           )
         finally
           Instance.I.trace <- save
@@ -1653,16 +1650,17 @@ module AltCoverTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       AltCoverCoreTests.maybeDeleteFile reportFile
@@ -1821,16 +1819,17 @@ module AltCoverTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       AltCoverCoreTests.maybeDeleteFile reportFile
@@ -2068,16 +2067,17 @@ module AltCoverTests =
             after.SelectNodes("//seqpnt")
             |> Seq.cast<XmlElement>
             |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-            Is.EquivalentTo [ "11"
-                              "10"
-                              "9"
-                              "8"
-                              "7"
-                              "6"
-                              "4"
-                              "3"
-                              "2"
-                              "1" ]
+            Is.EquivalentTo
+              [ "11"
+                "10"
+                "9"
+                "8"
+                "7"
+                "6"
+                "4"
+                "3"
+                "2"
+                "1" ]
           )
         finally
           Instance.I.trace <- save

@@ -154,7 +154,9 @@ module internal Report =
       | Method m -> visitMethod s head m.Method (m.Inspection.IsInstrumented)
       | MethodPoint m -> visitMethodPoint s head m
       | AfterMethod _ ->
-        if head.IsEmpty then head.Remove()
+        if head.IsEmpty then
+          head.Remove()
+
         tail
       | AfterModule _ ->
         Visitor.moduleReport <- head.ToString()

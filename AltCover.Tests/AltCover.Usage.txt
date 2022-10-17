@@ -52,8 +52,8 @@
                                matches the regex are considered top-level, and
                                are not excluded from coverage on the basis of
                                any method which textually encloses them.
-  -l, --localSource          Don't instrument code for which the source file is
-                               not present.
+  -l, --localSource          Optional: Don't instrument code for which the
+                               source file is not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
@@ -96,9 +96,10 @@
                                paths if present.
       --defer                Optional, defers writing runner-mode coverage data
                                until process exit.
-  -v, --visibleBranches      Hide complex internal IL branching implementation
-                               details in switch/match constructs, and just
-                               show what the source level logic implies.
+  -v, --visibleBranches      Optional: Hide complex internal IL branching
+                               implementation details in switch/match
+                               constructs, and just show what the source level
+                               logic implies.
       --showstatic[=VALUE]   Optional: Instrument and show code that is by
                                default skipped as trivial.  --showstatic:- is
                                equivalent to omitting the parameter; --
@@ -107,8 +108,9 @@
                                visualizer (but treated as zero by
                                ReportGenerator) ; --showstatic:++ sets the
                                unvisited count to zero.
-      --showGenerated        Mark generated code with a visit count of -2 (
-                               Automatic) for the Visualizer if unvisited
+      --showGenerated        Optional: Mark generated code with a visit count
+                               of -2 (Automatic) for the Visualizer if unvisited
+      --trivia               Optional: Omit trivial sequence points
   -q                         Optional, multiple: Quiet mode -- once to switch
                                off informational messages, twice to switch off
                                warnings as well, three (or more) times to

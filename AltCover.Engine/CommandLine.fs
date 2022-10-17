@@ -64,7 +64,8 @@ module internal Zip =
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
-                    Justification = "This rule does not check to see whether this method opens the stream for a consumer to use and dispose")>]
+                    Justification =
+                      "This rule does not check to see whether this method opens the stream for a consumer to use and dispose")>]
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:Dispose objects before losing scope",
                     Justification = "ditto, ditto.")>]
@@ -121,7 +122,9 @@ module internal CommandLine =
       String.Format(CultureInfo.CurrentCulture, Output.resources.GetString resource, args)
 
   module internal I =
-    let internal conditionalOutput condition output = if condition () then output ()
+    let internal conditionalOutput condition output =
+      if condition () then
+        output ()
 
     let internal writeColoured (writer: TextWriter) colour operation =
       let original = Console.ForegroundColor
@@ -191,18 +194,18 @@ module internal CommandLine =
         x |> (logException store)
         defaultValue)
 
+    let private handledRetryFault (x: exn) =
+      (x :? IOException)
+      || (x :? System.Security.SecurityException)
+      || (x :? UnauthorizedAccessException)
+
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
                       Justification = "Long enough but no longer")>]
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
-      with
-      | x when
-        (x :? IOException)
-        || (x :? System.Security.SecurityException)
-        || (x :? UnauthorizedAccessException)
-        ->
+      with x when handledRetryFault x ->
         if depth < limit then
           Threading.Thread.Sleep(rest)
           doRetry action log limit rest (depth + 1) f
@@ -236,8 +239,10 @@ module internal CommandLine =
     let internal validateFileSystemEntity exists message key x =
       doPathOperation
         (fun () ->
-          if (not (String.IsNullOrWhiteSpace x))
-             && x |> canonicalPath |> exists then
+          if
+            (not (String.IsNullOrWhiteSpace x))
+            && x |> canonicalPath |> exists
+          then
             true
           else
             error <- Format.Local(message, key, x) :: error
@@ -262,8 +267,8 @@ module internal CommandLine =
     let internal transformCryptographicException f =
       try
         f ()
-      with
-      | :? CryptographicException as c -> c |> SecurityException.Throw
+      with :? CryptographicException as c ->
+        c |> SecurityException.Throw
 
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
@@ -306,8 +311,8 @@ module internal CommandLine =
         Left("UsageError", options)
       else
         Right(after, options)
-    with
-    | :? OptionException -> Left("UsageError", options)
+    with :? OptionException ->
+      Left("UsageError", options)
 
   let internal processHelpOption
     (parse: Either<string * OptionSet, string list * OptionSet>)
@@ -371,7 +376,8 @@ module internal CommandLine =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal processTrailingArguments (rest: string list) (toInfo: DirectoryInfo) =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
@@ -419,7 +425,8 @@ module internal CommandLine =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
                                                     "AvoidMethodWithUnusedGenericTypeRule",
-                                                    Justification = "Delegation = first class functions")>]
+                                                    Justification =
+                                                      "Delegation = first class functions")>]
   let internal doPathOperation =
     I.doPathOperation
 
@@ -430,7 +437,8 @@ module internal CommandLine =
     I.conditionalOutput
       (fun () -> directory |> Directory.Exists |> not)
       (fun () ->
-        if verbosity < 1 // implement it early here
+        if
+          verbosity < 1 // implement it early here
         then
           Output.info
           <| Format.Local("CreateFolder", directory)

@@ -124,9 +124,11 @@ module FSApiTests =
       setAttribute el "visitedClasses" "0"
       setAttribute el "visitedMethods" "0"
 
-      if getAttribute el "minCrapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        getAttribute el "minCrapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         setAttribute el "minCrapScore" "0"
         setAttribute el "maxCrapScore" "0")
 
@@ -136,16 +138,18 @@ module FSApiTests =
       setAttribute el "sequenceCoverage" "0"
       setAttribute el "branchCoverage" "0"
 
-      if getAttribute el "crapScore"
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        getAttribute el "crapScore"
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         setAttribute el "crapScore" "0")
 
     OpenCover.PostProcess after BranchOrdinal.Offset
     //#if !NET472
-//    NUnit.Framework.Assert.That(after.ToString(),
-//        NUnit.Framework.Is.EqualTo(before.ToString()))
-//#endif
+    //    NUnit.Framework.Assert.That(after.ToString(),
+    //        NUnit.Framework.Is.EqualTo(before.ToString()))
+    //#endif
 
     test <@ after.ToString() = before.ToString() @>
 
@@ -253,17 +257,19 @@ module FSApiTests =
     //)
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Replace("8.12", "8.13") // CRAP score rounding
-        .Replace("4.12", "4.13") // CRAP score rounding
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Replace("8.12", "8.13") // CRAP score rounding
+          .Replace("4.12", "4.13") // CRAP score rounding
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let JsonWithPartialsToOpenCover () =
@@ -304,15 +310,17 @@ module FSApiTests =
     //)
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let JsonFromCoverletShouldHaveBranchExitValuesOK () =
@@ -354,15 +362,17 @@ module FSApiTests =
     //)
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let OpenCoverToJson () =
@@ -392,15 +402,17 @@ module FSApiTests =
     //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let OpenCoverWithPartialsToJson () =
@@ -431,15 +443,17 @@ module FSApiTests =
     //              result)
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let NCoverToJson () =
@@ -475,15 +489,17 @@ module FSApiTests =
     //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let NCoverWithPartialsToJson () =
@@ -519,15 +535,17 @@ module FSApiTests =
     //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let NCoverToJsonWithEmbeds () =
@@ -557,15 +575,17 @@ module FSApiTests =
     //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
     use stream =
       Assembly
@@ -599,15 +619,17 @@ module FSApiTests =
     //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
 
     test
-      <@ result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) = expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]) @>
+      <@
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]) = expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      @>
 
   [<Test>]
   let OpenCoverToBarChart () =
@@ -915,9 +937,11 @@ module FSApiTests =
       XmlTypes.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
     test
-      <@ reverted
-        .ToString()
-        .Replace(Environment.NewLine, String.Empty) = documentText @>
+      <@
+        reverted
+          .ToString()
+          .Replace(Environment.NewLine, String.Empty) = documentText
+      @>
 
   [<Test>]
   let NCoverToCobertura () =
@@ -1118,9 +1142,7 @@ module FSApiTests =
     let summary = DotNet.CLIOptions.Summary "R"
 
     let combined =
-      DotNet.CLIOptions.Many [ force
-                               fail
-                               summary ]
+      DotNet.CLIOptions.Many [ force; fail; summary ]
 
     let pprep =
       Primitive.PrepareOptions.Create()
@@ -1172,11 +1194,11 @@ module FSApiTests =
       |> List.sort
 
     // not input and output directories  (inplace now allowed)
-//#if !NET472
-//    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
-//                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
-//                "but got  " + String.Join("; ", prepareFragments))
-//#endif
+    //#if !NET472
+    //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
+    //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
+    //                "but got  " + String.Join("; ", prepareFragments))
+    //#endif
     test <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 2) @>
 
     let collect =
@@ -1203,11 +1225,11 @@ module FSApiTests =
       |> List.sort
 
     // not recorder directory
-//#if !NET472
-//    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
-//                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
-//                "but got  " + String.Join("; ", collectFragments))
-//#endif
+    //#if !NET472
+    //    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
+    //                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
+    //                "but got  " + String.Join("; ", collectFragments))
+    //#endif
     test <@ (collectFragments) |> List.length = ((collectNames |> List.length) - 1) @>
 
     let optionNames =
@@ -1233,14 +1255,16 @@ module FSApiTests =
       |> List.sort
 
     // ignore Is<CaseName> and Tag
-//#if !NET472
-//    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
-//                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
-//                "but got  " + String.Join("; ", optionsFragments))
-//#endif
+    //#if !NET472
+    //    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
+    //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+    //                "but got  " + String.Join("; ", optionsFragments))
+    //#endif
     test
-      <@ (optionsFragments) |> List.length = ((optionNames |> List.length)
-                                              - (optionCases + 1)) @>
+      <@
+        (optionsFragments) |> List.length = ((optionNames |> List.length)
+                                             - (optionCases + 1))
+      @>
 
   [<Test>]
   let ArgumentsBuilt () =
@@ -1256,10 +1280,7 @@ module FSApiTests =
       |> DotNet.CLIOptions.Abstract
 
     let combined =
-      DotNet.CLIOptions.Many [ a
-                               force
-                               fail
-                               summary ]
+      DotNet.CLIOptions.Many [ a; force; fail; summary ]
 
     test <@ fail.ForceDelete |> not @>
     test <@ force.FailFast |> not @>
@@ -1268,11 +1289,11 @@ module FSApiTests =
     test <@ combined.ShowSummary = "R" @>
 
     test
-      <@ (DotNet.CLIOptions.Many [ a
-                                   force
-                                   fail ])
-           .ShowSummary
-         |> String.IsNullOrEmpty @>
+      <@
+        (DotNet.CLIOptions.Many [ a; force; fail ])
+          .ShowSummary
+        |> String.IsNullOrEmpty
+      @>
 
     let pprep =
       Primitive.PrepareOptions.Create()
@@ -1287,14 +1308,18 @@ module FSApiTests =
       AltCover.AltCover.CollectOptions.Primitive pcoll
 
     test
-      <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+      <@
+        DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+      @>
 
     let coll1 =
       { pcoll with Verbosity = TraceLevel.Verbose }
       |> AltCover.AltCover.CollectOptions.Primitive
 
     test
-      <@ DotNet.ToTestArguments prep coll1 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+      <@
+        DotNet.ToTestArguments prep coll1 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+      @>
 
     let coll2 =
       { pcoll with Verbosity = TraceLevel.Warning }
@@ -1307,7 +1332,9 @@ module FSApiTests =
       |> AltCover.AltCover.PrepareOptions.Primitive
 
     test
-      <@ DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+      <@
+        DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+      @>
 
   [<Test>]
   let MergeRejectsNonCoverage () =
@@ -1370,10 +1397,7 @@ module FSApiTests =
     let doc2 = XDocument.Load stream2
 
     let merge =
-      AltCover.OpenCover.Merge [ doc1
-                                 doc2
-                                 doc1
-                                 doc2 ]
+      AltCover.OpenCover.Merge [ doc1; doc2; doc1; doc2 ]
 
     let summary =
       merge.Root.Element(XName.Get "Summary")
@@ -1381,7 +1405,9 @@ module FSApiTests =
     //printfn "%A" merge
 
     test
-      <@ summary.ToString() = "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />" @>
+      <@
+        summary.ToString() = "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />"
+      @>
 
   // TODO -- recursive validation
 
@@ -1403,10 +1429,7 @@ module FSApiTests =
     let doc2 = XDocument.Load stream2
 
     let merge =
-      AltCover.OpenCover.Merge [ doc1
-                                 doc2
-                                 doc1
-                                 doc2 ]
+      AltCover.OpenCover.Merge [ doc1; doc2; doc1; doc2 ]
 
     let summary =
       merge.Root.Element(XName.Get "Summary")
@@ -1414,9 +1437,11 @@ module FSApiTests =
     //printfn "%A" merge
 
     test
-      <@ summary
-        .ToString()
-        .Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />" @>
+      <@
+        summary
+          .ToString()
+          .Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />"
+      @>
 
 // TODO -- recursive validation
 
