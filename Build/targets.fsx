@@ -542,6 +542,7 @@ _Target "RebuildPaketLock" ignore
 _Target "Preparation" ignore
 
 _Target "PreClean" (fun _ ->
+    // ("." |> Information.shortlog).Substring 9 |> printfn "%A"
     // dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
     !! "**/*ssemblyAttributes.cs"
     |> Seq.map Path.GetFullPath
@@ -1311,11 +1312,11 @@ _Target "UnitTest" (fun _ ->
                "--commitBranch"
                Information.getBranchName (".")
                "--commitAuthor"
-               maybe "APPVEYOR_REPO_COMMIT_AUTHOR" "Not specified"
+               maybe "APPVEYOR_REPO_COMMIT_AUTHOR" ""
                "--commitEmail"
-               maybe "APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL" "Not@specified"
+               maybe "APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL" ""
                "--commitMessage"
-               CommitMessage.getCommitMessage "."
+               (Information.shortlog ".").Substring 9
                "--jobId"
                maybe "APPVEYOR_JOB_ID" <| DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
             "Coveralls upload failed"
