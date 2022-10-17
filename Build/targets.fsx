@@ -586,19 +586,6 @@ _Target "SetVersion" (fun _ ->
         System.Xml.Linq.SaveOptions.DisableFormatting
     )
 
-    // patch coveralls.io for github actions
-    let coverallsdll =
-        ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.dll")
-        |> Path.getFullName
-
-    Shell.copyFile coverallsdll "./ThirdParty/Coveralls.dll"
-
-    let coverallspdb =
-        ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.pdb")
-        |> Path.getFullName
-
-    Shell.copyFile coverallspdb "./ThirdParty/Coveralls.pdb"
-
     let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
 
     let github = Environment.environVar "GITHUB_RUN_NUMBER"
@@ -1306,11 +1293,32 @@ _Target "UnitTest" (fun _ ->
         && [ "APPVEYOR_BUILD_NUMBER"; "GITHUB_RUN_NUMBER" ]
            |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
     then
-        let coveralls =
-            ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
-            |> Path.getFullName
+        let maybe envvar fallback =
+            let x = Environment.environVar envvar
+            if String.IsNullOrWhiteSpace x then fallback else x
 
-        Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ]) "Coveralls upload failed"
+        Actions.Run
+            ("dotnet",
+             "_Reports",
+             [ "csmacnz.Coveralls"
+               "--opencover"
+               "-i"
+               coverage
+               "--repoToken"
+               Environment.environVar "COVERALLS_REPO_TOKEN"
+               "--commitId"
+               commitHash
+               "--commitBranch"
+               Information.getBranchName (".")
+               "--commitAuthor"
+               maybe "APPVEYOR_REPO_COMMIT_AUTHOR" "Not specified"
+               "--commitEmail"
+               maybe "APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL" "Not@specified"
+               "--commitMessage"
+               CommitMessage.getCommitMessage "."
+               "--jobId"
+               maybe "APPVEYOR_JOB_ID" <| DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
+            "Coveralls upload failed"
 
     printfn "Dump uncovered lines"
 

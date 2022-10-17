@@ -31,6 +31,12 @@
       "commands": [
         "dotnet-fsharplint"
       ]
+    },
+    "coveralls.net": {
+      "version": "4.0.1",
+      "commands": [
+        "csmacnz.Coveralls"
+      ]
     }
   }
 }
