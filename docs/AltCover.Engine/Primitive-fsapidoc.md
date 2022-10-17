@@ -96,6 +96,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         ShowStatic: string
         ShowGenerated: bool
         Verbosity : System.Diagnostics.TraceLevel
+        Trivia: bool
       }
     with
         static member Create : unit -> PrepareOptions
