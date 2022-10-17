@@ -15,9 +15,11 @@ module Xhtml =
                     Justification = "AvoidSpeculativeGenerality too")>]
   let ConvertToBarChart (document: XDocument) =
     let format =
-      if document
-        .Descendants(XName.Get "CoverageSession")
-        .Any() then
+      if
+        document
+          .Descendants(XName.Get "CoverageSession")
+          .Any()
+      then
         AltCover.ReportFormat.OpenCover
       else
         AltCover.ReportFormat.NCover

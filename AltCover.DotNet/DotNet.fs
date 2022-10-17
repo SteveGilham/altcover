@@ -47,17 +47,19 @@ module DotNet =
       | Abstract a -> a.FailFast
 
     member self.ShowSummary =
+      let select (s: CLIOptions seq) =
+        s
+        |> Seq.map (fun f -> f.ShowSummary)
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.tryHead
+
       match self with
       | Summary b -> b
       | Fail _
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
       | Many s ->
-        match s
-              |> Seq.map (fun f -> f.ShowSummary)
-              |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-              |> Seq.tryHead
-          with
+        match select s with
         | Some x -> x
         | _ -> String.Empty
 
@@ -130,6 +132,7 @@ module DotNet =
         (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
         (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
+        (arg, "Trivia", "true", prepare.Trivia) //=true|false` to omit trivial sequence points
         (arg, "InPlace", "true", prepare.InPlace) ] //=true|false` to test in-place (meaning extra file copies)
 
     let internal toCollectFromArgArgumentList (collect: Abstract.ICollectOptions) =
@@ -144,7 +147,7 @@ module DotNet =
       [
         // poss s <> Info
         fromValue,
-        "Verbosity",  //=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
+        "Verbosity", //=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
         verbosity :> obj,
         verbosity <> System.Diagnostics.TraceLevel.Info ]
 
@@ -161,8 +164,8 @@ module DotNet =
       [ arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
         arg, "FailFast", "true", options.FailFast ] //=true|false` to skip coverage collection if the unit tests fail
 
-// "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
-// "GetVersion" //=true|false` to emit the current AltCover version
+  // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
+  // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
   let ToTestArgumentList

@@ -21,24 +21,13 @@ module Actions =
     let Clean () =
         let rec clean1 depth =
             try
-                (DirectoryInfo ".")
-                    .GetDirectories("*", SearchOption.AllDirectories)
-                |> Seq.filter (fun x ->
-                    x.Name.StartsWith "_"
-                    || x.Name = "bin"
-                    || x.Name = "obj")
-                |> Seq.filter (fun n ->
-                    "packages"
-                    |> Path.GetFullPath
-                    |> n.FullName.StartsWith
-                    |> not)
+                (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
+                |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
+                |> Seq.filter (fun n -> "packages" |> Path.GetFullPath |> n.FullName.StartsWith |> not)
                 |> Seq.map (fun x -> x.FullName)
                 |> Seq.distinct
                 // arrange so leaves get deleted first, avoiding "does not exist" warnings
-                |> Seq.groupBy (fun x ->
-                    x
-                    |> Seq.filter (fun c -> c = '\\' || c = '/')
-                    |> Seq.length)
+                |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c = '\\' || c = '/') |> Seq.length)
                 |> Seq.map (fun (n, x) -> (n, x |> Seq.sort))
                 |> Seq.sortBy (fst >> ((*) -1))
                 |> Seq.collect snd
@@ -47,16 +36,13 @@ module Actions =
                     Directory.Delete(n, true))
 
                 !!(@"./*Tests/*.tests.core.fsproj")
-                |> Seq.map (fun f ->
-                    (Path.GetDirectoryName f)
-                    @@ "coverage.opencover.xml")
+                |> Seq.map (fun f -> (Path.GetDirectoryName f) @@ "coverage.opencover.xml")
                 |> Seq.iter File.Delete
 
                 let temp = Environment.environVar "TEMP"
 
                 if not <| String.IsNullOrWhiteSpace temp then
-                    Directory.GetFiles(temp, "*.tmp.dll.mdb")
-                    |> Seq.iter File.Delete
+                    Directory.GetFiles(temp, "*.tmp.dll.mdb") |> Seq.iter File.Delete
             with
             | :? System.IO.IOException as x -> clean' (x :> Exception) depth
             | :? System.UnauthorizedAccessException as x -> clean' (x :> Exception) depth
@@ -298,9 +284,7 @@ using System.Runtime.CompilerServices;
 
         let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-        let recorded =
-            coverageDocument.Descendants(XName.Get("seqpnt"))
-            |> Seq.toList
+        let recorded = coverageDocument.Descendants(XName.Get("seqpnt")) |> Seq.toList
 
         let zero =
             recorded
@@ -327,32 +311,19 @@ using System.Runtime.CompilerServices;
         Assert.That(
             zero',
             Is.EquivalentTo [ "18"; "19"; "20" ],
-            "wrong unvisited in "
-            + sigil
-            + " : "
-            + (sprintf "%A" zero')
+            "wrong unvisited in " + sigil + " : " + (sprintf "%A" zero')
         )
 
         let ones' = ones |> Seq.distinct |> Seq.toList
 
         Assert.That(
             ones',
-            Is.EquivalentTo [ "11"
-                              "12"
-                              "13"
-                              "14"
-                              "15"
-                              "16"
-                              "21" ],
-            "wrong number of visited in "
-            + sigil
-            + " : "
-            + (sprintf "%A" zero')
+            Is.EquivalentTo [ "11"; "12"; "13"; "14"; "15"; "16"; "21" ],
+            "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero')
         )
 
     let HandleResults (msg: string) (result: Fake.Core.ProcessResult) =
-        String.Join(Environment.NewLine, result.Messages)
-        |> printfn "%s"
+        String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
 
         let save = (Console.ForegroundColor, Console.BackgroundColor)
 
@@ -363,8 +334,7 @@ using System.Runtime.CompilerServices;
                 Console.ForegroundColor <- ConsoleColor.Black
                 Console.BackgroundColor <- ConsoleColor.White
 
-                String.Join(Environment.NewLine, errors)
-                |> printfn "ERR : %s"
+                String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
             finally
                 Console.ForegroundColor <- fst save
                 Console.BackgroundColor <- snd save
@@ -388,9 +358,7 @@ using System.Runtime.CompilerServices;
         printfn "Instrument and run a simple executable"
         Directory.ensure "./_Reports"
 
-        let simpleReport =
-            (Path.getFullName "./_Reports")
-            @@ (reportSigil + ".xml")
+        let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
 
         let binRoot = Path.getFullName binaryPath
         let sampleRoot = Path.getFullName samplePath
@@ -438,9 +406,7 @@ using System.Runtime.CompilerServices;
             Directory.ensure "./_Reports"
             let reportSigil = reportSigil' + "UnderMono"
 
-            let simpleReport =
-                (Path.getFullName "./_Reports")
-                @@ (reportSigil + ".xml")
+            let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
 
             let binRoot = Path.getFullName binaryPath
             let sampleRoot = Path.getFullName samplePath
@@ -512,10 +478,7 @@ a:hover {color: #ecc;}
         let xmlform = XDocument.Parse docHtml
         let body = xmlform.Descendants(XName.Get "body")
 
-        let eliminate =
-            [ "Continuous Integration"
-              "Building"
-              "Thanks to" ]
+        let eliminate = [ "Continuous Integration"; "Building"; "Thanks to" ]
 
         let keep = ref true
 
@@ -639,22 +602,23 @@ a:hover {color: #ecc;}
         Assert.That(
             coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
             |> Seq.map (fun x -> x.ToString()),
-            Is.EquivalentTo [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
-                              "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                              "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ]
+            Is.EquivalentTo
+                [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+                  "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                  "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ]
         )
 
         printfn "TrackRefs OK"

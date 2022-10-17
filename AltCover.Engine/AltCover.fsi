@@ -308,6 +308,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         member Verbosity : System.Diagnostics.TraceLevel
+        ///<summary>
+        /// Corresponds to command line option ` --trivia`
+        ///</summary>
+        member Trivia: bool with get
 // ```
 #if RUNNER
 // ```

@@ -60,7 +60,9 @@ module Browser =
     psi.CreateNoWindow <- true
     psi.WindowStyle <- ProcessWindowStyle.Hidden
     use proc = Process.Start(psi)
-    if waitForExit then proc.WaitForExit()
+
+    if waitForExit then
+      proc.WaitForExit()
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",

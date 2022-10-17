@@ -396,6 +396,7 @@ module ExpectoTestManifest =
        "Tests.AssembliesAreDeeperThanPaths"
        Tests.AltCoverTests.FilteredAssembliesDoNotHaveSequencePoints,
        "Tests.FilteredAssembliesDoNotHaveSequencePoints"
+       Tests.AltCoverTests.TestExceptionWrapping, "Tests.TestExceptionWrapping"
        Tests.AltCoverTests.TestFixPointInvoke, "Tests.TestFixPointInvoke"
        Tests.AltCoverTests.TestFixPointApply, "Tests.TestFixPointApply"
        Tests.AltCoverTests.PathsAreDeeperThanAVisit, "Tests.PathsAreDeeperThanAVisit"
@@ -417,6 +418,8 @@ module ExpectoTestManifest =
        "Tests.FullMethodNamesAreExtracted"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNet,
        "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
+       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet,
+       "Tests.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbeds,
        "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithPartials,
@@ -519,7 +522,8 @@ module ExpectoTestManifest =
        "Tests2.ShouldGetTrackingStyleIfSet"
        Tests.AltCoverTests2.ShouldGetNewFilePathFromPreparedAssembly,
        "Tests2.ShouldGetNewFilePathFromPreparedAssembly"
-       Tests.AltCoverTests2.ShouldHandleNullConstantsOK, "Tests2.ShouldHandleNullConstantsOK"
+       Tests.AltCoverTests2.ShouldHandleNullConstantsOK,
+       "Tests2.ShouldHandleNullConstantsOK"
        Tests.AltCoverTests2.ShouldRescopeMonoMethodOK, "Tests2.ShouldRescopeMonoMethodOK"
        Tests.AltCoverTests2.ShouldWriteMonoAssemblyOK, "Tests2.ShouldWriteMonoAssemblyOK"
        Tests.AltCoverTests2.ShouldGetVisitFromWrittenAssembly,

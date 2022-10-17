@@ -20,7 +20,6 @@ for arg in Environment.GetCommandLineArgs() |> Seq.skip 3 do
 
     squashed.Seek(0L, SeekOrigin.Begin) |> ignore
 
-    squashed.Read(crushed, 0, crushed.Length)
-    |> ignore
+    squashed.Read(crushed, 0, crushed.Length) |> ignore
 
     crushed |> Convert.ToBase64String |> printfn "%s"

@@ -7,7 +7,8 @@ open TaskIO
 [<RequireQualifiedAccess>]
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "AvoidSpeculativeGeneralityRule",
-                  Justification = "This assembles the significant public surface for the assembly")>]
+                  Justification =
+                    "This assembles the significant public surface for the assembly")>]
 module Command =
   let Prepare (args: Abstract.IPrepareOptions) (log: AltCover.LoggingOptions) =
     log.Apply()

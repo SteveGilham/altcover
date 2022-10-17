@@ -266,9 +266,11 @@ type ConvertToCoberturaCommand() =
       let rewrite =
         AltCover.CoverageFormats.ConvertToCobertura self.XDocument
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -341,9 +343,11 @@ type ConvertToNCoverCommand() =
       let rewrite =
         AltCover.CoverageFormats.ConvertToNCover self.XDocument
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -398,7 +402,8 @@ type ConvertFromNCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val Assembly: string array = [||] with get, set
 
@@ -435,9 +440,11 @@ type ConvertFromNCoverCommand() =
       let converted =
         AltCover.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         converted.Save(self.OutputFile)
 
       self.WriteObject converted
@@ -536,7 +543,8 @@ type WriteOpenCoverDerivedStateCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val Assembly: string array = [||] with get, set
 
@@ -588,9 +596,11 @@ type WriteOpenCoverDerivedStateCommand() =
           AltCover.OpenCover.PostProcess temp self.BranchOrdinal
           temp
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -665,9 +675,11 @@ type ConvertFromCoverageJsonCommand() =
       let rewrite =
         AltCover.OpenCover.JsonToXml self.Json
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite

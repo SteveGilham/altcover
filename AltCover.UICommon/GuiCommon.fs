@@ -73,7 +73,8 @@ module GuiCommon =
   [<NoComparison; AutoSerializable(false)>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
                                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                                    Justification = "match expressions are still too much the same for it")>]
+                                                    Justification =
+                                                      "match expressions are still too much the same for it")>]
   type Source =
     | File of FileInfo
     | Url of Uri
@@ -92,8 +93,8 @@ module GuiCommon =
 
           response.ContentLength > 0L
           && (response :?> HttpWebResponse).StatusCode |> int < 400
-        with
-        | :? WebException -> false
+        with :? WebException ->
+          false
 
     member internal self.FullName =
       match self with
@@ -166,7 +167,8 @@ module GuiCommon =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.GuiCommon.#Exemption.OfInt.Static(System.Int32)",
+                            Target =
+                              "AltCover.GuiCommon.#Exemption.OfInt.Static(System.Int32)",
                             MessageId = "i",
                             Justification = "Another obvious name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
@@ -190,7 +192,8 @@ module GuiCommon =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1702:CompoundWordsShouldBeCasedCorrectly",
                             Scope = "member",
-                            Target = "AltCover.GuiCommon+MethodKey.#.ctor(System.Xml.XPath.XPathNavigator,System.String,System.String,System.String)",
+                            Target =
+                              "AltCover.GuiCommon+MethodKey.#.ctor(System.Xml.XPath.XPathNavigator,System.String,System.String,System.String)",
                             MessageId = "nameSpace",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",

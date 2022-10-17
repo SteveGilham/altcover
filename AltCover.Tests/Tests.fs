@@ -35,7 +35,7 @@ type ProxyObject() =
   member val Context: System.Runtime.Loader.AssemblyLoadContext = null with get, set
 #endif
 
-  member this.InstantiateObject(assemblyPath: string, typeName: string, args: obj []) =
+  member this.InstantiateObject(assemblyPath: string, typeName: string, args: obj[]) =
 #if !NET472
     let assembly =
       this.Context.LoadFromAssemblyPath(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
@@ -50,7 +50,7 @@ type ProxyObject() =
     this.Type <- Seq.tryHead t
     this.Object <- Activator.CreateInstance(this.Type |> Option.get, args)
 
-  member this.InvokeMethod(methodName: string, args: obj []) =
+  member this.InvokeMethod(methodName: string, args: obj[]) =
     let t = this.Type |> Option.get
     let methodinfo = t.GetMethod(methodName)
     methodinfo.Invoke(this.Object, args)
@@ -122,21 +122,25 @@ module AltCoverTests =
   [<Test>]
   let PositiveIsVisited () =
     test
-      <@ [ 1..255 ]
-         |> Seq.map Exemption.OfInt
-         |> Seq.tryFind (fun x -> x <> Exemption.Visited) = None @>
+      <@
+        [ 1..255 ]
+        |> Seq.map Exemption.OfInt
+        |> Seq.tryFind (fun x -> x <> Exemption.Visited) = None
+      @>
 
   [<Test>]
   let NegativesSpray () =
     test
-      <@ [ 0..5 ]
-         |> Seq.map ((~-) >> Exemption.OfInt)
-         |> Seq.toList = [ Exemption.None
-                           Exemption.Declared
-                           Exemption.Automatic
-                           Exemption.StaticAnalysis
-                           Exemption.Excluded
-                           Exemption.None ] @>
+      <@
+        [ 0..5 ]
+        |> Seq.map ((~-) >> Exemption.OfInt)
+        |> Seq.toList = [ Exemption.None
+                          Exemption.Declared
+                          Exemption.Automatic
+                          Exemption.StaticAnalysis
+                          Exemption.Excluded
+                          Exemption.None ]
+      @>
 
   // ProgramDatabase.fs
   let isAssemblyType (file: string) =
@@ -178,16 +182,16 @@ module AltCoverTests =
         printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
 
         let seperatePdb =
-           name
-           |> Path.GetDirectoryName
-           |> String.IsNullOrEmpty
-           |> not
+          name
+          |> Path.GetDirectoryName
+          |> String.IsNullOrEmpty
+          |> not
 
         Assert.That(
-            AltCover.ProgramDatabase.I.symbolMatch tokens name,
-            Is.EqualTo seperatePdb,
-            f |> Path.GetFileName
-          )
+          AltCover.ProgramDatabase.I.symbolMatch tokens name,
+          Is.EqualTo seperatePdb,
+          f |> Path.GetFileName
+        )
 
         //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
         let probe = Path.ChangeExtension(f, ".pdb")
@@ -321,8 +325,8 @@ module AltCoverTests =
 
         match pdb with
         | Some name -> Assert.That(name, Is.EqualTo normalized)
-      with
-      | :? BadImageFormatException -> ())
+      with :? BadImageFormatException ->
+        ())
 
   [<Test>]
   let ShouldGetForeignPdbWithFallbackWhenNotColocated () =
@@ -371,8 +375,8 @@ module AltCoverTests =
             Assert.That(name, Is.EqualTo normalized)
             AltCover.ProgramDatabase.readSymbols def
             Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName)
-        with
-        | :? BadImageFormatException -> ())
+        with :? BadImageFormatException ->
+          ())
     finally
       ProgramDatabase.symbolFolders.Clear()
 
@@ -613,8 +617,7 @@ module AltCoverTests =
   [<Test>]
   let PathDoesMatchPathClass () =
     let x =
-      String [| '\\'
-                Path.DirectorySeparatorChar |]
+      String [| '\\'; Path.DirectorySeparatorChar |]
 
     Assert.That(
       Filter.``match``
@@ -894,9 +897,7 @@ module AltCoverTests =
     Assert.That(indirect3 |> Seq.isEmpty, sprintf "Third order types found %A" indirect3)
 
     let pass =
-      Seq.concat [ direct
-                   indirect
-                   indirect2 ]
+      Seq.concat [ direct; indirect; indirect2 ]
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (not << Filter.isFSharpInternal)
       |> Seq.map (fun x -> x.Name)
@@ -1029,9 +1030,11 @@ module AltCoverTests =
       |> List.map (fun k -> Visitor.I.selectExemption k [] Exemption.None)
 
     test
-      <@ result = [ Exemption.StaticAnalysis
-                    Exemption.None
-                    Exemption.None ] @>
+      <@
+        result = [ Exemption.StaticAnalysis
+                   Exemption.None
+                   Exemption.None ]
+      @>
 
   [<Test>]
   let ValidateStaticClass () =
@@ -1075,9 +1078,11 @@ module AltCoverTests =
         |> List.map (fun k -> Visitor.I.selectExemption k items Exemption.None)
 
       test
-        <@ result = [ Exemption.StaticAnalysis
-                      Exemption.Automatic
-                      Exemption.Automatic ] @>
+        <@
+          result = [ Exemption.StaticAnalysis
+                     Exemption.Automatic
+                     Exemption.Automatic ]
+        @>
     finally
       CoverageParameters.showGenerated.Value <- false
 
@@ -1370,11 +1375,13 @@ module AltCoverTests =
           |> Seq.toList
         // Expect no branch points here from the async (or yield)
         test
-          <@ deeper
-             |> List.forall (fun n ->
-               match n with
-               | MethodPoint _ -> true
-               | _ -> false) @>
+          <@
+            deeper
+            |> List.forall (fun n ->
+              match n with
+              | MethodPoint _ -> true
+              | _ -> false)
+          @>
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None)
@@ -2023,14 +2030,15 @@ module AltCoverTests =
   let EmptyArrayHasExpectedHash () =
     Assert.That(
       (KeyStore.I.tokenOfArray [||]),
-      Is.EquivalentTo [| 9uy
-                         7uy
-                         216uy
-                         175uy
-                         144uy
-                         24uy
-                         96uy
-                         149uy |]
+      Is.EquivalentTo
+        [| 9uy
+           7uy
+           216uy
+           175uy
+           144uy
+           24uy
+           96uy
+           149uy |]
     )
 
   let private provideKeyPair () =
@@ -2439,14 +2447,7 @@ module AltCoverTests =
 
       Assert.That(
         branches |> List.map (fun b -> b.Path),
-        Is.EquivalentTo [ 0
-                          1
-                          0
-                          1
-                          2
-                          3
-                          0
-                          1 ]
+        Is.EquivalentTo [ 0; 1; 0; 1; 2; 3; 0; 1 ]
       )
     finally
       CoverageParameters.coalesceBranches.Value <- false
@@ -2572,14 +2573,15 @@ module AltCoverTests =
                 Track = None
                 DefaultVisitCount = Exemption.None }
 
-          List.concat [ [ node ]
-                        (Visitor.I.deeper >> Seq.toList) node
-                        [ Node.AfterMethod
-                            { Method = m
-                              VisibleMethod = m
-                              Inspection = flag
-                              Track = None
-                              DefaultVisitCount = Exemption.None } ] ])
+          List.concat
+            [ [ node ]
+              (Visitor.I.deeper >> Seq.toList) node
+              [ Node.AfterMethod
+                  { Method = m
+                    VisibleMethod = m
+                    Inspection = flag
+                    Track = None
+                    DefaultVisitCount = Exemption.None } ] ])
         |> List.concat
 
       Assert.That(deeper.Length, Is.EqualTo 17)
@@ -2633,9 +2635,10 @@ module AltCoverTests =
                 Inspection = flag
                 DefaultVisitCount = Exemption.None }
 
-          List.concat [ [ node ]
-                        (Visitor.I.deeper >> Seq.toList) node
-                        [ Node.AfterType ] ])
+          List.concat
+            [ [ node ]
+              (Visitor.I.deeper >> Seq.toList) node
+              [ Node.AfterType ] ])
         |> List.concat
 
       Assert.That(deeper.Length, Is.EqualTo 16)
@@ -2678,9 +2681,10 @@ module AltCoverTests =
               { Module = t
                 Inspection = Inspections.Instrument }
 
-          List.concat [ [ node ]
-                        (Visitor.I.deeper >> Seq.toList) node
-                        [ AfterModule ] ])
+          List.concat
+            [ [ node ]
+              (Visitor.I.deeper >> Seq.toList) node
+              [ AfterModule ] ])
         |> List.concat
 
       Assert.That(deeper.Length, Is.EqualTo 19)
@@ -2701,9 +2705,10 @@ module AltCoverTests =
 
       let deeper =
         Visitor.I.deeper
-        <| Node.Start [ { AssemblyPath = path
-                          Identity = Hallmark.Build()
-                          Destinations = [] } ]
+        <| Node.Start
+             [ { AssemblyPath = path
+                 Identity = Hallmark.Build()
+                 Destinations = [] } ]
         |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
@@ -2721,13 +2726,14 @@ module AltCoverTests =
             Destinations = [] }
 
       let expected =
-        List.concat [ [ assembly ]
-                      (Visitor.I.deeper >> Seq.toList) assembly
-                      [ AfterAssembly
-                          { Assembly = def
-                            Inspection = Inspections.Instrument
-                            Identity = Hallmark.Build()
-                            Destinations = [] } ] ]
+        List.concat
+          [ [ assembly ]
+            (Visitor.I.deeper >> Seq.toList) assembly
+            [ AfterAssembly
+                { Assembly = def
+                  Inspection = Inspections.Instrument
+                  Identity = Hallmark.Build()
+                  Destinations = [] } ] ]
 
       //deeper |> Seq.map (fun x -> x.GetType().Name) |> Seq.iter (printfn "%A")
       //printfn "-----------"
@@ -2758,9 +2764,10 @@ module AltCoverTests =
 
       let deeper =
         Visitor.I.deeper
-        <| Node.Start [ { AssemblyPath = path
-                          Identity = Hallmark.Build()
-                          Destinations = [] } ]
+        <| Node.Start
+             [ { AssemblyPath = path
+                 Identity = Hallmark.Build()
+                 Destinations = [] } ]
         |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
@@ -2778,19 +2785,49 @@ module AltCoverTests =
             Destinations = [] }
 
       let expected =
-        List.concat [ [ assembly ]
-                      (Visitor.I.deeper >> Seq.toList) assembly
-                      [ AfterAssembly
-                          { Assembly = def
-                            Inspection = Inspections.Ignore
-                            Identity = Hallmark.Build()
-                            Destinations = [] } ] ]
+        List.concat
+          [ [ assembly ]
+            (Visitor.I.deeper >> Seq.toList) assembly
+            [ AfterAssembly
+                { Assembly = def
+                  Inspection = Inspections.Ignore
+                  Identity = Hallmark.Build()
+                  Destinations = [] } ] ]
 
       Assert.That(deeper.Length, Is.EqualTo 4)
       Assert.That(deeper, Is.EquivalentTo expected)
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let TestExceptionWrapping () =
+    let deeper =
+      Visitor.I.deeper
+      <| Node.Start
+           [ { AssemblyPath = sample1path
+               Identity = Hallmark.Build()
+               Destinations = [] } ]
+      |> Seq.toList
+
+    deeper
+    |> List.iter (fun n ->
+      let text =
+        (sprintf "%A" n)
+          .Replace(
+            "Mono.Cecil.Cil.Document",
+            Path
+              .Combine(SolutionRoot.location, "Samples/Sample1/Program.cs")
+              .Replace('/', Path.DirectorySeparatorChar)
+          )
+
+      let unique = Guid.NewGuid().ToString()
+      let op _ = raise <| IOException(unique)
+
+      let x =
+        Assert.Throws<InvalidOperationException>(fun () -> (Visitor.I.wrap op n) |> ignore)
+
+      test <@ x.Message = "'" + unique + "' while visiting '" + text + "'" @>)
 
   [<Test>]
   let TestFixPointInvoke () =
@@ -2852,11 +2889,11 @@ module AltCoverTests =
       let u2 = Guid.NewGuid().ToString()
       let ux = [ u; u2 ]
 
-      Visitor.visit [ fix ] [
-        { AssemblyPath = path
-          Identity = Hallmark.Build()
-          Destinations = ux }
-      ]
+      Visitor.visit
+        [ fix ]
+        [ { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = ux } ]
       // assembly definitions care about being separate references in equality tests
       use def =
         match accumulator.[1] with
@@ -2872,17 +2909,19 @@ module AltCoverTests =
             Destinations = ux }
 
       let expected =
-        List.concat [ [ Start [ { AssemblyPath = path
-                                  Identity = Hallmark.Build()
-                                  Destinations = ux } ]
-                        assembly ]
-                      (Visitor.I.deeper >> Seq.toList) assembly
-                      [ AfterAssembly
-                          { Assembly = def
-                            Inspection = Inspections.Instrument
-                            Identity = Hallmark.Build()
-                            Destinations = ux }
-                        Finish ] ]
+        List.concat
+          [ [ Start
+                [ { AssemblyPath = path
+                    Identity = Hallmark.Build()
+                    Destinations = ux } ]
+              assembly ]
+            (Visitor.I.deeper >> Seq.toList) assembly
+            [ AfterAssembly
+                { Assembly = def
+                  Inspection = Inspections.Instrument
+                  Identity = Hallmark.Build()
+                  Destinations = ux }
+              Finish ] ]
 
       Assert.That(
         accumulator |> Seq.map string,
@@ -2911,11 +2950,7 @@ module AltCoverTests =
         |> Seq.choose id
         |> Seq.toList
 
-      Assert.That(
-        tracks,
-        Is.EquivalentTo [ (1, "[Test")
-                          (2, "[Test") ]
-      )
+      Assert.That(tracks, Is.EquivalentTo [ (1, "[Test"); (2, "[Test") ])
     finally
       CoverageParameters.trackingNames.Clear()
       Visitor.visit [] [] // cheat reset
@@ -2940,11 +2975,7 @@ module AltCoverTests =
         |> Seq.map (fun m -> m.Name)
         |> Seq.toList
 
-      Assert.That(
-        tracks,
-        Is.EquivalentTo [ "testMakeUnion"
-                          "testMakeThing" ]
-      )
+      Assert.That(tracks, Is.EquivalentTo [ "testMakeUnion"; "testMakeThing" ])
     finally
       CoverageParameters.trackingNames.Clear()
       Visitor.visit [] [] // cheat reset
@@ -2980,8 +3011,9 @@ module AltCoverTests =
 
       Assert.That(
         tracks,
-        Is.EquivalentTo [ (1, "[NUnit.Framework.TestAttribute]")
-                          (2, "[NUnit.Framework.TestAttribute]") ]
+        Is.EquivalentTo
+          [ (1, "[NUnit.Framework.TestAttribute]")
+            (2, "[NUnit.Framework.TestAttribute]") ]
       )
     finally
       CoverageParameters.trackingNames.Clear()
@@ -3019,8 +3051,9 @@ module AltCoverTests =
 
       Assert.That(
         tracks,
-        Is.EquivalentTo [ (1, "returnFoo")
-                          (2, "N.DU.MyUnion.as_bar") ]
+        Is.EquivalentTo
+          [ (1, "returnFoo")
+            (2, "N.DU.MyUnion.as_bar") ]
       )
     finally
       CoverageParameters.trackingNames.Clear()
@@ -3316,6 +3349,20 @@ module AltCoverTests =
 </module>
 </coverage>"
 
+  let TriviaBaseline =
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
+<coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
+<module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
+<method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"true\" instrumented=\"false\" >
+<seqpnt visitcount=\"1\" line=\"12\" column=\"4\" endline=\"12\" endcolumn=\"27\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"13\" column=\"4\" endline=\"13\" endcolumn=\"24\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"15\" column=\"5\" endline=\"15\" endcolumn=\"77\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"19\" column=\"5\" endline=\"19\" endcolumn=\"50\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+</method>
+</module>
+</coverage>"
+
   let rec private recursiveValidate result expected depth zero =
     let rcount = result |> Seq.length
     let ecount = expected |> Seq.length
@@ -3407,6 +3454,61 @@ module AltCoverTests =
       recursiveValidate result expected 0 true
     finally
       CoverageParameters.nameFilters.Clear()
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet () =
+    let visitor, document =
+      Report.reportGenerator ()
+
+    let path = sample1path
+    Main.init()
+
+    try
+      "Main"
+      |> (Regex
+          >> FilterRegex.Exclude
+          >> FilterClass.Build FilterScope.Method
+          >> CoverageParameters.nameFilters.Add)
+
+      CoverageParameters.trivia.Value <- true
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      use def = AssemblyResolver.ReadAssembly path
+
+      let xml = TriviaBaseline
+
+      let xml' =
+        xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+
+      let xml'' =
+        xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
+
+      let baseline =
+        XDocument.Load(new System.IO.StringReader(xml''))
+
+      let result =
+        (makeDocument document).Elements()
+
+      let expected = baseline.Elements()
+      recursiveValidate result expected 0 true
+
+      CoverageParameters.makeConfiguration ()
+
+      test
+        <@
+          CoverageParameters.configurationHash = Some
+                                                   "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
+        @>
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.trivia.Value <- false
+      CoverageParameters.configurationHash <- None
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportWithEmbeds () =
@@ -3509,12 +3611,14 @@ module AltCoverTests =
 
       // snd > 1 => partial class at least
       test
-        <@ classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                          ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                           1)
-                          ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                          ("<Module>", 10)
-                          ("Example", 2) ] @>
+        <@
+          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
+                          1)
+                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+                         ("<Module>", 10)
+                         ("Example", 2) ]
+        @>
 
       let mcount =
         documents
@@ -3523,11 +3627,13 @@ module AltCoverTests =
 
       // snd > 1 => inlined method at least
       test
-        <@ mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                      ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                      ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                      ("<Module>", 2)
-                      ("Example", 2) ] @>
+        <@
+          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+                     ("<Module>", 2)
+                     ("Example", 2) ]
+        @>
 
     finally
       CoverageParameters.nameFilters.Clear()
@@ -3659,12 +3765,14 @@ module AltCoverTests =
 
       // snd > 1 => partial class at least
       test
-        <@ classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                          ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                           1)
-                          ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                          ("<Module>", 10)
-                          ("Example", 2) ] @>
+        <@
+          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
+                          1)
+                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+                         ("<Module>", 10)
+                         ("Example", 2) ]
+        @>
 
       let mcount =
         documents
@@ -3690,11 +3798,13 @@ module AltCoverTests =
 
       // snd > 1 => inlined method at least
       test
-        <@ mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                      ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                      ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                      ("<Module>", 2)
-                      ("Example", 2) ] @>
+        <@
+          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+                     ("<Module>", 2)
+                     ("Example", 2) ]
+        @>
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
@@ -3746,22 +3856,24 @@ module AltCoverTests =
         |> Seq.toList
 
       test
-        <@ embeds = [ 1
-                      1
-                      1
-                      1
-                      1
-                      1
-                      1
-                      1
-                      1
-                      0
-                      0
-                      0
-                      0
-                      0
-                      0
-                      0 ] @>
+        <@
+          embeds = [ 1
+                     1
+                     1
+                     1
+                     1
+                     1
+                     1
+                     1
+                     1
+                     0
+                     0
+                     0
+                     0
+                     0
+                     0
+                     0 ]
+        @>
 
     finally
       CoverageParameters.nameFilters.Clear()
@@ -3871,9 +3983,11 @@ module AltCoverTests =
         |> Seq.toList
 
       test
-        <@ names2 = [ "bytes"
-                      "makeThing"
-                      "testMakeThing" ] @>
+        <@
+          names2 = [ "bytes"
+                     "makeThing"
+                     "testMakeThing" ]
+        @>
 
       { Scope = Attribute
         Regex = Regex "AutoSerializable"
@@ -4026,11 +4140,13 @@ module AltCoverTests =
         |> Seq.toList
 
       test
-        <@ names7 = [ "Sample6.Module.F1"
-                      "Sample6.Module.F2"
-                      "Sample6.Module+FII@12T.Invoke"
-                      "Sample6.Module+FI@11T.Invoke"
-                      "Sample6.Module+F1@19.Invoke" ] @>
+        <@
+          names7 = [ "Sample6.Module.F1"
+                     "Sample6.Module.F2"
+                     "Sample6.Module+FII@12T.Invoke"
+                     "Sample6.Module+FI@11T.Invoke"
+                     "Sample6.Module+F1@19.Invoke" ]
+        @>
 
       CoverageParameters.topLevel.Clear()
       CoverageParameters.nameFilters.Clear()
@@ -4812,9 +4928,11 @@ module AltCoverTests =
       let result =
         (makeDocument document).Descendants("File".X)
         |> Seq.map (fun f ->
-          if f.Attribute("fullPath".X).Value
-             |> File.Exists
-             |> not then
+          if
+            f.Attribute("fullPath".X).Value
+            |> File.Exists
+            |> not
+          then
             1
           else
             0)
@@ -4892,12 +5010,14 @@ module AltCoverTests =
 
       // snd > 1 => partial class at least
       test
-        <@ classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                          ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                           1)
-                          ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                          ("<Module>", 10)
-                          ("Example", 2) ] @>
+        <@
+          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
+                          1)
+                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+                         ("<Module>", 10)
+                         ("Example", 2) ]
+        @>
 
       let mcount =
         documents
@@ -4906,11 +5026,13 @@ module AltCoverTests =
 
       // snd > 1 => inlined method at least
       test
-        <@ mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                      ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                      ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                      ("<Module>", 2)
-                      ("Example", 2) ] @>
+        <@
+          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+                     ("<Module>", 2)
+                     ("Example", 2) ]
+        @>
 
     finally
       CoverageParameters.nameFilters.Clear()
@@ -5499,8 +5621,10 @@ module AltCoverTests =
         |> Seq.toList
 
       test
-        <@ classes = [ "Sample21.Tests"
-                       "Sample21.Traditional" ] @>
+        <@
+          classes = [ "Sample21.Tests"
+                      "Sample21.Traditional" ]
+        @>
 
       let expectedMethods =
         [ "System.String Sample21.Traditional::DoSomething()"

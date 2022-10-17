@@ -42,7 +42,7 @@ module internal Persistence =
     Configuration.SaveGeometry w.GetPosition w.GetSize
 
   let readGeometry (w: Window) =
-    Configuration.ReadGeometry (fun (width, height) (x, y) ->
+    Configuration.ReadGeometry(fun (width, height) (x, y) ->
       w.DefaultHeight <- height
       w.DefaultWidth <- width
 
@@ -221,6 +221,7 @@ module internal Persistence =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$Persistence.#.cctor()",
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$Persistence.#.cctor()",
                             Justification = "Compiler generated")>]
 ()

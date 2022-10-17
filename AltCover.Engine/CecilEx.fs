@@ -51,7 +51,8 @@ type internal AssemblyResolver() as self =
 
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "UseObjectDisposedExceptionRule",
-                    Justification = "Dispose() => cache clear in DefaultAssemblyResolver => harmless")>]
+                    Justification =
+                      "Dispose() => cache clear in DefaultAssemblyResolver => harmless")>]
   override self.Resolve(name: AssemblyNameReference) =
     // Option.orElseWith ifNoneThunk option
     let key = name.ToString()
@@ -205,23 +206,30 @@ module internal CecilExtension =
 
   let checkScopeConstants (m: MethodDefinition) =
     scopesSeen
-    |> Seq.iter(fun scope -> let sus = scope.Constants
-                                       |> Seq.filter (fun c -> (isNull c.Value) &&
-                                                               match etypeField.GetValue(c.ConstantType) :?> byte with
-                                                               | 0x14uy // ElementType.Array
-                                                               | 0x1duy // ElementType.SzArray
-                                                               | 0x12uy // ElementType.Class
-                                                               | 0x1cuy // ElementType.Object
-                                                               | 0x00uy // ElementType.None
-                                                               | 0x13uy // ElementType.Var
-                                                               | 0x1euy // ElementType.MVar
-                                                               | 0x0euy // ElementType.String
-                                                                   -> false
-                                                               | _ -> not c.ConstantType.IsPrimitive)
-                                      |> Seq.toList
-                             sus |> Seq.iter (fun c -> scope.Constants.Remove c |> ignore
-                                                       sprintf "Null Constant %s elided in method %s" c.Name m.FullName
-                                                       |> Output.verbose))
+    |> Seq.iter (fun scope ->
+      let sus =
+        scope.Constants
+        |> Seq.filter (fun c ->
+          (isNull c.Value)
+          && match etypeField.GetValue(c.ConstantType) :?> byte with
+             | 0x14uy // ElementType.Array
+             | 0x1duy // ElementType.SzArray
+             | 0x12uy // ElementType.Class
+             | 0x1cuy // ElementType.Object
+             | 0x00uy // ElementType.None
+             | 0x13uy // ElementType.Var
+             | 0x1euy // ElementType.MVar
+             | 0x0euy -> // ElementType.String
+               false
+             | _ -> not c.ConstantType.IsPrimitive)
+        |> Seq.toList
+
+      sus
+      |> Seq.iter (fun c ->
+        scope.Constants.Remove c |> ignore
+
+        sprintf "Null Constant %s elided in method %s" c.Name m.FullName
+        |> Output.verbose))
 
   let prepareLocalScopes (m: MethodDefinition) =
     offsetTable.Clear()
@@ -423,8 +431,10 @@ module internal CecilExtension =
 
     ilProcessor.InsertBefore(newReturn, endFinally)
 
-    if (findFirstInstruction body)
-         .Equals(firstInstruction) then
+    if
+      (findFirstInstruction body)
+        .Equals(firstInstruction)
+    then
       let tryStart =
         Instruction.Create(OpCodes.Nop)
 

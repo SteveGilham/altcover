@@ -243,9 +243,13 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         ShowGenerated: bool
         ///<summary>
-        /// Corresponds to command line options `-q` and `--verbose`
+        /// Corresponds to command line option `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
+        ///<summary>
+        /// Corresponds to command line option ` --trivia`
+        ///</summary>
+        Trivia: bool
       }
     with
         ///<summary>

@@ -60,7 +60,7 @@ type Command private () =
     match
       Directory.GetFiles(root, target, SearchOption.AllDirectories)
       |> Seq.tryHead
-      with
+    with
     | Some path -> path |> Path.GetFullPath
     | None -> String.Empty
 #else
@@ -200,7 +200,8 @@ module DotNet =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCover+Parameters.#WithCreateProcess`1(Fake.Core.CreateProcess`1<!!0>)",
+                            Target =
+                              "AltCoverFake.DotNet.Testing.AltCover+Parameters.#WithCreateProcess`1(Fake.Core.CreateProcess`1<!!0>)",
                             MessageId = "a",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Naming",

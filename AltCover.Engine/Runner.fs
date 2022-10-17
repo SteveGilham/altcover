@@ -71,8 +71,8 @@ type internal SummaryFormat =
              | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
              | _ -> s |> FormatException.Throw)
            (Many [])
-    with
-    | :? FormatException -> Default
+    with :? FormatException ->
+      Default
 
 type internal Threshold =
   { Statements: uint8
@@ -391,7 +391,9 @@ module internal Runner =
             .ToString(CultureInfo.InvariantCulture)
 
       let pm = if nm = 0 then "n/a" else amv
-      if go then writeSummary "AltVM" vm nm pm
+
+      if go then
+        writeSummary "AltVM" vm nm pm
 
       let acv =
         if nm > 0 then
@@ -437,7 +439,8 @@ module internal Runner =
               .ToString(CultureInfo.InvariantCulture)
         | Some x -> summary.Attribute(x.X).Value
 
-      if go then writeSummary key vc nc pc
+      if go then
+        writeSummary key vc nc pc
 
       { Number = nc
         Visited = vc
@@ -522,7 +525,8 @@ module internal Runner =
           CommandLine.Format.Local("maxCrap", crapvalue)
           |> write
 
-      if go || extra then write String.Empty
+      if go || extra then
+        write String.Empty
 
       let (altmcovered, altcrapvalue) =
         altSummary go extra report
@@ -564,7 +568,9 @@ module internal Runner =
               .Round(vc1 * 100.0 / nc1, 2)
               .ToString(CultureInfo.InvariantCulture)
 
-        if go then writeSummary key vc nc pc
+        if go then
+          writeSummary key vc nc pc
+
         pc
 
       let l =
@@ -620,7 +626,8 @@ module internal Runner =
               nm <- nm + 1
               vm <- vm.Increment(s > 0 || b > 0))
 
-            if visited then cv <- cnv.Key :: cv)
+            if visited then
+              cv <- cnv.Key :: cv)
 
         )
 
@@ -641,7 +648,8 @@ module internal Runner =
       let extra =
         summaryFormat = Default || l |> Seq.contains C
 
-      if go || extra then write String.Empty
+      if go || extra then
+        write String.Empty
 
       if l |> Seq.contains B || l |> Seq.contains R then
         writeTC totalTC "C" nc
@@ -751,7 +759,10 @@ module internal Runner =
       | [] -> best
       | _ -> possibles |> List.maxBy (fun (a, _, _) -> a)
 
-    let mutable internal summaries: (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
+    let mutable internal summaries: (DocumentType
+      -> ReportFormat
+      -> int
+      -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary () = summaries <- LCov.summary :: summaries
@@ -1085,21 +1096,24 @@ module internal Runner =
                          Table t
                        | _ -> Null
                      )
-                   with
-                   | :? EndOfStreamException -> None
+                   with :? EndOfStreamException ->
+                     None
 
                  match hit with
                  | Some tuple ->
                    let (key, hitPointId, visit) = tuple
 
                    let increment =
-                     if key |> String.IsNullOrWhiteSpace |> not
-                        || ((String.IsNullOrEmpty key)
-                            && hitPointId = 0
-                            && visit.GetType().ToString()
-                               == "AltCover.Track+Table") then
-                       if hits.ContainsKey key |> not
-                          && key |> String.IsNullOrWhiteSpace |> not // terminator
+                     if
+                       key |> String.IsNullOrWhiteSpace |> not
+                       || ((String.IsNullOrEmpty key)
+                           && hitPointId = 0
+                           && visit.GetType().ToString()
+                              == "AltCover.Track+Table")
+                     then
+                       if
+                         hits.ContainsKey key |> not
+                         && key |> String.IsNullOrWhiteSpace |> not // terminator
                        then
                          hits.Add(key, Dictionary<int, PointVisit>())
 
@@ -1374,8 +1388,10 @@ module internal Runner =
           Zip.openUpdate report
 
         try
-          if format = ReportFormat.NativeJson
-             || format = ReportFormat.NativeJsonWithTracking then
+          if
+            format = ReportFormat.NativeJson
+            || format = ReportFormat.NativeJsonWithTracking
+          then
             writeNativeJsonReport hits format file arg
           else
             AltCover.Counter.doFlushStream

@@ -155,7 +155,7 @@ See also '--inplace'</value>
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [-q] [--verbose] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
 AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
@@ -398,16 +398,16 @@ If the option is not present, then the default is 'OC'.</value>
     <value>{0} was already specified for {1}</value>
   </data>
   <data name="l|localSource" xml:space="preserve">
-    <value>Don't instrument code for which the source file is not present.</value>
+    <value>Optional: Don't instrument code for which the source file is not present.</value>
   </data>
   <data name="v|visibleBranches" xml:space="preserve">
-    <value>Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies.</value>
+    <value>Optional: Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies.</value>
   </data>
   <data name="showstatic:" xml:space="preserve">
     <value>Optional: Instrument and show code that is by default skipped as trivial.  --showstatic:- is equivalent to omitting the parameter; --showstatic or --showstatic:+ sets the unvisited count to a negative value interpreted by the visualizer (but treated as zero by ReportGenerator) ; --showstatic:++ sets the unvisited count to zero.</value>
   </data>
   <data name="showGenerated" xml:space="preserve">
-    <value>Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited</value>
+    <value>Optional: Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited</value>
   </data>
   <data name="zipfile" xml:space="preserve">
     <value>Optional: Emit the coverage report inside a zip archive.</value>
@@ -462,5 +462,11 @@ If the option is not present, then the default is 'OC'.</value>
   </data>
   <data name="verbose" xml:space="preserve">
     <value>Optional, multiple: Verbose mode -- once to switch on detailed messages (or undo one level of -q if any have been set)</value>
+  </data>
+  <data name="%s while visiting %A" xml:space="preserve">
+    <value>'{0}' while visiting '{1}'</value>
+  </data>
+  <data name="trivia" xml:space="preserve">
+    <value>Optional: Omit trivial sequence points</value>
   </data>
 </root>

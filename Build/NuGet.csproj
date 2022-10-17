@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="altcover" version="8.3.839" />
     <PackageReference Include="BlackFox.CommandLine" version="1.0.0" />
-    <PackageReference Include="NuGet.CommandLine" version="6.2.1">
+    <PackageReference Include="NuGet.CommandLine" version="6.3.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

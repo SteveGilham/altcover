@@ -119,7 +119,8 @@ module AltCoverCommand =
           VisibleBranches = a.VisibleBranches
           ShowStatic = a.ShowStatic
           ShowGenerated = a.ShowGenerated
-          Verbosity = a.Verbosity }
+          Verbosity = a.Verbosity
+          Trivia = a.Trivia }
 
       AltCover.PrepareOptions.Primitive copy
     | AltCover.PrepareOptions.TypeSafe t ->
@@ -186,14 +187,16 @@ module AltCoverCommand =
 
   [<NoComparison; NoEquality; AutoSerializable(false)>]
   type Options =
-    { /// Path to the Altcover executable.
+    {
+      /// Path to the Altcover executable.
       ToolPath: string
       /// Which version of the tool (FAKE 5.18 ToolType)
       ToolType: ToolType
       /// Working directory for relative file paths.  Default is the current working directory
       WorkingDirectory: string
       /// Command arguments
-      Args: ArgumentType }
+      Args: ArgumentType
+    }
 
     static member Create(argumentType: ArgumentType) =
       { ToolPath = "altcover"
@@ -262,7 +265,8 @@ module AltCoverCommand =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
                                                     "CA1715",
-                                                    Justification = "Generic types are implicit")>]
+                                                    Justification =
+                                                      "Generic types are implicit")>]
 
   let internal runCore options modifyCommand =
     use __ =
@@ -288,9 +292,11 @@ module AltCoverCommand =
                     Justification = "Fake.build style")>]
   let runWithMono monoPath options =
     let withMono (command: CreateProcess<_>) = // withMono line
-      if options.ToolType.GetType().FullName
-         == "Fake.DotNet.ToolType+FullFramework"
-         && Fake.Core.Environment.isWindows then
+      if
+        options.ToolType.GetType().FullName
+        == "Fake.DotNet.ToolType+FullFramework"
+        && Fake.Core.Environment.isWindows
+      then
         match command.Command with
         | RawCommand (tool, args) ->
           let newArgs =
@@ -315,16 +321,19 @@ module AltCoverCommand =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@290T.#monoPath",
+                            Target =
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@294T.#monoPath",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@290T.#options",
+                            Target =
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@294T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@242T.#options",
+                            Target =
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@245T.#options",
                             Justification = "Generated code")>]
 ()

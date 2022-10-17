@@ -71,9 +71,7 @@ File.WriteAllText(target, template)
         ConsoleLogParameters = []
         DistributedLoggers = None
         DisableInternalBinLog = true
-        Properties =
-            [ "Configuration", "Debug"
-              "DebugSymbols", "True" ] })
+        Properties = [ "Configuration", "Debug"; "DebugSymbols", "True" ] })
 
 DotNet.exec id "altcover" "--save --inplace -i ./Echo/bin/Debug/netcoreapp2.2 --opencover"
 

@@ -68,8 +68,8 @@ module internal OpenCover =
   let internal safeMultiply x y =
     try
       Checked.op_Multiply x <| Math.Max(1, y)
-    with
-    | :? OverflowException -> Int32.MaxValue
+    with :? OverflowException ->
+      Int32.MaxValue
 
   module internal I =
     let internal setChain (xbranch: XElement) branch =
@@ -182,9 +182,11 @@ module internal OpenCover =
       let classes = XElement("Classes".X)
       element.Add(classes)
 
-      if CoverageParameters.trackingNames
-         |> Seq.isEmpty
-         |> not then
+      if
+        CoverageParameters.trackingNames
+        |> Seq.isEmpty
+        |> not
+      then
         element.Add(XElement("TrackedMethods".X))
 
       { s with
@@ -268,8 +270,10 @@ module internal OpenCover =
       seqpnts
 
     let visitMethod (s: OpenCoverContext) (methodDef: MethodDefinition) included =
-      if s.Excluded = Nothing
-         && included <> Inspections.TrackOnly then
+      if
+        s.Excluded = Nothing
+        && included <> Inspections.TrackOnly
+      then
         let instrumented = included.IsInstrumented
         let cc, element = methodElement methodDef
 
@@ -375,9 +379,11 @@ module internal OpenCover =
        ref)
 
     let visitBranchPoint s branch =
-      if s.Excluded = Nothing
-         && branch.Included
-         && branch.Representative = Reporting.Representative then
+      if
+        s.Excluded = Nothing
+        && branch.Included
+        && branch.Representative = Reporting.Representative
+      then
         let branches =
           s.Stack.Head.Parent.Descendants("BranchPoints".X)
           |> Seq.head
@@ -425,8 +431,10 @@ module internal OpenCover =
       bp
       |> Seq.iteri (fun i x -> x.SetAttributeValue("ordinal".X, i))
 
-      if sp |> List.isEmpty |> not
-         && bp |> List.isEmpty |> not then
+      if
+        sp |> List.isEmpty |> not
+        && bp |> List.isEmpty |> not
+      then
         let tail =
           XElement("SequencePoint".X, XAttribute("offset".X, Int32.MaxValue))
 
@@ -540,18 +548,21 @@ module internal OpenCover =
           ClassBr =
             s.ClassBr
             + s.MethodBr
-            + // make the number agree with OpenCover
-            if s.MethodSeq > 0 || s.MethodBr > 0 then
-              1
-            else
-              0
+            + if // make the number agree with OpenCover
+                s.MethodSeq > 0 || s.MethodBr > 0
+              then
+                1
+              else
+                0
           MethodCC = limitMethodCC (s.MethodSeq + s.MethodBr) s.MethodCC }
 
     let visitAfterMethod (s: OpenCoverContext) m =
       addTracking s m.Method m.Track
 
-      if s.Excluded = Nothing
-         && m.Inspection <> Inspections.TrackOnly then
+      if
+        s.Excluded = Nothing
+        && m.Inspection <> Inspections.TrackOnly
+      then
         let tail, skipped =
           visitAfterMethodIncluded s
 
@@ -594,10 +605,12 @@ module internal OpenCover =
         summary.SetAttributeValue("numClasses".X, classes)
         summary.SetAttributeValue("numMethods".X, methods))
 
-      if head.Descendants("Method".X) |> Seq.isEmpty
-         &&
-         //head.Attributes("skippedDueTo".X) |> Seq.isEmpty &&
-         s.Excluded = Nothing then
+      if
+        head.Descendants("Method".X) |> Seq.isEmpty
+        &&
+        //head.Attributes("skippedDueTo".X) |> Seq.isEmpty &&
+        s.Excluded = Nothing
+      then
         head.Parent.Remove()
 
       { s with
@@ -716,7 +729,8 @@ module internal OpenCover =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.OpenCover/handleOrdinals@443-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.OpenCover/handleOrdinals@451-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler generated")>]
 ()

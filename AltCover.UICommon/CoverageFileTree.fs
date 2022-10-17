@@ -13,7 +13,8 @@ type CoverageTreeContext<'TModel, 'TRow> = { Model: 'TModel; Row: 'TRow }
 
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
                                                   "AvoidExcessiveParametersOnGenericTypesRule",
-                                                  Justification = "Does this act excessive to you?")>]
+                                                  Justification =
+                                                    "Does this act excessive to you?")>]
 [<SuppressMessage("Microsoft.Design",
                   "CA1005:AvoidExcessiveParametersOnGenericTypes",
                   Justification = "Does this act excessive to you?")>]
@@ -56,7 +57,8 @@ module CoverageFileTree =
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "ReviewSelfAssignmentRule",
-                    Justification = "Final line is a self-assignment for 'depth' -- compiler fault")>]
+                    Justification =
+                      "Final line is a self-assignment for 'depth' -- compiler fault")>]
   let rec private scan (s: string) index depth =
     match s.[index] with
     | '<' -> scan s (index + 1) (depth + 1)
@@ -392,8 +394,10 @@ module CoverageFileTree =
             |> Seq.filter (fun d -> d.[0] <> '.')
             |> Seq.toList
 
-          if names |> List.isEmpty
-             || names |> List.exists (fun d -> d != "Invoke") then
+          if
+            names |> List.isEmpty
+            || names |> List.exists (fun d -> d != "Invoke")
+          then
             (environment.Icons.Class, pc)
           else
             (environment.Icons.Effect, pc)
@@ -605,7 +609,14 @@ module CoverageFileTree =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",  // MethodDefinition
-                            Target = "AltCover.CoverageFileTree/step@118::Invoke(System.String,System.Int32)",
+                            Scope = "member",
+                            Target =
+                              "AltCover.CoverageFileTree/step@120::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidLongMethodsRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.CoverageFileTree/applyMethod@157::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                            Justification = "Possibly too much work")>]
 ()

@@ -16,7 +16,8 @@ module internal Augment =
 #if !ValidateGendarmeEmulation
   [<SuppressMessage("Microsoft.Globalization",
                     "CA1307:SpecifyStringComparison",
-                    Justification = "Preferred overload, no comparison exists in netstd2.0/net472")>]
+                    Justification =
+                      "Preferred overload, no comparison exists in netstd2.0/net472")>]
   let internal charIndexOf (name: string) (token: char) = name.IndexOf(token)
 #endif
 
@@ -48,7 +49,8 @@ module internal Augment =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
                                                     "AvoidMethodWithUnusedGenericTypeRule",
-                                                    Justification = "Context in F# has to be sufficient")>]
+                                                    Justification =
+                                                      "Context in F# has to be sufficient")>]
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
                     Justification = "Idiomatic F# style")>]
@@ -99,13 +101,15 @@ module internal Augment =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Augment.#Object.get_IsNotNull(System.Object)",
+                            Target =
+                              "AltCover.Augment.#Object.get_IsNotNull(System.Object)",
                             MessageId = "param",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1707:IdentifiersShouldNotContainUnderscores",
                             Scope = "member",
-                            Target = "AltCover.Augment.#Object.get_IsNotNull(System.Object)",
+                            Target =
+                              "AltCover.Augment.#Object.get_IsNotNull(System.Object)",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
@@ -139,37 +143,43 @@ module internal Augment =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Augment.#Boolean.get_ToInt32(System.Boolean)",
+                            Target =
+                              "AltCover.Augment.#Boolean.get_ToInt32(System.Boolean)",
                             MessageId = "param",
                             Justification = "Compiler generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1707:IdentifiersShouldNotContainUnderscores",
                             Scope = "member",
-                            Target = "AltCover.Augment.#Boolean.get_ToInt32(System.Boolean)",
+                            Target =
+                              "AltCover.Augment.#Boolean.get_ToInt32(System.Boolean)",
                             Justification = "Compiler generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Augment.#Int32.Increment(System.Int32,System.Boolean)",
+                            Target =
+                              "AltCover.Augment.#Int32.Increment(System.Int32,System.Boolean)",
                             MessageId = "b",
                             Justification = "Compiler generated")>]
 #if GUI
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+                            Target =
+                              "AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
                             MessageId = "a",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+                            Target =
+                              "AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
                             MessageId = "b",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1707:IdentifiersShouldNotContainUnderscores",
                             Scope = "member",
-                            Target = "AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+                            Target =
+                              "AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
                             Justification = "Compiler Generated")>]
 #endif
 ()

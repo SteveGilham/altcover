@@ -29,7 +29,7 @@ module internal Gendarme =
       (targets: System.Collections.Generic.HashSet<Cil.Instruction>)
       =
       let cases =
-        ins.Operand :?> Cil.Instruction []
+        ins.Operand :?> Cil.Instruction[]
 
       cases
       |> Seq.iter (fun target ->
@@ -42,10 +42,11 @@ module internal Gendarme =
         let operand =
           next.Operand :?> Cil.Instruction
 
-        match cases
-              |> Seq.head
-              |> findFirstUnconditionalBranchTarget
-          with
+        match
+          cases
+          |> Seq.head
+          |> findFirstUnconditionalBranchTarget
+        with
         | Some unc when unc = operand -> ()
         | _ -> operand |> targets.Add |> ignore
 
@@ -115,9 +116,10 @@ module internal Gendarme =
       let instructions =
         m.Body.Instructions |> Seq.cast<Cil.Instruction>
 
-      match instructions
-            |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Switch)
-        with
+      match
+        instructions
+        |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Switch)
+      with
       | None ->
         instructions
         |> Seq.fold

@@ -1,6 +1,7 @@
 [*.fs]
 indent_size=2
 max_line_length=90
+insert_final_newline=false
 fsharp_semicolon_at_end_of_line=false
 fsharp_space_before_parameter=true
 fsharp_space_before_lowercase_invocation=true

@@ -61,7 +61,8 @@ type ConvertToBarChartCommand() =
   /// </summary>
   [<SuppressMessage("Microsoft.Globalization",
                     "CA1307:SpecifyStringComparison",
-                    Justification = "String.Replace doesn't have a comparison overload at net472/netstandard2.0, and the use case is not relevant anyway")>]
+                    Justification =
+                      "String.Replace doesn't have a comparison overload at net472/netstandard2.0, and the use case is not relevant anyway")>]
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
 
@@ -77,9 +78,11 @@ type ConvertToBarChartCommand() =
       let rewrite =
         AltCover.Xhtml.ConvertToBarChart self.XDocument
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         use w =
           { new StringWriter(System.Globalization.CultureInfo.InvariantCulture) with
               override self.Encoding =
@@ -161,9 +164,11 @@ type ConvertToSourceMapCommand(outputFolder: String) =
       let rewrite =
         AltCover.RenderToHtml.Action self.XDocument
 
-      if self.OutputFolder
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFolder
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         let folder =
           Directory.CreateDirectory(self.OutputFolder)
 

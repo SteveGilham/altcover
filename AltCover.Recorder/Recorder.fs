@@ -216,7 +216,8 @@ module Instance =
       try
         f (own)
       finally
-        if own then mutex.ReleaseMutex()
+        if own then
+          mutex.ReleaseMutex()
 
     let internal initialiseTrace (t: Tracer) =
       withMutex (fun _ ->
@@ -328,8 +329,7 @@ module Instance =
                internal issue71Wrapper visits moduleId hitPointId context handler add =
       try
         add visits moduleId hitPointId context
-      with
-      | x ->
+      with x ->
         match x with
         | :? KeyNotFoundException
         | :? NullReferenceException
@@ -350,8 +350,10 @@ module Instance =
       [<SuppressMessage("Gendarme.Rules.Design.Generic",
                         "AvoidMethodWithUnusedGenericTypeRule",
                         Justification = "Matches clause type")>]
-      static member Throw<'T>(message : obj) : 'T =
-        message.ToString() |> InvalidDataException |> raise
+      static member Throw<'T>(message: obj) : 'T =
+        message.ToString()
+        |> InvalidDataException
+        |> raise
 
     let internal takeSample strategy moduleId hitPointId (context: Track) =
       match strategy with
@@ -369,9 +371,7 @@ module Instance =
            [ Visit hitPointId
              TimeVisit(hitPointId, b.Time)
              CallVisit(hitPointId, b.Call) ]
-         | _ ->
-           context
-           |> InvalidDataException.Throw)
+         | _ -> context |> InvalidDataException.Throw)
         |> Seq.map (fun hit ->
           if samples.ContainsKey(moduleId) then
             let next = samples.[moduleId]
@@ -397,8 +397,10 @@ module Instance =
     /// <param name="moduleId">Assembly being visited</param>
     /// <param name="hitPointId">Sequence Point identifier</param>
     let internal visitImpl moduleId hitPointId context =
-      if (Sample = Sampling.All
-          || takeSample Sample moduleId hitPointId context) then
+      if
+        (Sample = Sampling.All
+         || takeSample Sample moduleId hitPointId context)
+      then
         let adder =
           if Defer || supervision || (trace.IsConnected |> not) then
             addVisit
@@ -476,8 +478,10 @@ module Instance =
   let Visit moduleId hitPointId =
     if I.recording then
       I.visitSelection
-        (if (CoverageFormat = ReportFormat.OpenCoverWithTracking
-             || CoverageFormat = ReportFormat.NativeJsonWithTracking) then
+        (if
+           (CoverageFormat = ReportFormat.OpenCoverWithTracking
+            || CoverageFormat = ReportFormat.NativeJsonWithTracking)
+         then
            I.payloadSelector I.isTrackingRunner
          else
            Null)
@@ -514,5 +518,6 @@ module Instance =
                             "DeclareEventsExplicitlyRule",
                             Scope = "type",  // TypeDefinition
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder",
-                            Justification = "Compiler generated doExit@453 and :doUnload@450")>]
+                            Justification =
+                              "Compiler generated doExit@453 and :doUnload@450")>]
 ()
