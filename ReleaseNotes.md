@@ -3,7 +3,7 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# 8.4.84x (Habu series release 16)
+# 8.4.840 (Habu series release 16)
 * New option `--trivia` to omit coverage of sequence points containing no logic (no-op, return or unconditional branches only)
 * Added context for exceptions thrown during instrumentation.  This is aimed at tracing what was being inspected when exceptions arise from `Mono.Cecil` being presented with a new corner case.
 
