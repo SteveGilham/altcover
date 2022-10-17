@@ -1297,6 +1297,10 @@ _Target "UnitTest" (fun _ ->
         let maybe envvar fallback =
             let x = Environment.environVar envvar
             if String.IsNullOrWhiteSpace x then fallback else x
+            
+        let log = Information.shortlog "."
+        let gap = log.IndexOf ' '
+        let commit = log.Substring gap
 
         Actions.Run
             ("dotnet",
@@ -1316,7 +1320,7 @@ _Target "UnitTest" (fun _ ->
                "--commitEmail"
                maybe "APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL" ""
                "--commitMessage"
-               (Information.shortlog ".").Substring 9
+               commit
                "--jobId"
                maybe "APPVEYOR_JOB_ID" <| DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
             "Coveralls upload failed"
