@@ -1,5 +1,5 @@
 ﻿// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
-
+#nowarn "52"
 open System
 open System.Diagnostics.Tracing
 open System.IO
@@ -1201,7 +1201,7 @@ _Target "FxCop" (fun _ ->
                              + "/lib/netstandard1.5"
                           nugetCache
                           @@ "microsoft.netframework.referenceassemblies.net472/"
-                             + (dd.Item "microsoft.netframework.referenceassemblies.net472")
+                             + (dd.Item "microsoft.netframework.referenceassemblies") // assume all increment versions in step
                              + "/build/.NETFramework/v4.7.2"
                           nugetCache @@ "pangosharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
                           nugetCache
