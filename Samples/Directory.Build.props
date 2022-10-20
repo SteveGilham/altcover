@@ -4,6 +4,10 @@
 
   <PropertyGroup>
     <DocumentationFile />
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
+    <!-- .nuget\packages\dotnet.reproduciblebuilds.isolated\x.x.x\Sdk\Sdk.targets -->
+    <EnsureNETFrameworkReferenceAssembliesProvided>false</EnsureNETFrameworkReferenceAssembliesProvided>
   </PropertyGroup>
 
 </Project>

@@ -16,7 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
@@ -25,9 +24,12 @@
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="1.0.0" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FSharp.Core" Version="6.0.6">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
@@ -48,9 +50,4 @@
     <ProjectReference Include="..\AltCover.Monitor\AltCover.Monitor.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.6">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
 </Project>

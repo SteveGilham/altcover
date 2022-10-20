@@ -44,8 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Update="FSharp.Core" Version="6.0.6">
+    <PackageReference Include="FSharp.Core" Version="6.0.6">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />

@@ -83,6 +83,9 @@
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="FSharp.Core" Version="6.0.6">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -99,13 +102,6 @@
     <Reference Include="BlackFox.CommandLine">
       <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.6">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>

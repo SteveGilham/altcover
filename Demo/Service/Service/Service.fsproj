@@ -29,10 +29,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="altcover" Version="8.0.816" />
-    <PackageReference Update="FSharp.Core" Version="5.0.1">
+    <PackageReference Include="FSharp.Core" Version="5.0.1">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
