@@ -1,13 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Sdk Name="DotNet.ReproducibleBuilds.Isolated" Version="1.1.1" />
-  <ItemGroup>
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1"  PrivateAssets="All"/>
-  </ItemGroup>
   <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
     <!-- .nuget\packages\dotnet.reproduciblebuilds.isolated\x.x.x\Sdk\Sdk.targets -->
     <EnsureNETFrameworkReferenceAssembliesProvided>false</EnsureNETFrameworkReferenceAssembliesProvided>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All"/>
+  </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)\OutputBuildProps.props" />
 </Project>
