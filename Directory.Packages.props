@@ -1,5 +1,23 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" PrivateAssets="All" />
+    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
+    <PackageVersion Include="Mono.CSharp" Version="4.0.0.143" />
+    <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
+    <PackageVersion Include="FSharp.Core" Version="6.0.6" />
+    <PackageVersion Include="BlackFox.CommandLine" version="1.0.0" />
+    <PackageVersion Include="NuGet.CommandLine" version="6.3.1" />
+    <PackageVersion Include="coverlet.collector" version="3.1.2" />
+    <PackageVersion Include="Mono.Options" version="6.12.0.148" />
+    <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
+    <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" version="3.12.0" />
+    <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->
+    <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.15.2" />
+    <PackageVersion Include="OpenCover" version="4.7.1221" />
+    <PackageVersion Include="xunit.runner.console" version="2.4.2" />
+    <PackageVersion Include="Pester" version="5.3.3" />
+    <PackageVersion Include="AltCode.Dixon" version="2022.1.8.13182" />
+    <PackageVersion Include="altcode.gendarme" version="2022.5.17.8260" />
+    <PackageVersion Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
   </ItemGroup>
 </Project>

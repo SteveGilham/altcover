@@ -23,13 +23,9 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
-    <PackageReference Include="Mono.CSharp" Version="4.0.0.143" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="FSharp.Core" Version="6.0.6" />
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="Mono.CSharp" />
+    <PackageReference Include="FSharp.Core" />
   </ItemGroup>
 
   <ItemGroup>
