@@ -6,7 +6,7 @@
     <PackageVersion Include="AltCover.Api" Version="8.4.840" />
     <PackageVersion Include="BlackFox.CommandLine" version="1.0.0" />
     <PackageVersion Include="coverlet.collector" version="3.1.2" />
-    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" PrivateAssets="All" />
+    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageVersion Include="FSharp.Core" Version="6.0.6" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
@@ -23,14 +23,16 @@
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.15.2" />
     <PackageVersion Include="OpenCover" version="4.7.1221" />
     <PackageVersion Include="Pester" version="5.3.3" />
-    <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
-    <PackageVersion Include="System.Resources.Extensions" Version="6.0.0" />
-    <PackageVersion Include="System.Security.Permissions" Version="6.0.0" />
     <PackageVersion Include="Unquote" Version="6.1.0" />
-    <PackageVersion Include="xunit" Version="2.4.2" />
-    <PackageVersion Include="xunit.runner.console" version="2.4.2" />
     <PackageVersion Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
+    <PackageVersion Include="xunit" Version="2.4.2" />
+    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
+    <PackageVersion Include="xunit.analyzers" Version="1.0.0" />
+    <PackageVersion Include="xunit.assert" Version="2.4.2" />
+    <PackageVersion Include="xunit.core" Version="2.4.2" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.4.2" />
+    <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
+    <PackageVersion Include="xunit.runner.console" version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
-</ItemGroup>
+  </ItemGroup>
 </Project>
