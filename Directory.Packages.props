@@ -7,20 +7,29 @@
     <PackageVersion Include="Avalonia" Version="0.10.18" />
     <PackageVersion Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageVersion Include="BlackFox.CommandLine" version="1.0.0" />
+    <PackageVersion Include="Cake.Core" Version="1.1.0" />
+    <PackageVersion Include="Cake.Common" Version="1.1.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.0.0" />
     <PackageVersion Include="coverlet.collector" version="3.1.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageVersion Include="Expecto" Version="9.0.4" />
     <PackageVersion Include="Expecto.TestResults" Version="8.13.2" />
-    <PackageVersion Include="Fake.Core.Process" Version="5.23.0" />
+    <PackageVersion Include="FAKE.Core.Environment" Version="5.21.0" />
+    <PackageVersion Include="FAKE.Core.Process" Version="5.21.0" />
+    <PackageVersion Include="FAKE.Core.Trace" Version="5.21.0" />
+    <PackageVersion Include="FAKE.DotNet.Cli" Version="5.21.0" />
     <PackageVersion Include="FSharp.Core" Version="6.0.6" />
+    <PackageVersion Include="FsUnit" Version="5.0.5" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="16.1.1" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
     <PackageVersion Include="Mono.CSharp" Version="4.0.0.143" />
     <PackageVersion Include="Mono.Options" version="6.12.0.148" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="NuGet.CommandLine" version="6.3.1" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.2.1" />
@@ -30,7 +39,10 @@
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.15.2" />
     <PackageVersion Include="OpenCover" version="4.7.1221" />
     <PackageVersion Include="Pester" version="5.3.3" />
+    <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
+    <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
     <PackageVersion Include="System.Reactive.Core" Version="5.0.0" />
+    <PackageVersion Include="System.Security.Permissions" Version="6.0.0" />
     <PackageVersion Include="Unquote" Version="6.1.0" />
     <PackageVersion Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
     <PackageVersion Include="xunit" Version="2.4.2" />
