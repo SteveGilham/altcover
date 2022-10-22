@@ -204,9 +204,9 @@ let pwsh =
     | _ -> "pwsh"
 
 let toolPackages =
-    let xml = "./Build/NuGet.csproj" |> Path.getFullName |> XDocument.Load
+    let xml = "./Directory.Packages.props" |> Path.getFullName |> XDocument.Load
 
-    xml.Descendants(XName.Get("PackageReference"))
+    xml.Descendants()
     |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
     |> Seq.filter (fun x ->
         match x.Attribute(XName.Get("Condition")) with
@@ -216,7 +216,7 @@ let toolPackages =
             | (true, true)
             | (false, false) -> true
             | _ -> false)
-    |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
+    |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("Version")).Value))
     |> Map.ofSeq
 
 let packageVersion (p: string) =
@@ -563,14 +563,16 @@ _Target "SetVersion" (fun _ ->
     let gendarmeVersion =
         json.Object.["tools"].Object.["altcode.gendarme-tool"].Object.["version"].String
 
-    let project1 = XDocument.Load("./Build/NuGet.csproj")
+    let project1 = XDocument.Load("./Directory.Packages.props")
 
     let pr =
-        project1.Descendants(XName.Get "PackageReference")
-        |> Seq.find (fun pr -> pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
+        project1.Descendants()
+        |> Seq.find (fun pr ->
+          pr.Attribute(XName.Get "Include") |> isNull |> not &&
+          pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
 
-    pr.Attribute(XName.Get "version").Value <- gendarmeVersion
-    project1.Save("./Build/NuGet.csproj")
+    pr.Attribute(XName.Get "Version").Value <- gendarmeVersion
+    project1.Save("./Directory.Packages.props")
 
     let project2 =
         XDocument.Load(
@@ -1297,7 +1299,7 @@ _Target "UnitTest" (fun _ ->
         let maybe envvar fallback =
             let x = Environment.environVar envvar
             if String.IsNullOrWhiteSpace x then fallback else x
-            
+
         let log = Information.shortlog "."
         let gap = log.IndexOf ' '
         let commit = log.Substring gap
@@ -1351,7 +1353,7 @@ let NUnitRetry f spec =
                 reraise ()
 
             if File.Exists spec then
-                let xml = "./Build/NuGet.csproj" |> Path.getFullName |> XDocument.Load
+                let xml = spec |> XDocument.Load
 
                 let summary = xml.Descendants(XName.Get "test-run") |> Seq.head
 
@@ -2031,7 +2033,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                             reraise ()
 
                         if File.Exists nunitReport then
-                            let xml = "./Build/NuGet.csproj" |> Path.getFullName |> XDocument.Load
+                            let xml = nunitReport |> XDocument.Load
 
                             let summary = xml.Descendants(XName.Get "test-run") |> Seq.head
 
