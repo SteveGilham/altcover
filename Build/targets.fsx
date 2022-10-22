@@ -688,30 +688,12 @@ _Target "BuildRelease" (fun _ ->
         |> Seq.iter dotnetBuildRelease
 
         // document cmdlets ahead of packaging
-        let packages =
-            let xml =
-                "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
-                |> Path.getFullName
-                |> XDocument.Load
-
-            xml.Descendants(XName.Get("PackageReference"))
-            |> Seq.map (fun x ->
-                let incl = x.Attribute(XName.Get("Include"))
-                let update = x.Attribute(XName.Get("Update"))
-                let version = x.Attribute(XName.Get("Version")).Value
-
-                if incl |> isNull then
-                    (update.Value, version)
-                else
-                    (incl.Value, version))
-            |> Map.ofSeq
-
         let packageVersionPart (p: string) =
             nugetCache
             + "/"
             + p.ToLowerInvariant()
             + "/"
-            + (packages.Item p)
+            + (toolPackages.Item p)
             + "/lib/netstandard2.0/"
 
         Shell.copyFile
