@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
-    <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="16.1.1" />

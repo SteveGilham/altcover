@@ -1149,7 +1149,7 @@ _Target "FxCop" (fun _ ->
                              + "/lib/netstandard1.5"
                           nugetCache
                           @@ "microsoft.netframework.referenceassemblies.net472/"
-                             + (dd.Item "microsoft.netframework.referenceassemblies") // assume all increment versions in step
+                             + "1.0.3" // assume all increment versions in step
                              + "/build/.NETFramework/v4.7.2"
                           nugetCache @@ "pangosharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
                           nugetCache
@@ -1188,13 +1188,9 @@ _Target "FxCop" (fun _ ->
                 let vers = toolPackages.Item x
                 nugetCache @@ (name + "/" + vers + "/lib/netstandard2.0"))
             |> Seq.filter Directory.Exists
-            |> Seq.toList in
+            |> Seq.toList
 
-        (nugetCache
-         @@ "microsoft.netframework.referenceassemblies.net472/"
-            + (dd.Item "microsoft.netframework.referenceassemblies") // assume all increment versions in step
-            + "/build/.NETFramework/v4.7.2")
-        :: dirs
+        dirs
 
     try
         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
