@@ -3617,34 +3617,12 @@ _Target "Unpack" (fun _ ->
         System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
 
     // C# style API documentation
-    let packages =
-        let xml =
-            [ "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
-              "./AltCover.Cake/AltCover.Cake.csproj"
-              "./AltCover.Monitor/AltCover.Monitor.csproj" ]
-            |> List.map (Path.getFullName >> XDocument.Load)
-
-        xml
-        |> List.map (fun x -> x.Descendants(XName.Get("PackageReference")))
-        |> Seq.concat
-        |> Seq.map (fun x ->
-            let incl = x.Attribute(XName.Get("Include"))
-            let update = x.Attribute(XName.Get("Update"))
-            let version = x.Attribute(XName.Get("Version")).Value
-
-            if incl |> isNull then
-                (update.Value, version)
-            else
-                (incl.Value, version))
-        |> Seq.distinctBy fst
-        |> Map.ofSeq
-
     let packageVersionPart (p: string) =
         nugetCache
         + "/"
         + p.ToLowerInvariant()
         + "/"
-        + (packages.Item p)
+        + (toolPackages.Item p)
         + "/lib/netstandard2.0/"
 
     let unpacked = "./_Packaging.api/Unpack/lib/netstandard2.0/"
