@@ -1,5 +1,6 @@
 ﻿// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
 #nowarn "52"
+
 open System
 open System.Diagnostics.Tracing
 open System.IO
@@ -568,8 +569,8 @@ _Target "SetVersion" (fun _ ->
     let pr =
         project1.Descendants()
         |> Seq.find (fun pr ->
-          pr.Attribute(XName.Get "Include") |> isNull |> not &&
-          pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
+            pr.Attribute(XName.Get "Include") |> isNull |> not
+            && pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
 
     pr.Attribute(XName.Get "Version").Value <- gendarmeVersion
     project1.Save("./Directory.Packages.props")
@@ -1028,48 +1029,11 @@ _Target "FxCop" (fun _ ->
             dumpSuppressions "_Reports/FxCopReport.xml"
             reraise ())
 
-    // scrape from projects
+    // scrape from overall version list
     let dd =
-        [ "./AltCover/AltCover.fsproj"
-          "./AltCover.Cake/AltCover.Cake.csproj"
-          "./AltCover.DataCollector/AltCover.DataCollector.csproj"
-          "./AltCover.DotNet/AltCover.DotNet.fsproj"
-          "./AltCover.Engine/AltCover.Engine.fsproj"
-          "./AltCover.Fake/AltCover.Fake.fsproj"
-          "./AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj"
-          "./AltCover.FontSupport/AltCover.FontSupport.csproj"
-          "./AltCover.Monitor/AltCover.Monitor.csproj"
-          "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
-          "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
-          "./AltCover.UICommon/AltCover.UICommon.fsproj"
-          "./AltCover.Visualizer/AltCover.Visualizer.fsproj" ]
-        |> List.collect (fun p ->
-            let xml = p |> Path.getFullName |> XDocument.Load
-
-            xml.Descendants(XName.Get("PackageReference"))
-            |> Seq.map (fun x ->
-                let attr = x.Attributes()
-
-                let name =
-                    (attr
-                     |> Seq.find (fun a ->
-                         match a.Name.LocalName.ToLowerInvariant() with
-                         | "include"
-                         | "update" -> true
-                         | _ -> false))
-                        .Value.ToLowerInvariant()
-
-                let vers =
-                    (attr
-                     |> Seq.find (fun a ->
-                         match a.Name.LocalName.ToLowerInvariant() with
-                         | "version" -> true
-                         | _ -> false))
-                        .Value.ToLowerInvariant()
-
-                (name, vers))
-            |> Seq.toList)
-        |> List.distinct
+        toolPackages
+        |> Map.toSeq
+        |> Seq.map (fun (k, v) -> k.ToLowerInvariant(), v)
         |> Map.ofSeq
 
     [ (fxcop, // framework targets
@@ -1211,30 +1175,26 @@ _Target "FxCop" (fun _ ->
             |> Path.getFullName
             |> XDocument.Load
 
-        xml.Descendants(XName.Get("PackageReference"))
-        |> Seq.map (fun x ->
-            let attr = x.Attributes()
+        let packages =
+            xml.Descendants(XName.Get("PackageReference"))
+            |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
+            |> Seq.map (fun x -> x.Attribute(XName.Get("Include")).Value)
+            |> Seq.toList
 
-            let name =
-                (attr
-                 |> Seq.find (fun a ->
-                     match a.Name.LocalName.ToLowerInvariant() with
-                     | "include"
-                     | "update" -> true
-                     | _ -> false))
-                    .Value.ToLowerInvariant()
+        let dirs =
+            packages
+            |> Seq.map (fun x ->
+                let name = x.ToLowerInvariant()
+                let vers = toolPackages.Item x
+                nugetCache @@ (name + "/" + vers + "/lib/netstandard2.0"))
+            |> Seq.filter Directory.Exists
+            |> Seq.toList in
 
-            let vers =
-                (attr
-                 |> Seq.find (fun a ->
-                     match a.Name.LocalName.ToLowerInvariant() with
-                     | "version" -> true
-                     | _ -> false))
-                    .Value.ToLowerInvariant()
-
-            nugetCache @@ (name + "/" + vers + "/lib/netstandard2.0"))
-        |> Seq.filter Directory.Exists
-        |> Seq.toList
+        (nugetCache
+         @@ "microsoft.netframework.referenceassemblies.net472/"
+            + (dd.Item "microsoft.netframework.referenceassemblies") // assume all increment versions in step
+            + "/build/.NETFramework/v4.7.2")
+        :: dirs
 
     try
         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
