@@ -42,11 +42,11 @@ DotNet.restore
     "./Build/NuGet.csproj"
 
 let toolPackages =
-    let xml = "./Build/NuGet.csproj" |> Path.getFullName |> XDocument.Load
+    let xml = "./Directory.Packages.props" |> Path.getFullName |> XDocument.Load
 
-    xml.Descendants(XName.Get("PackageReference"))
+    xml.Descendants()
     |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
-    |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
+    |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("Version")).Value))
     |> Map.ofSeq
 
 let packageVersion (p: string) =
