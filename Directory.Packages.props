@@ -4,10 +4,17 @@
     <PackageVersion Include="altcode.gendarme" version="2022.5.17.8260" />
     <PackageVersion Include="altcover" Version="8.4.840" />
     <PackageVersion Include="AltCover.Api" Version="8.4.840" />
+    <PackageVersion Include="Avalonia" Version="0.10.18" />
+    <PackageVersion Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageVersion Include="BlackFox.CommandLine" version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.0.0" />
     <PackageVersion Include="coverlet.collector" version="3.1.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
+    <PackageVersion Include="Expecto" Version="9.0.4" />
+    <PackageVersion Include="Expecto.TestResults" Version="8.13.2" />
+    <PackageVersion Include="Fake.Core.Process" Version="5.23.0" />
     <PackageVersion Include="FSharp.Core" Version="6.0.6" />
+    <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
@@ -23,6 +30,7 @@
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.15.2" />
     <PackageVersion Include="OpenCover" version="4.7.1221" />
     <PackageVersion Include="Pester" version="5.3.3" />
+    <PackageVersion Include="System.Reactive.Core" Version="5.0.0" />
     <PackageVersion Include="Unquote" Version="6.1.0" />
     <PackageVersion Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
     <PackageVersion Include="xunit" Version="2.4.2" />
@@ -34,5 +42,6 @@
     <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.console" version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <PackageVersion Include="YoloDev.Expecto.TestSdk" Version="1.0.0" />
   </ItemGroup>
 </Project>
