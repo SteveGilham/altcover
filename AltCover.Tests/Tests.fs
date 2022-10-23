@@ -1091,18 +1091,18 @@ module AltCoverTests =
 
     let toolPackages =
       let xml =
-        Path.Combine(SolutionDir(), "./Build/NuGet.csproj")
+        Path.Combine(SolutionDir(), "./Directory.Packages.props")
         |> Path.GetFullPath
         |> XDocument.Load
 
       // beware conditionals like on NUnit.ConsoleRunner
-      xml.Descendants(XName.Get("PackageReference"))
+      xml.Descendants()
       |> Seq.filter (fun x -> x.Attribute("Include".X).IsNotNull)
       |> Seq.map (fun x ->
         (x
           .Attribute(XName.Get("Include"))
            .Value.ToLowerInvariant(),
-         x.Attribute(XName.Get("version")).Value))
+         x.Attribute(XName.Get("Version")).Value))
       |> Map.ofSeq
 
     CoverageParameters.local.Value <- false
