@@ -25,6 +25,7 @@
     <PackageVersion Include="FsUnit" Version="5.0.5" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
     <PackageVersion Include="Handlebars.Net" Version="2.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
@@ -35,6 +36,8 @@
     <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
     <PackageVersion Include="Mono.CSharp" Version="4.0.0.143" />
     <PackageVersion Include="Mono.Options" Version="6.12.0.148" />
+    <PackageVersion Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="NuGet.CommandLine" Version="6.3.1" />
     <PackageVersion Include="NUnit" Version="3.13.3" />

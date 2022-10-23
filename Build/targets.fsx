@@ -2184,7 +2184,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", Version.Value)
+                    XAttribute(XName.Get "VersionOverride", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -4794,6 +4794,10 @@ _Target "Cake1Test" (fun _ ->
         let repo = config.Descendants(XName.Get("add")) |> Seq.head
 
         repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+        repo.SetAttributeValue(XName.Get "key", Path.getFullName "local")
+        let src = config.Descendants(XName.Get("packageSource")) |> Seq.head
+        src.SetAttributeValue(XName.Get "key", Path.getFullName "local")
+
         config.Save "./_Cake/_DotnetTest/NuGet.config"
 
         let fsproj = XDocument.Load "./Samples/Sample4/Sample4.fsproj"
@@ -4808,7 +4812,7 @@ _Target "Cake1Test" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover.api"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "VersionOverride", Version.Value)
             )
 
         pack.AddBeforeSelf inject
@@ -4819,16 +4823,13 @@ _Target "Cake1Test" (fun _ ->
         Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.json")
         Shell.copyDir "./_Cake/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
-        let config =
-            """<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="local" value="{0}" />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-  </packageSources>
-</configuration>"""
-
-        File.WriteAllText("./_Cake/NuGet.config", String.Format(config, Path.getFullName "./_Packaging.api"))
+        let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+        let repo = config.Descendants(XName.Get("add")) |> Seq.head
+        repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.api")
+        repo.SetAttributeValue(XName.Get "key", "local")
+        let src = config.Descendants(XName.Get("packageSource")) |> Seq.head
+        src.SetAttributeValue(XName.Get "key", "local")
+        config.Save "./_Cake/NuGet.config"
 
         let script = File.ReadAllText("./Build/build.cake")
 
@@ -4929,7 +4930,7 @@ _Target "ApiUse" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover.api"),
-                XAttribute(XName.Get "Version", Version.Value),
+                XAttribute(XName.Get "VersionOverride", Version.Value),
                 XElement(XName.Get "PrivateAssets", "all"),
                 XElement(XName.Get "IncludeAssets", "build")
             )
@@ -5182,7 +5183,7 @@ _Target "DotnetTestIntegration" (fun _ ->
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", Version.Value)
+                    XAttribute(XName.Get "VersionOverride", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -5644,7 +5645,7 @@ _Target "DotnetTestIntegration" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "VersionOverride", Version.Value)
             )
 
         pack.AddBeforeSelf inject
@@ -5675,7 +5676,7 @@ _Target "DotnetTestIntegration" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "VersionOverride", Version.Value)
             )
 
         pack.AddBeforeSelf inject
@@ -5739,7 +5740,7 @@ _Target "Issue20" (fun _ -> // plus added verbosity testing
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "VersionOverride", Version.Value)
             )
 
         pack.AddBeforeSelf inject
@@ -5847,7 +5848,7 @@ _Target "Issue23" (fun _ ->
 
         // Bump the version
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
-        pack.Attribute(XName.Get "Version").Value <- Version.Value
+        pack.Attribute(XName.Get "VersionOverride").Value <- Version.Value
         csproj.Save "./_Issue23/sample9.csproj"
         Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.cs")
         Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.json")
@@ -5908,7 +5909,7 @@ _Target "Issue67" (fun _ ->
 
         // Bump the version
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
-        pack.Attribute(XName.Get "Version").Value <- Version.Value
+        pack.Attribute(XName.Get "VersionOverride").Value <- Version.Value
         csproj.Save "./_Issue67/sample9.csproj"
         Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.cs")
         Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.json")
@@ -5986,7 +5987,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "VersionOverride", Version.Value)
             )
 
         pack.AddBeforeSelf inject
@@ -6128,6 +6129,12 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     try
         Directory.ensure working
         Shell.cleanDir working
+        let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+
+        let repo = config.Descendants(XName.Get("add")) |> Seq.head
+
+        repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.global")
+        config.Save "./_DotnetGlobalTest/NuGet.config"
 
         let fsproj = XDocument.Load "./Samples/Sample4/Sample4.fsproj"
 
@@ -6250,7 +6257,7 @@ _Target "Issue114" (fun _ ->
 
         // Bump API version
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "AltCover.Api")
-        pack.Attribute(XName.Get "Version").Value <- Version.Value
+        pack.Attribute(XName.Get "VersionOverride").Value <- Version.Value
         csproj.Save "./_Issue114/Sample26.fsproj"
         Shell.copy "./_Issue114" (!! "./Samples/Sample26/*.fs")
 
@@ -6311,7 +6318,7 @@ _Target "Issue156" (fun _ ->
             XElement(
                 XName.Get "PackageReference",
                 XAttribute(XName.Get "Include", "altcover"),
-                XAttribute(XName.Get "Version", Version.Value)
+                XAttribute(XName.Get "VersionOverride", Version.Value)
             )
 
         pack.AddBeforeSelf inject
