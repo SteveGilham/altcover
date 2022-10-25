@@ -131,7 +131,14 @@ module private Gui =
       )
 
     handler.aboutVisualizer.Comments <-
-      Resource.GetResourceString("aboutVisualizer.Comments")
+      String.Format(Globalization.CultureInfo.CurrentUICulture,
+                    Resource.GetResourceString("aboutVisualizer.Comments"),
+#if NET472
+                    "GTK#2"
+#else
+                    "GTK#3"
+#endif
+      )
 
     handler.aboutVisualizer.WebsiteLabel <-
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")

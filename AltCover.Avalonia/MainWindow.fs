@@ -695,7 +695,9 @@ type MainWindow() as this =
       + AssemblyVersionInformation.AssemblyFileVersion
 
     this.FindControl<TextBlock>("Description").Text <-
-      Resource.GetResourceString "aboutVisualizer.Comments"
+      String.Format(Globalization.CultureInfo.CurrentUICulture,
+                    Resource.GetResourceString("aboutVisualizer.Comments"),
+                    "AvaloniaUI")
 
     let copyright =
       AssemblyVersionInformation.AssemblyCopyright

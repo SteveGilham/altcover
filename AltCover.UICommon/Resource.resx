@@ -130,7 +130,7 @@ is not a valid coverage file:
     <value>xml files (*.xml)%xml|json files (*.json)%json|All files (*.*)%*</value>
   </data>
   <data name="aboutVisualizer.Comments" xml:space="preserve">
-    <value>Coverage visualizer for NCover and OpenCover reports</value>
+    <value>Coverage visualizer with {0}</value>
   </data>
   <data name="aboutVisualizer.Copyright" xml:space="preserve">
     <value>{0}
