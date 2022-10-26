@@ -219,7 +219,7 @@ using System.Runtime.CompilerServices;
                 appveyor
 
         printfn "Build version : %s" version
-        (result, majmin, now.Year)
+        (result, majmin, now)
 
     let ValidateFSharpTypes simpleReport others =
         use coverageFile =

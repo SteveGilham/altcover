@@ -605,7 +605,8 @@ _Target "SetVersion" (fun _ ->
         else
             appveyor
 
-    let (v, majmin, y) = Actions.LocalVersion ci version
+    let (v, majmin, now) = Actions.LocalVersion ci version
+    let y = now.Year
     Version.Value <- v
 
     let copy =
@@ -630,7 +631,8 @@ _Target "SetVersion" (fun _ ->
                 Version.Value.Split([| '-' |]).[0],
                 commitHash,
                 Information.getBranchName ("."),
-                y
+                y,
+                now.ToString("yyyy-MM-dd HH:mm:sszzz")
             )
 
         File.WriteAllText(f, newtext))
