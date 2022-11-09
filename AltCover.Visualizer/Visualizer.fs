@@ -131,7 +131,7 @@ module private Gui =
       )
 
     handler.aboutVisualizer.Comments <-
-      String.Format(Globalization.CultureInfo.CurrentUICulture,
+      String.Format(Globalization.CultureInfo.CurrentCulture,
                     Resource.GetResourceString("aboutVisualizer.Comments"),
 #if NET472
                     "GTK#2"

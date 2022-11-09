@@ -695,7 +695,7 @@ type MainWindow() as this =
       + AssemblyVersionInformation.AssemblyFileVersion
 
     this.FindControl<TextBlock>("Description").Text <-
-      String.Format(Globalization.CultureInfo.CurrentUICulture,
+      String.Format(Globalization.CultureInfo.CurrentCulture,
                     Resource.GetResourceString("aboutVisualizer.Comments"),
                     "AvaloniaUI")
 
