@@ -21,7 +21,7 @@
     <PackageVersion Include="FAKE.Core.Trace" Version="5.21.0" />
     <PackageVersion Include="FAKE.DotNet.Cli" Version="5.21.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="6.0.6" />
+    <PackageVersion Include="FSharp.Core" Version="7.0.0" />
     <PackageVersion Include="FsUnit" Version="5.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
     <PackageVersion Include="Handlebars.Net" Version="2.0.9" />
@@ -30,7 +30,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="16.1.1" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
