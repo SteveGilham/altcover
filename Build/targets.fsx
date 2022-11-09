@@ -4845,9 +4845,9 @@ _Target "Cake1Test" (fun _ ->
         let script2 = File.ReadAllText("./Build/build2.cake")
         File.WriteAllText("./_Cake/build2.cake", script2)
 
-        [ (" --version 1.3.0", "build.cake")
-          (String.Empty, "build.cake")
-          (String.Empty, "build2.cake") ]
+        [ (" --version 1.0.0", "build.cake")
+          ( " --version 2.3.0", "build.cake")
+          ( " --version 2.3.0", "build2.cake") ]
         |> List.iter (fun (cakeversion, script) ->
             try
                 Actions.RunDotnet
