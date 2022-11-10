@@ -880,6 +880,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
          "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
          "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
          "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
+         "_Binaries/AltCover.Cake/Debug+AnyCPU/netcoreapp3.1/AltCover.Cake.dll" // Cake 2+
          "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
       ("./Build/common-rules.xml", // Framework builds
        [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" // framework builds

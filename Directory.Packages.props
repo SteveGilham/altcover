@@ -8,8 +8,10 @@
     <PackageVersion Include="Avalonia" Version="0.10.18" />
     <PackageVersion Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageVersion Include="BlackFox.CommandLine" Version="1.0.0" />
-    <PackageVersion Include="Cake.Core" Version="1.0.0" />
-    <PackageVersion Include="Cake.Common" Version="1.0.0" />
+    <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
+    <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
+    <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
+    <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.0.0" />
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2-preview" />

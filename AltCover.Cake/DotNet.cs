@@ -1,4 +1,9 @@
-﻿using Cake.Common.Tools.DotNetCore;
+﻿#if !NETSTANDARD2_0
+using Cake.Common.Tools.DotNet;
+using Cake.Common.Tools.DotNet.Test;
+#endif
+
+using Cake.Common.Tools.DotNetCore;
 using Cake.Common.Tools.DotNetCore.Test;
 using Cake.Core;
 using Cake.Core.Annotations;
@@ -125,6 +130,7 @@ namespace AltCover.Cake
     /// <param name="project">The project to test as a `FilePath`</param>
     /// <param name="testSettings">The `DotNetCoreTestSettings` for the test</param>
     /// <param name="coverageSettings">The `CoverageSettings` for the test instrumentation</param>
+#if NETSTANDARD2_0
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -148,5 +154,24 @@ namespace AltCover.Cake
       testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
       context.DotNetCoreTest(project.FullPath, testSettings);
     }
-  }
+
+#else
+    [CakeMethodAlias]
+    [CakeAliasCategory("Test")]
+    public static void DotNetTest(
+                    this ICakeContext context,
+                    FilePath project,
+                    DotNetTestSettings testSettings,
+                    CoverageSettings coverageSettings)
+    {
+      if (project == null) throw new ArgumentNullException(nameof(project));
+      if (testSettings == null) throw new ArgumentNullException(nameof(testSettings));
+      if (coverageSettings == null) throw new ArgumentNullException(nameof(coverageSettings));
+
+      testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
+      DotNetAliases.DotNetTest(context, project.GetFilename().FullPath, testSettings);
+    }
+
+#endif
+ }
 }
