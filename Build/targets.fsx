@@ -2342,7 +2342,7 @@ _Target "FSharpTests" (fun _ ->
             { Primitive.PrepareOptions.Create() with
                 Report = simpleReport
                 CallContext = [ "[Test]" ]
-                AssemblyFilter = [ "Adapter" ]
+                AssemblyFilter = [ "Adapter"; "FSharp\.Core" ]
                 TypeFilter = [ "System\\."; "Microsoft\\." ]
                 InPlace = true
                 ReportFormat = "OpenCover"
@@ -2415,7 +2415,7 @@ _Target "AsyncAwaitTests" (fun _ ->
         (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")
 
     let sampleRoot =
-        Path.getFullName "_Binaries/AsyncAwaitTests_Sample24/Debug+AnyCPU/netcoreapp3.1"
+        Path.getFullName "_Binaries/AsyncAwaitTests_Sample24/Debug+AnyCPU/net6.0"
 
     // Test the --inplace operation
     Shell.cleanDir sampleRoot
@@ -2423,7 +2423,7 @@ _Target "AsyncAwaitTests" (fun _ ->
     "Sample24.csproj"
     |> DotNet.test (fun o ->
         { o.WithCommon(withWorkingDirectoryVM "Samples/Sample24") with
-            Framework = Some "netcoreapp3.1"
+            Framework = Some "net6.0"
             Configuration = DotNet.BuildConfiguration.Debug }
         |> (testWithCLITaggedArguments "AsyncAwaitTests"))
 
@@ -2451,7 +2451,7 @@ _Target "AsyncAwaitTests" (fun _ ->
 
     let sample24 = Path.getFullName "./Samples/Sample24/Sample24.csproj"
 
-    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.1") sample24
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") sample24
 
     let collect =
         AltCover.CollectOptions.Primitive
