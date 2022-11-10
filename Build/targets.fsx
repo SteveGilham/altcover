@@ -3603,6 +3603,7 @@ _Target "PrepareReadMe" (fun _ ->
 
     [ "./Build/README.core.md"
       "./Build/README.api.md"
+      "./Build/README.cake.md"
       "./Build/README.fake.md"
       "./Build/README.global.md"
       "./Build/README.visualizer.md" ]

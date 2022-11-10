@@ -1,30 +1,34 @@
-# altcover.api
-Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono assemblies, reimplemented and extended almost beyond recognition from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage), plus a set of related utilities for processing the results from this and from other programs producing similar output formats.
+# altcover.cake
+Contains options to run AltCover as part of `dotnet test` within a Cake build script.
 
 ## Usage
 
-See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for full details
+Given specifications `prepare`, `process` and `collect` (part of the API), extend a `dotnet test` invocation with coverage collection
 
-#### I really want coverage for my .net core unit test project right now
+```csharp
+{
+    // do any required customizations here
+    var altcoverSettings = new AltCover.Cake.CoverageSettings {
+        PreparationPhase = prepare,
+        CollectionPhase = collect,
+        Options = process
+    };
 
-Install into your test project 
+    var testSettings = new DotNetCoreTestSettings {
+        Configuration = configuration,
+        NoBuild = true,
+    };
+
+    DotNetCoreTest(<project to test>, // or DotNetTest at v2 or v3
+                      testSettings, altcoverSettings);
+});
 ```
-dotnet add package AltCover.api
-```
-and run
-```
-dotnet test /p:AltCover=true
-```
-The OpenCover format output will be in file `coverage.xml` in the project directory
+
+See the [Wiki page](https://stevegilham.github.io/altcover/Fake-and-Cake-integration#cake-integration) for full details
 
 ## What's in the box?
 
-For Mono, .net framework and .net core
-
-* MSBuild tasks to drive the tool, including `dotnet test` integration
-* A PowerShell module for PowerShell 5.1 and PowerShell Core 6+ containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
-* APIs for the above functionality (run the tool or cmdlet functionality in process)
-* APIs for integration into Fake and Cake build scripts
+APIs for integration into Cake build scripts (at `netstandard2.0` for v1, and `netcoreapp3.1` for v2 and v3 Cake APIs)
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
@@ -53,7 +57,7 @@ As `net472` can consume `netstandard2.0` libraries (everything but the recorder)
 
 ## Other NuGet Packages in this suite
 * [![Nuget](https://buildstats.info/nuget/AltCover) General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the `dotnet test` API with FAKE and CAKE integration and the AvaloniaUI visualizer
+* [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/Avalonia Visualizer as a global tool
 * [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.18.1 or later), only in this package
-* [![Nuget](https://buildstats.info/nuget/altcover.cake) Cake build task utilities](https://www.nuget.org/packages/AltCover.Cake) -- just AltCover related helper types for Cake scripts (v1.0.0 or later), only in this package
