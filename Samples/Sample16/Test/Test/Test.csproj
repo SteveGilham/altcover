@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>    <RollForward>Major</RollForward>
-
+    <TargetFramework>net6.0</TargetFramework>
     <RollForward>Major</RollForward>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -19,5 +18,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Sample16.csproj" />
   </ItemGroup>
-
 </Project>

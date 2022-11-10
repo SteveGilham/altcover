@@ -2326,7 +2326,7 @@ _Target "FSharpTests" (fun _ ->
     let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTests.xml")
 
     let sampleRoot =
-        Path.getFullName "_Binaries/FSharpTests_Sample7/Debug+AnyCPU/netcoreapp2.1"
+        Path.getFullName "_Binaries/FSharpTests_Sample7/Debug+AnyCPU/net6.0"
 
     // Test the --inplace operation
     Shell.cleanDir sampleRoot
@@ -2496,7 +2496,7 @@ _Target "FSAsyncTests" (fun _ ->
         let sampleRoot =
             Path.getFullName "./_Binaries/FSAsyncTests_"
             + sample
-            + "/Debug+AnyCPU/netcoreapp3.1"
+            + "/Debug+AnyCPU/net6.0"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
@@ -2504,7 +2504,7 @@ _Target "FSAsyncTests" (fun _ ->
         sample + ".fsproj"
         |> DotNet.test (fun o ->
             { o.WithCommon(withWorkingDirectoryVM ("Samples/" + sample)) with
-                Framework = Some "netcoreapp3.1"
+                Framework = Some "net6.0"
                 Configuration = DotNet.BuildConfiguration.Debug }
             |> (testWithCLITaggedArguments "FSAsyncTests"))
 
@@ -2533,7 +2533,7 @@ _Target "FSAsyncTests" (fun _ ->
 
         let sampled = Path.getFullName "./Samples/" + sample + "/" + sample + ".fsproj"
 
-        let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.1") sampled
+        let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net6.0") sampled
 
         let collect =
             AltCover.CollectOptions.Primitive
@@ -5684,7 +5684,7 @@ _Target "DotnetTestIntegration" (fun _ ->
         pack.AddBeforeSelf inject
         proj.Save "./RegressionTesting/issue37/issue37.csproj"
 
-        let p4 = { p0 with AssemblyFilter = [ "NUnit" ] }
+        let p4 = { p0 with AssemblyFilter = [ "NUnit"; "Monitor" ] }
         let pp4 = AltCover.PrepareOptions.Primitive p4
 
         DotNet.test
