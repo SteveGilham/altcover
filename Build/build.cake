@@ -30,8 +30,10 @@ Task("Build")
 
   class TestPrepareOptions : AltCover.Cake.PrepareOptions
   {
+    public string CakeVersion;
     public override IEnumerable<string> CallContext => new string[] {"[Fact]", "0"};
     public override System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
+    public override string Report => "coverage.build.cake." + CakeVersion +".xml";
   }
 
 Task("Test")
@@ -44,9 +46,9 @@ Task("Test")
     var im = ImportModule();
     Console.WriteLine("Version = {1} Import = '{2}'", null, testv, im);
 
-    var prep = new TestPrepareOptions();
-
-    prep.Report = "coverage.build.cake." + cakeversion +".xml";
+    var prep = new TestPrepareOptions() {
+      CakeVersion = cakeversion
+    };
 
     var altcoverSettings = new CoverageSettings {
         PreparationPhase = prep,

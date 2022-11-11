@@ -65,7 +65,9 @@ which have empty or `false` values for all relevant properties, changing values 
 ```csharp
   class MyPrepareOptions : AltCover.Cake.PrepareOptions
   {
-    public override string Report { get; set; }
+    public string ReportName { get; set; }
+    // here, for sake of example, reportDirectory being a script parameter
+    public override string Report => Path.Combine (reportDirectory, ReportName);
     public override IEnumerable<string> CallContext => new string[] {"[Fact]", "0"};
     public override System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
   }
@@ -73,9 +75,9 @@ which have empty or `false` values for all relevant properties, changing values 
 then your test-with-coverage phase looks like
 ```
 {
-    // do any required customizations here
+    // do any required customizations here such as
     var prep = new MyPrepareOptions() {
-        Report = "coverage.build.cake." + cakeversion +".xml"
+        ReportName = "coverage.build.cake." + cakeversion +".xml"
     };
 
     var altcoverSettings = new AltCover.Cake.CoverageSettings {

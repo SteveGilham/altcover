@@ -85,7 +85,7 @@ namespace AltCover.Cake
         ///<summary>
         /// Gets or sets the value that corresponds to command line option `-r, --report=VALUE`
         ///</summary>
-        public virtual string Report { get; set; }
+        public virtual string Report => String.Empty;
 
         ///<summary>
         /// Corresponds to command line option `-f, --fileFilter=VALUE`
