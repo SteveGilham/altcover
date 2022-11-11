@@ -86,23 +86,6 @@ then your test-with-coverage phase looks like
         Options = new TestOptions()
     };
 
-    var testSettings = new DotNetCoreTestSettings {
-        Configuration = configuration,
-        NoBuild = true,
-    };
-
-    DotNetTest(<project to test>,
-                      testSettings, altcoverSettings);
-});
-
-```
-
-## To use the Cake2.x `dotnet test` API `DotNetTest`
-
-There isn't a one-stop-shop Cake 2.x alias; instead make the following changes after defining the `CoverageSettings` value (inlining the effect of the alias used for the `DotNetCoreTest` API) :
-
-```
-    // use the Cake 2.0 test settings type
     var testSettings = new DotNetTestSettings {
         Configuration = configuration,
         NoBuild = true,
@@ -116,10 +99,10 @@ There isn't a one-stop-shop Cake 2.x alias; instead make the following changes a
 
 ```
 
-As the `AltCover.Cake` assembly still targets Cake 1.1 and netstandard2.0 there will still be warnings like
+As the `AltCover.Cake` assembly still targets Cake 2.0 and netcoreapp3.1, when used for Cake 3.0 there will be harmless warnings like
 ```
-The assembly 'AltCover.Cake, Version=8.2.0.0, Culture=neutral, PublicKeyToken=null'
-is referencing an older version of Cake.Core (1.1.0).
-For best compatibility it should target Cake.Core version 2.0.0.
+The assembly 'AltCover.Cake, Version=[whatever], Culture=neutral, PublicKeyToken=null'
+is referencing an older version of Cake.Core (2.0.0).
+For best compatibility it should target Cake.Core version 3.0.0.
 ```
 but there will be no warnings about obsolescent types or methods being used.
