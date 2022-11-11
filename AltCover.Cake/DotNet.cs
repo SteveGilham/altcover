@@ -126,13 +126,13 @@ namespace AltCover.Cake
         /// <para>Equivalent to</para>
         /// <code>
         /// settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
-        /// context.DotNetCoreTest(project.FullPath, settings);
+        /// context.DotNetTest(project.FullPath, settings);
         /// </code>
         /// <para>This method is a `[CakeMethodAlias]` extension method on `ICakeContext`, and `[CakeAliasCategory("Test")]`.</para>
         /// </summary>
         /// <param name="context">The Cake build script `ICakeContext`; a `this` parameter</param>
         /// <param name="project">The project to test as a `FilePath`</param>
-        /// <param name="testSettings">The `DotNetCoreTestSettings` for the test</param>
+        /// <param name="testSettings">The `DotNetTestSettings` for the test</param>
         /// <param name="coverageSettings">The `CoverageSettings` for the test instrumentation</param>
         [CakeMethodAlias]
         [CakeAliasCategory("Test")]
