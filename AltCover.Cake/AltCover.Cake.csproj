@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
+    <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
   </ItemGroup>
 
 </Project>

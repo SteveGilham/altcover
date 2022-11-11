@@ -213,10 +213,10 @@ let toolPackages =
         match x.Attribute(XName.Get("Condition")) with
         | null -> true
         | a ->
-            match (a.Value = "'$(OS)' == 'Windows_NT'", Environment.isWindows) with
-            | (true, true)
-            | (false, false) -> true
-            | _ -> false)
+            (a.Value = "'$(TargetFramework)' == 'netstandard2.0'") ||
+            (a.Value = "'$(OS)' == 'Windows_NT'" && Environment.isWindows) ||
+            (a.Value = "'$(OS)' != 'Windows_NT'" && not Environment.isWindows)
+    )
     |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("Version")).Value))
     |> Map.ofSeq
 
@@ -1028,7 +1028,8 @@ _Target "FxCop" (fun _ ->
                     Rules = ruleset
                     FailOnError = FxCop.ErrorLevel.Warning
                     IgnoreGeneratedCode = true }
-        with _ ->
+        with x ->
+            printfn "%A" x
             dumpSuppressions "_Reports/FxCopReport.xml"
             reraise ())
 
@@ -1103,6 +1104,12 @@ _Target "FxCop" (fun _ ->
                "-Microsoft.Performance#CA1810" ] ]) ] // Static module initializers in $Type classes
     |> Seq.iter (fun (tool, platform, files, types, ruleset) ->
         try
+            let ddItem x =
+              try
+                dd.Item x
+              with _ ->
+                printfn "Failed to get %A" x
+                reraise()
             files
             |> FxCop.run
                 { FxCop.Params.Create() with
@@ -1111,53 +1118,55 @@ _Target "FxCop" (fun _ ->
                         [ "./ThirdParty/gtk-sharp2"
                           nugetCache
                           @@ "blackfox.commandline/"
-                             + (dd.Item "blackfox.commandline")
+                             + (ddItem "blackfox.commandline")
                              + "/lib/netstandard2.0"
                           nugetCache @@ "blackfox.vswhere/1.1.0/lib/netstandard2.0"
                           nugetCache @@ "cake.common/" + (dd.Item "cake.common") + "/lib/netstandard2.0"
                           nugetCache @@ "cake.core/" + (dd.Item "cake.core") + "/lib/netstandard2.0"
                           nugetCache
                           @@ "communitytoolkit.diagnostics/"
-                             + (dd.Item "communitytoolkit.diagnostics")
+                             + (ddItem "communitytoolkit.diagnostics")
                              + "/lib/netstandard2.0"
                           nugetCache
                           @@ "fake.core.environment/"
-                             + (dd.Item "fake.core.environment")
+                             + (ddItem "fake.core.environment")
                              + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.core.process/" + (dd.Item "fake.core.process") + "/lib/netstandard2.0"
+                          @@ "fake.core.process/" + (ddItem "fake.core.process") + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.core.trace/" + (dd.Item "fake.core.trace") + "/lib/netstandard2.0"
+                          @@ "fake.core.trace/" + (ddItem "fake.core.trace") + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.dotnet.cli/" + (dd.Item "fake.dotnet.cli") + "/lib/netstandard2.0"
+                          @@ "fake.core.xml/" + (ddItem "fake.core.trace") + "/lib/netstandard2.0"
                           nugetCache
-                          @@ "fake.dotnet.msbuild/" + (dd.Item "fake.dotnet.cli") + "/lib/netstandard2.0"
-                          nugetCache @@ "fsharp.core/" + (dd.Item "fsharp.core") + "/lib/netstandard2.0"
-                          nugetCache @@ "gdksharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
-                          nugetCache @@ "glibsharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
-                          nugetCache @@ "gtksharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
-                          nugetCache @@ "mono.cecil/" + (dd.Item "mono.cecil") + "/lib/netstandard2.0"
-                          nugetCache @@ "mono.options/" + (dd.Item "mono.options") + "/lib/netstandard2.0"
+                          @@ "fake.dotnet.cli/" + (ddItem "fake.dotnet.cli") + "/lib/netstandard2.0"
+                          nugetCache
+                          @@ "fake.dotnet.msbuild/" + (ddItem "fake.dotnet.cli") + "/lib/netstandard2.0"
+                          nugetCache @@ "fsharp.core/" + (ddItem "fsharp.core") + "/lib/netstandard2.0"
+                          nugetCache @@ "gdksharp/" + (ddItem "gtksharp") + "/lib/netstandard2.0"
+                          nugetCache @@ "glibsharp/" + (ddItem "gtksharp") + "/lib/netstandard2.0"
+                          nugetCache @@ "gtksharp/" + (ddItem "gtksharp") + "/lib/netstandard2.0"
+                          nugetCache @@ "mono.cecil/" + (ddItem "mono.cecil") + "/lib/netstandard2.0"
+                          nugetCache @@ "mono.options/" + (ddItem "mono.options") + "/lib/netstandard2.0"
                           nugetCache
                           @@ "microsoft.build.framework/"
-                             + (dd.Item "microsoft.build.utilities.core")
+                             + (ddItem "microsoft.build.utilities.core")
                              + "/lib/netstandard2.0"
                           nugetCache
                           @@ "microsoft.build.utilities.core/"
-                             + (dd.Item "microsoft.build.utilities.core")
+                             + (ddItem "microsoft.build.utilities.core")
                              + "/lib/netstandard2.0"
                           nugetCache
                           @@ "microsoft.testplatform.objectmodel/"
-                             + (dd.Item "microsoft.testplatform.objectmodel")
+                             + (ddItem "microsoft.testplatform.objectmodel")
                              + "/lib/netstandard1.5"
                           nugetCache
                           @@ "microsoft.netframework.referenceassemblies.net472/"
                              + "1.0.3" // assume all increment versions in step
                              + "/build/.NETFramework/v4.7.2"
-                          nugetCache @@ "pangosharp/" + (dd.Item "gtksharp") + "/lib/netstandard2.0"
+                          nugetCache @@ "pangosharp/" + (ddItem "gtksharp") + "/lib/netstandard2.0"
                           nugetCache
                           @@ "powershellstandard.library/"
-                             + (dd.Item "powershellstandard.library")
+                             + (ddItem "powershellstandard.library")
                              + "/lib/netstandard2.0" ]
                     ToolPath = Option.get tool
                     PlatformDirectory = platform
@@ -1168,7 +1177,8 @@ _Target "FxCop" (fun _ ->
                     Rules = ruleset
                     FailOnError = FxCop.ErrorLevel.Warning
                     IgnoreGeneratedCode = true }
-        with _ ->
+        with x ->
+            printfn "2 %A" x
             dumpSuppressions "_Reports/FxCopReport.xml"
             reraise ())
 
