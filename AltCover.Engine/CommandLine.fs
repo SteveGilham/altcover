@@ -318,7 +318,7 @@ module internal CommandLine =
     (parse: Either<string * OptionSet, string list * OptionSet>)
     =
     match parse with
-    | Right (_, options) ->
+    | Right(_, options) ->
       if help then
         Left("HelpText", options)
       else

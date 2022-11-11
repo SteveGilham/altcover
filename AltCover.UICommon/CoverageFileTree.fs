@@ -25,23 +25,22 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     GetFileInfo: int -> FileInfo
     UpdateMRUFailure: FileInfo -> unit
     UpdateUISuccess: FileInfo -> unit
-    SetXmlNode: String
-      -> String
-      -> Lazy<'TIcon>
-      -> String
-      -> CoverageTreeContext<'TModel, 'TRow>
-    AddNode: CoverageTreeContext<'TModel, 'TRow>
-      -> Lazy<'TIcon>
-      -> String
-      -> String
-      -> String option
-      -> CoverageTreeContext<'TModel, 'TRow>
-    AddLeafNode: CoverageTreeContext<'TModel, 'TRow>
-      -> Lazy<'TIcon>
-      -> String
-      -> String
-      -> String option
-      -> CoverageTreeContext<'TModel, 'TRow>
+    SetXmlNode:
+      String -> String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
+    AddNode:
+      CoverageTreeContext<'TModel, 'TRow>
+        -> Lazy<'TIcon>
+        -> String
+        -> String
+        -> String option
+        -> CoverageTreeContext<'TModel, 'TRow>
+    AddLeafNode:
+      CoverageTreeContext<'TModel, 'TRow>
+        -> Lazy<'TIcon>
+        -> String
+        -> String
+        -> String option
+        -> CoverageTreeContext<'TModel, 'TRow>
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
 module CoverageFileTree =

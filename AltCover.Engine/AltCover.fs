@@ -544,7 +544,7 @@ module AltCover =
 
           match (state, n) with
           | (true, _)
-          | (_, Left (Some _)) -> true
+          | (_, Left(Some _)) -> true
           | _ -> false
 
         context

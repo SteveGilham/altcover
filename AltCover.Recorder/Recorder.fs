@@ -516,7 +516,7 @@ module Instance =
                             Justification = "Compiler generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "DeclareEventsExplicitlyRule",
-                            Scope = "type",  // TypeDefinition
+                            Scope = "type", // TypeDefinition
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder",
                             Justification =
                               "Compiler generated doExit@453 and :doUnload@450")>]

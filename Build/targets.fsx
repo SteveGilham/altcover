@@ -213,10 +213,9 @@ let toolPackages =
         match x.Attribute(XName.Get("Condition")) with
         | null -> true
         | a ->
-            (a.Value = "'$(TargetFramework)' == 'netstandard2.0'") ||
-            (a.Value = "'$(OS)' == 'Windows_NT'" && Environment.isWindows) ||
-            (a.Value = "'$(OS)' != 'Windows_NT'" && not Environment.isWindows)
-    )
+            (a.Value = "'$(TargetFramework)' == 'netstandard2.0'")
+            || (a.Value = "'$(OS)' == 'Windows_NT'" && Environment.isWindows)
+            || (a.Value = "'$(OS)' != 'Windows_NT'" && not Environment.isWindows))
     |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("Version")).Value))
     |> Map.ofSeq
 
@@ -1105,11 +1104,12 @@ _Target "FxCop" (fun _ ->
     |> Seq.iter (fun (tool, platform, files, types, ruleset) ->
         try
             let ddItem x =
-              try
-                dd.Item x
-              with _ ->
-                printfn "Failed to get %A" x
-                reraise()
+                try
+                    dd.Item x
+                with _ ->
+                    printfn "Failed to get %A" x
+                    reraise ()
+
             files
             |> FxCop.run
                 { FxCop.Params.Create() with
@@ -2505,9 +2505,7 @@ _Target "FSAsyncTests" (fun _ ->
             (Path.getFullName "./_Reports") @@ (sample + "AltCoverFSAsyncTests.xml")
 
         let sampleRoot =
-            Path.getFullName "./_Binaries/FSAsyncTests_"
-            + sample
-            + "/Debug+AnyCPU/net6.0"
+            Path.getFullName "./_Binaries/FSAsyncTests_" + sample + "/Debug+AnyCPU/net6.0"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
@@ -3406,7 +3404,7 @@ _Target "Packaging" (fun _ ->
             cake2Files "lib/netcoreapp3.1/"
             cake0files
             housekeeping ],
-       [("AltCover.Api", Version.Value)],
+       [ ("AltCover.Api", Version.Value) ],
        "_Packaging.api",
        "./_Generated/altcover.cake.nuspec",
        "altcover.cake")
@@ -3652,7 +3650,11 @@ _Target "Unpack" (fun _ ->
     !! "./_Pack*/*.nupkg"
     |> Seq.iter (fun nugget ->
         let packdir = Path.GetDirectoryName nugget
-        let unpack = (Path.getFullName (packdir @@ "Unpack")) + (if nugget.Contains "cake" then ".cake" else String.Empty)
+
+        let unpack =
+            (Path.getFullName (packdir @@ "Unpack"))
+            + (if nugget.Contains "cake" then ".cake" else String.Empty)
+
         System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
 
     // C# style API documentation
@@ -4883,8 +4885,7 @@ _Target "Cake1Test" (fun _ ->
                 .Replace("{1}", Version.Value)
         )
 
-        [ (" --version 2.0.0", "build.cake")
-          ( String.Empty, "build.cake") ]
+        [ (" --version 2.0.0", "build.cake"); (String.Empty, "build.cake") ]
         |> List.iter (fun (cakeversion, script) ->
             try
                 Actions.RunDotnet

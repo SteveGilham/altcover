@@ -131,12 +131,13 @@ module private Gui =
       )
 
     handler.aboutVisualizer.Comments <-
-      String.Format(Globalization.CultureInfo.CurrentCulture,
-                    Resource.GetResourceString("aboutVisualizer.Comments"),
+      String.Format(
+        Globalization.CultureInfo.CurrentCulture,
+        Resource.GetResourceString("aboutVisualizer.Comments"),
 #if NET472
-                    "GTK#2"
+        "GTK#2"
 #else
-                    "GTK#3"
+        "GTK#3"
 #endif
       )
 
@@ -330,7 +331,12 @@ module private Gui =
 
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
-      fun (context: CoverageTreeContext<TreeStore, TreeIter>) (icon: Lazy<Gdk.Pixbuf>) pc name (tip: string option) ->
+      fun
+        (context: CoverageTreeContext<TreeStore, TreeIter>)
+        (icon: Lazy<Gdk.Pixbuf>)
+        pc
+        name
+        (tip: string option) ->
         let newrow =
           context.Model.AppendValues(
             context.Row,

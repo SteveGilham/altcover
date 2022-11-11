@@ -676,7 +676,9 @@ module
     |> (if method.Lines |> Seq.isEmpty then
           append
         else
-          appendLine) ("\"Lines\": {")
+          appendLine) (
+      "\"Lines\": {"
+    )
     |> ifNotEmpty method.Lines lineToBuilder id post
     |> appendLine ("},")
 

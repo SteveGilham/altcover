@@ -967,7 +967,7 @@ module AltCoverRunnerTests =
       CommandLine.parseCommandLine [| "/@thisIsNotAnOption" |] options
 
     match parse with
-    | Left (x, y) ->
+    | Left(x, y) ->
       Assert.That(x, Is.EqualTo "UsageError")
       Assert.That(y, Is.SameAs options)
 
@@ -985,7 +985,7 @@ module AltCoverRunnerTests =
       CommandLine.parseCommandLine input options
 
     match parse with
-    | Right (x, y) ->
+    | Right(x, y) ->
       Assert.That(x, Is.EquivalentTo(input |> Seq.skip 1))
       Assert.That(y, Is.SameAs options)
 
@@ -999,10 +999,10 @@ module AltCoverRunnerTests =
       CommandLine.parseCommandLine input options
 
     match parse with
-    | Right (x, y) -> Assert.That(y, Is.SameAs options)
+    | Right(x, y) -> Assert.That(y, Is.SameAs options)
 
     match CommandLine.processHelpOption parse with
-    | Left (x, y) ->
+    | Left(x, y) ->
       Assert.That(x, Is.EqualTo "HelpText")
       Assert.That(y, Is.SameAs options)
     // a "not sticky" test
@@ -1013,7 +1013,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine [| "/x"; "x" |] options
         |> CommandLine.processHelpOption
       with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty))
 
@@ -1030,12 +1030,12 @@ module AltCoverRunnerTests =
       CommandLine.parseCommandLine input options
 
     match parse with
-    | Left (x, y) ->
+    | Left(x, y) ->
       Assert.That(x, Is.EqualTo "UsageError")
       Assert.That(y, Is.SameAs options)
 
     match CommandLine.processHelpOption parse with
-    | Left (x, y) ->
+    | Left(x, y) ->
       Assert.That(x, Is.EqualTo "UsageError")
       Assert.That(y, Is.SameAs options)
     // a "not sticky" test
@@ -1046,7 +1046,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine [| "/x"; "x" |] options
         |> CommandLine.processHelpOption
       with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty))
 
@@ -1065,7 +1065,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Right (x, y) ->
+        | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
@@ -1094,7 +1094,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1120,7 +1120,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
@@ -1140,7 +1140,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1167,7 +1167,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1195,7 +1195,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1214,7 +1214,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1234,7 +1234,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1261,7 +1261,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1289,7 +1289,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1308,7 +1308,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1327,7 +1327,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1348,7 +1348,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1376,7 +1376,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Right (x, y) ->
+        | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
@@ -1410,7 +1410,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1439,7 +1439,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
@@ -1459,7 +1459,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1493,7 +1493,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1527,7 +1527,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1559,7 +1559,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1591,7 +1591,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1615,7 +1615,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1634,7 +1634,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1653,7 +1653,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1672,7 +1672,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1691,7 +1691,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1710,7 +1710,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1729,7 +1729,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1748,7 +1748,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1767,7 +1767,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1790,7 +1790,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Right (x, y) ->
+        | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
@@ -1824,7 +1824,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1853,7 +1853,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
@@ -1874,7 +1874,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1904,7 +1904,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -1929,7 +1929,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -1948,7 +1948,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -1972,7 +1972,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -2038,7 +2038,7 @@ module AltCoverRunnerTests =
           CommandLine.parseCommandLine input options
 
         match parse with
-        | Right (x, y) ->
+        | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
@@ -2058,7 +2058,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
 
@@ -2081,7 +2081,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError"))
 
@@ -2097,7 +2097,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -2117,7 +2117,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -2137,7 +2137,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -2157,7 +2157,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -2177,7 +2177,7 @@ module AltCoverRunnerTests =
         CommandLine.parseCommandLine input options
 
       match parse with
-      | Right (x, y) ->
+      | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
@@ -2198,7 +2198,7 @@ module AltCoverRunnerTests =
           Runner.J.requireExe (Right([], options))
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
@@ -2217,7 +2217,7 @@ module AltCoverRunnerTests =
           Runner.J.requireExe (Right([ "b" ], options))
 
         match parse with
-        | Right (x :: y, z) ->
+        | Right(x :: y, z) ->
           Assert.That(z, Is.SameAs options)
           Assert.That(x, Is.EqualTo "xxx")
           Assert.That(y, Is.EquivalentTo [ "b" ])
@@ -2239,7 +2239,7 @@ module AltCoverRunnerTests =
           Runner.J.requireExe (Right([ "a"; "b" ], options))
 
         match parse with
-        | Right ([], z) -> Assert.That(z, Is.SameAs options)
+        | Right([], z) -> Assert.That(z, Is.SameAs options)
       finally
         Runner.collect.Value <- false
         Runner.executable.Value <- None)
@@ -2259,7 +2259,7 @@ module AltCoverRunnerTests =
           Runner.J.requireExe (Right([ "b" ], options))
 
         match parse with
-        | Left (x, y) ->
+        | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
@@ -2311,7 +2311,7 @@ module AltCoverRunnerTests =
       let parse = Runner.J.requireRecorder input
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally
@@ -2331,7 +2331,7 @@ module AltCoverRunnerTests =
       let parse = Runner.J.requireRecorder input
 
       match parse with
-      | Left (x, y) ->
+      | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
     finally

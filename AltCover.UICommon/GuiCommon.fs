@@ -83,7 +83,7 @@ module GuiCommon =
     member internal self.Exists =
       match self with
       | File info -> info.Exists
-      | Embed (_, s) -> s |> String.IsNullOrWhiteSpace |> not
+      | Embed(_, s) -> s |> String.IsNullOrWhiteSpace |> not
       | Url u ->
         let request = createHttp (u)
         request.Method <- "HEAD"
@@ -98,7 +98,7 @@ module GuiCommon =
 
     member internal self.FullName =
       match self with
-      | Embed (name, _) -> name
+      | Embed(name, _) -> name
       | File info ->
         if info |> isNull then
           String.Empty
@@ -119,7 +119,7 @@ module GuiCommon =
       match self with
       | File info -> info.FullName |> File.ReadAllText
       | Url u -> readAllText u
-      | Embed (_, source) ->
+      | Embed(_, source) ->
         let data = Convert.FromBase64String source
         use raw = new MemoryStream(data)
         use expanded = new MemoryStream()

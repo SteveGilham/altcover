@@ -322,7 +322,9 @@ module internal Json =
         ))
 
       let tracked =
-        System.Collections.Generic.Dictionary<string, int * NativeJson.Times * NativeJson.Times>
+        System.Collections.Generic.Dictionary<string, int *
+        NativeJson.Times *
+        NativeJson.Times>
           ()
 
       x.Descendants(XName.Get "TrackedMethod")

@@ -623,7 +623,13 @@ type MainWindow() as this =
           Row = null }
 
       let addNode =
-        fun leaf (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon pc name (tip: string option) ->
+        fun
+          leaf
+          (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
+          icon
+          pc
+          name
+          (tip: string option) ->
           let newrow = makeNewRow pc leaf name icon
 
           (context.Row.Items :?> List<TreeViewItem>)
@@ -695,9 +701,11 @@ type MainWindow() as this =
       + AssemblyVersionInformation.AssemblyFileVersion
 
     this.FindControl<TextBlock>("Description").Text <-
-      String.Format(Globalization.CultureInfo.CurrentCulture,
-                    Resource.GetResourceString("aboutVisualizer.Comments"),
-                    "AvaloniaUI")
+      String.Format(
+        Globalization.CultureInfo.CurrentCulture,
+        Resource.GetResourceString("aboutVisualizer.Comments"),
+        "AvaloniaUI"
+      )
 
     let copyright =
       AssemblyVersionInformation.AssemblyCopyright

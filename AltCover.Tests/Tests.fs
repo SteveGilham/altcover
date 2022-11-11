@@ -3461,7 +3461,7 @@ module AltCoverTests =
       Report.reportGenerator ()
 
     let path = sample1path
-    Main.init()
+    Main.init ()
 
     try
       "Main"

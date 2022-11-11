@@ -618,7 +618,7 @@ module internal Visitor =
       let find = findClosestMatch file dict
 
       match find with
-      | Some (best, relative) ->
+      | Some(best, relative) ->
         let replacement =
           Path
             .Combine(relative, Path.GetFileName(file))
