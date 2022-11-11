@@ -4,8 +4,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # 8.5.84x (Habu series release 17)
-* To support Cake 3.0, move the Cake API assembly from AtCover.Api to a new package AltCover.Cake; thie contains libraries built against Cake 2.0.0 at netcoreapp3.1 as well as ones built against Cake 1.0.0 at netstandard2.0 (present but in practice obsolete).
-* [BREAKING] Rename `AltCover.Cake.DotNet.DotNetCoreTest` to `AltCover.Cake.DotNet.DotNetTest` to match the changes in the Cake APIs.
+* To support Cake 3.0, move the Cake API assembly from AtCover.Api to a new package AltCover.Cake; this contains libraries built against Cake 2.0.0 at `netcoreapp3.1` as well as the old ones built against Cake 1.0.0 at netstandard2.0 (present but in practice obsolete).
+* [BREAKING] Rename `AltCover.Cake.DotNet.DotNetCoreTest` to `AltCover.Cake.DotNet.DotNetTest` (even in the obsolete 1.0.0 build) to match the changes in the Cake APIs.  Similarly, in the version >= 2.0.0 build, the type `AltCover.Cake.DotNet` is now a `[CakeAliasCategory("DotNet")]` rather than `[CakeAliasCategory("DotNetCore")]`
 
 # 8.4.840 (Habu series release 16)
 * New option `--trivia` to omit coverage of sequence points containing no logic (no-op, return or unconditional branches only)

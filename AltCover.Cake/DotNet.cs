@@ -118,7 +118,11 @@ namespace AltCover.Cake
     /// <summary>
     /// Extensions for `dotnet`.  This class is a `[CakeAliasCategory("DotNet")]`
     /// </summary>
+#if NETSTANDARD2_0
+    [CakeAliasCategory("DotNetCore")]
+#else
     [CakeAliasCategory("DotNet")]
+#endif    
     public static class DotNet
     {
         /// <summary>
