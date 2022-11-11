@@ -22,17 +22,10 @@ Task("Build")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-#if CAKE_2
     DotNetBuild("./_DotnetTest/cake_dotnettest.fsproj", new DotNetBuildSettings
     {
         Configuration = configuration,
     });
-#else
-    DotNetCoreBuild("./_DotnetTest/cake_dotnettest.fsproj", new DotNetCoreBuildSettings
-    {
-        Configuration = configuration,
-    });
-#endif
 });
 
   class TestPrepareOptions : AltCover.Cake.PrepareOptions
@@ -53,12 +46,7 @@ Task("Test")
 
     var prep = new TestPrepareOptions();
 
-
-#if CAKE_2
-    prep.Report = "coverage.build2.cake." + cakeversion +".xml";
-#else
     prep.Report = "coverage.build.cake." + cakeversion +".xml";
-#endif
 
     var altcoverSettings = new CoverageSettings {
         PreparationPhase = prep,
@@ -66,7 +54,6 @@ Task("Test")
         Options = new TestOptions()
     };
 
-#if CAKE_2
     var testSettings = new DotNetTestSettings {
         Configuration = configuration,
         NoBuild = true,
@@ -74,16 +61,6 @@ Task("Test")
     
     testSettings.ArgumentCustomization = altcoverSettings.Concatenate(testSettings.ArgumentCustomization);
     DotNetTest("./_DotnetTest/cake_dotnettest.fsproj", testSettings);
-
-#else
-    var testSettings = new DotNetCoreTestSettings {
-        Configuration = configuration,
-        NoBuild = true,
-    };
-
-    DotNetCoreTest("./_DotnetTest/cake_dotnettest.fsproj", 
-                      testSettings, altcoverSettings);
-#endif
 });
 
 

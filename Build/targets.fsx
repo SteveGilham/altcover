@@ -3403,7 +3403,7 @@ _Target "Packaging" (fun _ ->
 
       (List.concat
           [ cakeFiles "lib/netstandard2.0/"
-            ////cake2Files "lib/netcoreapp3.1/"
+            cake2Files "lib/netcoreapp3.1/"
             cake0files
             housekeeping ],
        [("AltCover.Api", Version.Value)],
@@ -3665,7 +3665,7 @@ _Target "Unpack" (fun _ ->
         + "/lib/netstandard2.0/"
 
     let unpacked = "./_Packaging.api/Unpack/lib/netstandard2.0/"
-    let uncake = "./_Packaging.api/Unpack.cake/lib/netstandard2.0/"
+    let uncake = "./_Binaries/AltCover.Cake/Release+AnyCPU/netstandard2.0/"
 
     Shell.copyFile (unpacked + "AltCover.Cake.dll") (uncake + "AltCover.Cake.dll")
     Shell.copyFile (unpacked + "AltCover.Cake.xml") (uncake + "AltCover.Cake.xml")
@@ -4883,12 +4883,8 @@ _Target "Cake1Test" (fun _ ->
                 .Replace("{1}", Version.Value)
         )
 
-        let script2 = File.ReadAllText("./Build/build2.cake")
-        File.WriteAllText("./_Cake/build2.cake", script2)
-
-        [ (" --version 1.0.0", "build.cake")
-          ( " --version 2.3.0", "build.cake")
-          ( " --version 2.3.0", "build2.cake") ]
+        [ (" --version 2.0.0", "build.cake")
+          ( String.Empty, "build.cake") ]
         |> List.iter (fun (cakeversion, script) ->
             try
                 Actions.RunDotnet

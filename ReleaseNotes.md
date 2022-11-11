@@ -3,6 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
+# 8.4.84x (Habu series release 17)
+* To support Cake 3.0, move the Cake API assembly from AtCover.Api to a new package AltCover.Cake; thie contains libraries built against Cake 2.0.0 at netcoreapp3.1 as well as ones built against Cake 1.0.0 at netstandard2.0 (present but in practice obsolete).
+
 # 8.4.840 (Habu series release 16)
 * New option `--trivia` to omit coverage of sequence points containing no logic (no-op, return or unconditional branches only)
 * Added context for exceptions thrown during instrumentation.  This is aimed at tracing what was being inspected when exceptions arise from `Mono.Cecil` being presented with a new corner case.
