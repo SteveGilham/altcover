@@ -3282,6 +3282,15 @@ _Target "Packaging" (fun _ ->
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
+    let cake2Files where =
+        (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/netcoreapp3.1/AltCover.C*.*")
+        |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+        |> Seq.toList
+
+    let cake0files =
+        [ (Path.getFullName "Build/README.cake.md", Some "", None)
+          (Path.getFullName "./_Binaries/README.cake.html", Some "", None) ]
+
     let monitorFiles where =
         (!! "./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
@@ -3380,7 +3389,6 @@ _Target "Packaging" (fun _ ->
             resourceFiles "lib/net472/"
             libFiles "lib/net472/"
             netstdFiles "lib/netstandard2.0"
-            cakeFiles "lib/netstandard2.0/"
             dataFiles "lib/netstandard2.0/"
             monitorFiles "lib/netstandard2.0/"
             fakeFiles "lib/netstandard2.0/"
@@ -3392,6 +3400,16 @@ _Target "Packaging" (fun _ ->
        "_Packaging.api",
        "./_Generated/altcover.api.nuspec",
        "altcover.api")
+
+      (List.concat
+          [ cakeFiles "lib/netstandard2.0/"
+            ////cake2Files "lib/netcoreapp3.1/"
+            cake0files
+            housekeeping ],
+       [("AltCover.Api", Version.Value)],
+       "_Packaging.api",
+       "./_Generated/altcover.cake.nuspec",
+       "altcover.cake")
 
       (List.concat
           [ globalFiles
@@ -3562,6 +3580,13 @@ _Target "PrepareDotNetBuild" (fun _ ->
       (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None, "README.api.md", None)
 
       (String.Empty,
+       "./_Generated/altcover.cake.nuspec",
+       "AltCover (Cake API install)",
+       None,
+       "README.cake.md",
+       Some "codecoverage .net cake")
+
+      (String.Empty,
        "./_Generated/altcover.fake.nuspec",
        "AltCover (FAKE task helpers)",
        None,
@@ -3627,7 +3652,7 @@ _Target "Unpack" (fun _ ->
     !! "./_Pack*/*.nupkg"
     |> Seq.iter (fun nugget ->
         let packdir = Path.GetDirectoryName nugget
-        let unpack = Path.getFullName (packdir @@ "Unpack")
+        let unpack = (Path.getFullName (packdir @@ "Unpack")) + (if nugget.Contains "cake" then ".cake" else String.Empty)
         System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
 
     // C# style API documentation
@@ -3640,6 +3665,10 @@ _Target "Unpack" (fun _ ->
         + "/lib/netstandard2.0/"
 
     let unpacked = "./_Packaging.api/Unpack/lib/netstandard2.0/"
+    let uncake = "./_Packaging.api/Unpack.cake/lib/netstandard2.0/"
+
+    Shell.copyFile (unpacked + "AltCover.Cake.dll") (uncake + "AltCover.Cake.dll")
+    Shell.copyFile (unpacked + "AltCover.Cake.xml") (uncake + "AltCover.Cake.xml")
 
     Shell.copyFile (unpacked + "Cake.Core.dll") ((packageVersionPart "Cake.Core") + "Cake.Core.dll")
 
