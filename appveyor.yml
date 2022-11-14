@@ -25,9 +25,9 @@ build_script:
 
     & dotnet tool restore
 
-    & dotnet fake run .\Build\setup.fsx
+    & dotnet run --project .\Fake\Setup\Setup.fsproj
 
-    & dotnet fake run .\Build\build.fsx
+    & dotnet run --project .\Fake\Build\Build.fsproj
 
     $save = $LASTEXITCODE
     
