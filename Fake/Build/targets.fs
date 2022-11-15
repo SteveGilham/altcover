@@ -349,9 +349,15 @@ module Targets =
     else { o.WithCommon (tagOptions tag) with MSBuildParams = cliArguments }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
-    if dotnetVersion <> "7.0.100"
-    then{ o with MSBuildParams = cliTaggedArguments tag }
-    else { o.WithCommon (tagOptions tag) with MSBuildParams = cliArguments }
+    { o with MSBuildParams = cliTaggedArguments tag }
+
+  let runAltCoverWithTag tag (o: AltCoverCommand.Options) =
+    try
+      if dotnetVersion = "7.0.100"
+      then Environment.setEnvironVar "AltCoverTag" tag
+      AltCoverCommand.run o
+    finally
+      Environment.clearEnvironVar "AltCoverTag"
 
   let NuGetAltCover =
     toolPackages
@@ -2482,7 +2488,6 @@ module Targets =
 
         printfn "Unit test the instrumented code %s" project
 
-        // AltCoverTag =
         try
           project
           |> DotNet.test (fun p ->
@@ -2804,7 +2809,7 @@ module Targets =
           ToolPath = altcover
           ToolType = dotnetAltcover
           WorkingDirectory = "Samples/Sample7" }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "FSharpTests_"
 
       use reader = XmlReader.Create(simpleReport)
 
@@ -2910,7 +2915,7 @@ module Targets =
           ToolPath = altcover
           ToolType = dotnetAltcover
           WorkingDirectory = "Samples/Sample24" }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "AsyncAwaitTests_"
 
       use reader = XmlReader.Create(simpleReport)
 
@@ -3009,7 +3014,7 @@ module Targets =
             ToolPath = altcover
             ToolType = dotnetAltcover
             WorkingDirectory = "Samples/" + sample }
-        |> AltCoverCommand.run
+        |> runAltCoverWithTag "FSAsyncTests_"
 
         use reader = XmlReader.Create(simpleReport)
 
@@ -3101,7 +3106,7 @@ module Targets =
           ToolPath = altcover
           ToolType = dotnetAltcover
           WorkingDirectory = instrumented }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "FSharpTypesDotNetRunner_"
 
       Actions.ValidateFSharpTypesCoverage simpleReport)
 
@@ -4825,7 +4830,7 @@ module Targets =
           ToolPath = runner
           ToolType = dotnetAltcover
           WorkingDirectory = o }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "ReleaseFSharpTypesDotNetRunner_"
 
       Actions.ValidateFSharpTypesCoverage x)
 
@@ -4922,7 +4927,7 @@ module Targets =
               ToolPath = altcover
               ToolType = dotnetAltcover86
               WorkingDirectory = o }
-          |> AltCoverCommand.run
+          |> runAltCoverWithTag "ReleaseFSharpTypesX86DotNetRunner_"
 
           Actions.ValidateFSharpTypesCoverage x
         with x ->
@@ -4999,7 +5004,7 @@ module Targets =
           ToolPath = runner
           ToolType = dotnetAltcover
           WorkingDirectory = o }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "ReleaseXUnitFSharpTypesDotNetRunner_"
 
       Actions.ValidateFSharpTypesCoverage x)
 
@@ -5070,7 +5075,7 @@ module Targets =
           ToolPath = runner
           ToolType = dotnetAltcover
           WorkingDirectory = o }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "OpenCoverForPester_"
 
       // now do it for coverlet
       let report =
@@ -5355,7 +5360,7 @@ module Targets =
           ToolPath = runner
           ToolType = dotnetAltcover
           WorkingDirectory = o }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "ReleaseXUnitFSharpTypesShowVisualized_"
 
       do
         use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
@@ -5458,7 +5463,7 @@ module Targets =
           ToolPath = runner
           ToolType = dotnetAltcover
           WorkingDirectory = o }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "ReleaseXUnitFSharpTypesDotNetFullRunner_"
 
       Actions.CheckSample4Visits before x)
 
@@ -5573,7 +5578,7 @@ module Targets =
           ToolPath = runner
           ToolType = frameworkAltcover
           WorkingDirectory = o }
-      |> AltCoverCommand.run
+      |> runAltCoverWithTag "JsonReporting_"
 
       let checkSample4Visits from path =
         let coverageDocument =
