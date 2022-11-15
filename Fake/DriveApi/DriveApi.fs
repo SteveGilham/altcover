@@ -1,4 +1,4 @@
-﻿namespace AltCover
+﻿namespace ApiUse
 module DriveApi =
 
   open System
@@ -158,8 +158,7 @@ module DriveApi =
         InvalidOperationException("Non zero return code")
         |> raise)
 
-  [<EntryPoint>]
-  let main argv =
+  let Execute argv =
     argv
     |> Array.toList
     |> Context.FakeExecutionContext.Create false "build.fsx"
@@ -169,4 +168,10 @@ module DriveApi =
     _Target "DoIt" DoIt
     Target.runOrDefault "DoIt"
 
+#if !INTERACTIVE
+  [<EntryPoint>]
+  let main argv =
+    Execute argv
+
     0 // return an integer exit code
+#endif

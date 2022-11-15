@@ -7,3 +7,4 @@
 #r "nuget: Fake.Core.Target, 5.23.1"
 #r "nuget: Fake.DotNet.Cli, 5.23.1"
 #load "DriveApi.fs"
+ApiUse.DriveApi.Execute [||]
