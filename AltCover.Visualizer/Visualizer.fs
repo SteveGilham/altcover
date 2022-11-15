@@ -321,7 +321,7 @@ module private Gui =
 #endif
   // -------------------------- Tree View ---------------------------
   let mappings =
-    new Dictionary<TreePath, XPathNavigator>()
+    Dictionary<TreePath, XPathNavigator>()
   // -------------------------- Event handling  ---------------------------
 #if !NET472
   type TheTreeModel = ITreeModel
@@ -839,7 +839,7 @@ module private Gui =
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
            (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Resource.GetResourceString p, new System.Action<string>(a)))
+             o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
            (OptionSet())
 
     options.Parse(arguments) |> ignore

@@ -873,7 +873,7 @@ module internal Runner =
            :: CommandLine.error)) ] // default end stop
     |> List.fold
          (fun (o: OptionSet) (p, a) ->
-           o.Add(p, Output.resources.GetString(p), new System.Action<string>(a)))
+           o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
          (OptionSet())
 
   let internal requireRecorderTest recordingDirectory success fail =

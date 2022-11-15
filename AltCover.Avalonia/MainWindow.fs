@@ -523,7 +523,7 @@ type MainWindow() as this =
       this.FindControl<Menu>("Menu").IsVisible <- false
       this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
-    let openFile = new Event<String option>()
+    let openFile = Event<String option>()
 
     this.FindControl<MenuItem>("Open").Click
     |> Event.add (fun _ ->
