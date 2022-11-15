@@ -610,12 +610,12 @@ module CoverageFileTree =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.CoverageFileTree/step@120::Invoke(System.String,System.Int32)",
+                              "AltCover.CoverageFileTree/step@119::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethod@157::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                              "AltCover.CoverageFileTree/applyMethod@156::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
                             Justification = "Possibly too much work")>]
 ()
