@@ -337,11 +337,21 @@ module Targets =
   let buildWithCLIArguments (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliArguments }
 
+  let tagOptions tag (o: DotNet.Options) =
+    // NOTE: Recommendation is to not use this Field, but instead use the helper function in the Proc module
+    let m =
+      [ ("AltCoverTag", tag + "_") ] |> Map.ofList
+    { o with Environment = m }
+
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
-    { o with MSBuildParams = cliTaggedArguments tag }
+    if dotnetVersion <> "7.0.100"
+    then{ o with MSBuildParams = cliTaggedArguments tag }
+    else { o.WithCommon (tagOptions tag) with MSBuildParams = cliArguments }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
-    { o with MSBuildParams = cliTaggedArguments tag }
+    if dotnetVersion <> "7.0.100"
+    then{ o with MSBuildParams = cliTaggedArguments tag }
+    else { o.WithCommon (tagOptions tag) with MSBuildParams = cliArguments }
 
   let NuGetAltCover =
     toolPackages
