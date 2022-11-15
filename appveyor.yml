@@ -27,7 +27,7 @@ build_script:
 
     & dotnet run --project .\Fake\Setup\Setup.fsproj
 
-    & dotnet run --project .\Fake\Build\Build.fsproj
+    & dotnet run --project .\Fake\Build\Build.fsproj -t Appveyor
 
     $save = $LASTEXITCODE
     

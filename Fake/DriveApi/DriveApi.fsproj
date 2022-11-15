@@ -15,7 +15,6 @@
     <PackageReference Include="AltCover.Fake" Version="8.4.840" />
     <PackageReference Include="Fake.Core.Target" Version="5.23.1" />
     <PackageReference Include="Fake.DotNet.Cli" Version="5.23.1" />
-    <PackageReference Include="microsoft.netframework.referenceassemblies" Version="1.0.3" />
   </ItemGroup>
 
 </Project>

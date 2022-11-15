@@ -8009,6 +8009,7 @@ module Targets =
     _Target "All" ignore
     _Target "CppInline" CppInline
     _Target "None" ignore
+    _Target "Appveyor" ignore
 
     Target.description "ResetConsoleColours"
     Target.createFinal "ResetConsoleColours" resetColours
@@ -8030,6 +8031,7 @@ module Targets =
     "BuildRelease"
     ==> "BuildMonoSamples"
     ==> "Compilation"
+    ==> "Appveyor"
     |> ignore
 
     // My machine only
@@ -8177,6 +8179,7 @@ module Targets =
     "Compilation"
     ==> "PrepareFrameworkBuild"
     ==> "Packaging"
+    ==> "Appveyor"
     |> ignore
 
     "Compilation"
