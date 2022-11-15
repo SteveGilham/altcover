@@ -5947,27 +5947,36 @@ module Targets =
         Shell.copy "./_ApiUse/_DotnetTest" (!! "./Samples/Sample4/*.json")
         Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
+        let driver = File.ReadAllText "./Fake/Build/DriveApi.fsx"
+        File.WriteAllText(
+          "./_ApiUse/DriveApi.fsx",
+          String.Format(
+            driver,
+            Version.Value
+          )
+        )
+
         let config =
           """<?xml version="1.0" encoding="utf-8"?>
-    <configuration>
-      <packageSources>
-        <add key="local" value="{0}" />
-        <add key="local2" value="{1}" />
-        <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-      </packageSources>
-      <packageSourceMapping>
-        <!-- key value for <packageSource> should match key values from <packageSources> element -->
-        <packageSource key="local">
-          <package pattern="altcover.api" />
-        </packageSource>
-        <packageSource key="local2">
-          <package pattern="altcover.fake" />
-        </packageSource>
-        <packageSource key="nuget.org">
-          <package pattern="*" />
-        </packageSource>
-      </packageSourceMapping>
-    </configuration>"""
+<configuration>
+  <packageSources>
+    <add key="local" value="{0}" />
+    <add key="local2" value="{1}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+  <packageSourceMapping>
+    <!-- key value for <packageSource> should match key values from <packageSources> element -->
+    <packageSource key="local">
+      <package pattern="altcover.api" />
+    </packageSource>
+    <packageSource key="local2">
+      <package pattern="altcover.fake" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>"""
 
         File.WriteAllText(
           "./_ApiUse/NuGet.config",
@@ -5985,8 +5994,8 @@ module Targets =
 
         Actions.RunDotnet
           (withWorkingDirectoryOnly "_ApiUse")
-          "run"
-          "--project ./DriveApi.fsproj"
+          "fsi"
+          "./DriveApi.fsx"
           "running fake script returned with a non-zero exit code"
 
         let x =
@@ -7978,7 +7987,7 @@ module Targets =
     _Target "JsonReporting" JsonReporting
     _Target "MSBuildTest" MSBuildTest
     _Target "Cake1Test" Cake1Test
-    _Target "ApiUse" ignore // ApiUse
+    _Target "ApiUse" ApiUse
     _Target "DotnetTestIntegration" DotnetTestIntegration
     _Target "Issue20" Issue20
     _Target "Issue23" Issue23

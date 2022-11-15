@@ -1,169 +1,172 @@
-﻿open System
-open Fake.IO
-open Fake.Core
-open Fake.DotNet
-open Fake.IO
-open Fake.IO.FileSystemOperators
-open Fake.IO.Globbing
-open Fake.IO.Globbing.Operators
+﻿namespace AltCover
+module DriveApi =
 
-open AltCover.Fake.DotNet // extension methods
+  open System
+  open Fake.IO
+  open Fake.Core
+  open Fake.DotNet
+  open Fake.IO
+  open Fake.IO.FileSystemOperators
+  open Fake.IO.Globbing
+  open Fake.IO.Globbing.Operators
 
-let _Target s f =
-  Target.description s
-  Target.create s f
+  open AltCover.Fake.DotNet // extension methods
 
-let DoIt =
-  (fun _ ->
-    let expected = "{0}"
-    let acv = AltCover.Command.Version()
-    printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
+  let _Target s f =
+    Target.description s
+    Target.create s f
 
-    if acv.ToString() <> expected then
-      failwith "AltCover.Command.Version mismatch"
+  let DoIt =
+    (fun _ ->
+      let expected = "{0}"
+      let acv = AltCover.Command.Version()
+      printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
 
-    let acfv =
-      AltCover.Command.FormattedVersion()
+      if acv.ToString() <> expected then
+        failwith "AltCover.Command.Version mismatch"
 
-    printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
+      let acfv =
+        AltCover.Command.FormattedVersion()
 
-    if acfv <> (sprintf "AltCover version %s" expected) then
-      failwith "AltCover.Command.FormattedVersion mismatch"
+      printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
 
-    let afcv =
-      AltCover.Fake.Command.Version().ToString()
+      if acfv <> (sprintf "AltCover version %s" expected) then
+        failwith "AltCover.Command.FormattedVersion mismatch"
 
-    afcv |> Trace.trace
-    printfn "expected %A" expected
+      let afcv =
+        AltCover.Fake.Command.Version().ToString()
 
-    if afcv.ToString() <> expected then
-      failwith "AltCover.Fake.Command.Version mismatch"
+      afcv |> Trace.trace
+      printfn "expected %A" expected
 
-    let collect =
-      AltCover.AltCover.CollectOptions.Primitive
-        { AltCover.Primitive.CollectOptions.Create() with LcovReport = "x" }
+      if afcv.ToString() <> expected then
+        failwith "AltCover.Fake.Command.Version mismatch"
 
-    let prepare =
-      AltCover.AltCover.PrepareOptions.Primitive
-        { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
+      let collect =
+        AltCover.AltCover.CollectOptions.Primitive
+          { AltCover.Primitive.CollectOptions.Create() with LcovReport = "x" }
 
-    let forceTrue =
-      AltCover.DotNet.CLIOptions.Force true
+      let prepare =
+        AltCover.AltCover.PrepareOptions.Primitive
+          { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
 
-    printfn
-      "Test arguments : '%s'"
-      (AltCover.DotNet.ToTestArguments prepare collect forceTrue)
+      let forceTrue =
+        AltCover.DotNet.CLIOptions.Force true
 
-    let t =
-      DotNet.TestOptions.Create().WithAltCoverOptions prepare collect forceTrue
+      printfn
+        "Test arguments : '%s'"
+        (AltCover.DotNet.ToTestArguments prepare collect forceTrue)
 
-    printfn "WithAltCoverOptions returned '%A'" t.Common.CustomParams
+      let t =
+        DotNet.TestOptions.Create().WithAltCoverOptions prepare collect forceTrue
 
-    let p2 =
-      { AltCover.Primitive.PrepareOptions.Create() with
-          LocalSource = true
-          CallContext = [| "[Fact]"; "0" |]
-          AssemblyFilter = [| "xunit" |] }
+      printfn "WithAltCoverOptions returned '%A'" t.Common.CustomParams
 
-    let pp2 =
-      AltCover.AltCover.PrepareOptions.Primitive p2
+      let p2 =
+        { AltCover.Primitive.PrepareOptions.Create() with
+            LocalSource = true
+            CallContext = [| "[Fact]"; "0" |]
+            AssemblyFilter = [| "xunit" |] }
 
-    let c2 =
-      AltCover.Primitive.CollectOptions.Create()
+      let pp2 =
+        AltCover.AltCover.PrepareOptions.Primitive p2
 
-    let cc2 =
-      AltCover.AltCover.CollectOptions.Primitive c2
+      let c2 =
+        AltCover.Primitive.CollectOptions.Create()
 
-    let setBaseOptions (o: DotNet.Options) =
-      { o with
-          WorkingDirectory = Path.getFullName "./_DotnetTest"
-          Verbosity = Some DotNet.Verbosity.Minimal }
+      let cc2 =
+        AltCover.AltCover.CollectOptions.Primitive c2
 
-    let cliArguments =
-      { MSBuild.CliArguments.Create() with
-          ConsoleLogParameters = []
-          DistributedLoggers = None
-          Properties = []
-          DisableInternalBinLog = true }
+      let setBaseOptions (o: DotNet.Options) =
+        { o with
+            WorkingDirectory = Path.getFullName "./_DotnetTest"
+            Verbosity = Some DotNet.Verbosity.Minimal }
 
-    DotNet.test
-      (fun to' ->
-        { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 forceTrue with
-            MSBuildParams = cliArguments })
-      "apiuse_dotnettest.fsproj"
+      let cliArguments =
+        { MSBuild.CliArguments.Create() with
+            ConsoleLogParameters = []
+            DistributedLoggers = None
+            Properties = []
+            DisableInternalBinLog = true }
 
-    let im = AltCover.Command.ImportModule()
-    printfn "Import module %A" im
+      DotNet.test
+        (fun to' ->
+          { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 forceTrue with
+              MSBuildParams = cliArguments })
+        "apiuse_dotnettest.fsproj"
 
-    let importModule =
-      (im.Trim().Split()
-       |> Seq.take 2
-       |> Seq.skip 1
-       |> Seq.head)
-        .Trim([| '"' |])
+      let im = AltCover.Command.ImportModule()
+      printfn "Import module %A" im
 
-    let command =
-      "$ImportModule = '"
-      + importModule
-      + "'; Import-Module $ImportModule; ConvertTo-BarChart -?"
+      let importModule =
+        (im.Trim().Split()
+        |> Seq.take 2
+        |> Seq.skip 1
+        |> Seq.head)
+          .Trim([| '"' |])
 
-    let corePath =
-      AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.DotNetCore
+      let command =
+        "$ImportModule = '"
+        + importModule
+        + "'; Import-Module $ImportModule; ConvertTo-BarChart -?"
 
-    printfn "corePath = %A" corePath
+      let corePath =
+        AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.DotNetCore
 
-    let frameworkPath =
-      AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.Framework
+      printfn "corePath = %A" corePath
 
-    printfn "frameworkPath = %A" frameworkPath
+      let frameworkPath =
+        AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.Framework
 
-    if frameworkPath |> String.IsNullOrEmpty |> not then
-      let framework =
-        Fake.DotNet.ToolType.CreateFullFramework()
+      printfn "frameworkPath = %A" frameworkPath
+
+      if frameworkPath |> String.IsNullOrEmpty |> not then
+        let framework =
+          Fake.DotNet.ToolType.CreateFullFramework()
+
+        { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create
+            AltCoverFake.DotNet.Testing.AltCoverCommand.ArgumentType.GetVersion with
+            ToolType = framework
+            ToolPath = frameworkPath }
+        |> AltCoverFake.DotNet.Testing.AltCoverCommand.run
+
+      let core =
+        Fake.DotNet.ToolType.CreateFrameworkDependentDeployment id
 
       { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create
           AltCoverFake.DotNet.Testing.AltCoverCommand.ArgumentType.GetVersion with
-          ToolType = framework
-          ToolPath = frameworkPath }
+          ToolType = core
+          ToolPath = corePath }
       |> AltCoverFake.DotNet.Testing.AltCoverCommand.run
 
-    let core =
-      Fake.DotNet.ToolType.CreateFrameworkDependentDeployment id
+      let pwsh =
+        if Environment.isWindows then
+          Fake.Core.ProcessUtils.findLocalTool
+            String.Empty
+            "pwsh.exe"
+            [ Environment.environVar "ProgramFiles"
+              @@ "PowerShell" ]
+        else
+          "pwsh"
 
-    { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create
-        AltCoverFake.DotNet.Testing.AltCoverCommand.ArgumentType.GetVersion with
-        ToolType = core
-        ToolPath = corePath }
-    |> AltCoverFake.DotNet.Testing.AltCoverCommand.run
+      let r =
+        CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
+        |> CreateProcess.withWorkingDirectory "."
+        |> Proc.run
 
-    let pwsh =
-      if Environment.isWindows then
-        Fake.Core.ProcessUtils.findLocalTool
-          String.Empty
-          "pwsh.exe"
-          [ Environment.environVar "ProgramFiles"
-            @@ "PowerShell" ]
-      else
-        "pwsh"
+      if (r.ExitCode <> 0) then
+        InvalidOperationException("Non zero return code")
+        |> raise)
 
-    let r =
-      CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
-      |> CreateProcess.withWorkingDirectory "."
-      |> Proc.run
+  [<EntryPoint>]
+  let main argv =
+    argv
+    |> Array.toList
+    |> Context.FakeExecutionContext.Create false "build.fsx"
+    |> Context.RuntimeContext.Fake
+    |> Context.setExecutionContext
 
-    if (r.ExitCode <> 0) then
-      InvalidOperationException("Non zero return code")
-      |> raise)
+    _Target "DoIt" DoIt
+    Target.runOrDefault "DoIt"
 
-[<EntryPoint>]
-let main argv =
-  argv
-  |> Array.toList
-  |> Context.FakeExecutionContext.Create false "build.fsx"
-  |> Context.RuntimeContext.Fake
-  |> Context.setExecutionContext
-
-  _Target "DoIt" DoIt
-  Target.runOrDefault "DoIt"
-
-  0 // return an integer exit code
+    0 // return an integer exit code
