@@ -51,6 +51,7 @@
     <PackageVersion Include="OpenCover" Version="4.7.1221" />
     <PackageVersion Include="Pester" Version="5.3.3" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
+    <PackageVersion Include="System.Collections.Immutable" Version="1.7.1" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
     <PackageVersion Include="System.Reactive.Core" Version="5.0.0" />
     <PackageVersion Include="System.Security.Permissions" Version="7.0.0" />
