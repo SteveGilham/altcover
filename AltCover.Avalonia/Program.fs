@@ -27,7 +27,7 @@ module VisualizerMain =
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
            (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Resource.GetResourceString p, new System.Action<string>(a)))
+             o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
            (OptionSet())
 
     options.Parse(arguments) |> ignore

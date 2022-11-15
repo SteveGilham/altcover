@@ -27,6 +27,9 @@ open AltCover
          SupportsShouldProcess = true,
          ConfirmImpact = ConfirmImpact.Medium)>]
 [<OutputType([| "System.Void" |]); AutoSerializable(false)>]
+[<SuppressMessage("Gendarme.Rules.Maintainability",
+                  "AvoidLackOfCohesionOfMethodsRule",
+                  Justification = "Unchanged code threw this at dotnet 7")>]                  
 type AddAcceleratorCommand() =
   inherit PSCmdlet()
 
@@ -58,7 +61,7 @@ type AddAcceleratorCommand() =
               ValueFromPipelineByPropertyName = false)>]
   member val XDocument = SwitchParameter(false) with get, set
 
-  member val private TypeMap = new Dictionary<string, Type>()
+  member val private TypeMap = Dictionary<string, Type>()
 
   /// <summary>
   /// <para type="description">Initialise the map of accelerator to type</para>

@@ -224,7 +224,7 @@ type MergeOpenCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   member val OutputFile: string = String.Empty with get, set
 
-  member val private Files = new List<XDocument>()
+  member val private Files = List<XDocument>()
 
   override self.BeginProcessing() = self.Files.Clear()
 

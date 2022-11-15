@@ -512,7 +512,7 @@ module internal Instrument =
       // The return value is for unit testing purposes, only
       // The side-effects are what is important.
       let assemblyReferenceSubstitutions =
-        new Dictionary<String, String>()
+        Dictionary<String, String>()
 
       interestingReferences
       |> Seq.iter (fun r ->

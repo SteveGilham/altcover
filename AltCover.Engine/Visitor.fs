@@ -275,13 +275,13 @@ module internal CoverageParameters =
   let internal collect = ref false // ddFlag
 
   let internal trackingNames =
-    new List<String>()
+    List<String>()
 
   let internal topLevel =
-    new List<FilterClass>()
+    List<FilterClass>()
 
   let internal nameFilters =
-    new List<FilterClass>()
+    List<FilterClass>()
 
   let mutable internal staticFilter: StaticFilter option =
     None
@@ -434,7 +434,7 @@ module internal CoverageParameters =
     None
 
   let internal keys =
-    new Dictionary<UInt64, KeyRecord>()
+    Dictionary<UInt64, KeyRecord>()
 
   let internal add (key: StrongNameKeyData) =
     let index = KeyStore.keyToIndex key
