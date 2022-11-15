@@ -7979,7 +7979,7 @@ module Targets =
     _Target "JsonReporting" JsonReporting
     _Target "MSBuildTest" MSBuildTest
     _Target "Cake1Test" Cake1Test
-    _Target "ApiUse" ApiUse
+    _Target "ApiUse" ignore // ApiUse
     _Target "DotnetTestIntegration" DotnetTestIntegration
     _Target "Issue20" Issue20
     _Target "Issue23" Issue23
