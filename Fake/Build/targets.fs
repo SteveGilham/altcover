@@ -5952,7 +5952,9 @@ module Targets =
           "./_ApiUse/DriveApi.fsx",
           String.Format(
             driver,
-            Version.Value
+            Version.Value,
+            Path.getFullName "./_Packaging.api",
+            Path.getFullName "./_Packaging.fake"
           )
         )
 
