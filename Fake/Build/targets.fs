@@ -5996,6 +5996,12 @@ module Targets =
 
         Actions.RunDotnet
           (withWorkingDirectoryOnly "_ApiUse")
+          "restore"
+          "./DriveApi.fsproj"
+          "restoring fake script returned with a non-zero exit code"
+
+        Actions.RunDotnet
+          (withWorkingDirectoryOnly "_ApiUse")
           "fsi"
           "./DriveApi.fsx"
           "running fake script returned with a non-zero exit code"
