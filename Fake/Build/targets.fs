@@ -339,9 +339,24 @@ module Targets =
 
   let tagOptions tag (o: DotNet.Options) =
     // NOTE: Recommendation is to not use this Field, but instead use the helper function in the Proc module
-    let m =
-      [ ("AltCoverTag", tag + "_") ] |> Map.ofList
-    { o with Environment = m }
+    { o with Environment = o.Environment |> Map.add "AltCoverTag" (tag + "_") }
+
+  let paramsToEnvironment (o: DotNet.Options) =
+    o.CustomParams
+    |> Option.map (fun x -> let bits = x.Split ("/p:", StringSplitOptions.RemoveEmptyEntries)
+                            bits
+                            |> Array.fold (fun (o2: DotNet.Options) flag -> let line = flag.TrimEnd([| ' '; '"' |])
+                                                                            let split = if line.Contains "=\""
+                                                                                        then "=\""
+                                                                                        else "="
+                                                                            let parts = line.Split (split, StringSplitOptions.RemoveEmptyEntries)
+                                                                            { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] }) o)
+    |> Option.defaultValue o
+
+  let testWithEnvironment (o: Fake.DotNet.DotNet.TestOptions) =
+    if dotnetVersion <> "7.0.100"
+    then o
+    else {o with Common = {paramsToEnvironment o.Common with CustomParams = None }}
 
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
     if dotnetVersion <> "7.0.100"
@@ -2655,6 +2670,7 @@ module Targets =
                 prep
                 coll
                 ForceTrue
+              |> testWithEnvironment
               |> (testWithCLITaggedArguments "UnitTestWithCoreRunner"))
             proj)
       finally
@@ -6160,6 +6176,7 @@ module Targets =
               pp1
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           "_DotnetTest.fsproj"
 
@@ -6177,6 +6194,7 @@ module Targets =
               pp1b
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           "_DotnetTestJson.fsproj" // TODO validate output as per JsonReporting
 
@@ -6199,6 +6217,7 @@ module Targets =
               pp1a
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           "_DotnetTestInPlace.fsproj"
 
@@ -6238,6 +6257,7 @@ module Targets =
                 pf0
                 cc0
                 ForceTrue
+              |> testWithEnvironment
               |> testWithCLIArguments)
             "_DotnetTestFailInstrumentation.fsproj"
 
@@ -6264,6 +6284,7 @@ module Targets =
                 pf0a
                 cc0
                 ForceTrue
+              |> testWithEnvironment
               |> testWithCLIArguments)
             "_DotnetTestFailInstrumentationInPlace.fsproj"
 
@@ -6306,6 +6327,7 @@ module Targets =
                 pf1
                 cc0
                 ForceTrue
+              |> testWithEnvironment
               |> testWithCLIArguments)
             "_DotnetTestFail.fsproj"
 
@@ -6355,6 +6377,7 @@ module Targets =
                 pf1a
                 cc0
                 ForceTrue
+              |> testWithEnvironment
               |> testWithCLIArguments)
             "_DotnetTestFailInPlace.fsproj"
 
@@ -6422,6 +6445,7 @@ module Targets =
                 pf1
                 cc0
                 FailTrue
+              |> testWithEnvironment
               |> testWithCLIArguments)
             "_DotnetTestFailFast.fsproj"
 
@@ -6470,6 +6494,7 @@ module Targets =
                 pf1a
                 cc0
                 FailTrue
+              |> testWithEnvironment
               |> testWithCLIArguments)
             "_DotnetTestFailFastInPlace.fsproj"
 
@@ -6532,6 +6557,7 @@ module Targets =
               pp2a
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6548,6 +6574,7 @@ module Targets =
               pp2
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6640,6 +6667,7 @@ module Targets =
                pp3a
                cc0
                ForceTrue)
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6684,6 +6712,7 @@ module Targets =
                pp3
                cc0
                ForceTrue)
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6754,6 +6783,7 @@ module Targets =
                pp29
                cc0
                ForceTrueFast)
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6790,6 +6820,7 @@ module Targets =
                  pp4
                  cc0
                  ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6902,6 +6933,7 @@ module Targets =
               pp0
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -6945,6 +6977,7 @@ module Targets =
               pp1
               cc0
               ForceTrue
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -7017,6 +7050,7 @@ module Targets =
                ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
       finally
@@ -7096,6 +7130,7 @@ module Targets =
                ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -7193,6 +7228,7 @@ module Targets =
                ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -7263,6 +7299,7 @@ module Targets =
                ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
 
@@ -7324,6 +7361,7 @@ module Targets =
                ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
+            |> testWithEnvironment
             |> testWithCLIArguments)
           "Issue72.sln"
 
@@ -7520,6 +7558,7 @@ module Targets =
           { Primitive.PrepareOptions.Create() with
               AssemblyFilter =
                 [| "nunit"
+                   "NUnit3"
                    "Adapter"
                    "FSharp"
                    "AltCover" |] }
@@ -7543,6 +7582,7 @@ module Targets =
                ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
       finally
@@ -7631,6 +7671,7 @@ module Targets =
                pp0
                cc0
                ForceTrueOnly)
+            |> testWithEnvironment
             |> testWithCLIArguments)
           ""
       finally
