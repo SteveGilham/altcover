@@ -16,6 +16,26 @@ module DriveApi =
     Target.description s
     Target.create s f
 
+  let dotnetVersion =
+    DotNet.getVersion id
+
+  let paramsToEnvironment (o: DotNet.Options) =
+    o.CustomParams
+    |> Option.map (fun x -> let bits = x.Split ("/p:", StringSplitOptions.RemoveEmptyEntries)
+                            bits
+                            |> Array.fold (fun (o2: DotNet.Options) flag -> let line = flag.TrimEnd([| ' '; '"' |])
+                                                                            let split = if line.Contains "=\""
+                                                                                        then "=\""
+                                                                                        else "="
+                                                                            let parts = line.Split (split, StringSplitOptions.RemoveEmptyEntries)
+                                                                            { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] }) o)
+    |> Option.defaultValue o
+
+  let testWithEnvironment (o: Fake.DotNet.DotNet.TestOptions) =
+    if dotnetVersion <> "7.0.100"
+    then o
+    else {o with Common = {paramsToEnvironment o.Common with CustomParams = None }}
+
   let DoIt =
     (fun _ ->
       let expected = "{0}"
@@ -92,7 +112,8 @@ module DriveApi =
       DotNet.test
         (fun to' ->
           { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 forceTrue with
-              MSBuildParams = cliArguments })
+              MSBuildParams = cliArguments } 
+              |>testWithEnvironment)
         "apiuse_dotnettest.fsproj"
 
       let im = AltCover.Command.ImportModule()
