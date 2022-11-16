@@ -21,7 +21,7 @@
       Report="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
       AssemblyFilter="@(AssemblyFilter)" />
-    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f net6.0 /p:AltCoverTag=$(AltCoverTag)" />
+    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f net6.0 /p:AltCoverTag=$(AltCoverTag)" EnvironmentVariables="AltCoverTag=$(AltCoverTag)" />
     <AltCover.Collect
       RecorderDirectory="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net6.0" />
   </Target>
