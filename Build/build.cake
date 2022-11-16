@@ -6,6 +6,7 @@
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Debug");
 var cakeversion = Argument("cakeversion", "Unknown");
+var dotnetVersion = Argument("dotnetVersion", "Unknown");
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -41,10 +42,11 @@ Task("Test")
     .Does(() =>
 {
     using AltCover.Cake;
+    using FSDotNet = AltCover.DotNet;
 
     var testv = Version();
     var im = ImportModule();
-    Console.WriteLine("Version = {1} Import = '{2}'", null, testv, im);
+    Console.WriteLine("Cake Version = {1} DotnetVersion = '{3}' Import = '{2}'", null, testv, im, dotnetVersion);
 
     var prep = new TestPrepareOptions() {
       CakeVersion = cakeversion
@@ -60,8 +62,23 @@ Task("Test")
         Configuration = configuration,
         NoBuild = true,
     };
-    
-    testSettings.ArgumentCustomization = altcoverSettings.Concatenate(testSettings.ArgumentCustomization);
+
+    if (dotnetVersion != "7.0.100")
+    {
+      testSettings.ArgumentCustomization = altcoverSettings.Concatenate(testSettings.ArgumentCustomization);
+    }
+    else
+    {
+      var args =  FSDotNet.ToTestArgumentList(
+                      altcoverSettings.PreparationPhase,
+                      altcoverSettings.CollectionPhase,
+                      altcoverSettings.Options).ToArray();
+
+      Array.ForEach(args, 
+        s => { var bits = s.Substring(3).Split('=', StringSplitOptions.RemoveEmptyEntries);
+               testSettings.EnvironmentVariables[bits[0]] = bits[1].Trim('"');});
+    }
+
     DotNetTest("./_DotnetTest/cake_dotnettest.fsproj", testSettings);
 });
 

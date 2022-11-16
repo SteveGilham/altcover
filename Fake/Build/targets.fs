@@ -5868,7 +5868,8 @@ module Targets =
               (script
                + " --rebuild=true \"--cakeversion="
                + cv
-               + "\"")
+               + "\" --dotnetVersion="
+               + dotnetVersion)
               "running cake script returned with a non-zero exit code"
 
             let x =
