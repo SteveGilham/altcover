@@ -104,7 +104,7 @@ type ReportFormat =
                   Justification = "Has lots of parameters to pass")>]
 [<SuppressMessage("Gendarme.Rules.Maintainability",
                   "AvoidLackOfCohesionOfMethodsRule",
-                  Justification = "Unchanged code threw this at dotnet 7")>]                  
+                  Justification = "Unchanged code threw this at dotnet 7")>]
 [<SuppressMessage("Microsoft.PowerShell",
                   "PS1101:AllCmdletsShouldAcceptPipelineInput",
                   Justification = "No valid input")>]

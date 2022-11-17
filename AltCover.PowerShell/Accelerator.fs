@@ -29,7 +29,7 @@ open AltCover
 [<OutputType([| "System.Void" |]); AutoSerializable(false)>]
 [<SuppressMessage("Gendarme.Rules.Maintainability",
                   "AvoidLackOfCohesionOfMethodsRule",
-                  Justification = "Unchanged code threw this at dotnet 7")>]                  
+                  Justification = "Unchanged code threw this at dotnet 7")>]
 type AddAcceleratorCommand() =
   inherit PSCmdlet()
 

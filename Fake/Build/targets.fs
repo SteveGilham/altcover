@@ -343,33 +343,48 @@ module Targets =
 
   let paramsToEnvironment (o: DotNet.Options) =
     o.CustomParams
-    |> Option.map (fun x -> let bits = x.Split ("/p:", StringSplitOptions.RemoveEmptyEntries)
-                            bits
-                            |> Array.fold (fun (o2: DotNet.Options) flag -> let line = flag.TrimEnd([| ' '; '"' |])
-                                                                            let split = if line.Contains "=\""
-                                                                                        then "=\""
-                                                                                        else "="
-                                                                            let parts = line.Split (split, StringSplitOptions.RemoveEmptyEntries)
-                                                                            { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] }) o)
+    |> Option.map (fun x ->
+      let bits =
+        x.Split("/p:", StringSplitOptions.RemoveEmptyEntries)
+
+      bits
+      |> Array.fold
+           (fun (o2: DotNet.Options) flag ->
+             let line = flag.TrimEnd([| ' '; '"' |])
+
+             let split =
+               if line.Contains "=\"" then
+                 "=\""
+               else
+                 "="
+
+             let parts =
+               line.Split(split, StringSplitOptions.RemoveEmptyEntries)
+
+             { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] })
+           o)
     |> Option.defaultValue o
 
   let testWithEnvironment (o: Fake.DotNet.DotNet.TestOptions) =
-    if dotnetVersion <> "7.0.100"
-    then o
-    else {o with Common = {paramsToEnvironment o.Common with CustomParams = None }}
+    if dotnetVersion <> "7.0.100" then
+      o
+    else
+      { o with Common = { paramsToEnvironment o.Common with CustomParams = None } }
 
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
-    if dotnetVersion <> "7.0.100"
-    then{ o with MSBuildParams = cliTaggedArguments tag }
-    else { o.WithCommon (tagOptions tag) with MSBuildParams = cliArguments }
+    if dotnetVersion <> "7.0.100" then
+      { o with MSBuildParams = cliTaggedArguments tag }
+    else
+      { o.WithCommon(tagOptions tag) with MSBuildParams = cliArguments }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliTaggedArguments tag }
 
   let runAltCoverWithTag tag (o: AltCoverCommand.Options) =
     try
-      if dotnetVersion = "7.0.100"
-      then Environment.setEnvironVar "AltCoverTag" tag
+      if dotnetVersion = "7.0.100" then
+        Environment.setEnvironVar "AltCoverTag" tag
+
       AltCoverCommand.run o
     finally
       Environment.clearEnvironVar "AltCoverTag"
@@ -3131,7 +3146,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       System.IO.Directory.GetDirectories("./_Reports", "unzi*")
-      |> Seq.iter (fun f -> Directory.Delete(f,true))
+      |> Seq.iter (fun f -> Directory.Delete(f, true))
 
       !!(@"./_Reports/AltCoverFSharpTypesDotNetCollecter.xml.*")
       |> Seq.iter File.Delete
@@ -5983,7 +5998,9 @@ module Targets =
         Shell.copy "./_ApiUse/_DotnetTest" (!! "./Samples/Sample4/*.json")
         Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
-        let driver = File.ReadAllText "./Fake/Build/DriveApi.fsx"
+        let driver =
+          File.ReadAllText "./Fake/Build/DriveApi.fsx"
+
         File.WriteAllText(
           "./_ApiUse/DriveApi.fsx",
           String.Format(

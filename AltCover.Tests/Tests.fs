@@ -5669,7 +5669,9 @@ module AltCoverTests =
         |> Seq.map (fun x -> x.Value)
         |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
         |> Seq.sort
-        |> Seq.filter (fun x -> x.EndsWith("Attribute", StringComparison.Ordinal) |> not)
+        |> Seq.filter (fun x ->
+          x.EndsWith("Attribute", StringComparison.Ordinal)
+          |> not)
         |> Seq.toList
 
       let methods =

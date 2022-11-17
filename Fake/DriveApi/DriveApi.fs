@@ -1,4 +1,5 @@
 ﻿namespace ApiUse
+
 module DriveApi =
 
   open System
@@ -16,25 +17,37 @@ module DriveApi =
     Target.description s
     Target.create s f
 
-  let dotnetVersion =
-    DotNet.getVersion id
+  let dotnetVersion = DotNet.getVersion id
 
   let paramsToEnvironment (o: DotNet.Options) =
     o.CustomParams
-    |> Option.map (fun x -> let bits = x.Split ("/p:", StringSplitOptions.RemoveEmptyEntries)
-                            bits
-                            |> Array.fold (fun (o2: DotNet.Options) flag -> let line = flag.TrimEnd([| ' '; '"' |])
-                                                                            let split = if line.Contains "=\""
-                                                                                        then "=\""
-                                                                                        else "="
-                                                                            let parts = line.Split (split, StringSplitOptions.RemoveEmptyEntries)
-                                                                            { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] }) o)
+    |> Option.map (fun x ->
+      let bits =
+        x.Split("/p:", StringSplitOptions.RemoveEmptyEntries)
+
+      bits
+      |> Array.fold
+           (fun (o2: DotNet.Options) flag ->
+             let line = flag.TrimEnd([| ' '; '"' |])
+
+             let split =
+               if line.Contains "=\"" then
+                 "=\""
+               else
+                 "="
+
+             let parts =
+               line.Split(split, StringSplitOptions.RemoveEmptyEntries)
+
+             { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] })
+           o)
     |> Option.defaultValue o
 
   let testWithEnvironment (o: Fake.DotNet.DotNet.TestOptions) =
-    if dotnetVersion <> "7.0.100"
-    then o
-    else {o with Common = {paramsToEnvironment o.Common with CustomParams = None }}
+    if dotnetVersion <> "7.0.100" then
+      o
+    else
+      { o with Common = { paramsToEnvironment o.Common with CustomParams = None } }
 
   let DoIt =
     (fun _ ->
@@ -48,7 +61,10 @@ module DriveApi =
       let acfv =
         AltCover.Command.FormattedVersion()
 
-      printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
+      printfn
+        "AltCover.Command.FormattedVersion - Returned '%s' expected %A"
+        acfv
+        expected
 
       if acfv <> (sprintf "AltCover version %s" expected) then
         failwith "AltCover.Command.FormattedVersion mismatch"
@@ -112,8 +128,8 @@ module DriveApi =
       DotNet.test
         (fun to' ->
           { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 forceTrue with
-              MSBuildParams = cliArguments } 
-              |>testWithEnvironment)
+              MSBuildParams = cliArguments }
+          |> testWithEnvironment)
         "apiuse_dotnettest.fsproj"
 
       let im = AltCover.Command.ImportModule()
@@ -121,9 +137,9 @@ module DriveApi =
 
       let importModule =
         (im.Trim().Split()
-        |> Seq.take 2
-        |> Seq.skip 1
-        |> Seq.head)
+         |> Seq.take 2
+         |> Seq.skip 1
+         |> Seq.head)
           .Trim([| '"' |])
 
       let command =

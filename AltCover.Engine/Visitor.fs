@@ -274,11 +274,9 @@ module internal CoverageParameters =
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
 
-  let internal trackingNames =
-    List<String>()
+  let internal trackingNames = List<String>()
 
-  let internal topLevel =
-    List<FilterClass>()
+  let internal topLevel = List<FilterClass>()
 
   let internal nameFilters =
     List<FilterClass>()
