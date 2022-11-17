@@ -3130,6 +3130,12 @@ module Targets =
     (fun _ ->
       Directory.ensure "./_Reports"
 
+      System.IO.Directory.GetDirectories("./_Reports", "unzi*")
+      |> Seq.iter (fun f -> Directory.Delete(f,true))
+
+      !!(@"./_Reports/AltCoverFSharpTypesDotNetCollecter.xml.*")
+      |> Seq.iter File.Delete
+
       let altcover =
         Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
