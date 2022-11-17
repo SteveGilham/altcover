@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
 		Build\DriveApi.fsx = Build\DriveApi.fsx
+		..\Build\Pester.Tests.ps1 = ..\Build\Pester.Tests.ps1
 	EndProjectSection
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DriveApi", "DriveApi\DriveApi.fsproj", "{40C86F85-5C0A-4B96-9BC9-09DC18990338}"

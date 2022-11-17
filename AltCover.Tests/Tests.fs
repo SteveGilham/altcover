@@ -72,7 +72,7 @@ module AltCoverTests =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net6.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net7.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
@@ -80,12 +80,13 @@ module AltCoverTests =
 
   let monoSample1path =
     Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
-#if !NET472
-  let sample1path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net6.0/Sample1.dll")
 
+  let sample1path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
+
+#if !NET472
   let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll")
 
   let sample8path =
     Path.Combine(
@@ -93,9 +94,6 @@ module AltCoverTests =
       "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll"
     )
 #else
-  let sample1path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
-
   let sample4path =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
@@ -3655,7 +3653,7 @@ module AltCoverTests =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll")
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll")
 
       "Main"
       |> (Regex
@@ -3912,7 +3910,7 @@ module AltCoverTests =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("net6.0", "netstandard2.0")
+        .Replace("net7.0", "netstandard2.0")
 
     let path6 =
       sample4path
@@ -5643,9 +5641,9 @@ module AltCoverTests =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net6.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net7.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net6.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net7.0 not built")
 
     try
       "Program"
@@ -5671,11 +5669,13 @@ module AltCoverTests =
         |> Seq.map (fun x -> x.Value)
         |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
         |> Seq.sort
+        |> Seq.filter (fun x -> x.EndsWith("Attribute", StringComparison.Ordinal) |> not)
         |> Seq.toList
 
       let methods =
         doc.Descendants(XName.Get "Name")
         |> Seq.map (fun x -> x.Value)
+        |> Seq.filter (fun x -> x.Contains("Attribute::.ctor") |> not)
         |> Seq.sort
         |> Seq.toList
 

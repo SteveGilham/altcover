@@ -4756,7 +4756,7 @@ module AltCoverTests3 =
       Path.Combine(
         SolutionRoot.location,
 #if !NET472
-        "_Binaries/Sample4/Debug+AnyCPU/net6.0"
+        "_Binaries/Sample4/Debug+AnyCPU/net7.0"
       )
 #else
         "_Binaries/Sample4/Debug+AnyCPU/net472"

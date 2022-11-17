@@ -2396,7 +2396,7 @@ module AltCoverRunnerTests =
     let path =
       Path.Combine(
         SolutionRoot.location,
-        "_Binaries/Sample12/Debug+AnyCPU/net6.0/Sample12.dll"
+        "_Binaries/Sample12/Debug+AnyCPU/net7.0/Sample12.dll"
       )
 #endif
 
