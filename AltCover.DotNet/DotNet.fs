@@ -69,13 +69,10 @@ module DotNet =
       member self.ShowSummary = self.ShowSummary
 
   module internal I =
-    let private arg name s =
-      (sprintf """/p:AltCover%s="%s" """ name s).Trim()
+    let private arg name (s: string) = (sprintf """AltCover%s""" name, s)
 
     let private listArg name (s: String seq) =
-      (sprintf """/p:AltCover%s="%s" """ name
-       <| String.Join("|", s))
-        .Trim()
+      (sprintf """AltCover%s""" name, String.Join("|", s))
 
     let private isSet s = s |> String.IsNullOrWhiteSpace |> not
 
@@ -143,7 +140,7 @@ module DotNet =
 
     let internal toSharedFromValueArgumentList
       (verbosity: System.Diagnostics.TraceLevel)
-      : ((string -> obj -> bool -> string * bool) * string * obj * bool) list =
+      : ((string -> obj -> bool -> (string * string) * bool) * string * obj * bool) list =
       [
         // poss s <> Info
         fromValue,
@@ -168,9 +165,9 @@ module DotNet =
   // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
-  let ToTestArgumentList
+  let ToTestPropertiesList
 #else
-  let internal toTestArgumentList
+  let internal toTestPropertiesList
 #endif
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
@@ -208,6 +205,25 @@ module DotNet =
     |> List.map fst
 
 #if RUNNER
+  let ToTestArgumentList
+#else
+  let internal toTestArgumentList
+#endif
+    (prepare: Abstract.IPrepareOptions)
+    (collect: Abstract.ICollectOptions)
+    (options: ICLIOptions)
+    =
+#if RUNNER
+    ToTestPropertiesList
+#else
+    toTestPropertiesList
+#endif
+      prepare
+      collect
+      options
+    |> List.map (fun (name, value) -> sprintf """/p:%s="%s%c""" name value '"')
+
+#if RUNNER
   let ToTestArguments
 #else
   let internal toTestArguments
@@ -225,3 +241,25 @@ module DotNet =
       collect
       options
     |> I.join
+
+  let ImportModuleProperties =
+    [ ("AltCoverImportModule", "true") ]
+
+  let GetVersionProperties =
+    [ ("AltCoverGetVersion", "true") ]
+
+#if RUNNER
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target = "<StartupCode$AltCover-DotNet>.$DotNet.#.cctor()",
+                            Justification = "Compiler generated")>]
+#else
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target =
+                              "<StartupCode$AltCover-Fake-DotNet-Testing-AltCover>.$DotNet.#.cctor()",
+                            Justification = "Compiler generated")>]
+#endif
+()
