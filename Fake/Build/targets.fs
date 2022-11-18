@@ -5,7 +5,6 @@ module Targets =
 
   open System
   open System.IO
-  open System.IO
   open System.Reflection
   open System.Text
   open System.Xml
@@ -14,7 +13,7 @@ module Targets =
 
   open Actions
   open AltCode.Fake.DotNet
-  open AltCoverFake.DotNet.DotNet
+
   open AltCoverFake.DotNet.Testing
 
   open Fake.Core
@@ -341,35 +340,29 @@ module Targets =
     // NOTE: Recommendation is to not use this Field, but instead use the helper function in the Proc module
     { o with Environment = o.Environment |> Map.add "AltCoverTag" (tag + "_") }
 
-  let paramsToEnvironment (o: DotNet.Options) =
-    o.CustomParams
-    |> Option.map (fun x ->
-      let bits =
-        x.Split("/p:", StringSplitOptions.RemoveEmptyEntries)
+  let withEnvironment l (o: DotNet.Options) =
+    let before = o.Environment |> Map.toList
 
-      bits
-      |> Array.fold
-           (fun (o2: DotNet.Options) flag ->
-             let line = flag.TrimEnd([| ' '; '"' |])
+    let after =
+      [ l; before ] |> List.concat |> Map.ofList
 
-             let split =
-               if line.Contains "=\"" then
-                 "=\""
-               else
-                 "="
+    { o with Environment = after }
 
-             let parts =
-               line.Split(split, StringSplitOptions.RemoveEmptyEntries)
+  let withTestEnvironment l (o: DotNet.TestOptions) =
+    { o with Common = withEnvironment l o.Common }
 
-             { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] })
-           o)
-    |> Option.defaultValue o
+  let withAltCoverOptions
+    (prepare: Abstract.IPrepareOptions)
+    (collect: Abstract.ICollectOptions)
+    (force: DotNet.ICLIOptions)
+    =
+    withTestEnvironment (DotNet.toTestPropertiesList prepare collect force)
 
-  let testWithEnvironment (o: Fake.DotNet.DotNet.TestOptions) =
-    if dotnetVersion <> "7.0.100" then
-      o
-    else
-      { o with Common = { paramsToEnvironment o.Common with CustomParams = None } }
+  let withAltCoverImportModule =
+    withTestEnvironment DotNet.ImportModuleProperties
+
+  let withAltCoverGetVersion =
+    withTestEnvironment DotNet.GetVersionProperties
 
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
     if dotnetVersion <> "7.0.100" then
@@ -2681,11 +2674,7 @@ module Targets =
               { to'.WithCommon(withWorkingDirectoryVM testdir) with
                   Framework = Some "net7.0"
                   NoBuild = proj.Contains("Recorder") }
-                .WithAltCoverOptions
-                prep
-                coll
-                ForceTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions prep coll ForceTrue
               |> (testWithCLITaggedArguments "UnitTestWithCoreRunner"))
             proj)
       finally
@@ -6190,15 +6179,10 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            (to'
-              .WithCommon(withWorkingDirectoryVM "_DotnetTest")
-              .WithAltCoverGetVersion()
-              .WithAltCoverImportModule())
-              .WithAltCoverOptions
-              pp1
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")
+             |> withAltCoverGetVersion
+             |> withAltCoverImportModule)
+            |> withAltCoverOptions pp1 cc0 ForceTrue
             |> testWithCLIArguments)
           "_DotnetTest.fsproj"
 
@@ -6208,15 +6192,10 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            (to'
-              .WithCommon(withWorkingDirectoryVM "_DotnetTestJson")
-              .WithAltCoverGetVersion()
-              .WithAltCoverImportModule())
-              .WithAltCoverOptions
-              pp1b
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestJson")
+             |> withAltCoverGetVersion
+             |> withAltCoverImportModule)
+            |> withAltCoverOptions pp1b cc0 ForceTrue
             |> testWithCLIArguments)
           "_DotnetTestJson.fsproj" // TODO validate output as per JsonReporting
 
@@ -6231,15 +6210,10 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            (to'
-              .WithCommon(withWorkingDirectoryVM "_DotnetTestInPlace")
-              .WithAltCoverGetVersion()
-              .WithAltCoverImportModule())
-              .WithAltCoverOptions
-              pp1a
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestInPlace")
+             |> withAltCoverGetVersion
+             |> withAltCoverImportModule)
+            |> withAltCoverOptions pp1a cc0 ForceTrue
             |> testWithCLIArguments)
           "_DotnetTestInPlace.fsproj"
 
@@ -6275,11 +6249,7 @@ module Targets =
           DotNet.test
             (fun to' ->
               (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInstrumentation"))
-                .WithAltCoverOptions
-                pf0
-                cc0
-                ForceTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions pf0 cc0 ForceTrue
               |> testWithCLIArguments)
             "_DotnetTestFailInstrumentation.fsproj"
 
@@ -6302,11 +6272,7 @@ module Targets =
               (to'.WithCommon(
                 withWorkingDirectoryVM "_DotnetTestFailInstrumentationInPlace"
               ))
-                .WithAltCoverOptions
-                pf0a
-                cc0
-                ForceTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions pf0a cc0 ForceTrue
               |> testWithCLIArguments)
             "_DotnetTestFailInstrumentationInPlace.fsproj"
 
@@ -6345,11 +6311,7 @@ module Targets =
           DotNet.test
             (fun to' ->
               (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFail"))
-                .WithAltCoverOptions
-                pf1
-                cc0
-                ForceTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions pf1 cc0 ForceTrue
               |> testWithCLIArguments)
             "_DotnetTestFail.fsproj"
 
@@ -6395,11 +6357,7 @@ module Targets =
           DotNet.test
             (fun to' ->
               (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInPlace"))
-                .WithAltCoverOptions
-                pf1a
-                cc0
-                ForceTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions pf1a cc0 ForceTrue
               |> testWithCLIArguments)
             "_DotnetTestFailInPlace.fsproj"
 
@@ -6463,11 +6421,7 @@ module Targets =
           DotNet.test
             (fun to' ->
               (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFast"))
-                .WithAltCoverOptions
-                pf1
-                cc0
-                FailTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions pf1 cc0 FailTrue
               |> testWithCLIArguments)
             "_DotnetTestFailFast.fsproj"
 
@@ -6512,11 +6466,7 @@ module Targets =
           DotNet.test
             (fun to' ->
               (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFastInPlace"))
-                .WithAltCoverOptions
-                pf1a
-                cc0
-                FailTrue
-              |> testWithEnvironment
+              |> withAltCoverOptions pf1a cc0 FailTrue
               |> testWithCLIArguments)
             "_DotnetTestFailFastInPlace.fsproj"
 
@@ -6571,15 +6521,8 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestLineCoverInPlace"
-              )
-              .WithAltCoverOptions
-              pp2a
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCoverInPlace")
+            |> withAltCoverOptions pp2a cc0 ForceTrue
             |> testWithCLIArguments)
           ""
 
@@ -6588,15 +6531,8 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestLineCover"
-              )
-              .WithAltCoverOptions
-              pp2
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover")
+            |> withAltCoverOptions pp2 cc0 ForceTrue
             |> testWithCLIArguments)
           ""
 
@@ -6681,15 +6617,8 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestBranchCoverInPlace"
-              )
-               .WithAltCoverOptions
-               pp3a
-               cc0
-               ForceTrue)
-            |> testWithEnvironment
+            (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCoverInPlace")
+             |> withAltCoverOptions pp3a cc0 ForceTrue)
             |> testWithCLIArguments)
           ""
 
@@ -6726,15 +6655,8 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestBranchCover"
-              )
-               .WithAltCoverOptions
-               pp3
-               cc0
-               ForceTrue)
-            |> testWithEnvironment
+            (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover")
+             |> withAltCoverOptions pp3 cc0 ForceTrue)
             |> testWithCLIArguments)
           ""
 
@@ -6797,15 +6719,8 @@ module Targets =
 
         DotNet.test
           (fun to' ->
-            (to'
-              .WithCommon(
-                withWorkingDirectoryVM "RegressionTesting/issue29"
-              )
-               .WithAltCoverOptions
-               pp29
-               cc0
-               ForceTrueFast)
-            |> testWithEnvironment
+            (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29")
+             |> withAltCoverOptions pp29 cc0 ForceTrueFast)
             |> testWithCLIArguments)
           ""
 
@@ -6838,11 +6753,8 @@ module Targets =
         DotNet.test
           (fun to' ->
             { ((to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue37"))
-                .WithAltCoverOptions
-                 pp4
-                 cc0
-                 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
-            |> testWithEnvironment
+               |> withAltCoverOptions pp4 cc0 ForceTrue) with
+                Configuration = DotNet.BuildConfiguration.Release }
             |> testWithCLIArguments)
           ""
 
@@ -6868,7 +6780,7 @@ module Targets =
       // let p4 = { p0 with AssemblyFilter = [ "NUnit" ] }
       // let pp4 = AltCover.PrepareOptions.Primitive p4
       // DotNet.test (fun to' ->
-      //   { ((to'.WithCommon(withWorkingDirectoryVM "Samples/Sample22")).WithAltCoverOptions
+      //   { ((to'.WithCommon(withWorkingDirectoryVM "Samples/Sample22"))|> withAltCoverOptions
       //       pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
       //   |> testWithCLIArguments) ""
 
@@ -6951,11 +6863,7 @@ module Targets =
                ) with
                 Configuration = DotNet.BuildConfiguration.Debug
                 NoBuild = false })
-              .WithAltCoverOptions
-              pp0
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            |> withAltCoverOptions pp0 cc0 ForceTrue
             |> testWithCLIArguments)
           ""
 
@@ -6972,7 +6880,7 @@ module Targets =
         //  { to'.WithCommon(fun c ->
         //      { c with WorkingDirectory =
         //                 Path.getFullName"./RegressionTesting/issue20/xunit-tests"
-        //               Verbosity = SomeDotNet.Verbosity.Minimal }).WithAltCoverOptions p1 c0 ForceTrue with Configuration =
+        //               Verbosity = SomeDotNet.Verbosity.Minimal })|> withAltCoverOptions p1 c0 ForceTrue with Configuration =
         //                                                                                                 DotNet.BuildConfiguration.Debug
         //                                                                                               NoBuild =
         //                                                                                                 false
@@ -6995,11 +6903,7 @@ module Targets =
                ) with
                 Configuration = DotNet.BuildConfiguration.Debug
                 NoBuild = false })
-              .WithAltCoverOptions
-              pp1
-              cc0
-              ForceTrue
-            |> testWithEnvironment
+            |> withAltCoverOptions pp1 cc0 ForceTrue
             |> testWithCLIArguments)
           ""
 
@@ -7066,13 +6970,9 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
-              .WithAltCoverImportModule()
-              .WithAltCoverGetVersion()
-            |> testWithEnvironment
+             |> withAltCoverOptions pp0 cc0 ForceTrue)
+            |> withAltCoverImportModule
+            |> withAltCoverGetVersion
             |> testWithCLIArguments)
           ""
       finally
@@ -7146,13 +7046,9 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
-              .WithAltCoverImportModule()
-              .WithAltCoverGetVersion()
-            |> testWithEnvironment
+             |> withAltCoverOptions pp0 cc0 ForceTrue)
+            |> withAltCoverImportModule
+            |> withAltCoverGetVersion
             |> testWithCLIArguments)
           ""
 
@@ -7244,13 +7140,9 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
-              .WithAltCoverImportModule()
-              .WithAltCoverGetVersion()
-            |> testWithEnvironment
+             |> withAltCoverOptions pp0 cc0 ForceTrue)
+            |> withAltCoverImportModule
+            |> withAltCoverGetVersion
             |> testWithCLIArguments)
           ""
 
@@ -7315,13 +7207,9 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp1
-               cc0
-               ForceTrue)
-              .WithAltCoverImportModule()
-              .WithAltCoverGetVersion()
-            |> testWithEnvironment
+             |> withAltCoverOptions pp1 cc0 ForceTrue)
+            |> withAltCoverImportModule
+            |> withAltCoverGetVersion
             |> testWithCLIArguments)
           ""
 
@@ -7377,13 +7265,9 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               psln
-               cc0
-               ForceTrue)
-              .WithAltCoverImportModule()
-              .WithAltCoverGetVersion()
-            |> testWithEnvironment
+             |> withAltCoverOptions psln cc0 ForceTrue)
+            |> withAltCoverImportModule
+            |> withAltCoverGetVersion
             |> testWithCLIArguments)
           "Issue72.sln"
 
@@ -7598,13 +7482,9 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
-              .WithAltCoverImportModule()
-              .WithAltCoverGetVersion()
-            |> testWithEnvironment
+             |> withAltCoverOptions pp0 cc0 ForceTrue)
+            |> withAltCoverImportModule
+            |> withAltCoverGetVersion
             |> testWithCLIArguments)
           ""
       finally
@@ -7689,11 +7569,7 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrueOnly)
-            |> testWithEnvironment
+             |> withAltCoverOptions pp0 cc0 ForceTrueOnly)
             |> testWithCLIArguments)
           ""
       finally

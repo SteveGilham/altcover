@@ -6,12 +6,10 @@ module DriveApi =
   open Fake.IO
   open Fake.Core
   open Fake.DotNet
-  open Fake.IO
   open Fake.IO.FileSystemOperators
-  open Fake.IO.Globbing
-  open Fake.IO.Globbing.Operators
 
-  open AltCover.Fake.DotNet // extension methods
+  //open AltCover.Fake.DotNet // extension methods
+  open AltCoverFake.DotNet.Testing
 
   let _Target s f =
     Target.description s
@@ -19,35 +17,25 @@ module DriveApi =
 
   let dotnetVersion = DotNet.getVersion id
 
-  let paramsToEnvironment (o: DotNet.Options) =
-    o.CustomParams
-    |> Option.map (fun x ->
-      let bits =
-        x.Split("/p:", StringSplitOptions.RemoveEmptyEntries)
+  let withEnvironment l (o: DotNet.Options) =
+    let before = o.Environment |> Map.toList
 
-      bits
-      |> Array.fold
-           (fun (o2: DotNet.Options) flag ->
-             let line = flag.TrimEnd([| ' '; '"' |])
+    let after =
+      [ l; before ] |> List.concat |> Map.ofList
 
-             let split =
-               if line.Contains "=\"" then
-                 "=\""
-               else
-                 "="
+    { o with Environment = after }
 
-             let parts =
-               line.Split(split, StringSplitOptions.RemoveEmptyEntries)
+  let withTestEnvironment l (o: DotNet.TestOptions) =
+    { o with Common = withEnvironment l o.Common }
 
-             { o2 with Environment = o2.Environment |> Map.add parts[0] parts[1] })
-           o)
-    |> Option.defaultValue o
-
-  let testWithEnvironment (o: Fake.DotNet.DotNet.TestOptions) =
-    if dotnetVersion <> "7.0.100" then
-      o
-    else
-      { o with Common = { paramsToEnvironment o.Common with CustomParams = None } }
+  let withAltCoverOptions
+    (prepare: Abstract.IPrepareOptions)
+    (collect: Abstract.ICollectOptions)
+    (force: DotNet.ICLIOptions)
+    =
+    withTestEnvironment (
+      AltCoverFake.DotNet.Testing.DotNet.toTestPropertiesList prepare collect force
+    )
 
   let DoIt =
     (fun _ ->
@@ -127,9 +115,8 @@ module DriveApi =
 
       DotNet.test
         (fun to' ->
-          { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 forceTrue with
-              MSBuildParams = cliArguments }
-          |> testWithEnvironment)
+          { (to'.WithCommon(setBaseOptions)
+             |> (AltCoverOptions pp2 cc2 forceTrue)) with MSBuildParams = cliArguments })
         "apiuse_dotnettest.fsproj"
 
       let im = AltCover.Command.ImportModule()
