@@ -70,32 +70,40 @@ module DriveApi =
         AltCover.PrepareOptions.Primitive
           { Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
 
-      let forceTrue =
-        AltCover.DotNet.CLIOptions.Force true
+      // let t = prepare.GetType()
+      // printfn "prepare type is %A" t.FullName
 
+      // t.GetInterfaces()
+      // |> Seq.iter (fun i -> printfn "\timplements %A" i.FullName)
+
+      let forceTrue = DotNet.CLIOptions.Force true
+
+      //      printfn
+      //        "Test arguments : '%s'"
+      //        (AltCover.DotNet.ToTestArgumentList prepare collect forceTrue)
       printfn
-        "Test arguments : '%s'"
-        (AltCover.DotNet.ToTestArguments prepare collect forceTrue)
+        "Test arguments : '%A'"
+        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect forceTrue)
 
       let t =
-        DotNet.TestOptions.Create().WithAltCoverOptions prepare collect forceTrue
+        DotNet.TestOptions.Create()
+        |> (withAltCoverOptions prepare collect forceTrue)
 
-      printfn "WithAltCoverOptions returned '%A'" t.Common.CustomParams
+      printfn "WithAltCoverOptions returned '%A'" t.Common.Environment
 
       let p2 =
-        { AltCover.Primitive.PrepareOptions.Create() with
+        { Primitive.PrepareOptions.Create() with
             LocalSource = true
             CallContext = [| "[Fact]"; "0" |]
             AssemblyFilter = [| "xunit" |] }
 
       let pp2 =
-        AltCover.AltCover.PrepareOptions.Primitive p2
+        AltCover.PrepareOptions.Primitive p2
 
-      let c2 =
-        AltCover.Primitive.CollectOptions.Create()
+      let c2 = Primitive.CollectOptions.Create()
 
       let cc2 =
-        AltCover.AltCover.CollectOptions.Primitive c2
+        AltCover.CollectOptions.Primitive c2
 
       let setBaseOptions (o: DotNet.Options) =
         { o with
@@ -112,7 +120,7 @@ module DriveApi =
       DotNet.test
         (fun to' ->
           { (to'.WithCommon(setBaseOptions)
-             |> (AltCoverOptions pp2 cc2 forceTrue)) with MSBuildParams = cliArguments })
+             |> (withAltCoverOptions pp2 cc2 forceTrue)) with MSBuildParams = cliArguments })
         "apiuse_dotnettest.fsproj"
 
       let im = AltCover.Command.ImportModule()
