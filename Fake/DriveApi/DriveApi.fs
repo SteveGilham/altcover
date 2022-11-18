@@ -28,13 +28,9 @@ module DriveApi =
   let withTestEnvironment l (o: DotNet.TestOptions) =
     { o with Common = withEnvironment l o.Common }
 
-  let withAltCoverOptions
-    (prepare: Abstract.IPrepareOptions)
-    (collect: Abstract.ICollectOptions)
-    (force: DotNet.ICLIOptions)
-    =
+  let withAltCoverOptions prepare collect force =
     withTestEnvironment (
-      AltCoverFake.DotNet.Testing.DotNet.toTestPropertiesList prepare collect force
+      AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force
     )
 
   let DoIt =
@@ -67,12 +63,12 @@ module DriveApi =
         failwith "AltCover.Fake.Command.Version mismatch"
 
       let collect =
-        AltCover.AltCover.CollectOptions.Primitive
-          { AltCover.Primitive.CollectOptions.Create() with LcovReport = "x" }
+        AltCover.CollectOptions.Primitive
+          { Primitive.CollectOptions.Create() with LcovReport = "x" }
 
       let prepare =
-        AltCover.AltCover.PrepareOptions.Primitive
-          { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
+        AltCover.PrepareOptions.Primitive
+          { Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
 
       let forceTrue =
         AltCover.DotNet.CLIOptions.Force true

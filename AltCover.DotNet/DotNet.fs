@@ -164,11 +164,7 @@ module DotNet =
   // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
   // "GetVersion" //=true|false` to emit the current AltCover version
 
-#if RUNNER
   let ToTestPropertiesList
-#else
-  let internal toTestPropertiesList
-#endif
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
     (options: ICLIOptions)
@@ -213,14 +209,7 @@ module DotNet =
     (collect: Abstract.ICollectOptions)
     (options: ICLIOptions)
     =
-#if RUNNER
-    ToTestPropertiesList
-#else
-    toTestPropertiesList
-#endif
-      prepare
-      collect
-      options
+    ToTestPropertiesList prepare collect options
     |> List.map (fun (name, value) -> sprintf """/p:%s="%s%c""" name value '"')
 
 #if RUNNER

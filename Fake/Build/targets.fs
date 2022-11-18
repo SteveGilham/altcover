@@ -356,7 +356,7 @@ module Targets =
     (collect: Abstract.ICollectOptions)
     (force: DotNet.ICLIOptions)
     =
-    withTestEnvironment (DotNet.toTestPropertiesList prepare collect force)
+    withTestEnvironment (DotNet.ToTestPropertiesList prepare collect force)
 
   let withAltCoverImportModule =
     withTestEnvironment DotNet.ImportModuleProperties

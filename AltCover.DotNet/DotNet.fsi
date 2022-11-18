@@ -108,9 +108,18 @@ module DotNet = begin
           ((string -> string -> (string*string)) * string * string * bool) list
     end
 #endif
-#if RUNNER
 // ### Composing the whole command line
 // ```
+    /// <summary>
+    /// Command line properties for `dotnet test` ImportModule option
+    /// </summary>
+    val ImportModuleProperties : (string*string) list
+
+    /// <summary>
+    /// Command line properties for `dotnet test` GetVersion option
+    /// </summary>
+
+    val GetVersionProperties : (string*string) list
     /// <summary>
     /// Converts the input into the command line properties for `dotnet test`
     /// </summary>
@@ -122,6 +131,7 @@ module DotNet = begin
       prepare:Abstract.IPrepareOptions ->
         collect:Abstract.ICollectOptions -> options:ICLIOptions -> (string*string) list
 
+#if RUNNER
     /// <summary>
     /// Converts the input into the command line for `dotnet test`
     /// </summary>
@@ -143,24 +153,11 @@ module DotNet = begin
     val ToTestArguments :
       prepare:Abstract.IPrepareOptions ->
         collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
-
-    /// <summary>
-    /// Command line properties for `dotnet test` ImportModule option
-    /// </summary>
-    val ImportModuleProperties : (string*string) list
-
-    /// <summary>
-    /// Command line properties for `dotnet test` GetVersion option
-    /// </summary>
-    val GetVersionProperties : (string*string) list
   end //// no doc
 // ```
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
 #else
 #if TRACE  // cheat mode here
-    val internal toTestPropertiesList :
-      prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:ICLIOptions -> (string*string) list
     val internal toTestArgumentList :
       prepare:Abstract.IPrepareOptions ->
         collect:Abstract.ICollectOptions -> options:ICLIOptions -> string list
