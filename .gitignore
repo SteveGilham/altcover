@@ -86,3 +86,5 @@ ThirdParty/*.nupkg
 ThirdParty/gtk-sharp2/atk/
 InternalTrace.*.log
 nunit-agent_*.log
+Fake/Binaries/
+Fake/Intermediate/

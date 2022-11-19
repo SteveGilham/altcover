@@ -873,7 +873,7 @@ module internal Runner =
            :: CommandLine.error)) ] // default end stop
     |> List.fold
          (fun (o: OptionSet) (p, a) ->
-           o.Add(p, Output.resources.GetString(p), new System.Action<string>(a)))
+           o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
          (OptionSet())
 
   let internal requireRecorderTest recordingDirectory success fail =
@@ -907,7 +907,7 @@ module internal Runner =
   module internal J =
     let internal requireExe (parse: Either<string * OptionSet, string list * OptionSet>) =
       match parse with
-      | Right (l, options) ->
+      | Right(l, options) ->
         match (executable.Value, collect.Value) with
         | (None, false)
         | (Some _, true) ->
@@ -924,7 +924,7 @@ module internal Runner =
       (parse: Either<string * OptionSet, string list * OptionSet>)
       =
       match parse with
-      | Right (_, options) ->
+      | Right(_, options) ->
         requireRecorderTest recordingDirectory parse (Left("UsageError", options))
       | fail -> fail
 
@@ -1458,7 +1458,7 @@ module internal Runner =
       |> J.requireWorker
 
     match check1 with
-    | Left (intro, options) ->
+    | Left(intro, options) ->
       CommandLine.handleBadArguments
         false
         arguments
@@ -1467,7 +1467,7 @@ module internal Runner =
           Options2 = options }
 
       255
-    | Right (rest, _) ->
+    | Right(rest, _) ->
       CommandLine.applyVerbosity ()
 
       let value =

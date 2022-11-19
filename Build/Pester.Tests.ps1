@@ -42,9 +42,9 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./_Binaries/Invoke-Altcover_Sample2/Debug+AnyCPU/net6.0"
+        $o = "./_Binaries/Invoke-Altcover_Sample2/Debug+AnyCPU/net7.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-        $i = "./_Binaries/Sample2/Debug+AnyCPU/net6.0"
+        $i = "./_Binaries/Sample2/Debug+AnyCPU/net7.0"
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
@@ -68,7 +68,9 @@ Describe "Invoke-Altcover" {
         $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net6.0", "Sample2.fsproj", "/p:AltCoverTag=Invoke-Altcover_")
+        $env:AltCoverTag = "Invoke-Altcover_"
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net7.0", "Sample2.fsproj") #, "/p:AltCoverTag=Invoke-Altcover_")
+        $env:AltCoverTag = ""
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
         $result | Should -Be "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
@@ -77,7 +79,7 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net7.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
@@ -373,7 +375,7 @@ Describe "ConvertTo-BarChart" {
 Describe "ConvertFrom-NCover" {
   It "converts" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"
     $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
     $xml | Should -BeOfType [xdoc]
 
@@ -398,7 +400,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
     $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll",
-                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"))
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
@@ -410,7 +412,7 @@ Describe "ConvertFrom-NCover" {
 
   It "converts from the pipeline" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"
     $xml = [xdoc]::Load("./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
     $xml | Should -BeOfType [xdoc]
 
@@ -435,7 +437,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
     $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll",
-                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll"))
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")

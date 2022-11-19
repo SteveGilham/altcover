@@ -43,6 +43,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [SourceLink](AltCover.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
+| [Trivia](AltCover.PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option ` --trivia` |
 | [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](AltCover.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line options `-q` and `--verbose` |

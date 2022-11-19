@@ -209,7 +209,7 @@ module AltCoverCommand =
                       Justification = "Compiler generated generic name")>]
     member this.WithCreateProcess(command: CreateProcess<_>) =
       match command.Command with
-      | RawCommand (tool, args) ->
+      | RawCommand(tool, args) ->
         match this.Args with
         | Collect c ->
           { this with
@@ -298,7 +298,7 @@ module AltCoverCommand =
         && Fake.Core.Environment.isWindows
       then
         match command.Command with
-        | RawCommand (tool, args) ->
+        | RawCommand(tool, args) ->
           let newArgs =
             tool :: "--debug" :: (Arguments.toList args)
 

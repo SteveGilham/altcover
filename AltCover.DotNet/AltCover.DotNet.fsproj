@@ -23,9 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
@@ -33,10 +36,4 @@
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.6">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
 </Project>

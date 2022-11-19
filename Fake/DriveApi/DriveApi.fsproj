@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <NoWarn>MSB3243</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="DriveApi.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AltCover.Api" Version="8.4.840" />
+    <PackageReference Include="AltCover.Fake" Version="8.4.840" />
+    <PackageReference Include="Fake.Core.Target" Version="5.23.1" />
+    <PackageReference Include="Fake.DotNet.Cli" Version="5.23.1" />
+  </ItemGroup>
+
+</Project>

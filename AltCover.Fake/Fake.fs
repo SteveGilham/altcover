@@ -79,6 +79,7 @@ open AltCover.Shared
 [<SuppressMessage("Microsoft.Naming",
                   "CA1724",
                   Justification = "clash with '<StartupCode$ type")>]
+[<AutoOpen>]
 module DotNet =
   open Fake.DotNet
 
@@ -112,6 +113,13 @@ module DotNet =
     let t = o.Common.GetType()
     let p = t.GetProperty("CustomParams")
     p.GetValue(o.Common, null) :?> string Option
+
+  let internal join (l: string seq) = String.Join(" ", l)
+
+  let internal toArgs a =
+    a
+    |> List.map (fun (name, value) -> sprintf """/p:%s="%s" """ name value)
+    |> join
 
   type DotNet.TestOptions with
 
@@ -182,11 +190,23 @@ module DotNet =
 
     [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Anonymous parameter")>]
     member self.WithAltCoverImportModule() =
-      self.ExtendCustomParams "/p:AltCoverImportModule=true"
+#if RUNNER
+      DotNet.ImportModuleProperties
+#else
+      AltCoverFake.DotNet.Testing.DotNet.ImportModuleProperties
+#endif
+      |> toArgs
+      |> self.ExtendCustomParams
 
     [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Anonymous parameter")>]
     member self.WithAltCoverGetVersion() =
-      self.ExtendCustomParams "/p:AltCoverGetVersion=true"
+#if RUNNER
+      DotNet.GetVersionProperties
+#else
+      AltCoverFake.DotNet.Testing.DotNet.GetVersionProperties
+#endif
+      |> toArgs
+      |> self.ExtendCustomParams
 
 #if RUNNER
 [<assembly: CLSCompliant(true)>]

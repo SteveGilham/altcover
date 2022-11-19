@@ -3,6 +3,13 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
+# 8.5.841 (Habu series release 17)
+* To support Cake 3.0, move the Cake API assembly from AltCover.Api to a new package AltCover.Cake; this contains libraries built against Cake 2.0.0 at `netcoreapp3.1` as well as the old ones built against Cake 1.0.0 at netstandard2.0 (present but in practice obsolete).
+* Following Fake.build's policy of deprecating releases oder then 6 month, drop support for versions before 5.23
+* [BREAKING] Rename `AltCover.Cake.DotNet.DotNetCoreTest` to `AltCover.Cake.DotNet.DotNetTest` (even in the obsolete 1.0.0 build) to match the changes in the Cake APIs (and consequent chage to the test setting type in the argument list).  Similarly, in the version >= 2.0.0 build, the type `AltCover.Cake.DotNet` is now a `[CakeAliasCategory("DotNet")]` rather than `[CakeAliasCategory("DotNetCore")]`
+* [API] New DotNet APIs for Fake support - `ToTestPropertiesList` method to emit a list of (name,value) pairs to allow customised property passing to `dotnet test` in the wake of the v7.0.100 regression.
+* [API] Additionally `ImportModuleProperties` and `GetVersionProperties` values that are additonal lists of (name,value) pairs to append as needed.
+
 # 8.4.840 (Habu series release 16)
 * New option `--trivia` to omit coverage of sequence points containing no logic (no-op, return or unconditional branches only)
 * Added context for exceptions thrown during instrumentation.  This is aimed at tracing what was being inspected when exceptions arise from `Mono.Cecil` being presented with a new corner case.

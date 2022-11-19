@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>AltCover.Cake</RootNamespace>
     <AssemblyName>AltCover.Cake</AssemblyName>
@@ -27,9 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cake.Core" Version="1.1.0" />
-    <PackageReference Include="Cake.Common" Version="1.1.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+    <PackageReference Include="Cake.Core" />
+    <PackageReference Include="Cake.Common" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
+    <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
   </ItemGroup>
 
 </Project>

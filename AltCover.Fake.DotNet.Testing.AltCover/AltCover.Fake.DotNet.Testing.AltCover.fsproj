@@ -40,18 +40,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" />
-    <PackageReference Include="FAKE.Core.Environment" Version="5.21.0" />
-    <PackageReference Include="FAKE.Core.Process" Version="5.21.0" />
-    <PackageReference Include="FAKE.DotNet.Cli" Version="5.21.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+    <PackageReference Include="BlackFox.CommandLine" />
+    <PackageReference Include="FAKE.Core.Environment" />
+    <PackageReference Include="FAKE.Core.Process" />
+    <PackageReference Include="FAKE.DotNet.Cli" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.6">
+    <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

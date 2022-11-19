@@ -331,7 +331,7 @@ module internal Main =
              :: CommandLine.error)) ] // default end stop
       |> List.fold
            (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Output.resources.GetString(p), new System.Action<string>(a)))
+             o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
            (OptionSet())
 
     let private echoDirectories (outputDirectory: string, inputDirectory: string) =
@@ -355,7 +355,7 @@ module internal Main =
       (action: Either<string * OptionSet, string list * OptionSet>)
       =
       match action with
-      | Right (rest, options) ->
+      | Right(rest, options) ->
         // Check that the directories are distinct
         let inputDirectories =
           CoverageParameters.inputDirectories ()
@@ -710,7 +710,7 @@ module internal Main =
         |> processOutputLocation
 
       match check1 with
-      | Left (intro, options) ->
+      | Left(intro, options) ->
         CommandLine.handleBadArguments
           dotnetBuild
           arguments
@@ -719,7 +719,7 @@ module internal Main =
             Options2 = Runner.declareOptions () }
 
         255
-      | Right (rest, fromInfo, toInfo, targetInfo) ->
+      | Right(rest, fromInfo, toInfo, targetInfo) ->
         CommandLine.applyVerbosity ()
 
         let report =

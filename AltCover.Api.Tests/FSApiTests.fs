@@ -1266,6 +1266,10 @@ module FSApiTests =
                                              - (optionCases + 1))
       @>
 
+    test <@ DotNet.ImportModuleProperties = [ ("AltCoverImportModule", "true") ] @>
+
+    test <@ DotNet.GetVersionProperties = [ ("AltCoverGetVersion", "true") ] @>
+
   [<Test>]
   let ArgumentsBuilt () =
     let force = DotNet.CLIOptions.Force true

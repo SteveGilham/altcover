@@ -274,14 +274,12 @@ module internal CoverageParameters =
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
 
-  let internal trackingNames =
-    new List<String>()
+  let internal trackingNames = List<String>()
 
-  let internal topLevel =
-    new List<FilterClass>()
+  let internal topLevel = List<FilterClass>()
 
   let internal nameFilters =
-    new List<FilterClass>()
+    List<FilterClass>()
 
   let mutable internal staticFilter: StaticFilter option =
     None
@@ -434,7 +432,7 @@ module internal CoverageParameters =
     None
 
   let internal keys =
-    new Dictionary<UInt64, KeyRecord>()
+    Dictionary<UInt64, KeyRecord>()
 
   let internal add (key: StrongNameKeyData) =
     let index = KeyStore.keyToIndex key
@@ -618,7 +616,7 @@ module internal Visitor =
       let find = findClosestMatch file dict
 
       match find with
-      | Some (best, relative) ->
+      | Some(best, relative) ->
         let replacement =
           Path
             .Combine(relative, Path.GetFileName(file))
@@ -1643,6 +1641,6 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1374::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1372::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 ()

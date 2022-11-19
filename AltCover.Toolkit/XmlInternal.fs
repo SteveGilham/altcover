@@ -75,6 +75,7 @@ module internal XmlUtilities =
       AssemblyName.GetAssemblyName(path).FullName
     with
     | :? ArgumentException
+    | :? DirectoryNotFoundException
     | :? FileNotFoundException
     | :? System.Security.SecurityException
     | :? BadImageFormatException

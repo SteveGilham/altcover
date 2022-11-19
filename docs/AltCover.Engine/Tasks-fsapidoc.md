@@ -54,6 +54,7 @@ type Prepare =
     member ShowStatic : string with get, set
     member ShowGenerated : bool with get, set
     member Verbosity : string with get, set
+    member Trivia: bool with get, set
   end
 ```
 ## Task `AltCover.Collect`
