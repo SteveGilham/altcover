@@ -69,14 +69,13 @@ Task("Test")
     }
     else
     {
-      var args =  FSDotNet.ToTestArgumentList(
+      var args =  FSDotNet.ToTestPropertiesList(
                       altcoverSettings.PreparationPhase,
                       altcoverSettings.CollectionPhase,
                       altcoverSettings.Options).ToArray();
 
       Array.ForEach(args, 
-        s => { var bits = s.Substring(3).Split('=', StringSplitOptions.RemoveEmptyEntries);
-               testSettings.EnvironmentVariables[bits[0]] = bits[1].Trim('"');});
+        s => { testSettings.EnvironmentVariables[s.Item1] = s.Item2;});
     }
 
     DotNetTest("./_DotnetTest/cake_dotnettest.fsproj", testSettings);

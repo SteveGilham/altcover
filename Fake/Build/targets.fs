@@ -5762,7 +5762,7 @@ module Targets =
                   "DebugSymbols", "True" ] })
         "./Samples/Sample4/Sample4LongForm.fsproj")
 
-  let Cake1Test =
+  let Cake2Test =
     (fun _ ->
       let before = Actions.ticksNow ()
 
@@ -7948,7 +7948,7 @@ module Targets =
 
     _Target "JsonReporting" JsonReporting
     _Target "MSBuildTest" MSBuildTest
-    _Target "Cake1Test" Cake1Test
+    _Target "Cake2Test" Cake2Test
     _Target "ApiUse" ApiUse
     _Target "DotnetTestIntegration" DotnetTestIntegration
     _Target "Issue20" Issue20
@@ -8227,7 +8227,7 @@ module Targets =
 
     "Unpack" ==> "ApiUse" ==> "Deployment" |> ignore
 
-    "Unpack" ==> "Cake1Test" ==> "Deployment"
+    "Unpack" ==> "Cake2Test" ==> "Deployment"
     |> ignore
 
     "Unpack"
