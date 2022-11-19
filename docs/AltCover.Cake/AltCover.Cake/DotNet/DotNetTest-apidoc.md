@@ -1,4 +1,4 @@
-# DotNet.DotNetCoreTest method
+# DotNet.DotNetTest method
 
 Hooks into the Cake wrapper for `dotnet test` and injects the AltCover command line arguments as specified.
 
@@ -6,13 +6,13 @@ Equivalent to
 
 ```csharp
 settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
-context.DotNetCoreTest(project.FullPath, settings);
+context.DotNetTest(project.FullPath, settings);
 ```
 
 This method is a `[CakeMethodAlias]` extension method on `ICakeContext`, and `[CakeAliasCategory("Test")]`.
 
 ```csharp
-public static void DotNetCoreTest(this ICakeContext context, FilePath project, 
+public static void DotNetTest(this ICakeContext context, FilePath project, 
     DotNetCoreTestSettings testSettings, CoverageSettings coverageSettings)
 ```
 
@@ -20,7 +20,7 @@ public static void DotNetCoreTest(this ICakeContext context, FilePath project,
 | --- | --- |
 | context | The Cake build script `ICakeContext`; a `this` parameter |
 | project | The project to test as a `FilePath` |
-| testSettings | The `DotNetCoreTestSettings` for the test |
+| testSettings | The `DotNetTestSettings` for the test |
 | coverageSettings | The `CoverageSettings` for the test instrumentation |
 
 ## See Also
