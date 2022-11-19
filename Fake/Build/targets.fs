@@ -15,6 +15,7 @@ module Targets =
   open AltCode.Fake.DotNet
 
   open AltCoverFake.DotNet.Testing
+  open AltCoverFake.DotNet.DotNet
 
   open Fake.Core
   open Fake.Core.TargetOperators
@@ -355,14 +356,24 @@ module Targets =
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
     (force: DotNet.ICLIOptions)
+    (o: DotNet.TestOptions)
     =
-    withTestEnvironment (DotNet.ToTestPropertiesList prepare collect force)
+    if dotnetVersion <> "7.0.100" then
+      o.WithAltCoverOptions prepare collect force
+    else
+      withTestEnvironment (DotNet.ToTestPropertiesList prepare collect force) o
 
-  let withAltCoverImportModule =
-    withTestEnvironment DotNet.ImportModuleProperties
+  let withAltCoverImportModule (o: DotNet.TestOptions) =
+    if dotnetVersion <> "7.0.100" then
+      o.WithAltCoverImportModule()
+    else
+      withTestEnvironment DotNet.ImportModuleProperties o
 
-  let withAltCoverGetVersion =
-    withTestEnvironment DotNet.GetVersionProperties
+  let withAltCoverGetVersion (o: DotNet.TestOptions) =
+    if dotnetVersion <> "7.0.100" then
+      o.WithAltCoverGetVersion()
+    else
+      withTestEnvironment DotNet.GetVersionProperties o
 
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
     if dotnetVersion <> "7.0.100" then

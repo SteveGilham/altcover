@@ -79,6 +79,7 @@ open AltCover.Shared
 [<SuppressMessage("Microsoft.Naming",
                   "CA1724",
                   Justification = "clash with '<StartupCode$ type")>]
+[<AutoOpen>]
 module DotNet =
   open Fake.DotNet
 

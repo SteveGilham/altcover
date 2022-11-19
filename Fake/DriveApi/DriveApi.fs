@@ -8,7 +8,7 @@ module DriveApi =
   open Fake.DotNet
   open Fake.IO.FileSystemOperators
 
-  //open AltCover.Fake.DotNet // extension methods
+  open AltCoverFake.DotNet.DotNet // extension methods
   open AltCoverFake.DotNet.Testing
 
   let _Target s f =
@@ -28,10 +28,13 @@ module DriveApi =
   let withTestEnvironment l (o: DotNet.TestOptions) =
     { o with Common = withEnvironment l o.Common }
 
-  let withAltCoverOptions prepare collect force =
-    withTestEnvironment (
-      AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force
-    )
+  let withAltCoverOptions prepare collect force (o: DotNet.TestOptions) =
+    if dotnetVersion <> "7.0.100" then
+      o.WithAltCoverOptions prepare collect force
+    else
+      withTestEnvironment (
+        AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force
+      ) o
 
   let DoIt =
     (fun _ ->
