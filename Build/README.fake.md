@@ -3,9 +3,9 @@ Contains options to run AltCover as part of `dotnet test` within a Fake build sc
 
 ## Usage
 
-Given specifications `prepare`, `process` and `collect` specifications (part of the API), extend a `dotnet test` invocation with coverage collection
+Given specifications `prepare`, `process` and `collect` (part of the API), extend a `dotnet test` invocation with coverage collection
 
-```
+```fsharp
 open AltCoverFake.DotNet.DotNet // extension method WithAltCoverOptions
 Fake.DotNet.DotNet.test (fun to' -> to'.WithAltCoverOptions prepare collect process) "dotnettest.fsproj"
 ```
@@ -46,3 +46,4 @@ As `net472` can consume `netstandard2.0` libraries (everything but the recorder)
 * [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/Avalonia Visualizer as a global tool
+* [![Nuget](https://buildstats.info/nuget/altcover.cake) Cake build task utilities](https://www.nuget.org/packages/AltCover.Cake) -- just AltCover related helper types for Cake scripts (v1.0.0 or later), only in this package

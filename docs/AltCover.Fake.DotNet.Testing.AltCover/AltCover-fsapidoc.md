@@ -145,6 +145,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         member ShowStatic : string
         member ShowGenerated : bool
         member Verbosity : System.Diagnostics.TraceLevel
+        member Trivia: bool with get
 ```
 
 

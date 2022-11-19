@@ -47,7 +47,7 @@ type internal AssemblyResolver() as self =
 
   do
     self.add_ResolveFailure
-    <| new AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
+    <| AssemblyResolveEventHandler(AssemblyResolver.ResolveFromNugetCache)
 
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "UseObjectDisposedExceptionRule",

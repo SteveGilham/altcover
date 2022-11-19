@@ -131,7 +131,15 @@ module private Gui =
       )
 
     handler.aboutVisualizer.Comments <-
-      Resource.GetResourceString("aboutVisualizer.Comments")
+      String.Format(
+        Globalization.CultureInfo.CurrentCulture,
+        Resource.GetResourceString("aboutVisualizer.Comments"),
+#if NET472
+        "GTK#2"
+#else
+        "GTK#3"
+#endif
+      )
 
     handler.aboutVisualizer.WebsiteLabel <-
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")
@@ -313,7 +321,7 @@ module private Gui =
 #endif
   // -------------------------- Tree View ---------------------------
   let mappings =
-    new Dictionary<TreePath, XPathNavigator>()
+    Dictionary<TreePath, XPathNavigator>()
   // -------------------------- Event handling  ---------------------------
 #if !NET472
   type TheTreeModel = ITreeModel
@@ -323,7 +331,12 @@ module private Gui =
 
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
-      fun (context: CoverageTreeContext<TreeStore, TreeIter>) (icon: Lazy<Gdk.Pixbuf>) pc name (tip: string option) ->
+      fun
+        (context: CoverageTreeContext<TreeStore, TreeIter>)
+        (icon: Lazy<Gdk.Pixbuf>)
+        pc
+        name
+        (tip: string option) ->
         let newrow =
           context.Model.AppendValues(
             context.Row,
@@ -826,7 +839,7 @@ module private Gui =
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
            (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Resource.GetResourceString p, new System.Action<string>(a)))
+             o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
            (OptionSet())
 
     options.Parse(arguments) |> ignore

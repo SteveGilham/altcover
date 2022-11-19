@@ -1,0 +1,49 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DocumentationFile />
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
+    <EnsureNETFrameworkReferenceAssembliesProvided>false</EnsureNETFrameworkReferenceAssembliesProvided>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup Label="OutputBuildProps">
+    <!-- based on https://nietras.com/2021/11/19/bendingdotnet-common-flat-build-output/ -->
+    <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+    <Platform Condition="$(Platform) == ''">AnyCPU</Platform>
+    <BuildDir>$(MSBuildThisFileDirectory)Binaries\</BuildDir>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)Intermediate/$(MSBuildProjectName)/$(Configuration)</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)+$(Platform)</IntermediateOutputPath>
+    <ProjectBuildDirectoryName>$(AltCoverTag)$(MSBuildProjectName)/$(Configuration)+$(Platform)</ProjectBuildDirectoryName>
+    <OutputPathWithoutEndSlash>$(BuildDir)$(ProjectBuildDirectoryName)</OutputPathWithoutEndSlash>
+    <OutputPath>$(OutputPathWithoutEndSlash)/</OutputPath>
+    <KeyDir>$(MSBuildThisFileDirectory)..\Build\</KeyDir>
+    <InfrastructureKey>$(KeyDir)Infrastructure.snk</InfrastructureKey>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(InfrastructureKey)</AssemblyOriginatorKeyFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>52</NoWarn>
+    <Tailcalls>true</Tailcalls>
+  </PropertyGroup>
+</Project>

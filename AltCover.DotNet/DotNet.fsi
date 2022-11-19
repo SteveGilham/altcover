@@ -78,39 +78,60 @@ module DotNet = begin
 // * value `Summary` gives the `/AltCoverShowSummary` value this represents
 #if TRACE // cheat mode here
     module internal I = begin
-      val private arg : name:string -> s:string -> string
-      val private listArg : name:string -> s:seq<System.String> -> string
+      val private arg : name:string -> s:string -> (string*string)
+      val private listArg : name:string -> s:seq<System.String> -> (string*string)
       val private isSet : s:string -> bool
-      val private fromList : name:string -> s:seq<System.String> -> string * bool
-      val fromArg : name:string -> s:string -> string * bool
+      val private fromList : name:string -> s:seq<System.String> -> (string*string) * bool
+      val fromArg : name:string -> s:string -> (string*string) * bool
       val join : l:seq<string> -> string
       val toPrepareListArgumentList :
         prepare:Abstract.IPrepareOptions ->
-          ((string -> #seq<System.String> -> string * bool) * string *
+          ((string -> #seq<System.String> -> (string*string) * bool) * string *
            System.String seq) list
       val toPrepareFromArgArgumentList :
         prepare:Abstract.IPrepareOptions ->
-          ((string -> string -> string * bool) * string * System.String) list
+          ((string -> string -> (string*string) * bool) * string * System.String) list
       val toPrepareArgArgumentList :
         prepare:Abstract.IPrepareOptions ->
-          ((string -> string -> string) * string * string * bool) list
+          ((string -> string -> (string*string)) * string * string * bool) list
       val toCollectFromArgArgumentList :
         collect:Abstract.ICollectOptions ->
-          ((string -> string -> string * bool) * string * System.String) list
+          ((string -> string -> (string*string)* bool) * string * System.String) list
       val toSharedFromValueArgumentList :
         verbosity : System.Diagnostics.TraceLevel ->
-       ((string -> obj -> bool -> string*bool) * string * obj * bool) list
+       ((string -> obj -> bool -> (string*string)*bool) * string * obj * bool) list
       val toCLIOptionsFromArgArgumentList :
         options:ICLIOptions ->
-          ((string -> string -> string * bool) * string * System.String) list
+          ((string -> string -> (string*string) * bool) * string * string) list
       val toCLIOptionsArgArgumentList :
         options:ICLIOptions ->
-          ((string -> string -> string) * string * string * bool) list
+          ((string -> string -> (string*string)) * string * string * bool) list
     end
 #endif
-#if RUNNER
 // ### Composing the whole command line
 // ```
+    /// <summary>
+    /// Command line properties for `dotnet test` ImportModule option
+    /// </summary>
+    val ImportModuleProperties : (string*string) list
+
+    /// <summary>
+    /// Command line properties for `dotnet test` GetVersion option
+    /// </summary>
+
+    val GetVersionProperties : (string*string) list
+    /// <summary>
+    /// Converts the input into the command line properties for `dotnet test`
+    /// </summary>
+    /// <param name="prepare">Description of the instrumentation operation to perform</param>
+    /// <param name="collect">Description of the collection operation to perform</param>
+    /// <param name="options">All other `altcover` related command line arguments</param>
+    /// <returns>The command line as a sequence of name, value pairs</returns>
+    val ToTestPropertiesList :
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> (string*string) list
+
+#if RUNNER
     /// <summary>
     /// Converts the input into the command line for `dotnet test`
     /// </summary>
@@ -143,6 +164,8 @@ module DotNet = begin
     val internal toTestArguments :
       prepare:Abstract.IPrepareOptions ->
         collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
+    val ImportModuleProperties : (string*string) list
+    val GetVersionProperties : (string*string) list
   end
 #endif
 #endif

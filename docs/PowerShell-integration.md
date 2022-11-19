@@ -1130,9 +1130,9 @@ Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>]
 [-MethodTopLevel <string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-Report <string>]
 [-ReportFormat {NCover | OpenCover}] [-Save <SwitchParameter>] [-ShowGenerated <SwitchParameter>] [-ShowStatic
 {KeepHidden | Mark | Reveal}] [-Single <SwitchParameter>] [-SourceLink <SwitchParameter>] [-StrongNameKey
-<string>] [-SymbolDirectory <string[]>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>] [-Verbosity {Off |
-Error | Warning | Info | Verbose}] [-VisibleBranches <SwitchParameter>] [-ZipFile <SwitchParameter>]
-[<CommonParameters>]
+<string>] [-SymbolDirectory <string[]>] [-Trivia <SwitchParameter>] [-TypeFilter <string[]>] [-TypeTopLevel
+<string[]>] [-Verbosity {Off | Error | Warning | Info | Verbose}] [-VisibleBranches <SwitchParameter>] [-ZipFile
+<SwitchParameter>] [<CommonParameters>]
 
 Invoke-AltCover [-Version] <SwitchParameter> [<CommonParameters>]
 
@@ -1630,6 +1630,17 @@ Accept wildcard characters?  false
 
 #### `-ShowGenerated <SwitchParameter>` 
 Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited
+
+```
+Required?                    false
+Position?                    named
+Default value                False
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-Trivia <SwitchParameter>` 
+Omit trivial sequence points
 
 ```
 Required?                    false

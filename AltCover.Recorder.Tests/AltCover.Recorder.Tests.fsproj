@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net472;net20</TargetFrameworks>
+    <TargetFrameworks>net7.0;net472;net20</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -25,7 +25,7 @@
     <Compile Include="Adapter.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net6.0'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net7.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,24 +37,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.1.2">
+    <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit3TestAdapter">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net20'">
     <!-- last net2.0 support here : v 3.11.0 -->
-    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="NUnit" VersionOverride="3.11.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,28 +62,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.3" Condition="'$(TargetFramework)' == 'net20'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" Condition="'$(TargetFramework)' == 'net472'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Update="FSharp.Core" Version="6.0.6" Condition="'$(TargetFramework)' != 'net20'">
+    <PackageReference Include="FSharp.Core" Condition="'$(TargetFramework)' != 'net20'">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
-    <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
+    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
+    <PackageReference Include="FSharp.Compiler.Tools" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="System.IO.Compression">
-      <Version>4.3.0</Version>
-    </PackageReference>
+    <PackageReference Include="System.IO.Compression"/>
   </ItemGroup>
 </Project>

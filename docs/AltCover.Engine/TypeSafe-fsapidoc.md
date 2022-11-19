@@ -252,6 +252,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         ShowStatic: StaticFormat
         ShowGenerated: Flag
         Verbosity : System.Diagnostics.TraceLevel
+        Trivia: Flag
  }
       with
         static member Create : unit -> PrepareOptions

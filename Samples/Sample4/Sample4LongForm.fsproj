@@ -17,10 +17,6 @@
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
 
-  <Import Project="..\..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
-  <Import Project="..\..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.2\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets" Condition="Exists('..\..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" />
-  <Import Project="..\..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
-
   <Target Name="AfterBuild" Condition="'$(MSBuildTest)' != 'true'">
     <ItemGroup>
       <FSharpXml Include="$(OutputPath)/FSharp.*.xml" />
@@ -40,16 +36,14 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="xunit" Version="2.4.2" />
-    <PackageReference Include="xunit.abstractions" Version="2.0.3" />
-    <PackageReference Include="xunit.analyzers" Version="1.0.0" />
-    <PackageReference Include="xunit.assert" Version="2.4.2" />
-    <PackageReference Include="xunit.core" Version="2.4.2" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.4.2" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.4.2" />
+    <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.assert" />
+    <PackageReference Include="xunit.core" />
+    <PackageReference Include="xunit.extensibility.core" />
+    <PackageReference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,8 +59,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.fs" />
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net6.0\Sample4.AssemblyInfo.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net7.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net7.0\Sample4.AssemblyInfo.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,7 +72,4 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.6" />
-  </ItemGroup>
 </Project>

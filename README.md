@@ -71,7 +71,7 @@ Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstanda
 It is assumed that the following are available
 
 .net SDK version as per global.json, or later minor version (`dotnet`) -- try https://www.microsoft.com/net/download  
-PowerShell Core 7.2.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
+PowerShell Core 7.3.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
 The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net6.0` for unit tests, but does not need any pre-6.0 runtimes to be installed (roll-forward policies are in place).
 
@@ -89,14 +89,14 @@ It is assumed that `mono` (version 6.12.x or later) and `dotnet` are on the `PAT
 
 ### Bootstrapping
 
-Start by setting up with `dotnet tool restore`; this sets up local tools including `dotnet fake`.
-Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
+Start by setting up with `dotnet tool restore`; this sets up local tools.
+Then `dotnet run --project .\Fake\Setup\Setup.fsproj` to do the rest of the set-up.
 
 ### Normal builds
 
-Running `dotnet fake run ./Build/build.fsx` performs a full build/test/package process.
+Running `dotnet run --project .\Fake\Build\Build.fsproj` performs a full build/test/package process.
 
-Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specific target.
+Use `dotnet run --project .\Fake\Build\Build.fsproj --target <targetname>` to run to a specific target.
 
 #### If the build fails
 

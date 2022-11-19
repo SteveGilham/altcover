@@ -41,6 +41,7 @@ public class Prepare : Task
 | [SourceLink](Prepare/SourceLink-apidoc) { get; set; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
+| [Trivia](Prepare/Trivia-apidoc) { get; set; } | Corresponds to command line option ` --trivia` |
 | [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](Prepare/Verbosity-apidoc) { get; set; } | Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values) |

@@ -20,7 +20,7 @@ module ValidateGendarmeEmulation =
 
   let stringify x =
     match x with
-    | Some (n, e, r) -> Some(sprintf "Expected %d got %d in %s" e r n)
+    | Some(n, e, r) -> Some(sprintf "Expected %d got %d in %s" e r n)
     | None -> None
 
   let seqStringify x = x |> Seq.map stringify

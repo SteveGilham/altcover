@@ -71,9 +71,9 @@ module internal Lcov =
         |> ThrowHelper.ThrowInvalidDataException<bool>)
     |> Seq.sortBy (fun r ->
       match r with
-      | FN (a, _) -> 4 * a
-      | DA (a, _) -> (4 * a) + 1
-      | BRDA (a, _, _, _) -> (4 * a) + 2
+      | FN(a, _) -> 4 * a
+      | DA(a, _) -> (4 * a) + 1
+      | BRDA(a, _, _, _) -> (4 * a) + 2
       | _ ->
         r
         |> sprintf "%A"
@@ -81,7 +81,7 @@ module internal Lcov =
     |> Seq.fold
          (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
            match r with
-           | FN (_, n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
+           | FN(_, n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
              let endclass =
                n.IndexOf("::", StringComparison.Ordinal)
 
@@ -112,7 +112,7 @@ module internal Lcov =
 
              result.Add mt
              mt
-           | DA (l, n) ->
+           | DA(l, n) ->
              let sp =
                XElement(
                  XName.Get "seqpnt",
@@ -132,7 +132,7 @@ module internal Lcov =
              x.Add sp
              x
            // BRDA:<line number>,<block number>,<branch number>,<taken>
-           | BRDA (l, _, n, v) ->
+           | BRDA(l, _, n, v) ->
              let br =
                XElement(
                  XName.Get "branch",

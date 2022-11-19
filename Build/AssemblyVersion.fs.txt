@@ -13,6 +13,7 @@ open System.Reflection
 [<assembly: AssemblyMetadataAttribute("RepositoryUrl","https://github.com/SteveGilham/altcover")>]
 [<assembly: AssemblyMetadataAttribute("CommitHash","{2}")>]
 [<assembly: AssemblyMetadataAttribute("Branch","{3}")>]
+[<assembly: AssemblyMetadata("Build Time","{5}")>]
 #endif
 do ()
 
@@ -28,4 +29,5 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyMetadata_RepositoryUrl = "https://github.com/SteveGilham/altcover"
     let [<Literal>] AssemblyMetadata_CommitHash = "{2}"
     let [<Literal>] AssemblyMetadata_Branch = "{3}"
+    let [<Literal>] AssemblyMetadata_BuildTime = "{5}"
 #endif

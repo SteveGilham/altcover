@@ -93,7 +93,7 @@ module AltCoverCoreTests =
   let internal readResults (stream: Stream) =
     let hits = List<string * int * Track>()
 
-    use formatter =
+    use formatter = // fsharplint:disable-next-line  RedundantNewKeyword
       new System.IO.BinaryReader(stream)
 
     let rec sink () =
@@ -204,7 +204,7 @@ module AltCoverCoreTests =
         Instance.I.trace.Close()
         Instance.I.trace <- save
 
-      use stream =
+      use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
 
       let results =
@@ -278,7 +278,7 @@ module AltCoverCoreTests =
         Instance.I.trace.Close()
         Instance.I.trace <- save
 
-      use stream =
+      use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
 
       let results = readResults stream
@@ -406,7 +406,7 @@ module AltCoverCoreTests =
         System.Threading.Thread.Sleep 100
         Instance.I.trace <- save
 
-      use stream =
+      use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(root + ".0.acv"), CompressionMode.Decompress)
 
       let results =

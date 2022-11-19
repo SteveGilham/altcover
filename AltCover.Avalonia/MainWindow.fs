@@ -523,7 +523,7 @@ type MainWindow() as this =
       this.FindControl<Menu>("Menu").IsVisible <- false
       this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
-    let openFile = new Event<String option>()
+    let openFile = Event<String option>()
 
     this.FindControl<MenuItem>("Open").Click
     |> Event.add (fun _ ->
@@ -623,7 +623,13 @@ type MainWindow() as this =
           Row = null }
 
       let addNode =
-        fun leaf (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon pc name (tip: string option) ->
+        fun
+          leaf
+          (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
+          icon
+          pc
+          name
+          (tip: string option) ->
           let newrow = makeNewRow pc leaf name icon
 
           (context.Row.Items :?> List<TreeViewItem>)
@@ -695,7 +701,11 @@ type MainWindow() as this =
       + AssemblyVersionInformation.AssemblyFileVersion
 
     this.FindControl<TextBlock>("Description").Text <-
-      Resource.GetResourceString "aboutVisualizer.Comments"
+      String.Format(
+        Globalization.CultureInfo.CurrentCulture,
+        Resource.GetResourceString("aboutVisualizer.Comments"),
+        "AvaloniaUI"
+      )
 
     let copyright =
       AssemblyVersionInformation.AssemblyCopyright

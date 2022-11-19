@@ -52,3 +52,4 @@ From v7.1.783, this visualizer version also offers some limited font selection f
 * [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.18.1 or later), only in this package
+* [![Nuget](https://buildstats.info/nuget/altcover.cake) Cake build task utilities](https://www.nuget.org/packages/AltCover.Cake) -- just AltCover related helper types for Cake scripts (v1.0.0 or later), only in this package

@@ -13,6 +13,7 @@ using System.Reflection;
 [assembly: AssemblyMetadata("RepositoryUrl","https://github.com/SteveGilham/altcover")]
 [assembly: AssemblyMetadata("CommitHash","{2}")]
 [assembly: AssemblyMetadata("Branch","{3}")]
+[assembly: AssemblyMetadata("Build Time","{5}")]
 #endif
 
 #if !LITEVERSION
@@ -28,6 +29,7 @@ namespace AltCover {{
         internal const System.String AssemblyMetadata_RepositoryUrl = "https://github.com/SteveGilham/altcover";
         internal const System.String AssemblyMetadata_CommitHash = "{2}";
         internal const System.String AssemblyMetadata_Branch = "{3}";
+        internal const System.String AssemblyMetadata_BuildTime = "{5}";
     }}
 }}
 #endif

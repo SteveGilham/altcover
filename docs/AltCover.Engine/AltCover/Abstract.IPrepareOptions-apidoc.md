@@ -54,6 +54,7 @@ public interface IPrepareOptions
 | [SourceLink](Abstract.IPrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Abstract.IPrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Abstract.IPrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
+| [Trivia](Abstract.IPrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option ` --trivia` |
 | [TypeFilter](Abstract.IPrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Abstract.IPrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](Abstract.IPrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option `-q` |

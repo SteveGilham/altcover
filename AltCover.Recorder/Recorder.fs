@@ -126,7 +126,7 @@ module Instance =
       |> Seq.concat
       |> Seq.fold
            (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
-             d.Add(k, new Dictionary<int, PointVisit>())
+             d.Add(k, Dictionary<int, PointVisit>())
              d)
            (Dictionary<string, Dictionary<int, PointVisit>>())
 
@@ -139,7 +139,7 @@ module Instance =
       modules
       |> Seq.fold
            (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
-             d.Add(k, new Dictionary<Sampled, bool>())
+             d.Add(k, Dictionary<Sampled, bool>())
              d)
            (Dictionary<string, Dictionary<Sampled, bool>>())
 
@@ -516,7 +516,7 @@ module Instance =
                             Justification = "Compiler generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "DeclareEventsExplicitlyRule",
-                            Scope = "type",  // TypeDefinition
+                            Scope = "type", // TypeDefinition
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder",
                             Justification =
                               "Compiler generated doExit@453 and :doUnload@450")>]

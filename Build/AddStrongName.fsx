@@ -17,7 +17,7 @@ open Mono.Options
 // Command line argument parsing preamble ---------------------------------
 let (!+) (option: string * string * (string -> unit)) (options: OptionSet) =
     let prototype, help, action = option
-    options.Add(prototype, help, new System.Action<string>(action))
+    options.Add(prototype, help, System.Action<string>(action))
 
 let Usage (intro: string) (options: OptionSet) =
     Console.Error.WriteLine(intro)
@@ -29,7 +29,7 @@ let keyName = ref ""
 let cor32plus = ref false
 
 let options =
-    new OptionSet()
+    OptionSet()
     |> !+("k|key=", "The strong naming key to apply", (fun s -> keyName.Value <- s))
     |> !+("a|assembly=", "The assembly to process", (fun s -> assemblyName.Value <- s))
     |> !+("c|cor32", "Do what CorFlags  /32BIT+ /Force does.", (fun x -> cor32plus.Value <- x |> isNull |> not))
@@ -39,7 +39,7 @@ let rest =
         options.Parse(fsi.CommandLineArgs)
     with :? OptionException ->
         Usage "Error - usage is:" options
-        new List<String>()
+        List<String>()
 
 // The meat of the script starts here ---------------------------------
 // load files
