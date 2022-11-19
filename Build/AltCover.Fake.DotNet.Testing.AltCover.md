@@ -3,7 +3,9 @@
 This provides helpers to drive command-line AltCover (or `dotnet test` with AltCover) from any of the other packages.  In these scenarios, AltCover operates outside the Fake build process.
 The slightly awkward `AltCoverFake` namespace was chosen to allow co-existence with the previous in-process API's `AltCover.Fake` names.
 
-Requires Fake 5.18 or later
+Fake versions are normally supported for six months after release (when Fake itself deprecates old versions), but deprecation of older versions is not eager.  Check the AltCover release notes to see how far back support actually extends : see [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes.md) and [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md).
+
+**NOTE:** dotnet SDK v7.0.100 requires special treatment.  See [here](https://github.com/SteveGilham/altcover/wiki/dotnet-SDK-7.0.100) and [here](https://github.com/SteveGilham/altcover/wiki/Release-8.5.841).
 
 ## Composing the AltCover command line
 

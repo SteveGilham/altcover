@@ -1,5 +1,6 @@
-﻿#r "paket:
-nuget AltCover.Fake >= 7.0 //"
+﻿#i "nuget: https://api.nuget.org/v3/index.json"
+
+#r "nuget: AltCover.Fake"
 
 let prep =
     AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive

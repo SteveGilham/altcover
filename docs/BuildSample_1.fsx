@@ -1,6 +1,7 @@
-﻿#r "paket:
-nuget Fake.DotNet.Cli >= 5.20.3
-nuget AltCover.Api >= 7.0 //"
+﻿#i "nuget: https://api.nuget.org/v3/index.json"
+
+#r "nuget: AltCover.Api"
+#r "nuget: Fake.DotNet.Cli"
 
 let ForceTrue = AltCover.DotNet.CLIOptions.Force true
 

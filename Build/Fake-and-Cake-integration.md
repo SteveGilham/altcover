@@ -5,6 +5,10 @@ APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` 
 * [Fake integration](#fake-integration)
 * [Cake integration](#cake-integration)
 
+Fake versions are normally supported for six months after release (when Fake itself deprecates old versions), but deprecation of older versions is not eager. Cake version support is based on actual semantic API versioning, with the intent of going as far back as can be sompatible with supporting the current version.   Check the AltCover release notes to see how far back support actually extends : see [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes.md) and [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md).  
+
+**NOTE:** dotnet SDK v7.0.100 requires special treatment.  See [here](https://github.com/SteveGilham/altcover/wiki/dotnet-SDK-7.0.100) and [here](https://github.com/SteveGilham/altcover/wiki/Release-8.5.841).
+
 # Fake integration 
 Found in `AltCover.Fake.dll`  
 Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
@@ -58,8 +62,8 @@ the first two needed to silence warnings.
 Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/Abstract-apidoc)) e.g. by overriding the default types
 
 * [TestOptions](AltCover.Cake/AltCover.Cake/TestOptions-apidoc)
-* [PrepareOptions](AltCover.Cake/AltCover.Cake/PrepareOptions-apidoc
-* [CollectOptions](AltCover.Cake/AltCover.Cake/CollectOptions-apidoc
+* [PrepareOptions](AltCover.Cake/AltCover.Cake/PrepareOptions-apidoc)
+* [CollectOptions](AltCover.Cake/AltCover.Cake/CollectOptions-apidoc)
 
 which have empty or `false` values for all relevant properties, changing values as required e.g.
 ```csharp
