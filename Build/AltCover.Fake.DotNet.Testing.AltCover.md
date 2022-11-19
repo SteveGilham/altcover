@@ -5,7 +5,7 @@ The slightly awkward `AltCoverFake` namespace was chosen to allow co-existence w
 
 Fake versions are normally supported for six months after release (when Fake itself deprecates old versions), but deprecation of older versions is not eager.  Check the AltCover release notes to see how far back support actually extends : see [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes.md) and [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md).
 
-**NOTE:** dotnet SDK v7.0.100 requires special treatment.  See [here](https://github.com/SteveGilham/altcover/wiki/dotnet-SDK-7.0.100) and [here](https://github.com/SteveGilham/altcover/wiki/Release-8.5.841).
+**NOTE:** dotnet SDK v7.0.100 requires special treatment for driving AltCover through `dotnet test` (only; not as a command).  See [here](https://github.com/SteveGilham/altcover/wiki/dotnet-SDK-7.0.100) and [here](https://github.com/SteveGilham/altcover/wiki/Release-8.5.841).
 
 ## Composing the AltCover command line
 
@@ -35,14 +35,14 @@ Make one of these
 ### Example
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L984-L1004))
 
-```
+```fsharp
 !!./docs/AltCover.Fake.DotNet.Testing.AltCover/BuildSample_1.fsx
 ```
 
 ### Example
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3578-L3591))
 
-```
+```fsharp
 !!./docs/AltCover.Fake.DotNet.Testing.AltCover/BuildSample_2.fsx
 
 ```
