@@ -17,16 +17,13 @@ module DriveApi =
 
   let dotnetVersion = DotNet.getVersion id
 
-  let withEnvironment l (o: DotNet.Options) =
+  let withTestEnvironment l (o: DotNet.TestOptions) =
     let before = o.Environment |> Map.toList
 
     let after =
       [ l; before ] |> List.concat |> Map.ofList
 
-    { o with Environment = after }
-
-  let withTestEnvironment l (o: DotNet.TestOptions) =
-    { o with Common = withEnvironment l o.Common }
+    o.WithEnvironment after
 
   let withAltCoverOptions prepare collect force (o: DotNet.TestOptions) =
     if dotnetVersion <> "7.0.100" then

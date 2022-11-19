@@ -341,16 +341,13 @@ module Targets =
     // NOTE: Recommendation is to not use this Field, but instead use the helper function in the Proc module
     { o with Environment = o.Environment |> Map.add "AltCoverTag" (tag + "_") }
 
-  let withEnvironment l (o: DotNet.Options) =
+  let withTestEnvironment l (o: DotNet.TestOptions) =
     let before = o.Environment |> Map.toList
 
     let after =
       [ l; before ] |> List.concat |> Map.ofList
 
-    { o with Environment = after }
-
-  let withTestEnvironment l (o: DotNet.TestOptions) =
-    { o with Common = withEnvironment l o.Common }
+    o.WithEnvironment after
 
   let withAltCoverOptions
     (prepare: Abstract.IPrepareOptions)
