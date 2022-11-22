@@ -79,20 +79,6 @@
       </Menu>
     </Border>
     <DockPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-      <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
-        <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Image Name="Status" Source="resm:AltCover.UICommon.StatusError_32.png?assembly=AltCover.UICommon" Stretch="None" />
-          <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
-                   TextWrapping="NoWrap"
-                   AcceptsReturn="true"
-                   IsReadOnly="true"
-                   MaxWidth="500"
-                   BorderThickness="0" />
-        </StackPanel>
-        <Button Name="DismissMessageBox" HorizontalAlignment="Center">
-        </Button>
-      </StackPanel>
       <StackPanel DockPanel.Dock="Top" Margin="10" Name="AboutBox" IsVisible="false">
         <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.UICommon.logo.png?assembly=AltCover.UICommon" HorizontalAlignment="Center" />
         <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />

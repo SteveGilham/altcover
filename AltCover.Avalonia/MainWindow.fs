@@ -135,19 +135,23 @@ type MainWindow() as this =
     this.ShowMessageBox status caption message
 
   member private this.ShowMessageBox (status: MessageType) caption message =
-    Dispatcher.UIThread.Post(fun _ ->
-      this.FindControl<Image>("Status").Source <-
-        (match status with
-         | MessageType.Info -> icons.Info
-         | MessageType.Warning -> icons.Warn
-         | _ -> icons.Error)
-          .Force()
+      let dlg = MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
+      dlg.WindowIcon <- WindowIcon(icons.VIcon)
+      dlg.Icon <- (match status with
+                   | MessageType.Info -> icons.Info
+                   | MessageType.Warning -> icons.Warn
+                   | _ -> icons.Error)
+                    .Force()
+      dlg.ContentMessage <- message
+      dlg.ContentTitle <- caption
+      let ok = MessageBox.Avalonia.Models.ButtonDefinition()
+      ok.Name <- "OK"
+      dlg.ButtonDefinitions <- [ ok ]
+      dlg.WindowStartupLocation <- WindowStartupLocation.CenterOwner
+      dlg.SizeToContent <- SizeToContent.Height
 
-      this.FindControl<TextBlock>("Caption").Text <- caption
-      this.FindControl<TextBox>("Message").Text <- message
-      this.FindControl<StackPanel>("MessageBox").IsVisible <- true
-      this.FindControl<Menu>("Menu").IsVisible <- false
-      this.FindControl<DockPanel>("Grid").IsVisible <- false)
+      let mbox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxCustomWindow(dlg)
+      mbox.ShowDialog(this) |> ignore
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
@@ -750,22 +754,9 @@ type MainWindow() as this =
         |> not
       then
         this.FindControl<StackPanel>("AboutBox").IsVisible <- false
-        this.FindControl<StackPanel>("MessageBox").IsVisible <- false
         this.FindControl<Menu>("Menu").IsVisible <- true
         this.FindControl<DockPanel>("Grid").IsVisible <- true
         e.Cancel <- true)
-
-    // MessageBox
-    let okButton =
-      this.FindControl<Button>("DismissMessageBox")
-
-    okButton.Content <- "OK"
-
-    okButton.Click
-    |> Event.add (fun _ ->
-      this.FindControl<StackPanel>("MessageBox").IsVisible <- false
-      this.FindControl<Menu>("Menu").IsVisible <- true
-      this.FindControl<DockPanel>("Grid").IsVisible <- true)
 
     // AboutBox
     let okButton2 =

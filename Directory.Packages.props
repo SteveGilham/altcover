@@ -27,6 +27,7 @@
     <PackageVersion Include="FsUnit" Version="5.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
     <PackageVersion Include="Handlebars.Net" Version="2.0.9" />
+    <PackageVersion Include="MessageBox.Avalonia" Version="2.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
