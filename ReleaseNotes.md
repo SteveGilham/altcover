@@ -3,6 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
+# 8.5.84x (Habu series release 18)
+* [VISUALIZER] As the relevant Avalonia issue is long resolved, move to having separate dialog boxes for the Avalonia Visualizer's "About" and message box, as in the GTK# version.
+
 # 8.5.841 (Habu series release 17)
 * To support Cake 3.0, move the Cake API assembly from AltCover.Api to a new package AltCover.Cake; this contains libraries built against Cake 2.0.0 at `netcoreapp3.1` as well as the old ones built against Cake 1.0.0 at netstandard2.0 (present but in practice obsolete).
 * Following Fake.build's policy of deprecating releases older then 6 month, drop support for versions before 5.23
