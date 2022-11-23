@@ -27,6 +27,80 @@ type Thickness = Avalonia.Thickness
                             Justification = "Initialization specifies type")>]
 ()
 
+type AboutBox() as this =
+  inherit Window()
+  do this.InitializeComponent()
+
+  member this.InitializeComponent() =
+    AvaloniaXamlLoader.Load(this)
+    this.CanResize <- false
+
+    this.Title <- Resource.GetResourceString "aboutVisualizer.Title"
+
+    this.FindControl<TextBlock>("Program").Text <-
+      "AltCover.Visualizer "
+      + AssemblyVersionInformation.AssemblyFileVersion
+
+    this.FindControl<TextBlock>("Description").Text <-
+      String.Format(
+        Globalization.CultureInfo.CurrentCulture,
+        Resource.GetResourceString("aboutVisualizer.Comments"),
+        "AvaloniaUI"
+      )
+
+    let copyright =
+      AssemblyVersionInformation.AssemblyCopyright
+
+    this.FindControl<TextBlock>("Copyright").Text <- copyright
+
+    let vslink =
+      this.FindControl<TextBlock>("VSLink")
+
+    vslink.Text <- Resource.GetResourceString "aboutVisualizer.Copyright"
+
+    let vsLinkButton =
+      this.FindControl<Button>("VSLinkButton")
+
+    vsLinkButton.Click
+    |> Event.add (fun _ ->
+      Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
+        "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022")
+
+    let link =
+      this.FindControl<TextBlock>("Link")
+
+    link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"
+
+    let linkButton =
+      this.FindControl<Button>("LinkButton")
+
+    linkButton.Click
+    |> Event.add (fun _ ->
+      Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
+        "http://www.github.com/SteveGilham/altcover")
+
+    this.FindControl<TabItem>("AboutDetails").Header <-
+      Resource.GetResourceString "AboutDialog.About"
+
+    this.FindControl<TabItem>("License").Header <-
+      Resource.GetResourceString "AboutDialog.License"
+
+    this.FindControl<TextBlock>("MIT").Text <-
+      String.Format(
+        CultureInfo.InvariantCulture,
+        Resource.GetResourceString "License",
+        copyright
+      )
+
+    // AboutBox
+    let aboutClose =
+      this.FindControl<Button>("DismissAboutBox")
+
+    aboutClose.Click
+    |> Event.add (fun _ -> this.Close())
+
+    aboutClose.Content <- "OK"
+
 type MainWindow() as this =
   inherit Window()
   let mutable armed = false
@@ -135,23 +209,33 @@ type MainWindow() as this =
     this.ShowMessageBox status caption message
 
   member private this.ShowMessageBox (status: MessageType) caption message =
-      let dlg = MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
-      dlg.WindowIcon <- WindowIcon(icons.VIcon)
-      dlg.Icon <- (match status with
-                   | MessageType.Info -> icons.Info
-                   | MessageType.Warning -> icons.Warn
-                   | _ -> icons.Error)
-                    .Force()
-      dlg.ContentMessage <- message
-      dlg.ContentTitle <- caption
-      let ok = MessageBox.Avalonia.Models.ButtonDefinition()
-      ok.Name <- "OK"
-      dlg.ButtonDefinitions <- [ ok ]
-      dlg.WindowStartupLocation <- WindowStartupLocation.CenterOwner
-      dlg.SizeToContent <- SizeToContent.Height
+    let dlg =
+      MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
 
-      let mbox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxCustomWindow(dlg)
-      mbox.ShowDialog(this) |> ignore
+    dlg.WindowIcon <- WindowIcon(icons.VIcon)
+
+    dlg.Icon <-
+      (match status with
+       | MessageType.Info -> icons.Info
+       | MessageType.Warning -> icons.Warn
+       | _ -> icons.Error)
+        .Force()
+
+    dlg.ContentMessage <- message
+    dlg.ContentTitle <- caption
+
+    let ok =
+      MessageBox.Avalonia.Models.ButtonDefinition()
+
+    ok.Name <- "OK"
+    dlg.ButtonDefinitions <- [ ok ]
+    dlg.WindowStartupLocation <- WindowStartupLocation.CenterOwner
+    dlg.SizeToContent <- SizeToContent.Height
+
+    let mbox =
+      MessageBox.Avalonia.MessageBoxManager.GetMessageBoxCustomWindow(dlg)
+
+    mbox.ShowDialog(this) |> ignore
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
@@ -199,14 +283,6 @@ type MainWindow() as this =
        else
          icons.Refresh)
         .Force()
-
-  [<SuppressMessage("Gendarme.Rules.Performance",
-                    "AvoidUnusedParametersRule",
-                    Justification = "Meets an interface")>]
-  member private this.HideAboutBox _ =
-    this.FindControl<StackPanel>("AboutBox").IsVisible <- false
-    this.FindControl<Menu>("Menu").IsVisible <- true
-    this.FindControl<DockPanel>("Grid").IsVisible <- true
 
   member private this.UpdateTextFonts (text: TextPresenter) text2 =
     [ text; text2 ]
@@ -522,17 +598,12 @@ type MainWindow() as this =
       l.Shutdown())
 
     this.FindControl<MenuItem>("ShowAbout").Click
-    |> Event.add (fun _ ->
-      this.FindControl<StackPanel>("AboutBox").IsVisible <- true
-      this.FindControl<Menu>("Menu").IsVisible <- false
-      this.FindControl<DockPanel>("Grid").IsVisible <- false)
+    |> Event.add (fun _ -> AboutBox().ShowDialog(this) |> ignore)
 
     let openFile = Event<String option>()
 
     this.FindControl<MenuItem>("Open").Click
     |> Event.add (fun _ ->
-      this.HideAboutBox()
-
       async {
         (ofd.ShowAsync(this)
          |> Async.AwaitTask // task not disposed??
@@ -616,10 +687,6 @@ type MainWindow() as this =
       row.Header <- makeTreeNode note leaf name <| anIcon.Force()
       row
 
-    select
-    |> Seq.fold Event.merge refresh
-    |> Event.add this.HideAboutBox
-
     Event.merge fileSelection refresh
     |> Event.add (fun index ->
       let mutable auxModel =
@@ -699,76 +766,6 @@ type MainWindow() as this =
           Map = this.PrepareDoubleTap }
 
       Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
-
-    this.FindControl<TextBlock>("Program").Text <-
-      "AltCover.Visualizer "
-      + AssemblyVersionInformation.AssemblyFileVersion
-
-    this.FindControl<TextBlock>("Description").Text <-
-      String.Format(
-        Globalization.CultureInfo.CurrentCulture,
-        Resource.GetResourceString("aboutVisualizer.Comments"),
-        "AvaloniaUI"
-      )
-
-    let copyright =
-      AssemblyVersionInformation.AssemblyCopyright
-
-    this.FindControl<TextBlock>("Copyright").Text <-
-      String.Format(
-        CultureInfo.InvariantCulture,
-        Resource.GetResourceString "aboutVisualizer.Copyright",
-        copyright
-      )
-
-    let link =
-      this.FindControl<TextBlock>("Link")
-
-    link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"
-
-    let linkButton =
-      this.FindControl<Button>("LinkButton")
-
-    linkButton.Click
-    |> Event.add (fun _ ->
-      Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
-        "http://www.github.com/SteveGilham/altcover")
-
-    this.FindControl<TabItem>("AboutDetails").Header <-
-      Resource.GetResourceString "AboutDialog.About"
-
-    this.FindControl<TabItem>("License").Header <-
-      Resource.GetResourceString "AboutDialog.License"
-
-    this.FindControl<TextBlock>("MIT").Text <-
-      String.Format(
-        CultureInfo.InvariantCulture,
-        Resource.GetResourceString "License",
-        copyright
-      )
-
-    this.Closing
-    |> Event.add (fun e ->
-      if
-        this.FindControl<DockPanel>("Grid").IsVisible
-        |> not
-      then
-        this.FindControl<StackPanel>("AboutBox").IsVisible <- false
-        this.FindControl<Menu>("Menu").IsVisible <- true
-        this.FindControl<DockPanel>("Grid").IsVisible <- true
-        e.Cancel <- true)
-
-    // AboutBox
-    let okButton2 =
-      this.FindControl<Button>("DismissAboutBox")
-
-    okButton2.Content <- "OK"
-
-    okButton2.Click
-    |> Event.add (fun _ ->
-      this.FindControl<StackPanel>("AboutBox").IsVisible <- false
-      this.FindControl<Menu>("Menu").IsVisible <- true
-      this.FindControl<DockPanel>("Grid").IsVisible <- true)
 
   interface IVisualizerWindow with
     member self.CoverageFiles

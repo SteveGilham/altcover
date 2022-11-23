@@ -119,9 +119,11 @@ module private Gui =
       AltCover.AssemblyVersionInformation.AssemblyFileVersion
 
     handler.aboutVisualizer.Copyright <-
-      Resource.Format(
-        "aboutVisualizer.Copyright",
-        [ AltCover.AssemblyVersionInformation.AssemblyCopyright ]
+      String.Join(
+        Environment.NewLine,
+        [ AltCover.AssemblyVersionInformation.AssemblyCopyright
+          Resource.Format("aboutVisualizer.Copyright", [])
+          "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022" ]
       )
 
     handler.aboutVisualizer.License <-

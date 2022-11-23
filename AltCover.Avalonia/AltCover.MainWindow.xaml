@@ -78,71 +78,39 @@
         </MenuItem>
       </Menu>
     </Border>
-    <DockPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-      <StackPanel DockPanel.Dock="Top" Margin="10" Name="AboutBox" IsVisible="false">
-        <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.UICommon.logo.png?assembly=AltCover.UICommon" HorizontalAlignment="Center" />
-        <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
-        <TabControl Name="AboutTab" Margin="40">
-          <TabItem Name="AboutDetails" Height="36" MaxHeight="36">
-            <StackPanel Height="150">
-              <TextBlock Name="Description" HorizontalAlignment="Center" TextAlignment="Center" />
-              <TextBlock Name="Copyright" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
-              <Button Name="LinkButton" HorizontalAlignment="Center"
-                      BorderThickness="0,0,0,1" Foreground="DarkBlue"
-                      Padding="0" Margin="0">
-                <TextBlock Name="Link"
-                           TextAlignment="Center" Background="White"
-                           HorizontalAlignment="Center" />
-              </Button>
-            </StackPanel>
-          </TabItem>
-          <TabItem Name="License" Height="36" MaxHeight="36">
-            <StackPanel>
-              <ScrollViewer MaxHeight="150" HorizontalAlignment="Center">
-                <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />
-              </ScrollViewer>
-            </StackPanel>
-          </TabItem>
-        </TabControl>
-        <Button Name="DismissAboutBox" HorizontalAlignment="Center">
-        </Button>
-      </StackPanel>
-      <StackPanel DockPanel.Dock="Top" Name="FontSelection" IsVisible="false">
-      </StackPanel>
-      <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-        <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
+    <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+      <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
                       HorizontalScrollBarVisibility="Auto">
-          <TreeView Name="Tree" MinWidth="150" BorderThickness="0" />
-        </ScrollViewer>
-        <Border BorderThickness="1,0,0,0"
+        <TreeView Name="Tree" MinWidth="150" BorderThickness="0" />
+      </ScrollViewer>
+      <Border BorderThickness="1,0,0,0"
                 BorderBrush="Black">
-          <ScrollViewer DockPanel.Dock="Right"
+        <ScrollViewer DockPanel.Dock="Right"
                         x:Name="Coverage"
                         VerticalScrollBarVisibility="Auto"
                         HorizontalScrollBarVisibility="Auto"
                         Background="WhiteSmoke">
-            <StackPanel Orientation="Horizontal">
-              <TextPresenter
+          <StackPanel Orientation="Horizontal">
+            <TextPresenter
                        Name="Lines" MinWidth="50"
                        TextAlignment="Right"
                        TextWrapping="NoWrap"
                        Background="White"
                        Foreground="DarkGray" />
-              <StackPanel x:Name="Branches"
+            <StackPanel x:Name="Branches"
                           Orientation="Vertical"
                           Background="White"
                           Width="16"
                           MinWidth="16">
-              </StackPanel>
-              <TextPresenter
+            </StackPanel>
+            <TextPresenter
                        Name="Source" MinWidth="150"
                        TextWrapping="NoWrap"
                        Background="WhiteSmoke"
                        Foreground="Gray" />
-            </StackPanel>
-          </ScrollViewer>
-        </Border>
-      </DockPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
     </DockPanel>
   </DockPanel>
 </Window>

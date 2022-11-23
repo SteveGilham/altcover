@@ -28,6 +28,10 @@
     <EmbeddedResource Include="AltCover.App.xaml">
       <LogicalName>AltCover.App.xaml</LogicalName>
     </EmbeddedResource>
+    
+    <EmbeddedResource Include="AltCover.AboutBox.xaml">
+      <LogicalName>AltCover.AboutBox.xaml</LogicalName>
+    </EmbeddedResource>    
   </ItemGroup>
 
   <ItemGroup>
