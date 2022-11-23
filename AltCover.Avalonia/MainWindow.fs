@@ -208,6 +208,9 @@ type MainWindow() as this =
 
     this.ShowMessageBox status caption message
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidSwitchStatementsRule",
+                    Justification = "This is FP, not OO")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
@@ -235,7 +238,8 @@ type MainWindow() as this =
     let mbox =
       MessageBox.Avalonia.MessageBoxManager.GetMessageBoxCustomWindow(dlg)
 
-    mbox.ShowDialog(this) |> ignore
+    use _ = mbox.ShowDialog(this)
+    ()
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
@@ -598,14 +602,18 @@ type MainWindow() as this =
       l.Shutdown())
 
     this.FindControl<MenuItem>("ShowAbout").Click
-    |> Event.add (fun _ -> AboutBox().ShowDialog(this) |> ignore)
+    |> Event.add (fun _ ->
+      use _ = AboutBox().ShowDialog(this)
+      ())
 
     let openFile = Event<String option>()
 
     this.FindControl<MenuItem>("Open").Click
     |> Event.add (fun _ ->
       async {
-        (ofd.ShowAsync(this)
+        (use s = ofd.ShowAsync(this)
+
+         s
          |> Async.AwaitTask // task not disposed??
          |> Async.RunSynchronously)
         |> Option.ofObj
@@ -778,11 +786,4 @@ type MainWindow() as this =
 
     member self.ShowMessageOnGuiThread mtype message = self.DisplayMessage mtype message
 
-[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
-                            "EnsureLocalDisposalRule",
-                            Scope = "member",
-                            Target =
-                              "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 532@533::Invoke(Microsoft.FSharp.Core.Unit)",
-                            Justification =
-                              "Local of type 'Task`1' is not disposed of. Hmm.")>]
 ()
