@@ -211,6 +211,9 @@ type MainWindow() as this =
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidSwitchStatementsRule",
                     Justification = "This is FP, not OO")>]
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                     Justification = "Asynch task to tidy up")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
@@ -238,8 +241,9 @@ type MainWindow() as this =
     let mbox =
       MessageBox.Avalonia.MessageBoxManager.GetMessageBoxCustomWindow(dlg)
 
-    use _ = mbox.ShowDialog(this)
-    ()
+    // can we get this to tidy up after itself??
+    mbox.ShowDialog(this) |> ignore
+
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
@@ -613,9 +617,7 @@ type MainWindow() as this =
       async {
         (use s = ofd.ShowAsync(this)
 
-         s
-         |> Async.AwaitTask // task not disposed??
-         |> Async.RunSynchronously)
+         s |> Async.AwaitTask |> Async.RunSynchronously)
         |> Option.ofObj
         |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
         |> Option.iter openFile.Trigger
