@@ -1014,6 +1014,8 @@ module Targets =
 
       let sample = Path.getFullName "./Samples"
 
+      let underscore = Path.getFullName "./_"
+
       let failOnIssuesFound (issuesFound: bool) =
         Assert.That(issuesFound, Is.False, "Lint issues were found")
 
@@ -1022,6 +1024,7 @@ module Targets =
         |> Seq.filter (fun f ->
           ((f.Contains demo)
            || (f.Contains regress)
+           || (f.Contains underscore)
            || (f.Contains sample))
           |> not)
         !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
