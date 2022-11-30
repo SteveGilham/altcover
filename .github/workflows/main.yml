@@ -23,11 +23,11 @@ jobs:
     - name: Tools
       run: dotnet tool restore
     - name: Setup
-      run: dotnet run --project .\Fake\Setup\Setup.fsproj
+      run: dotnet run --project .\Build\Setup.fsproj
     - name: Build
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      run: dotnet run --project .\Fake\Build\Build.fsproj
+      run: dotnet run --project .\Build\Build.fsproj
     - uses: actions/upload-artifact@v3
       with:
           name: nupkgs
@@ -51,9 +51,9 @@ jobs:
     - name: Tools
       run: dotnet tool restore
     - name: Setup
-      run: dotnet run --project ./Fake/Setup/Setup.fsproj
+      run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
-      run: dotnet run --project ./Fake/Build/Build.fsproj 
+      run: dotnet run --project ./Build/Build.fsproj 
     - uses: actions/upload-artifact@v3
       if: failure()
       with:

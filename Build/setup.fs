@@ -44,7 +44,7 @@ module Setup =
 
   DotNet.restore
     (fun o -> { o with Common = dotnetOptions o.Common })
-    "./Fake/DriveApi/DriveApi.fsproj"
+    "./Build/DriveApi.fsproj"
 
   let toolPackages =
     let xml =

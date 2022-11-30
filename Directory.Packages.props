@@ -1,13 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="5.19.1.28" />
     <PackageVersion Include="AltCode.Dixon" Version="2022.1.8.13182" />
     <PackageVersion Include="altcode.gendarme" Version="2022.5.17.8260" />
     <PackageVersion Include="altcover" Version="8.4.840" />
     <PackageVersion Include="AltCover.Api" Version="8.4.840" />
+    <PackageVersion Include="AltCover.Fake" Version="8.4.840" />
     <PackageVersion Include="Avalonia" Version="0.10.18" />
     <PackageVersion Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageVersion Include="BlackFox.CommandLine" Version="1.0.0" />
+    <PackageVersion Include="BlackFox.VsWhere" Version="1.1.0" />
     <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
     <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
@@ -21,12 +24,26 @@
     <PackageVersion Include="FAKE.Core.Environment" Version="5.23.0" />
     <PackageVersion Include="FAKE.Core.Process" Version="5.23.0" />
     <PackageVersion Include="FAKE.Core.Trace" Version="5.23.0" />
+    <PackageVersion Include="Fake.Core.Target" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.AssemblyInfoFile" Version="5.23.0" />
     <PackageVersion Include="FAKE.DotNet.Cli" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.fxcop" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.msbuild" Version="5.23.0" />
+    <PackageVersion Include="Fake.DotNet.NuGet" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.testing.coverlet" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.testing.nunit" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.testing.opencover" Version="5.23.0" />
+    <PackageVersion Include="Fake.dotNet.testing.xunit2" Version="5.23.0" />
+    <PackageVersion Include="Fake.IO.FileSystem" Version="5.23.0" />
+    <PackageVersion Include="Fake.Testing.ReportGenerator" Version="5.23.0" />
+    <PackageVersion Include="Fake.Tools.git" Version="5.23.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
     <PackageVersion Include="FSharp.Core" Version="7.0.0" />
     <PackageVersion Include="FsUnit" Version="5.1.0" />
+    <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
     <PackageVersion Include="Handlebars.Net" Version="2.0.9" />
+    <PackageVersion Include="Markdig" Version="0.30.4" />
     <PackageVersion Include="MessageBox.Avalonia" Version="2.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
@@ -67,6 +84,7 @@
     <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.console" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <PackageVersion Include="YamlDotNet" Version="12.0.2" />
     <PackageVersion Include="YoloDev.Expecto.TestSdk" Version="1.0.0" />
   </ItemGroup>
 </Project>

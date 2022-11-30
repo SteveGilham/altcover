@@ -1078,9 +1078,9 @@ module Targets =
 
       [ ("./Build/common-rules.xml",
          [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ])
-        ("./Fake/common-rules.xml",
-         [ "Fake/Binaries/Setup/Debug+AnyCPU/net7.0/Setup.dll"
-           "Fake/Binaries/Build/Debug+AnyCPU/net7.0/Build.dll" ])
+        ("./Build/build-rules.xml",
+         [ "$Binaries/Setup/Debug+AnyCPU/net7.0/Setup.dll"
+           "$Binaries/Build/Debug+AnyCPU/net7.0/Build.dll" ])
         ("./Build/common-rules.xml",
          [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
            "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
@@ -5944,7 +5944,7 @@ module Targets =
         config.Save "./_ApiUse/_DotnetTest/NuGet.config"
 
         let driveproj =
-          XDocument.Load "./Fake/DriveApi/DriveApi.fsproj"
+          XDocument.Load "./Build/DriveApi.fsproj"
 
         // refine as required
         driveproj.Descendants(XName.Get("PackageReference"))
@@ -5952,19 +5952,11 @@ module Targets =
           let i =
             x.Attribute(XName.Get "Include").Value
 
-          let v = x.Attribute(XName.Get("Version"))
-          let ver = v.Value
-          v.Remove()
+          let ver =
+            x.Attribute(XName.Get "VersionOverride")
 
-          x.Add(
-            XAttribute(
-              XName.Get "VersionOverride",
-              if i.StartsWith "AltCover." then
-                Version.Value
-              else
-                ver
-            )
-          ))
+          if i.StartsWith "AltCover." then
+            ver.Value <- Version.Value)
 
         driveproj.Save "./_ApiUse/DriveApi.fsproj"
 
@@ -5999,7 +5991,7 @@ module Targets =
         Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
         let driver =
-          File.ReadAllText "./Fake/Build/DriveApi.fsx"
+          File.ReadAllText "./Build/DriveApi.fsx"
 
         File.WriteAllText(
           "./_ApiUse/DriveApi.fsx",
@@ -6043,7 +6035,7 @@ module Targets =
         )
 
         let drivescript =
-          File.ReadAllText("./Fake/DriveApi/DriveApi.fs")
+          File.ReadAllText("./Build/DriveApi.fs")
 
         File.WriteAllText("./_ApiUse/DriveApi.fs", drivescript.Replace("{0}", ver))
 
