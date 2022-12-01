@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="5.19.1.28" />
+    <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="5.23.0.39-pre" />
     <PackageVersion Include="AltCode.Dixon" Version="2022.1.8.13182" />
     <PackageVersion Include="altcode.gendarme" Version="2022.5.17.8260" />
     <PackageVersion Include="altcover" Version="8.4.840" />
