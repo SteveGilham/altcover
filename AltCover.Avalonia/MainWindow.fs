@@ -213,7 +213,7 @@ type MainWindow() as this =
                     Justification = "This is FP, not OO")>]
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
-                     Justification = "Asynch task to tidy up")>]
+                    Justification = "Asynch task to tidy up")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()

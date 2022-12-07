@@ -582,20 +582,20 @@ a:hover {color: #ecc;}
         "Building"
         "Thanks to" ]
 
-    let keep = ref true
+    let mutable keep = true
 
     let kill =
       body.Elements()
       |> Seq.map (fun x ->
         match x.Name.LocalName with
         | "h2" ->
-          keep.Value <-
+          keep <-
             (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
             |> Option.isNone
-        | "footer" -> keep.Value <- true
+        | "footer" -> keep <- true
         | _ -> ()
 
-        if keep.Value then None else Some x)
+        if keep then None else Some x)
       |> Seq.toList
 
     kill

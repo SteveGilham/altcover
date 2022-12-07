@@ -32,8 +32,8 @@ module Targets =
   open NUnit.Framework
   open Swensen.Unquote
 
-  let Copyright = ref String.Empty
-  let Version = ref String.Empty
+  let mutable Copyright = String.Empty
+  let mutable Version = String.Empty
 
   let lastGoodPackage () =
     let n =
@@ -43,7 +43,7 @@ module Targets =
 
     if n |> Seq.isEmpty |> not then
       let v = n |> Seq.max
-      Version.Value <- v.ToString()
+      Version <- v.ToString()
       printfn "Default version from packages = %A" v
     else
       let version = Actions.GetVersionFromYaml()
@@ -51,7 +51,7 @@ module Targets =
       let (result, _, _) =
         Actions.LocalVersion "none" version
 
-      Version.Value <- result
+      Version <- result
       printfn "Default version from date = %A" result
 
   lastGoodPackage ()
@@ -338,8 +338,10 @@ module Targets =
     { o with MSBuildParams = cliArguments }
 
   let tagOptions tag (o: DotNet.Options) =
-    // NOTE: Recommendation is to not use this Field, but instead use the helper function in the Proc module
-    { o with Environment = o.Environment |> Map.add "AltCoverTag" (tag + "_") }
+    let after =
+      o.Environment |> Map.add "AltCoverTag" (tag + "_")
+
+    o.WithEnvironment after
 
   let withTestEnvironment l (o: DotNet.TestOptions) =
     let before = o.Environment |> Map.toList
@@ -464,10 +466,10 @@ module Targets =
         Settings = Some "./Build/coverletArgs.sample.runsettings"
         Collect = Some "XPlat Code Coverage" }
 
-  let misses = ref 0
+  let mutable misses = 0
 
   let uncovered (path: string) =
-    misses.Value <- 0
+    misses <- 0
 
     !!path
     |> Seq.collect (fun f ->
@@ -481,7 +483,7 @@ module Targets =
           sprintf "No coverage from '%s'" f
           |> Trace.traceImportant
 
-          misses.Value <- 1 + misses.Value
+          misses <- 1 + misses
           false)
       |> Seq.map (fun e ->
         let coverage = e.Value
@@ -517,7 +519,7 @@ module Targets =
         else
           n > 0)
       |> Option.isSome
-      || misses.Value > 0
+      || misses > 0
     then
       Assert.Fail("Coverage is too low")
 
@@ -769,16 +771,16 @@ module Targets =
         Actions.LocalVersion ci version
 
       let y = now.Year
-      Version.Value <- v
+      Version <- v
 
       let copy =
         sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
 
-      Copyright.Value <- "Copyright " + copy
+      Copyright <- "Copyright " + copy
 
       Directory.ensure "./_Generated"
       Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
-      Actions.InternalsVisibleTo(Version.Value)
+      Actions.InternalsVisibleTo(Version)
 
       [ "./_Generated/AssemblyVersion.fs"
         "./_Generated/AssemblyVersion.cs" ]
@@ -792,7 +794,7 @@ module Targets =
           String.Format(
             text,
             majmin,
-            Version.Value.Split([| '-' |]).[0],
+            Version.Split([| '-' |]).[0],
             commitHash,
             Information.getBranchName ("."),
             y,
@@ -2634,7 +2636,7 @@ module Targets =
             XElement(
               XName.Get "PackageReference",
               XAttribute(XName.Get "Include", "altcover"),
-              XAttribute(XName.Get "VersionOverride", Version.Value)
+              XAttribute(XName.Get "VersionOverride", Version)
             )
 
           pack.AddBeforeSelf inject
@@ -2690,7 +2692,7 @@ module Targets =
             proj)
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
         //printfn "Should clear %A" folder
         Shell.mkdir folder
         Actions.CleanDir folder
@@ -4093,7 +4095,7 @@ module Targets =
             cake2Files "lib/netcoreapp3.1/"
             cake0files
             housekeeping ],
-         [ ("AltCover.Api", Version.Value) ],
+         [ ("AltCover.Api", Version) ],
          "_Packaging.api",
          "./_Generated/altcover.cake.nuspec",
          "altcover.cake")
@@ -4175,8 +4177,8 @@ module Targets =
                     else
                       path + "/" + name)
                 Dependencies = dependencies
-                Version = Version.Value
-                Copyright = Copyright.Value
+                Version = Version
+                Copyright = Copyright
                 Publish = false
                 ReleaseNotes =
                   let source =
@@ -4348,7 +4350,6 @@ module Targets =
     (fun _ ->
       let c =
         Copyright
-          .Value
           .Replace("©", "&#xa9;")
           .Replace("<", "&lt;")
           .Replace(">", "&gt;")
@@ -4441,7 +4442,7 @@ module Targets =
     (fun _ ->
       Directory.ensure "./_Documentation"
 
-      let v = Version.Value.Split([| '-' |]).[0]
+      let v = Version.Split([| '-' |]).[0]
 
       let unpackapi =
         Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
@@ -4476,7 +4477,7 @@ module Targets =
       let fixedReport =
         Path.getFullName "_Reports/Pester.xml"
 
-      let v = Version.Value.Split([| '-' |]).[0]
+      let v = Version.Split([| '-' |]).[0]
 
       let key =
         Path.getFullName "Build/Infrastructure.snk"
@@ -5818,7 +5819,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover.api"),
-            XAttribute(XName.Get "VersionOverride", Version.Value)
+            XAttribute(XName.Get "VersionOverride", Version)
           )
 
         pack.AddBeforeSelf inject
@@ -5856,7 +5857,7 @@ module Targets =
               (Path.getFullName "./_Packaging.api")
                 .Replace("\\", "/")
             )
-            .Replace("{1}", Version.Value)
+            .Replace("{1}", Version)
         )
 
         [ (" --version 2.0.0", "build.cake")
@@ -5910,8 +5911,7 @@ module Targets =
       finally
         [ "altcover.api" ]
         |> List.iter (fun f ->
-          let folder =
-            (nugetCache @@ f) @@ Version.Value
+          let folder = (nugetCache @@ f) @@ Version
 
           Shell.mkdir folder
           Actions.CleanDir folder))
@@ -5925,7 +5925,7 @@ module Targets =
         Shell.cleanDir ("./_ApiUse")
         Directory.ensure "./_ApiUse/_DotnetTest"
 
-        let vv = Version.Value + "-"
+        let vv = Version + "-"
         let ver = vv.Split([| '-' |]) |> Seq.head
 
         let apiroot =
@@ -5956,7 +5956,7 @@ module Targets =
             x.Attribute(XName.Get "VersionOverride")
 
           if i.StartsWith "AltCover." then
-            ver.Value <- Version.Value)
+            ver.Value <- Version)
 
         driveproj.Save "./_ApiUse/DriveApi.fsproj"
 
@@ -5979,7 +5979,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover.api"),
-            XAttribute(XName.Get "VersionOverride", Version.Value),
+            XAttribute(XName.Get "VersionOverride", Version),
             XElement(XName.Get "PrivateAssets", "all"),
             XElement(XName.Get "IncludeAssets", "build")
           )
@@ -5997,7 +5997,7 @@ module Targets =
           "./_ApiUse/DriveApi.fsx",
           String.Format(
             driver,
-            Version.Value,
+            Version,
             Path.getFullName "./_Packaging.api",
             Path.getFullName "./_Packaging.fake"
           )
@@ -6064,8 +6064,7 @@ module Targets =
           "altcover.api"
           "altcover.fake" ]
         |> List.iter (fun f ->
-          let folder =
-            (nugetCache @@ f) @@ Version.Value
+          let folder = (nugetCache @@ f) @@ Version
 
           Shell.mkdir folder
           Actions.CleanDir folder))
@@ -6140,7 +6139,7 @@ module Targets =
             XElement(
               XName.Get "PackageReference",
               XAttribute(XName.Get "Include", "altcover"),
-              XAttribute(XName.Get "VersionOverride", Version.Value)
+              XAttribute(XName.Get "VersionOverride", Version)
             )
 
           pack.AddBeforeSelf inject
@@ -6708,7 +6707,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover"),
-            XAttribute(XName.Get "VersionOverride", Version.Value)
+            XAttribute(XName.Get "VersionOverride", Version)
           )
 
         pack.AddBeforeSelf inject
@@ -6741,7 +6740,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover"),
-            XAttribute(XName.Get "VersionOverride", Version.Value)
+            XAttribute(XName.Get "VersionOverride", Version)
           )
 
         pack.AddBeforeSelf inject
@@ -6776,7 +6775,7 @@ module Targets =
       // let inject =
       //   XElement
       //     (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-      //      XAttribute(XName.Get "Version", Version.Value))
+      //      XAttribute(XName.Get "Version", Version))
       // pack.AddBeforeSelf inject
       // proj.Save "./Samples/Sample22/Sample22.fsproj"
 
@@ -6789,7 +6788,7 @@ module Targets =
 
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -6817,7 +6816,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover"),
-            XAttribute(XName.Get "VersionOverride", Version.Value)
+            XAttribute(XName.Get "VersionOverride", Version)
           )
 
         pack.AddBeforeSelf inject
@@ -6912,7 +6911,7 @@ module Targets =
 
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -6941,7 +6940,7 @@ module Targets =
 
         // Bump the version
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
-        pack.Attribute(XName.Get "VersionOverride").Value <- Version.Value
+        pack.Attribute(XName.Get "VersionOverride").Value <- Version
         csproj.Save "./_Issue23/sample9.csproj"
         Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.cs")
         Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.json")
@@ -6980,7 +6979,7 @@ module Targets =
           ""
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -7015,7 +7014,7 @@ module Targets =
 
         // Bump the version
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
-        pack.Attribute(XName.Get "VersionOverride").Value <- Version.Value
+        pack.Attribute(XName.Get "VersionOverride").Value <- Version
         csproj.Save "./_Issue67/sample9.csproj"
         Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.cs")
         Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.json")
@@ -7066,7 +7065,7 @@ module Targets =
         Assert.That(passed, Is.EqualTo 2)
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -7116,7 +7115,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover"),
-            XAttribute(XName.Get "VersionOverride", Version.Value)
+            XAttribute(XName.Get "VersionOverride", Version)
           )
 
         pack.AddBeforeSelf inject
@@ -7279,7 +7278,7 @@ module Targets =
 
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -7331,7 +7330,7 @@ module Targets =
           ("install -g altcover.global --add-source "
            + (Path.getFullName "./_Packaging.global")
            + " --version "
-           + Version.Value)
+           + Version)
           "Installed"
 
         Actions.RunDotnet
@@ -7419,7 +7418,7 @@ module Targets =
             "uninstalled"
 
         let folder =
-          (nugetCache @@ "altcover.global") @@ Version.Value
+          (nugetCache @@ "altcover.global") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -7448,7 +7447,7 @@ module Targets =
 
         // Bump API version
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "AltCover.Api")
-        pack.Attribute(XName.Get "VersionOverride").Value <- Version.Value
+        pack.Attribute(XName.Get "VersionOverride").Value <- Version
         csproj.Save "./_Issue114/Sample26.fsproj"
         Shell.copy "./_Issue114" (!! "./Samples/Sample26/*.fs")
 
@@ -7492,7 +7491,7 @@ module Targets =
           ""
       finally
         let folder =
-          (nugetCache @@ "altcover.api") @@ Version.Value
+          (nugetCache @@ "altcover.api") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
@@ -7525,7 +7524,7 @@ module Targets =
           XElement(
             XName.Get "PackageReference",
             XAttribute(XName.Get "Include", "altcover"),
-            XAttribute(XName.Get "VersionOverride", Version.Value)
+            XAttribute(XName.Get "VersionOverride", Version)
           )
 
         pack.AddBeforeSelf inject
@@ -7577,7 +7576,7 @@ module Targets =
           ""
       finally
         let folder =
-          (nugetCache @@ "altcover") @@ Version.Value
+          (nugetCache @@ "altcover") @@ Version
 
         Shell.mkdir folder
         Actions.CleanDir folder)
