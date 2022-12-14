@@ -5033,7 +5033,8 @@ module Targets =
           { Primitive.CollectOptions.Create() with
               Executable = dotnetexe
               RecorderDirectory = o
-              CommandLine = args }
+              CommandLine = args
+                    @ [ "/p:AltCoverTag=ReleaseXUnitFSharpTypesDotNetRunner_" ] }
         |> AltCoverCommand.Collect
 
       { AltCoverCommand.Options.Create collect with
