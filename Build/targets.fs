@@ -6157,7 +6157,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(withWorkingDirectoryVM "_DotnetTest")
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestJson")
               .WithAltCoverGetVersion()
               .WithAltCoverImportModule())
               .WithAltCoverOptions
