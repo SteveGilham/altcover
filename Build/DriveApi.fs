@@ -25,13 +25,11 @@ module DriveApi =
 
     o.WithEnvironment after
 
+  // use this to keep optesting the 7.0.100 workround
   let withAltCoverOptions prepare collect force (o: DotNet.TestOptions) =
-    if dotnetVersion <> "7.0.100" then
-      o.WithAltCoverOptions prepare collect force
-    else
-      withTestEnvironment
-        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force)
-        o
+    withTestEnvironment
+      (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force)
+      o
 
   let DoIt =
     (fun _ ->
