@@ -214,7 +214,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%s" result
-    Assert.That(result, Is.EqualTo expected)
+    //Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
 
   [<Test>]
@@ -715,7 +715,9 @@ module FSApiTests =
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
+
 
   [<Test>]
   let OpenCoverWithPartialsToNCover () =
@@ -769,7 +771,8 @@ module FSApiTests =
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
 
   [<Test>]
   let OpenCoverFromNCover () =
@@ -855,7 +858,8 @@ module FSApiTests =
     let expected =
       rdr3.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%A" result
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
 
   [<Test>]
   let FormatsConvertToXmlDocument () =
@@ -1091,7 +1095,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     test <@ result = expected @>
 
   [<Test>]
@@ -1106,7 +1110,7 @@ module FSApiTests =
     [ ("CompressInterior", true, false)
       ("SameSpan", false, true)
       ("CompressBoth", true, true) ]
-    |> List.iter (fun (test, inSeq, sameSpan) ->
+    |> List.iter (fun (testname, inSeq, sameSpan) ->
       use mstream = new MemoryStream()
 
       let rewrite =
@@ -1125,15 +1129,15 @@ module FSApiTests =
       use stream2 =
         Assembly
           .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.Api.Tests." + test + ".xml")
+          .GetManifestResourceStream("AltCover.Api.Tests." + testname + ".xml")
 
       use rdr2 = new StreamReader(stream2)
 
       let expected =
         rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-      NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected, test))
-  //test <@ result = expected @>)
+      //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected, test))
+      test' <@ result = expected @> testname)
 
   [<Test>]
   let ArgumentsConsistent () =
@@ -1260,15 +1264,16 @@ module FSApiTests =
     //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
     //                "but got  " + String.Join("; ", optionsFragments))
     //#endif
-    test
-      <@
-        (optionsFragments) |> List.length = ((optionNames |> List.length)
-                                             - (optionCases + 1))
-      @>
+    NUnit.Framework.Assert.Multiple(fun () ->
+      test
+        <@
+          (optionsFragments) |> List.length = ((optionNames |> List.length)
+                                               - (optionCases + 1))
+        @>
 
-    test <@ DotNet.ImportModuleProperties = [ ("AltCoverImportModule", "true") ] @>
+      test <@ DotNet.ImportModuleProperties = [ ("AltCoverImportModule", "true") ] @>
 
-    test <@ DotNet.GetVersionProperties = [ ("AltCoverGetVersion", "true") ] @>
+      test <@ DotNet.GetVersionProperties = [ ("AltCoverGetVersion", "true") ] @>)
 
   [<Test>]
   let ArgumentsBuilt () =
