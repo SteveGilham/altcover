@@ -1617,7 +1617,7 @@ module Targets =
         let baseArgs =
           [ "--noheader"
             "--work=."
-            "--labels=All"
+            "--labels=Before"
             "--result=./_Reports/JustUnitTestReport.xml"
             Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
