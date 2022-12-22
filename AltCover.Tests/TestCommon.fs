@@ -54,17 +54,19 @@ module TestCommon =
       g ()
       reraise ()
 
-  let test x = Swensen.Unquote.Assertions.test x
+  let private test0 x = Swensen.Unquote.Assertions.test x
+
+  let test x =
+    try
+      test0 x
+    with fail ->
+      NUnit.Framework.Assert.Fail(fail.Message)
 
   let test' x message =
     try
-      test x
+      test0 x
     with fail ->
-      Swensen.Unquote.AssertionFailedException(
-        message + Environment.NewLine + fail.Message,
-        fail
-      )
-      |> raise
+      NUnit.Framework.Assert.Fail(message + Environment.NewLine + fail.Message)
 
 module TestCommonTests =
   [<Test>]
@@ -118,23 +120,64 @@ module TestCommonTests =
   let SelfTest () =
     test <@ true @>
 
-#if !NET472   // remove for fantomas
-    Assert.Throws<Expecto.AssertException>
-      (
-#else  // remove for fantomas
-#if (ValidateGendarmeEmulation || GUI || Monitor)  // remove for fantomas
-    Assert.Throws<NUnit.Framework.AssertionException>(  // remove for fantomas
-#else  // remove for fantomas
-    Assert.Throws<Xunit.Sdk.TrueException>
-      ( // remove for fantomas
-#endif  // remove for fantomas
-#endif  // remove for fantomas
-      fun () -> test <@ false @>)
+    Assert.Throws<NUnit.Framework.AssertionException>(fun () -> test <@ false @>)
     |> ignore
 
-    Assert.Throws<Swensen.Unquote.AssertionFailedException>(fun () ->
-      test' <@ false @> "junk")
+    Assert.Throws<NUnit.Framework.AssertionException>(fun () -> test' <@ false @> "junk")
     |> ignore
+
+  [<Test>]
+  let TestMultiple () =
+    let exp1 = 4
+    let exp2 = "no"
+
+    let m =
+      Assert.Throws<NUnit.Framework.MultipleAssertException>(fun () ->
+        Assert.Multiple(fun () ->
+          Assert.That(3, Is.EqualTo exp1)
+          test <@ 3 = exp1 @>
+          Assert.That("yes", Is.EqualTo exp2)
+          test <@ "yes" = exp2 @>))
+        .Message
+
+    //printfn "%s" m
+
+    let m2 =
+      m.Replace(
+        """Expected: True
+Actual:   False
+""",
+        String.Empty
+      )
+
+    //printfn "%s" m2
+
+    Assert.That(
+      m2,
+      Is.EqualTo
+        """Multiple failures or warnings in test:
+  1)   Expected: 4
+  But was:  3
+
+  2) 
+
+3 = exp1
+3 = 4
+false
+
+  3)   Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+
+  4) 
+
+"yes" = exp2
+"yes" = "no"
+false
+
+"""
+    )
 
 #if !NET472
 module ExpectoTestCommon =

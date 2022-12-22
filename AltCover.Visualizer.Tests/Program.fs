@@ -6,7 +6,8 @@ open Expecto
 
 module TestMain =
   let regular =
-    [ Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
+    [ Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
+      Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
       Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
       Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
       Tests.VisualizerTests.AugmentNullableDetectNulls,
