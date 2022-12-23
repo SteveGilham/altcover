@@ -68,6 +68,16 @@ module TestCommon =
     with fail ->
       NUnit.Framework.Assert.Fail(message + Environment.NewLine + fail.Message)
 
+  let testWithFallback<'a>
+    x
+    (value: 'a)
+    (constraining: NUnit.Framework.Constraints.IResolveConstraint)
+    =
+    try
+      test0 x
+    with fail ->
+      Assert.That<'a>(value, constraining, fail.Message.Trim())
+
 module TestCommonTests =
   [<Test>]
   let TestIgnoredTests () =
@@ -130,6 +140,73 @@ module TestCommonTests =
   let TestMultiple () =
     let exp1 = 4
     let exp2 = "no"
+
+    let fallback =
+      Assert
+        .Throws<NUnit.Framework.AssertionException>(fun () ->
+          testWithFallback <@ "yes" = exp2 @> "yes" (Is.EqualTo exp2))
+        .Message
+        .Replace(
+          """Expected: True
+Actual:   False
+""",
+          String.Empty
+        )
+        .Replace(
+          """
+
+""",
+          """
+"""
+        )
+
+    // printfn "*********************************************"
+
+    // printfn
+    //   "%s"
+    //   (System
+    //     .Reflection
+    //     .Assembly
+    //     .GetExecutingAssembly()
+    //     .FullName)
+
+    // printfn "%s" fallback
+    // printfn "*********************************************"
+
+#if NET472 && (ValidateGendarmeEmulation || GUI || Monitor)
+// Unquote => NUnit anyway
+    Assert.That(
+      fallback,
+      Is.EqualTo
+        """Multiple failures or warnings in test:
+  1) 
+"yes" = exp2
+"yes" = "no"
+false
+  2)   "yes" = exp2
+"yes" = "no"
+false
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+"""
+    )
+#else
+// Unquote => Expecto or Xunit
+    Assert.That(
+      fallback,
+      Is.EqualTo
+        """  "yes" = exp2
+"yes" = "no"
+false
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+"""
+    )
+#endif
 
     let m =
       Assert.Throws<NUnit.Framework.MultipleAssertException>(fun () ->
