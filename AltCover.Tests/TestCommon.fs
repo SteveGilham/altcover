@@ -173,30 +173,9 @@ Actual:   False
     // printfn "%s" fallback
     // printfn "*********************************************"
 
-#if NET472 && (ValidateGendarmeEmulation || GUI || Monitor)
-// Unquote => NUnit anyway
     Assert.That(
       fallback,
-      Is.EqualTo
-        """Multiple failures or warnings in test:
-  1) 
-"yes" = exp2
-"yes" = "no"
-false
-  2)   "yes" = exp2
-"yes" = "no"
-false
-  Expected string length 2 but was 3. Strings differ at index 0.
-  Expected: "no"
-  But was:  "yes"
-  -----------^
-"""
-    )
-#else
-// Unquote => Expecto or Xunit
-    Assert.That(
-      fallback,
-      Is.EqualTo
+      Does.EndWith
         """  "yes" = exp2
 "yes" = "no"
 false
@@ -206,7 +185,6 @@ false
   -----------^
 """
     )
-#endif
 
     let m =
       Assert.Throws<NUnit.Framework.MultipleAssertException>(fun () ->
