@@ -147,10 +147,7 @@ module FSApiTests =
 
     OpenCover.PostProcess after BranchOrdinal.Offset
 
-    testWithFallback
-      <@ after.ToString() = before.ToString() @>
-      (after.ToString())
-      (Is.EqualTo(before.ToString()))
+    testEqualValue (after.ToString()) (before.ToString())
 
   [<Test>]
   let OpenCoverToLcov () =
@@ -181,7 +178,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverWithPartialsToLcov () =
@@ -212,7 +209,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%s" result
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let JsonToOpenCover () =
@@ -253,7 +250,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let JsonWithPartialsToOpenCover () =
@@ -293,7 +290,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let JsonFromCoverletShouldHaveBranchExitValuesOK () =
@@ -334,7 +331,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let OpenCoverToJson () =
@@ -371,7 +368,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let OpenCoverWithPartialsToJson () =
@@ -408,7 +405,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverToJson () =
@@ -451,7 +448,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverWithPartialsToJson () =
@@ -494,7 +491,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverToJsonWithEmbeds () =
@@ -531,7 +528,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
     use stream =
       Assembly
@@ -572,7 +569,7 @@ module FSApiTests =
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |])
 
-    testWithFallback <@ result1 = expected1 @> result1 (Is.EqualTo expected1)
+    testEqualValue result1 expected1
 
   [<Test>]
   let OpenCoverToBarChart () =
@@ -610,7 +607,7 @@ module FSApiTests =
         .Replace("&#x2442;", "\u2442")
         .Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverToNCover () =
@@ -657,8 +654,7 @@ module FSApiTests =
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
-
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverWithPartialsToNCover () =
@@ -712,7 +708,7 @@ module FSApiTests =
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverFromNCover () =
@@ -798,7 +794,7 @@ module FSApiTests =
     let expected =
       rdr3.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%A" result
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let FormatsConvertToXmlDocument () =
@@ -830,7 +826,7 @@ module FSApiTests =
     let result =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let FormatsConvertToXDocument () =
@@ -862,7 +858,7 @@ module FSApiTests =
     let result =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let FormatsRoundTripSimply () =
@@ -941,7 +937,7 @@ module FSApiTests =
         .Replace("{1}", t)
         .Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let NCoverWithPartialsToCobertura () =
@@ -1000,7 +996,7 @@ module FSApiTests =
         .Replace("\r", String.Empty)
 
     //printfn "%A" result
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let NCoverToBarChart () =
@@ -1035,7 +1031,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    testWithFallback <@ result = expected @> result (Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverBranchCompression () =
@@ -1075,7 +1071,7 @@ module FSApiTests =
       let expected =
         rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-      testWithFallback <@ result = expected @> result (Is.EqualTo expected))
+      testEqualValue result expected)
 
   [<Test>]
   let ArgumentsConsistent () =

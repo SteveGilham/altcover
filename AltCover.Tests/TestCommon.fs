@@ -78,6 +78,9 @@ module TestCommon =
     with fail ->
       Assert.That<'a>(value, constraining, fail.Message.Trim())
 
+  let testEqualValue actual expected =
+    testWithFallback <@ actual = expected @> actual (Is.EqualTo expected)
+
 module TestCommonTests =
   [<Test>]
   let TestIgnoredTests () =
@@ -143,8 +146,7 @@ module TestCommonTests =
 
     let fallback =
       Assert
-        .Throws<NUnit.Framework.AssertionException>(fun () ->
-          testWithFallback <@ "yes" = exp2 @> "yes" (Is.EqualTo exp2))
+        .Throws<NUnit.Framework.AssertionException>(fun () -> testEqualValue "yes" exp2)
         .Message
         .Replace(
           """Expected: True
@@ -176,7 +178,7 @@ Actual:   False
     Assert.That(
       fallback,
       Does.EndWith
-        """  "yes" = exp2
+        """  actual = expected
 "yes" = "no"
 false
   Expected string length 2 but was 3. Strings differ at index 0.
