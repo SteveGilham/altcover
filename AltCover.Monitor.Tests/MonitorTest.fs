@@ -13,12 +13,12 @@ module MonitorTests =
         AltCover.SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCore.xml"
       ),
-      [ (251, 0) ] // 0 because NCover format
+      [ (261, 0) ] // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCoreRunner.net7.0.xml"
       ),
-      [ (250, 37); (250, 36) ] ]
+      [ (260, 37); (260, 36) ] ]
     |> List.filter (fst >> File.Exists)
     |> List.sortBy (fst >> File.GetCreationTimeUtc)
     |> List.last
