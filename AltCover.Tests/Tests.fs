@@ -1899,10 +1899,11 @@ module AltCoverTests =
     //     (fun i (x, y) ->
     //       printfn "%A %A %d" y x i)
 
-    result
-    |> List.zip expected
-    |> List.iteri (fun i (x, y) ->
-      Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
+    Assert.Multiple(fun () ->
+      result
+      |> List.zip expected
+      |> List.iteri (fun i (x, y) ->
+        Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName)))
 
   [<Test>]
   let FSharpNestedMethods5x0x201 () =
@@ -1977,10 +1978,11 @@ module AltCoverTests =
     //     (fun (i, (x, y)) ->
     //       printfn "%A %A %d" y x i)
 
-    result
-    |> List.zip expected
-    |> List.iteri (fun i (x, y) ->
-      Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
+    Assert.Multiple(fun () ->
+      result
+      |> List.zip expected
+      |> List.iteri (fun i (x, y) ->
+        Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName)))
 
   [<Test>]
   let ValidateSeqPntFixUp () = // HACK HACK HACK
