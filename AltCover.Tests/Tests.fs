@@ -831,6 +831,32 @@ module AltCoverTests =
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
 
   [<Test>]
+  let RefStructsAreNotObsolete () =
+    let location =
+      typeof<Sample11.Class1>.Assembly.Location
+
+    let sourceAssembly =
+      AssemblyResolver.ReadAssembly(location)
+
+    let filter =
+      "Obsolete"
+      |> (Regex
+          >> FilterRegex.Exclude
+          >> FilterClass.Build FilterScope.Attribute)
+
+    let pass =
+      sourceAssembly.MainModule.Types
+      |> Seq.filter (fun x ->
+        x.Namespace = "Sample11"
+        && Filter.``match`` x filter |> not)
+      |> Seq.map (fun x -> x.Name)
+      |> Seq.sort
+      |> Seq.toList
+
+    let expected = [ "Class1"; "Token" ]
+    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
+
+  [<Test>]
   let Sample3Class1IsCSharpAutoproperty () =
     let sample3 =
       Path.Combine(dir, "Sample3.dll")

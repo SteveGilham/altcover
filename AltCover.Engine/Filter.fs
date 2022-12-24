@@ -64,6 +64,96 @@ module internal Filter =
   // Implementation details
   module private I =
 
+    let refStructMagic =
+      [| 0x01uy
+         0x00uy
+         0x52uy
+         0x54uy
+         0x79uy
+         0x70uy
+         0x65uy
+         0x73uy
+         0x20uy
+         0x77uy
+         0x69uy
+         0x74uy
+         0x68uy
+         0x20uy
+         0x65uy
+         0x6duy
+         0x62uy
+         0x65uy
+         0x64uy
+         0x64uy
+         0x65uy
+         0x64uy
+         0x20uy
+         0x72uy
+         0x65uy
+         0x66uy
+         0x65uy
+         0x72uy
+         0x65uy
+         0x6euy
+         0x63uy
+         0x65uy
+         0x73uy
+         0x20uy
+         0x61uy
+         0x72uy
+         0x65uy
+         0x20uy
+         0x6euy
+         0x6fuy
+         0x74uy
+         0x20uy
+         0x73uy
+         0x75uy
+         0x70uy
+         0x70uy
+         0x6fuy
+         0x72uy
+         0x74uy
+         0x65uy
+         0x64uy
+         0x20uy
+         0x69uy
+         0x6euy
+         0x20uy
+         0x74uy
+         0x68uy
+         0x69uy
+         0x73uy
+         0x20uy
+         0x76uy
+         0x65uy
+         0x72uy
+         0x73uy
+         0x69uy
+         0x6fuy
+         0x6euy
+         0x20uy
+         0x6fuy
+         0x66uy
+         0x20uy
+         0x79uy
+         0x6fuy
+         0x75uy
+         0x72uy
+         0x20uy
+         0x63uy
+         0x6fuy
+         0x6duy
+         0x70uy
+         0x69uy
+         0x6cuy
+         0x65uy
+         0x72uy
+         0x2euy
+         0x01uy
+         0x00uy
+         0x00uy |]
+
     let rec internal matchAttribute (name: Regex) f (nameProvider: Object) =
       (match nameProvider with
        | :? MethodDefinition as m ->
@@ -82,6 +172,21 @@ module internal Filter =
             attributeProvider.HasCustomAttributes
             && attributeProvider.CustomAttributes
                |> Seq.cast<CustomAttribute>
+               |> Seq.filter (fun a ->
+                 match nameProvider with
+                 | :? TypeDefinition as t ->
+                   if
+                     t.IsValueType
+                     && a.AttributeType.FullName = "System.ObsoleteAttribute"
+                   then
+                     let blob = a.GetBlob()
+
+                     (blob.Length <> 88)
+                     || (Array.zip blob refStructMagic
+                         |> Array.exists (fun (l, r) -> l <> r))
+                   else
+                     true
+                 | _ -> true)
                |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
                |> f
           | _ -> false)

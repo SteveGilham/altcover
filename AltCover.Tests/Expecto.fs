@@ -333,6 +333,7 @@ module ExpectoTestManifest =
        "Tests.AttributeDoesMatchAttributeClass"
        Tests.AltCoverTests.CanExcludeCSharpPropertiesByAttribute,
        "Tests.CanExcludeCSharpPropertiesByAttribute"
+       Tests.AltCoverTests.RefStructsAreNotObsolete, "Tests.RefStructsAreNotObsolete"
        Tests.AltCoverTests.Sample3Class1IsCSharpAutoproperty,
        "Tests.Sample3Class1IsCSharpAutoproperty"
        Tests.AltCoverTests.Sample3Class2IsNotCSharpAutoproperty,

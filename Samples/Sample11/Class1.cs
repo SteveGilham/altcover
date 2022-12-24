@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sample11
 {
@@ -39,4 +40,30 @@ namespace Sample11
             }
         }
     }
+
+    readonly ref struct Token
+    {
+        public readonly int Start;
+        public readonly int End;
+
+        public Token(int start, int end)
+        {
+            Start = start;
+            End = end;
+        }
+    }
+
+    [Obsolete("Don't use this one, use 'Token' instead. Don't use this one, use 'Token' instead. ", true)]
+    readonly ref struct OldToken
+    {
+        public readonly int Start;
+        public readonly int End;
+
+        public OldToken(int start, int end)
+        {
+            Start = start;
+            End = end;
+        }
+    }
+
 }
