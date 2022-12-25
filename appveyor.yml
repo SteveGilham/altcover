@@ -36,14 +36,6 @@ build_script:
     Write-Host "Exit code $save"
 
     if ($save -ne 0) { exit $save }
-test:
-  assemblies:
-    only:
-    - _Binaries\AltCover.Recorder.Tests\Debug+AnyCPU\net472\AltCover.Recorder.Tests.dll
-    - _Binaries\AltCover.Api.Tests\Debug+AnyCPU\net472\AltCover.Api.Tests.dll
-    - _Binaries\AltCover.Tests\Debug+AnyCPU\net472\AltCover.Tests.dll
-    - _Binaries\AltCover.Tests.Visualizer\Debug+AnyCPU\net472\AltCover.Tests.Visualizer.dll
-    - _Binaries\AltCover.ValidateGendarmeEmulation\Debug+AnyCPU\net472\AltCover.ValidateGendarmeEmulation.dll
 artifacts:
 - path: _Packagin*\*.nupkg
   name: NuGet
