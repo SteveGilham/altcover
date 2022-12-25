@@ -28,6 +28,10 @@
     <EmbeddedResource Include="AltCover.App.xaml">
       <LogicalName>AltCover.App.xaml</LogicalName>
     </EmbeddedResource>
+    
+    <EmbeddedResource Include="AltCover.AboutBox.xaml">
+      <LogicalName>AltCover.AboutBox.xaml</LogicalName>
+    </EmbeddedResource>    
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +47,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="MessageBox.Avalonia" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <Compile Include="setup.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlackFox.VsWhere" />
+    <PackageReference Include="Fake.Core.Environment" VersionOverride="5.23.1" />
+    <PackageReference Include="Fake.Core.Process" VersionOverride="5.23.1" />
+    <PackageReference Include="Fake.Core.Target" VersionOverride="5.23.1" />
+    <PackageReference Include="Fake.DotNet.Cli" VersionOverride="5.23.1" />
+    <PackageReference Include="Fake.DotNet.NuGet" VersionOverride="5.23.1" />
+    <PackageReference Include="Fake.IO.FileSystem" VersionOverride="5.23.1" />
+  </ItemGroup>
+
+</Project>

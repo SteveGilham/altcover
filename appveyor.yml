@@ -18,16 +18,16 @@ nuget:
   disable_publish_on_pr: true
 install:
   # SDK version fix
-  - cinst dotnet-sdk --version 7.0.100
+  - cinst dotnet-sdk --version 7.0.101
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
 
     & dotnet tool restore
 
-    & dotnet run --project .\Fake\Setup\Setup.fsproj
+    & dotnet run --project .\Build\Setup.fsproj
 
-    & dotnet run --project .\Fake\Build\Build.fsproj -t Appveyor
+    & dotnet run --project .\Build\Build.fsproj -t Appveyor
 
     $save = $LASTEXITCODE
     
@@ -40,10 +40,6 @@ test:
   assemblies:
     only:
     - _Binaries\AltCover.Recorder.Tests\Debug+AnyCPU\net472\AltCover.Recorder.Tests.dll
-    - _Binaries\AltCover.Api.Tests\Debug+AnyCPU\net472\AltCover.Api.Tests.dll
-    - _Binaries\AltCover.Tests\Debug+AnyCPU\net472\AltCover.Tests.dll
-    - _Binaries\AltCover.Tests.Visualizer\Debug+AnyCPU\net472\AltCover.Tests.Visualizer.dll
-    - _Binaries\AltCover.ValidateGendarmeEmulation\Debug+AnyCPU\net472\AltCover.ValidateGendarmeEmulation.dll
 artifacts:
 - path: _Packagin*\*.nupkg
   name: NuGet

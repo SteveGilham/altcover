@@ -67,11 +67,10 @@ module VisualizerTests =
     let expect = XDocument.Load sr2
 
     //printfn "%A" after
-    //Assert.That(after.ToString().Replace("\r", String.Empty),
-    //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
-    test
-      <@
-        after.ToString().Replace("\r", String.Empty) = expect
-          .ToString()
-          .Replace("\r", String.Empty)
-      @>
+    let result1 =
+      after.ToString().Replace("\r", String.Empty)
+
+    let expected1 =
+      expect.ToString().Replace("\r", String.Empty)
+
+    testEqualValue result1 expected1

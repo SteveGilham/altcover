@@ -121,9 +121,7 @@
     <value>Kovrilo-visualizilo kun {0}</value>
   </data>
   <data name="aboutVisualizer.Copyright" xml:space="preserve">
-    <value>{0}
-Ikonoj de la Visual Studio 2017-kolekto
-https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
+    <value>Ikonoj de la Visual Studio 2022-kolekto</value>
   </data>
   <data name="aboutVisualizer.Title" xml:space="preserve">
     <value>Pri AltCover Visualizer</value>

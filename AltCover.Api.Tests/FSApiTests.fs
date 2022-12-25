@@ -146,12 +146,8 @@ module FSApiTests =
         setAttribute el "crapScore" "0")
 
     OpenCover.PostProcess after BranchOrdinal.Offset
-    //#if !NET472
-    //    NUnit.Framework.Assert.That(after.ToString(),
-    //        NUnit.Framework.Is.EqualTo(before.ToString()))
-    //#endif
 
-    test <@ after.ToString() = before.ToString() @>
+    testEqualValue (after.ToString()) (before.ToString())
 
   [<Test>]
   let OpenCoverToLcov () =
@@ -181,9 +177,8 @@ module FSApiTests =
 
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    //printfn "%s" result
-    //Assert.That(result, Is.EqualTo expected)
-    test <@ result = expected @>
+
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverWithPartialsToLcov () =
@@ -214,8 +209,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%s" result
-    Assert.That(result, Is.EqualTo expected)
-    test <@ result = expected @>
+    testEqualValue result expected
 
   [<Test>]
   let JsonToOpenCover () =
@@ -240,36 +234,23 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(
-    //  result
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Replace("8.12", "8.13")  // CRAP score rounding
-    //    .Replace("4.12", "4.13")  // CRAP score rounding
-    //    .Trim([| '\u00FF' |]),
-    //  Is.EqualTo
-    //  <| expected
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |])
-    //)
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Replace("8.12", "8.13") // CRAP score rounding
+        .Replace("4.12", "4.13") // CRAP score rounding
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Replace("8.12", "8.13") // CRAP score rounding
-          .Replace("4.12", "4.13") // CRAP score rounding
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let JsonWithPartialsToOpenCover () =
@@ -295,32 +276,21 @@ module FSApiTests =
 
     //printfn "%s" result
 
-    //Assert.That(
-    //  result
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |]),
-    //  Is.EqualTo
-    //  <| expected
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |])
-    //)
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let JsonFromCoverletShouldHaveBranchExitValuesOK () =
@@ -347,32 +317,21 @@ module FSApiTests =
 
     //printfn "%s" result
 
-    //Assert.That(
-    //  result
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |]),
-    //  Is.EqualTo
-    //  <| expected
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |])
-    //)
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let OpenCoverToJson () =
@@ -395,24 +354,21 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(result
-    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let OpenCoverWithPartialsToJson () =
@@ -435,25 +391,21 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(result
-    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              result)
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverToJson () =
@@ -482,24 +434,21 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(result
-    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverWithPartialsToJson () =
@@ -528,24 +477,21 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(result
-    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverToJsonWithEmbeds () =
@@ -568,24 +514,21 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(result
-    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
     use stream =
       Assembly
@@ -612,24 +555,21 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    //Assert.That(result
-    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let OpenCoverToBarChart () =
@@ -667,8 +607,7 @@ module FSApiTests =
         .Replace("&#x2442;", "\u2442")
         .Replace("\r", String.Empty)
 
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    test <@ result = expected @>
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverToNCover () =
@@ -715,7 +654,7 @@ module FSApiTests =
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverWithPartialsToNCover () =
@@ -769,7 +708,7 @@ module FSApiTests =
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverFromNCover () =
@@ -855,7 +794,7 @@ module FSApiTests =
     let expected =
       rdr3.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%A" result
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    testEqualValue result expected
 
   [<Test>]
   let FormatsConvertToXmlDocument () =
@@ -886,8 +825,8 @@ module FSApiTests =
 
     let result =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    test <@ result = expected @>
+
+    testEqualValue result expected
 
   [<Test>]
   let FormatsConvertToXDocument () =
@@ -918,8 +857,8 @@ module FSApiTests =
 
     let result =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    test <@ result = expected @>
+
+    testEqualValue result expected
 
   [<Test>]
   let FormatsRoundTripSimply () =
@@ -935,13 +874,16 @@ module FSApiTests =
 
     let reverted =
       XmlTypes.ToXDocument converted
-    //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
-    test
+
+    testWithFallback
       <@
         reverted
           .ToString()
           .Replace(Environment.NewLine, String.Empty) = documentText
       @>
+      (reverted.ToString())
+      (Is.EqualTo documentText)
+
 
   [<Test>]
   let NCoverToCobertura () =
@@ -995,8 +937,7 @@ module FSApiTests =
         .Replace("{1}", t)
         .Replace("\r", String.Empty)
 
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    test <@ result = expected @>
+    testEqualValue result expected
 
   [<Test>]
   let NCoverWithPartialsToCobertura () =
@@ -1055,8 +996,7 @@ module FSApiTests =
         .Replace("\r", String.Empty)
 
     //printfn "%A" result
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    test <@ result = expected @>
+    testEqualValue result expected
 
   [<Test>]
   let NCoverToBarChart () =
@@ -1091,8 +1031,7 @@ module FSApiTests =
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    test <@ result = expected @>
+    testEqualValue result expected
 
   [<Test>]
   let OpenCoverBranchCompression () =
@@ -1106,7 +1045,7 @@ module FSApiTests =
     [ ("CompressInterior", true, false)
       ("SameSpan", false, true)
       ("CompressBoth", true, true) ]
-    |> List.iter (fun (test, inSeq, sameSpan) ->
+    |> List.iter (fun (testname, inSeq, sameSpan) ->
       use mstream = new MemoryStream()
 
       let rewrite =
@@ -1125,15 +1064,14 @@ module FSApiTests =
       use stream2 =
         Assembly
           .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.Api.Tests." + test + ".xml")
+          .GetManifestResourceStream("AltCover.Api.Tests." + testname + ".xml")
 
       use rdr2 = new StreamReader(stream2)
 
       let expected =
         rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-      NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected, test))
-  //test <@ result = expected @>)
+      testEqualValue result expected)
 
   [<Test>]
   let ArgumentsConsistent () =
@@ -1194,12 +1132,10 @@ module FSApiTests =
       |> List.sort
 
     // not input and output directories  (inplace now allowed)
-    //#if !NET472
-    //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
-    //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
-    //                "but got  " + String.Join("; ", prepareFragments))
-    //#endif
-    test <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 2) @>
+    testWithFallback
+      <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 2) @>
+      (prepareFragments |> List.length)
+      (Is.EqualTo((prepareNames |> List.length) - 2))
 
     let collect =
       doc.Descendants()
@@ -1225,12 +1161,10 @@ module FSApiTests =
       |> List.sort
 
     // not recorder directory
-    //#if !NET472
-    //    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
-    //                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
-    //                "but got  " + String.Join("; ", collectFragments))
-    //#endif
-    test <@ (collectFragments) |> List.length = ((collectNames |> List.length) - 1) @>
+    testWithFallback
+      <@ (collectFragments) |> List.length = ((collectNames |> List.length) - 1) @>
+      (collectFragments |> List.length)
+      (Is.EqualTo((collectNames |> List.length) - 1))
 
     let optionNames =
       typeof<DotNet.CLIOptions>.GetProperties ()
@@ -1255,20 +1189,18 @@ module FSApiTests =
       |> List.sort
 
     // ignore Is<CaseName> and Tag
-    //#if !NET472
-    //    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
-    //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
-    //                "but got  " + String.Join("; ", optionsFragments))
-    //#endif
-    test
-      <@
-        (optionsFragments) |> List.length = ((optionNames |> List.length)
-                                             - (optionCases + 1))
-      @>
+    NUnit.Framework.Assert.Multiple(fun () ->
+      testWithFallback
+        <@
+          (optionsFragments) |> List.length = ((optionNames |> List.length)
+                                               - (optionCases + 1))
+        @>
+        (optionsFragments |> List.length)
+        (Is.EqualTo((optionNames |> List.length) - (1 + optionCases)))
 
-    test <@ DotNet.ImportModuleProperties = [ ("AltCoverImportModule", "true") ] @>
+      test <@ DotNet.ImportModuleProperties = [ ("AltCoverImportModule", "true") ] @>
 
-    test <@ DotNet.GetVersionProperties = [ ("AltCoverGetVersion", "true") ] @>
+      test <@ DotNet.GetVersionProperties = [ ("AltCoverGetVersion", "true") ] @>)
 
   [<Test>]
   let ArgumentsBuilt () =

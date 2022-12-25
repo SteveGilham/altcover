@@ -1,6 +1,6 @@
 # DotNet class
 
-Extensions for `dotnet`. This class is a `[CakeAliasCategory("DotNetCore")]`
+Extensions for `dotnet`. This class is a `[CakeAliasCategory("DotNet")]`
 
 ```csharp
 public static class DotNet
@@ -10,7 +10,7 @@ public static class DotNet
 
 | name | description |
 | --- | --- |
-| static [DotNetCoreTest](DotNet/DotNetCoreTest-apidoc)(…) | Hooks into the Cake wrapper for `dotnet test` and injects the AltCover command line arguments as specified. |
+| static [DotNetTest](DotNet/DotNetTest-apidoc)(…) | Hooks into the Cake wrapper for `dotnet test` and injects the AltCover command line arguments as specified. |
 
 ## See Also
 

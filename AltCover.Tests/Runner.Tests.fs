@@ -564,17 +564,17 @@ module AltCoverRunnerTests =
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd()
       //printfn "%s" result
-      //Assert.That
-      //  (result.Replace("\r",String.Empty).Replace("\n",String.Empty),
-      //  Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
-      test
-        <@
-          result
-            .Replace("\r", String.Empty)
-            .Replace("\n", String.Empty) = expected
-            .Replace("\r", String.Empty)
-            .Replace("\n", String.Empty)
-        @>
+      let result1 =
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\n", String.Empty)
+
+      let expected1 =
+        expected
+          .Replace("\r", String.Empty)
+          .Replace("\n", String.Empty)
+
+      testEqualValue result1 expected1
     finally
       Json.path.Value <- None
 
@@ -645,23 +645,21 @@ module AltCoverRunnerTests =
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd()
       //printfn "%s" result
-      //Assert.That
-      //  (result.Replace('\r','\u00FF').Replace('\n','\u00FF')
-      //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-      //  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-      //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
-      test
-        <@
-          result
-            .Replace('\r', '\u00FF')
-            .Replace('\n', '\u00FF')
-            .Replace("\u00FF\u00FF", "\u00FF")
-            .Trim([| '\u00FF' |]) = expected
-            .Replace('\r', '\u00FF')
-            .Replace('\n', '\u00FF')
-            .Replace("\u00FF\u00FF", "\u00FF")
-            .Trim([| '\u00FF' |])
-        @>
+      let result1 =
+        result
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+
+      let expected1 =
+        expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+
+      testEqualValue result1 expected1
     finally
       Json.path.Value <- None
 
@@ -6242,33 +6240,21 @@ module AltCoverRunnerTests =
     use reader = new StreamReader(stream2)
     let expected = reader.ReadToEnd()
     //printfn "%s" result
-    //Assert.That(
-    //  result
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |]),
-    //  Is.EqualTo
-    //  <| expected
-    //    .Replace('\r', '\u00FF')
-    //    .Replace('\n', '\u00FF')
-    //    .Replace("\u00FF\u00FF", "\u00FF")
-    //    .Trim([| '\u00FF' |]),
-    //  result
-    //)
+    let result1 =
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
 
-    test
-      <@
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-      @>
+    let expected1 =
+      expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+
+    testEqualValue result1 expected1
 
   [<Test>]
   let NCoverShouldGeneratePlausibleCoberturaWithMissingFullName () =

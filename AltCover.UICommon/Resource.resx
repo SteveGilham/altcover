@@ -133,9 +133,7 @@ is not a valid coverage file:
     <value>Coverage visualizer with {0}</value>
   </data>
   <data name="aboutVisualizer.Copyright" xml:space="preserve">
-    <value>{0}
-Icons from the Visual Studio 2017 collection
-https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
+    <value>Icons from the Visual Studio 2022 collection</value>
   </data>
   <data name="aboutVisualizer.Title" xml:space="preserve">
     <value>About AltCover Visualizer</value>
