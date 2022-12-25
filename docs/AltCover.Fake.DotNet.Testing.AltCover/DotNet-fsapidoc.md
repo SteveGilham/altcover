@@ -81,6 +81,16 @@ vs
 
 
 
+### Composing the whole command line
+```
+    val ImportModuleProperties : (string*string) list
+
+
+    val GetVersionProperties : (string*string) list
+    val ToTestPropertiesList :
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> (string*string) list
+
 
 
 

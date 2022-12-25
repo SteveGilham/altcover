@@ -5,6 +5,10 @@ APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` 
 * [Fake integration](#fake-integration)
 * [Cake integration](#cake-integration)
 
+Fake versions are normally supported for six months after release (when Fake itself deprecates old versions), but deprecation of older versions is not eager. Cake version support is based on actual semantic API versioning, with the intent of going as far back as can be compatible with supporting the current release.   Check the AltCover release notes to see how far back support actually extends : see [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes.md) and [here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md).  
+
+**NOTE:** dotnet SDK v7.0.100 requires special treatment for driving AltCover through `dotnet test`.  See [here](https://github.com/SteveGilham/altcover/wiki/dotnet-SDK-7.0.100) and [here](https://github.com/SteveGilham/altcover/wiki/Release-8.5.841).
+
 # Fake integration 
 Found in `AltCover.Fake.dll`  
 Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
@@ -14,7 +18,7 @@ Driving `dotnet test` in a Fake script
 
 In the project(s) to be covered, insert at least
 
-```
+```xml
     <PackageReference Include="altcover.api" Version="<whatever>">
       <IncludeAssets>build;</IncludeAssets>
     </PackageReference>
@@ -22,7 +26,7 @@ In the project(s) to be covered, insert at least
 
 with the relevant script fragment (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/9b12b5b27f2877fcde186c1d8c08f6335108e306/Build/targets.fsx#L3425-L3454))
 
-```
+```fsharp
 !!./docs/BuildSample_1.fsx
 
 ```
@@ -34,11 +38,11 @@ Applies to Cake 2.0 and up (with harmless warnings if used with Cake 3.0 or late
 Found in `AltCover.Cake.dll`  
 Detailed API documentation is [presented here](AltCover.Cake/AltCover.Cake-apidoc).
 
-## To use the Cake `dotnet test` API `DotNetCoreTest`
+## To use the Cake `dotnet test` API `DotNetTest`
 
-In the project(s) to be covered, insert at least
+In the test project(s), insert at least
 
-```
+```xml
     <PackageReference Include="altcover.api" Version="<whatever>">
       <IncludeAssets>build;</IncludeAssets>
     </PackageReference>
@@ -46,7 +50,7 @@ In the project(s) to be covered, insert at least
 
 In your `.cake` file include
 
-```
+```csharp
 #addin "nuget:?package=Microsoft.TestPlatform.ObjectModel&Version=16.1.1"
 #addin "nuget:?package=PowerShellStandard.Library&Version=5.1.0"
 #addin "nuget:?package=altcover.api&Version=<whatever>"
@@ -58,8 +62,8 @@ the first two needed to silence warnings.
 Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/Abstract-apidoc)) e.g. by overriding the default types
 
 * [TestOptions](AltCover.Cake/AltCover.Cake/TestOptions-apidoc)
-* [PrepareOptions](AltCover.Cake/AltCover.Cake/PrepareOptions-apidoc
-* [CollectOptions](AltCover.Cake/AltCover.Cake/CollectOptions-apidoc
+* [PrepareOptions](AltCover.Cake/AltCover.Cake/PrepareOptions-apidoc)
+* [CollectOptions](AltCover.Cake/AltCover.Cake/CollectOptions-apidoc)
 
 which have empty or `false` values for all relevant properties, changing values as required e.g.
 ```csharp
@@ -73,7 +77,7 @@ which have empty or `false` values for all relevant properties, changing values 
   }
 ```
 then your test-with-coverage phase looks like
-```
+```csharp
 {
     // do any required customizations here such as
     var prep = new MyPrepareOptions() {
@@ -99,7 +103,7 @@ then your test-with-coverage phase looks like
 
 ```
 
-As the `AltCover.Cake` assembly still targets Cake 2.0 and netcoreapp3.1, when used for Cake 3.0 there will be harmless warnings like
+As the `AltCover.Cake` assembly targets Cake 2.0 and netcoreapp3.1 for compatibility, when used for Cake 3.0 there will be harmless warnings like
 ```
 The assembly 'AltCover.Cake, Version=[whatever], Culture=neutral, PublicKeyToken=null'
 is referencing an older version of Cake.Core (2.0.0).

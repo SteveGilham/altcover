@@ -18,16 +18,16 @@ nuget:
   disable_publish_on_pr: true
 install:
   # SDK version fix
-  - cinst dotnet-sdk --version 7.0.100
+  - cinst dotnet-sdk --version 7.0.101
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
 
     & dotnet tool restore
 
-    & dotnet run --project .\Fake\Setup\Setup.fsproj
+    & dotnet run --project .\Build\Setup.fsproj
 
-    & dotnet run --project .\Fake\Build\Build.fsproj -t Appveyor
+    & dotnet run --project .\Build\Build.fsproj -t Appveyor
 
     $save = $LASTEXITCODE
     

@@ -64,6 +64,96 @@ module internal Filter =
   // Implementation details
   module private I =
 
+    let refStructMagic =
+      [ 0x01uy
+        0x00uy
+        0x52uy
+        0x54uy
+        0x79uy
+        0x70uy
+        0x65uy
+        0x73uy
+        0x20uy
+        0x77uy
+        0x69uy
+        0x74uy
+        0x68uy
+        0x20uy
+        0x65uy
+        0x6duy
+        0x62uy
+        0x65uy
+        0x64uy
+        0x64uy
+        0x65uy
+        0x64uy
+        0x20uy
+        0x72uy
+        0x65uy
+        0x66uy
+        0x65uy
+        0x72uy
+        0x65uy
+        0x6euy
+        0x63uy
+        0x65uy
+        0x73uy
+        0x20uy
+        0x61uy
+        0x72uy
+        0x65uy
+        0x20uy
+        0x6euy
+        0x6fuy
+        0x74uy
+        0x20uy
+        0x73uy
+        0x75uy
+        0x70uy
+        0x70uy
+        0x6fuy
+        0x72uy
+        0x74uy
+        0x65uy
+        0x64uy
+        0x20uy
+        0x69uy
+        0x6euy
+        0x20uy
+        0x74uy
+        0x68uy
+        0x69uy
+        0x73uy
+        0x20uy
+        0x76uy
+        0x65uy
+        0x72uy
+        0x73uy
+        0x69uy
+        0x6fuy
+        0x6euy
+        0x20uy
+        0x6fuy
+        0x66uy
+        0x20uy
+        0x79uy
+        0x6fuy
+        0x75uy
+        0x72uy
+        0x20uy
+        0x63uy
+        0x6fuy
+        0x6duy
+        0x70uy
+        0x69uy
+        0x6cuy
+        0x65uy
+        0x72uy
+        0x2euy
+        0x01uy
+        0x00uy
+        0x00uy ]
+
     let rec internal matchAttribute (name: Regex) f (nameProvider: Object) =
       (match nameProvider with
        | :? MethodDefinition as m ->
@@ -82,6 +172,22 @@ module internal Filter =
             attributeProvider.HasCustomAttributes
             && attributeProvider.CustomAttributes
                |> Seq.cast<CustomAttribute>
+               |> Seq.filter (fun a ->
+                 match nameProvider with
+                 | :? TypeDefinition as t ->
+                   if
+                     t.IsValueType
+                     && a.AttributeType.FullName
+                        == "System.ObsoleteAttribute"
+                   then
+                     let blob = a.GetBlob()
+
+                     (blob.Length <> 88)
+                     || (Seq.zip blob refStructMagic
+                         |> Seq.exists (fun (l, r) -> l <> r))
+                   else
+                     true
+                 | _ -> true)
                |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
                |> f
           | _ -> false)
@@ -257,40 +363,24 @@ module internal Filter =
          x.AttributeType.FullName
          == typeof<CompilerGeneratedAttribute>.FullName)
 
-[<assembly: SuppressMessage("Microsoft.Globalization",
-                            "CA1307:SpecifyStringComparison",
-                            Scope = "member",
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter+I+isFSharpAutoProperty@174.#Invoke(Mono.Cecil.Cil.Instruction)",
-                            MessageId =
-                              "System.String.Replace(System.String,System.String)",
-                            Justification =
-                              "No suitable overload in netstandard2.0/net472")>]
-[<assembly: SuppressMessage("Microsoft.Globalization",
-                            "CA1307:SpecifyStringComparison",
-                            Scope = "member",
-                            Target =
-                              "AltCover.Filter+I+isFSharpAutoProperty@182-2.#Invoke(Mono.Cecil.Cil.Instruction)",
-                            MessageId =
-                              "System.String.Replace(System.String,System.String)",
-                            Justification =
-                              "No suitable overload in netstandard2.0/net472")>]
+                              "AltCover.Filter/I/Pipe #2 stage #2 at line 175@175::Invoke(Mono.Cecil.CustomAttribute)",
+                            Justification = "Inlined from library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",
-                            MessageId =
-                              "System.String.Replace(System.String,System.String)",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter/I/Pipe #1 stage #2 at line 186@186::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Filter/I/Pipe #1 stage #2 at line 292@292::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification =
-                              "No suitable overload in netstandard2.0/net472")>]
+                              "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",
-                            MessageId =
-                              "System.String.Replace(System.String,System.String)",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter/I/Pipe #2 stage #2 at line 197@197::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Filter/I/Pipe #2 stage #2 at line 303@303::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification =
-                              "No suitable overload in netstandard2.0/net472")>]
+                              "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 ()

@@ -12,6 +12,7 @@ module ExpectoTestManifest =
   let simpleTests () =
     [|
 #endif
+       Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
        Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
        Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
        Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
@@ -332,6 +333,7 @@ module ExpectoTestManifest =
        "Tests.AttributeDoesMatchAttributeClass"
        Tests.AltCoverTests.CanExcludeCSharpPropertiesByAttribute,
        "Tests.CanExcludeCSharpPropertiesByAttribute"
+       Tests.AltCoverTests.RefStructsAreNotObsolete, "Tests.RefStructsAreNotObsolete"
        Tests.AltCoverTests.Sample3Class1IsCSharpAutoproperty,
        "Tests.Sample3Class1IsCSharpAutoproperty"
        Tests.AltCoverTests.Sample3Class2IsNotCSharpAutoproperty,

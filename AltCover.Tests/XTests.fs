@@ -913,7 +913,7 @@ module AltCoverXTests =
         match DocumentType.LoadReport CoverageParameters.theReportFormat.Value report with
         | JSON j -> j
 
-      Assert.That(recordedJson.Keys |> Seq.toList, Is.EqualTo [ "Sample4.dll" ])
+      test <@ recordedJson.Keys |> Seq.toList = [ "Sample4.dll" ] @>
     finally
       CoverageParameters.trackingNames.Clear()
       CoverageParameters.theReportFormat <- None

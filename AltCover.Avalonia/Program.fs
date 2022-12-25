@@ -51,6 +51,12 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
                             Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Security",
+                            "StaticConstructorsShouldBePrivateRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
+                            Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidLargeNumberOfLocalVariablesRule",
                             Scope = "member",
@@ -74,6 +80,18 @@ module VisualizerMain =
                             Scope = "member",
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidLongMethodsRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidLongMethodsRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUncalledPrivateCodeRule",
@@ -120,6 +138,12 @@ module VisualizerMain =
                               "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "DisposableFieldsShouldBeDisposedRule",
                             Scope = "type",
                             Target =
@@ -129,6 +153,11 @@ module VisualizerMain =
                             "AvoidAlwaysNullFieldRule",
                             Scope = "type",
                             Target = "AltCover.MainWindow",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Maintainability",
+                            "AvoidAlwaysNullFieldRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "AltCover.AboutBox",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Maintainability",
                             "AvoidAlwaysNullFieldRule",
@@ -210,6 +239,12 @@ module VisualizerMain =
                             Scope = "type",
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Design",
                             "ConsiderUsingStaticTypeRule",
@@ -298,6 +333,18 @@ module VisualizerMain =
                             Scope = "type",
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource",
                             Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulateTrampoline(AltCover.AboutBox)",
+                            Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Design",
                             "UseCorrectDisposeSignaturesRule",
                             Scope = "type",
@@ -328,6 +375,12 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
                             Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
+                            Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
                             "DoNotDecreaseVisibilityRule",
                             Scope = "member",
@@ -339,6 +392,12 @@ module VisualizerMain =
                             Scope = "member",
                             Target =
                               "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
+                            "DoNotDecreaseVisibilityRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulateTrampoline(AltCover.AboutBox)",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
