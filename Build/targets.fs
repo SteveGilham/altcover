@@ -36,6 +36,12 @@ module Targets =
   let mutable Version = String.Empty
   let mutable VersionBase = String.Empty
   let mutable VersionSuffix = String.Empty
+  let VersionTemplate = "8.6.{build}" // <+++++++++++++++++
+
+  let currentBranch =
+    "."
+    |> Path.getFullName
+    |> Information.getBranchName
 
   let lastGoodPackage () =
     let n =
@@ -48,7 +54,13 @@ module Targets =
       Version <- v.ToString()
       printfn "Default version from packages = %A" v
     else
-      Assert.Fail "TODO : fallback version for replay"
+      let version = VersionTemplate
+
+      let (result, _, _) =
+        Actions.LocalVersion "none" version
+
+      Version <- result
+      printfn "Default version from date = %A" result
 
   lastGoodPackage ()
 
@@ -700,7 +712,7 @@ module Targets =
       let github =
         Environment.environVar "GITHUB_RUN_NUMBER"
 
-      let version = "8.6.{build}" // <+++++++++++++++++
+      let version = VersionTemplate
 
       let ci =
         if String.IsNullOrWhiteSpace github then
@@ -708,8 +720,9 @@ module Targets =
         else
           version.Replace("{build}", github)
 
-      let (v, majmin, y) =
+      let (v, majmin, now) =
         Actions.LocalVersion ci version
+      let y = now.Year
 
       let trailer =
         if currentBranch.StartsWith "release/" then
@@ -721,8 +734,6 @@ module Targets =
       VersionSuffix <- trailer
       Version <- v + trailer
       printfn "Version %A" Version
-
-      let y = now.Year
 
       let copy =
         sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
@@ -7913,6 +7924,33 @@ module Targets =
                 TargetDir = "_Reports/CppInline" })
           [ "_Reports/CppInlineWithOpenCover.xml" ])
 
+  // AOB
+  let All =
+    (fun _ ->
+      if
+        Environment.isWindows
+        && currentBranch.StartsWith "release/"
+        && "NUGET_API_TOKEN"
+           |> Environment.environVar
+           |> String.IsNullOrWhiteSpace
+           |> not
+      then
+        (!! "./_Packagin*/*.nupkg")
+        |> Seq.iter (fun f ->
+          printfn "Publishing %A from %A" f currentBranch
+
+          Actions.Run
+            ("dotnet",
+             ".",
+             [ "nuget"
+               "push"
+               f
+               "--api-key"
+               Environment.environVar "NUGET_API_TOKEN"
+               "--source"
+               "https://api.nuget.org/v3/index.json" ])
+            ("NuGet upload failed " + f)))
+
   let resetColours _ =
     Console.ForegroundColor <- consoleBefore |> fst
     Console.BackgroundColor <- consoleBefore |> snd
@@ -8006,7 +8044,7 @@ module Targets =
     _Target "Issue156" Issue156
     _Target "MakeDocumentation" MakeDocumentation
     _Target "BulkReport" BulkReport
-    _Target "All" ignore
+    _Target "All" All
     _Target "CppInline" CppInline
     _Target "None" ignore
 

@@ -211,7 +211,7 @@ using System.Runtime.CompilerServices;
       if not (old.Equals(file)) then
         File.WriteAllText(path, file))
 
-  let LocalVersion github (version: string) =
+  let LocalVersion ci (version: string) =
     let now = DateTimeOffset.UtcNow
 
     let epoch =
@@ -229,10 +229,10 @@ using System.Runtime.CompilerServices;
       String.Join(".", version.Split('.') |> Seq.take 2)
 
     let result =
-      if String.IsNullOrWhiteSpace github then
+      if String.IsNullOrWhiteSpace ci then
         sprintf "%s.%d.%d" majmin diff.Days revision
       else
-        github
+        ci
 
     printfn "Build version : %s" version
     (result, majmin, now)
