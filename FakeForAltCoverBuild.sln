@@ -9,7 +9,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Build", "Build\Build.fsproj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BE747F78-C635-4A21-A336-5D6DA9EDF082}"
 	ProjectSection(SolutionItems) = preProject
-		appveyor.yml = appveyor.yml
 		Build\build.cake = Build\build.cake
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props

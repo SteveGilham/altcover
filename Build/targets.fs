@@ -34,6 +34,8 @@ module Targets =
 
   let mutable Copyright = String.Empty
   let mutable Version = String.Empty
+  let mutable VersionBase = String.Empty
+  let mutable VersionSuffix = String.Empty
 
   let lastGoodPackage () =
     let n =
@@ -46,13 +48,7 @@ module Targets =
       Version <- v.ToString()
       printfn "Default version from packages = %A" v
     else
-      let version = Actions.GetVersionFromYaml()
-
-      let (result, _, _) =
-        Actions.LocalVersion "none" version
-
-      Version <- result
-      printfn "Default version from date = %A" result
+      Assert.Fail "TODO : fallback version for replay"
 
   lastGoodPackage ()
 
@@ -701,28 +697,32 @@ module Targets =
         System.Xml.Linq.SaveOptions.DisableFormatting
       )
 
-      let appveyor =
-        Environment.environVar "APPVEYOR_BUILD_VERSION"
-
       let github =
         Environment.environVar "GITHUB_RUN_NUMBER"
 
-      let version = Actions.GetVersionFromYaml()
+      let version = "8.6.{build}" // <+++++++++++++++++
 
       let ci =
-        if String.IsNullOrWhiteSpace appveyor then
-          if String.IsNullOrWhiteSpace github then
-            String.Empty
-          else
-            version.Replace("{build}", github + "-github")
+        if String.IsNullOrWhiteSpace github then
+          String.Empty
         else
-          appveyor
+          version.Replace("{build}", github)
 
-      let (v, majmin, now) =
+      let (v, majmin, y) =
         Actions.LocalVersion ci version
 
+      let trailer =
+        if currentBranch.StartsWith "release/" then
+          String.Empty
+        else
+          "-pre"
+
+      VersionBase <- v
+      VersionSuffix <- trailer
+      Version <- v + trailer
+      printfn "Version %A" Version
+
       let y = now.Year
-      Version <- v
 
       let copy =
         sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
@@ -1241,11 +1241,8 @@ module Targets =
 
       [ (fxcop, // framework targets
          String.Empty,
-         (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
-            [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
-              "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]
-          else // HACK HACK HACK
-            [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
+         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
+           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
          [],
          minimalRules)
         (fxcop, // framework targets
@@ -1490,9 +1487,8 @@ module Targets =
 
       if
         Environment.isWindows
-        && [ "APPVEYOR_BUILD_NUMBER"
-             "GITHUB_RUN_NUMBER" ]
-           |> List.exists (
+        && "GITHUB_RUN_NUMBER"
+           |> (
              Environment.environVar
              >> String.IsNullOrWhiteSpace
              >> not
@@ -1524,14 +1520,13 @@ module Targets =
              "--commitBranch"
              Information.getBranchName (".")
              "--commitAuthor"
-             maybe "APPVEYOR_REPO_COMMIT_AUTHOR" ""
+             maybe "COMMIT_AUTHOR" ""
              "--commitEmail"
-             maybe "APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL" ""
+             maybe "COMMIT_AUTHOR_EMAIL" ""
              "--commitMessage"
              commit
              "--jobId"
-             maybe "APPVEYOR_JOB_ID"
-             <| DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
+             DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
           "Coveralls upload failed"
 
       printfn "Dump uncovered lines"
@@ -8014,7 +8009,6 @@ module Targets =
     _Target "All" ignore
     _Target "CppInline" CppInline
     _Target "None" ignore
-    _Target "Appveyor" ignore
 
     Target.description "ResetConsoleColours"
     Target.createFinal "ResetConsoleColours" resetColours
@@ -8036,7 +8030,6 @@ module Targets =
     "BuildRelease"
     ==> "BuildMonoSamples"
     ==> "Compilation"
-    ==> "Appveyor"
     |> ignore
 
     // My machine only
@@ -8184,7 +8177,6 @@ module Targets =
     "Compilation"
     ==> "PrepareFrameworkBuild"
     ==> "Packaging"
-    ==> "Appveyor"
     |> ignore
 
     "Compilation"

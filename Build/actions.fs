@@ -211,32 +211,7 @@ using System.Runtime.CompilerServices;
       if not (old.Equals(file)) then
         File.WriteAllText(path, file))
 
-  let GetVersionFromYaml () =
-    use yaml = // fsharplint:disable-next-line  RedundantNewKeyword
-      new FileStream(
-        "appveyor.yml",
-        FileMode.Open,
-        FileAccess.ReadWrite,
-        FileShare.None,
-        4096,
-        FileOptions.SequentialScan
-      )
-
-    // fsharplint:disable-next-line  RedundantNewKeyword
-    use yreader = new StreamReader(yaml)
-    // fsharplint:disable-next-line  RedundantNewKeyword
-    let ystream = new YamlStream()
-    ystream.Load(yreader)
-
-    let mapping =
-      ystream.Documents.[0].RootNode :?> YamlMappingNode
-
-    (mapping.Children :> System.Collections.Generic.IDictionary<YamlNode, YamlNode>).[YamlScalarNode(
-      "version"
-    )]
-    |> string
-
-  let LocalVersion appveyor (version: string) =
+  let LocalVersion github (version: string) =
     let now = DateTimeOffset.UtcNow
 
     let epoch =
@@ -254,10 +229,10 @@ using System.Runtime.CompilerServices;
       String.Join(".", version.Split('.') |> Seq.take 2)
 
     let result =
-      if String.IsNullOrWhiteSpace appveyor then
+      if String.IsNullOrWhiteSpace github then
         sprintf "%s.%d.%d" majmin diff.Days revision
       else
-        appveyor
+        github
 
     printfn "Build version : %s" version
     (result, majmin, now)
