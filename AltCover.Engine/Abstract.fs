@@ -267,7 +267,7 @@ module Abstract =
     ///<summary>
     /// Corresponds to command line option ` --trivia`
     ///</summary>
-    abstract member Trivia: bool with get
+    abstract member Trivia : bool with get
   end
 // ```
 #if RUNNER

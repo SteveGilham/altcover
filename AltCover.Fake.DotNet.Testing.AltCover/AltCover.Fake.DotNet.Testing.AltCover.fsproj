@@ -35,6 +35,7 @@
     <Compile Include="AltCoverCommand.fs" />
     <Compile Include="..\AltCover.DotNet\DotNet.fsi" Link="DotNet.fsi" />
     <Compile Include="..\AltCover.DotNet\DotNet.fs" Link="DotNet.fs" />
+    <Compile Include="..\AltCover.DotNet\Options.fs" Link="DotNet.fs" />
     <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>

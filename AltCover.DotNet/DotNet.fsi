@@ -169,3 +169,9 @@ module DotNet = begin
   end
 #endif
 #endif
+// ## module `Options`
+// * [<RequireQualifiedAccess>]
+// * default interface implementations with get and set members, and obvious empty defauls
+//   * type CLI - implements DotNet.ICLIOptions
+//   * type Collect - implements Abstract.ICollectOptions
+//   * type Prepare - implements Abstract.IPrepareOptions
