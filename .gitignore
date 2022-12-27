@@ -87,3 +87,4 @@ ThirdParty/gtk-sharp2/atk/
 InternalTrace.*.log
 nunit-agent_*.log
 $*/
+*.orig
