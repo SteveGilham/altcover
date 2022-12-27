@@ -1224,6 +1224,17 @@ module FSApiTests =
     test <@ combined.FailFast @>
     test <@ combined.ShowSummary = "R" @>
 
+    let a2 =
+      (Options.CLI() :> DotNet.ICLIOptions)
+      |> DotNet.CLIOptions.Abstract
+
+    let combined2 =
+      DotNet.CLIOptions.Many [ a2; force; fail; summary ]
+
+    test <@ combined.ForceDelete @>
+    test <@ combined.FailFast @>
+    test <@ combined.ShowSummary = "R" @>
+
     test
       <@
         (DotNet.CLIOptions.Many [ a; force; fail ])
@@ -1246,6 +1257,21 @@ module FSApiTests =
     test
       <@
         DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+      @>
+
+    let pprep2 = Options.Prepare()
+
+    let prep2 =
+      AltCover.AltCover.PrepareOptions.Abstract pprep2
+
+    let pcoll2 = Options.Collect()
+
+    let coll2 =
+      AltCover.AltCover.CollectOptions.Abstract pcoll2
+
+    test
+      <@
+        DotNet.ToTestArguments prep2 coll2 combined2 = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let coll1 =
