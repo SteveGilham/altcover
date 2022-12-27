@@ -884,7 +884,6 @@ module FSApiTests =
       (reverted.ToString())
       (Is.EqualTo documentText)
 
-
   [<Test>]
   let NCoverToCobertura () =
     use stream =
@@ -1260,11 +1259,13 @@ module FSApiTests =
       @>
 
     let pprep2 = Options.Prepare()
+    test <@ (pprep2.WhatIf()).Command = ["--save"] @>
 
     let prep2 =
       AltCover.AltCover.PrepareOptions.Abstract pprep2
 
     let pcoll2 = Options.Collect()
+    test <@ (pcoll2.WhatIf false).Command = ["Runner"; "--collect"] @>
 
     let coll2 =
       AltCover.AltCover.CollectOptions.Abstract pcoll2
