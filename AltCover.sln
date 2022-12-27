@@ -35,7 +35,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		Build\actions.fsx = Build\actions.fsx
+		Build\actions.fs = Build\actions.fs
 		Build\AddStrongName.fsx = Build\AddStrongName.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
 		nupkg\build\netstandard2.0\AltCover.props = nupkg\build\netstandard2.0\AltCover.props
@@ -64,11 +64,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\prepareDocumentation.ps1 = Build\prepareDocumentation.ps1
+		Build\Program.fs = Build\Program.fs
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md
 		Build\SelfTest.snk = Build\SelfTest.snk
-		Build\setup.fsx = Build\setup.fsx
-		Build\targets.fsx = Build\targets.fsx
+		Build\setup.fs = Build\setup.fs
+		Build\targets.fs = Build\targets.fs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{EE49FA56-4B6F-4C55-8D24-7E834274D7FE}"
