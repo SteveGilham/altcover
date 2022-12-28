@@ -13,8 +13,8 @@
   <ItemGroup>
     <PackageReference Include="AltCover.Api" VersionOverride="8.5.841" />
     <PackageReference Include="AltCover.Fake" VersionOverride="8.5.841" />
-    <PackageReference Include="Fake.Core.Target" VersionOverride="5.23.1" />
-    <PackageReference Include="Fake.DotNet.Cli" VersionOverride="5.23.1" />
+    <PackageReference Include="Fake.Core.Target" VersionOverride="6.0.0-beta001" />
+    <PackageReference Include="Fake.DotNet.Cli" VersionOverride="6.0.0-beta001" />
   </ItemGroup>
 
 </Project>
