@@ -3604,7 +3604,7 @@ module AltCoverTests3 =
 
       let expected =
         "AltCover version "
-        + AssemblyVersionInformation.AssemblyFileVersion
+        + AssemblyVersionInformation.AssemblyPackageVersion
         + Environment.NewLine
 
       Assert.That(

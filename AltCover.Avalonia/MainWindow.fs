@@ -39,7 +39,7 @@ type AboutBox() as this =
 
     this.FindControl<TextBlock>("Program").Text <-
       "AltCover.Visualizer "
-      + AssemblyVersionInformation.AssemblyFileVersion
+      + AssemblyVersionInformation.AssemblyPackageVersion
 
     this.FindControl<TextBlock>("Description").Text <-
       String.Format(

@@ -116,7 +116,7 @@ module private Gui =
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
 
     handler.aboutVisualizer.Version <-
-      AltCover.AssemblyVersionInformation.AssemblyFileVersion
+      AltCover.AssemblyVersionInformation.AssemblyPackageVersion
 
     handler.aboutVisualizer.Copyright <-
       String.Join(

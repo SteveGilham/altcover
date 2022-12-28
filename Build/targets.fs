@@ -34,35 +34,12 @@ module Targets =
 
   let mutable Copyright = String.Empty
   let mutable Version = String.Empty
-  let mutable VersionBase = String.Empty
-  let mutable VersionSuffix = String.Empty
-  let VersionTemplate = "8.6.{build}" // <+++++++++++++++++
 
   let currentBranch =
     "."
     |> Path.getFullName
     |> Information.getBranchName
 
-  let lastGoodPackage () =
-    let n =
-      !! "./_Packaging/altcover.*.nupkg"
-      |> Seq.map (fun p ->
-        System.Version((Path.GetFileNameWithoutExtension p).Substring(9)))
-
-    if n |> Seq.isEmpty |> not then
-      let v = n |> Seq.max
-      Version <- v.ToString()
-      printfn "Default version from packages = %A" v
-    else
-      let version = VersionTemplate
-
-      let (result, _, _) =
-        Actions.LocalVersion "none" version
-
-      Version <- result
-      printfn "Default version from date = %A" result
-
-  lastGoodPackage ()
 
   let consoleBefore =
     (Console.ForegroundColor, Console.BackgroundColor)
@@ -159,6 +136,29 @@ module Targets =
     match dotnetPath with
     | Some f -> { o with DotNetCliPath = f }
     | None -> o
+
+  let VersionTemplate =
+    let vx =
+      DotNet.exec
+        (fun o -> dotnetOptions (o.WithRedirectOutput true))
+        ""
+        "nbgv get-version -v NuGetPackageVersion"
+
+    (vx.Results |> Seq.head).Message
+
+  let lastGoodPackage () =
+    let n =
+      !! "./_Packaging/altcover.*.nupkg"
+      |> Seq.map (fun p -> (Path.GetFileNameWithoutExtension p).Substring(9))
+
+    if n |> Seq.isEmpty |> not then
+      Version <- n |> Seq.head
+      printfn "Default version from packages = %A" Version
+    else
+      Version <- VersionTemplate.Replace("-", "-pre-", StringComparison.Ordinal)
+      printfn "Default version from environment = %A" Version
+
+  lastGoodPackage ()
 
   let dotnetVersion =
     DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
@@ -709,31 +709,18 @@ module Targets =
         System.Xml.Linq.SaveOptions.DisableFormatting
       )
 
-      let github =
-        Environment.environVar "GITHUB_RUN_NUMBER"
+      let majmin =
+        String.Join(".", VersionTemplate.Split('.') |> Seq.take 2)
 
-      let version = VersionTemplate
-
-      let ci =
-        if String.IsNullOrWhiteSpace github then
-          String.Empty
-        else
-          version.Replace("{build}", github)
-
-      let (v, majmin, now) =
-        Actions.LocalVersion ci version
+      let now = DateTime.UtcNow
       let y = now.Year
 
-      let trailer =
-        if currentBranch.StartsWith "release/" then
-          String.Empty
-        else
-          "-pre"
-
-      VersionBase <- v
-      VersionSuffix <- trailer
-      Version <- v + trailer
+      Version <- VersionTemplate.Replace("-", "-pre-", StringComparison.Ordinal)
       printfn "Version %A" Version
+      let vv = Version + "-"
+
+      let packver =
+        vv.Split([| '-' |]) |> Seq.head
 
       let copy =
         sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
@@ -743,6 +730,25 @@ module Targets =
       Directory.ensure "./_Generated"
       Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
       Actions.InternalsVisibleTo(Version)
+
+      let fileVersionTemplate =
+        let vx =
+          DotNet.exec
+            (fun o -> dotnetOptions (o.WithRedirectOutput true))
+            ""
+            "nbgv get-version -v Version"
+
+        (vx.Results |> Seq.head).Message
+
+      let rn =
+        File.ReadAllLines "./ReleaseNotes.md"
+
+      let tag =
+        rn
+        |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
+
+      rn.[tag] <- "# " + Version
+      File.WriteAllLines("./_Generated/ReleaseNotes.md", rn)
 
       [ "./_Generated/AssemblyVersion.fs"
         "./_Generated/AssemblyVersion.cs" ]
@@ -756,11 +762,12 @@ module Targets =
           String.Format(
             text,
             majmin,
-            Version.Split([| '-' |]).[0],
+            fileVersionTemplate,
             commitHash,
             Information.getBranchName ("."),
             y,
-            now.ToString("yyyy-MM-dd HH:mm:sszzz")
+            now.ToString("yyyy-MM-dd HH:mm:sszzz"),
+            packver
           )
 
         File.WriteAllText(f, newtext))
@@ -1499,11 +1506,9 @@ module Targets =
       if
         Environment.isWindows
         && "GITHUB_RUN_NUMBER"
-           |> (
-             Environment.environVar
-             >> String.IsNullOrWhiteSpace
-             >> not
-           )
+           |> (Environment.environVar
+               >> String.IsNullOrWhiteSpace
+               >> not)
       then
         let maybe envvar fallback =
           let x = Environment.environVar envvar
@@ -4142,7 +4147,7 @@ module Targets =
                 Publish = false
                 ReleaseNotes =
                   let source =
-                    Path.getFullName "ReleaseNotes.md"
+                    Path.getFullName "./_Generated/ReleaseNotes.md"
                     |> File.ReadAllLines
                     |> Seq.map (fun s ->
                       let t =
@@ -4448,7 +4453,11 @@ module Targets =
               Report = report
               InputDirectories = [ unpackapi ]
               StrongNameKey = key
-              TypeFilter = [ "System\\."; "DotNet"; "EntryPoint" ]
+              TypeFilter =
+                [ "System\\."
+                  "DotNet"
+                  "EntryPoint"
+                  "ThisAssembly" ]
               AssemblyFilter =
                 [ "AltCover.Engine"
                   "AltCover.Monitor"
@@ -6144,9 +6153,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTest"
-              )
+              .WithCommon(withWorkingDirectoryVM "_DotnetTest")
               .WithAltCoverGetVersion()
               .WithAltCoverImportModule())
               .WithAltCoverOptions
@@ -6185,9 +6192,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestInPlace"
-              )
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestInPlace")
               .WithAltCoverGetVersion()
               .WithAltCoverImportModule())
               .WithAltCoverOptions

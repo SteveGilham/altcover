@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>AltCover.DotNet</RootNamespace>
+    <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.DotNet</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
   </PropertyGroup>
