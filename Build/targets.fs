@@ -747,7 +747,8 @@ module Targets =
         rn
         |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
 
-      rn.[tag] <- "# " + Version
+      rn.[tag] <- String.Format (rn.[tag], Version)
+      printfn "%s" rn.[tag]
       File.WriteAllLines("./_Generated/ReleaseNotes.md", rn)
 
       [ "./_Generated/AssemblyVersion.fs"

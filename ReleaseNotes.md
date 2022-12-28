@@ -3,7 +3,7 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# 8.6.xxx
+# {0} (Habu series release 19)
 * [API] Types Options.CLI, Options.Prepare and Options.Collect in namespace `AltCover`; concrete implementations of the `ICLIOptions`, `IPrepareOptions` and `ICollectOptions` respectively, with getter and setter for each property.  Default values for the latter two are as per the [`Primitive`](https://stevegilham.github.io/altcover/AltCover.Engine/Primitive-fsapidoc) record types.
 
 # 8.5.842 (Habu series release 18)
