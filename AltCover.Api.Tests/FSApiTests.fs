@@ -1073,6 +1073,63 @@ module FSApiTests =
       testEqualValue result expected)
 
   [<Test>]
+  let LoggingCanBeExercised () =
+    let o = Options.Logging()
+    let i = o :> Abstract.ILoggingOptions
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    CommandLine.toConsole ()
+
+    try
+      use stdout =
+        { new StringWriter() with
+            member self.Encoding = e0 }
+
+      test <@ stdout.Encoding = e0 @>
+
+      use stderr =
+        { new StringWriter() with
+            member self.Encoding = e1 }
+
+      test <@ stderr.Encoding = e1 @>
+
+      Console.SetOut stdout
+      Console.SetError stderr
+      i.Info.Invoke "Info"
+      i.Warn.Invoke "Warn"
+      i.Failure.Invoke "Failure"
+      i.Echo.Invoke "Echo"
+      i.Verbose.Invoke "Verbose"
+
+      let result =
+        (stdout.ToString().Trim(), stderr.ToString().Trim())
+
+      test
+        <@
+          result = (String.Join(
+                      Environment.NewLine,
+                      [ "Info"; "Warn"; "Echo"; "Verbose" ]
+                    ),
+                    "Failure")
+        @>
+    finally
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+
+    o.Info <- null
+    o.Warn <- null
+    o.Failure <- null
+    o.Echo <- null
+    o.Verbose <- null
+
+    Assert.That(i.Info, Is.Null)
+    Assert.That(i.Warn, Is.Null)
+    Assert.That(i.Failure, Is.Null)
+    Assert.That(i.Echo, Is.Null)
+    Assert.That(i.Verbose, Is.Null)
+
+  [<Test>]
   let ArgumentsConsistent () =
     let force = DotNet.CLIOptions.Force true
     let fail = DotNet.CLIOptions.Fail true
@@ -1259,13 +1316,13 @@ module FSApiTests =
       @>
 
     let pprep2 = Options.Prepare()
-    test <@ (pprep2.WhatIf()).Command = ["--save"] @>
+    test <@ (pprep2.WhatIf()).Command = [ "--save" ] @>
 
     let prep2 =
       AltCover.AltCover.PrepareOptions.Abstract pprep2
 
     let pcoll2 = Options.Collect()
-    test <@ (pcoll2.WhatIf false).Command = ["Runner"; "--collect"] @>
+    test <@ (pcoll2.WhatIf false).Command = [ "Runner"; "--collect" ] @>
 
     let coll2 =
       AltCover.AltCover.CollectOptions.Abstract pcoll2

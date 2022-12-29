@@ -192,3 +192,20 @@ module Options =
       member self.ShowGenerated = self.ShowGenerated
       member self.Verbosity = self.Verbosity
       member self.Trivia = self.Trivia
+
+#if RUNNER
+  type Logging() =
+    let wl (w: System.IO.TextWriter) (x: string) = w.WriteLine x
+    member val Info = Action<string>(wl Console.Out) with get, set
+    member val Warn = Action<string>(wl Console.Out) with get, set
+    member val Failure = Action<string>(wl Console.Error) with get, set
+    member val Echo = Action<string>(wl Console.Out) with get, set
+    member val Verbose = Action<string>(wl Console.Out) with get, set
+
+    interface Abstract.ILoggingOptions with
+      member self.Info = self.Info
+      member self.Warn = self.Warn
+      member self.Failure = self.Failure
+      member self.Echo = self.Echo
+      member self.Verbose = self.Verbose
+#endif
