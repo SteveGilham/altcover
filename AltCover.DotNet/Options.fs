@@ -10,6 +10,7 @@ open System.Linq
 
 [<RequireQualifiedAccess>]
 module Options =
+  [<AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidLackOfCohesionOfMethodsRule",
                     Justification = "It's a property bag")>]
@@ -23,9 +24,7 @@ module Options =
       member self.FailFast = self.FailFast
       member self.ShowSummary = self.ShowSummary
 
-  [<SuppressMessage("Gendarme.Rules.Serialization",
-                    "RelaxedMarkAllNonSerializableFieldsRule",
-                    Justification = "Unlikely to happen")>]
+  [<AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidLackOfCohesionOfMethodsRule",
                     Justification = "It's a property bag")>]
@@ -82,9 +81,7 @@ module Options =
       member self.SummaryFormat = self.SummaryFormat
       member self.Verbosity = self.Verbosity
 
-  [<SuppressMessage("Gendarme.Rules.Serialization",
-                    "RelaxedMarkAllNonSerializableFieldsRule",
-                    Justification = "Unlikely to happen")>]
+  [<AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidLackOfCohesionOfMethodsRule",
                     Justification = "It's a property bag")>]
@@ -194,6 +191,10 @@ module Options =
       member self.Trivia = self.Trivia
 
 #if RUNNER
+  [<AutoSerializable(false)>]
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "AvoidLackOfCohesionOfMethodsRule",
+                    Justification = "It's a property bag")>]
   type Logging() =
     let wl (w: System.IO.TextWriter) (x: string) = w.WriteLine x
     member val Info = Action<string>(wl Console.Out) with get, set
