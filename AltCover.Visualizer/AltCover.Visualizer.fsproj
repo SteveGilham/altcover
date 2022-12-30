@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netcoreapp2.1;netstandard2.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(Configuration)'!='Debug'">netcoreapp2.1;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">net472;netcoreapp2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'!='Debug'">net472;netcoreapp2.1</TargetFrameworks>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>

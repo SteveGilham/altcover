@@ -151,21 +151,10 @@ type MainWindow() as this =
     SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
   let makeTreeNode pc leaf name icon =
-    let tree = Image()
-
-    tree.Source <-
-      if leaf then
-        icons.Blank.Force()
-      else
-        icons.TreeExpand.Force()
-
-    tree.Margin <- Thickness.Parse("2")
     let text = TextBlock()
     text.Text <- name
     text.Margin <- Thickness.Parse("2")
-#if !VIS_PERCENT
-    pc |> ignore
-#else
+
     let note = TextBlock()
     note.Text <- pc
     note.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Right
@@ -177,17 +166,14 @@ type MainWindow() as this =
       LogFont.TryParse(Persistence.readFont ()) |> snd
 
     note.FontFamily <- FontFamily(logfont.faceName)
-#endif
+
     let image = Image()
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
     let display = StackPanel()
     display.Orientation <- Avalonia.Layout.Orientation.Horizontal
-    display.Children.Add tree
     display.Children.Add image
-#if VIS_PERCENT
     display.Children.Add note
-#endif
     display.Children.Add text
     display.Tag <- name
     display
@@ -441,10 +427,9 @@ type MainWindow() as this =
             String.Join(
               Environment.NewLine,
               textLines
-              // Font limitation or Avalonia limitation?
-              // character \u2442 just shows as a box.
               |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i))
             )
+            + Environment.NewLine
 
           let sample = textLines |> Seq.head
           let depth = sample.Height * float (line - 1)
@@ -651,6 +636,28 @@ type MainWindow() as this =
 
     let makeNewRow note leaf name (anIcon: Lazy<Bitmap>) =
       let row = TreeViewItem()
+      let l = List<TreeViewItem>()
+
+      if not leaf then
+        l.Add <| TreeViewItem()
+        row.Tag <- New
+      else
+        row.Tag <- Expanded
+
+      row.Items <- l
+
+      row.Tapped
+      |> Event.add (fun x ->
+        match row.Tag :?> CoverageRowState with
+        | New ->
+          row.Tag <- Expanded
+          l.RemoveAt(0)
+        | Unexpanded a ->
+          row.Tag <- Expanded
+          a ()
+          l.RemoveAt(0)
+        | _ -> ())
+
       row.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Left
 
       row.LayoutUpdated
@@ -668,32 +675,6 @@ type MainWindow() as this =
         row.Items.OfType<TreeViewItem>()
         |> Seq.iter remargin)
 
-      row.Tapped
-      |> Event.add (fun evt ->
-        row.IsExpanded <- not row.IsExpanded
-
-        if not leaf then
-          let items =
-            (row.Header :?> StackPanel).Children
-
-          items.RemoveAt(0)
-          let mark = Image()
-
-          mark.Source <-
-            if row.Items.OfType<Object>().Any() then
-              if row.IsExpanded then
-                icons.TreeCollapse.Force()
-              else
-                icons.TreeExpand.Force()
-            else
-              icons.Blank.Force()
-
-          mark.Margin <- Thickness.Parse("2")
-          items.Insert(0, mark)
-
-        evt.Handled <- true)
-
-      row.Items <- List<TreeViewItem>()
       row.Header <- makeTreeNode note leaf name <| anIcon.Force()
       row
 
@@ -732,7 +713,15 @@ type MainWindow() as this =
                   coverageFiles.[i]
               )
           Display = this.DisplayMessage
-          UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
+          UpdateMRUFailure =
+            fun info ->
+              Dispatcher.UIThread.Post(fun _ ->
+                let tree =
+                  this.FindControl<TreeView>("Tree")
+
+                tree.Items <- Enumerable.Empty<TreeViewItem>()
+                tree.InvalidateVisual()
+                this.UpdateMRU info.FullName false)
           UpdateUISuccess =
             fun info ->
               let tree =
@@ -760,10 +749,20 @@ type MainWindow() as this =
                 .Children.Clear()
 
               tree.Items <- auxModel.Model
-              this.UpdateMRU info.FullName true
+              tree.InvalidateVisual()
+
+              if info.IsNotNull then
+                this.UpdateMRU info.FullName true
           SetXmlNode =
             fun pc name icon tip ->
+              let tree =
+                this.FindControl<TreeView>("Tree")
+
+              tree.Items <- Enumerable.Empty<TreeViewItem>()
+              tree.InvalidateVisual()
+
               let model = auxModel.Model
+              model.Clear()
               let row = makeNewRow pc false name icon
               model.Add row
 
@@ -771,11 +770,16 @@ type MainWindow() as this =
                 ToolTip.SetTip(row, tip)
 
               { Model = model; Row = row }
+          TreeUIDispatch = Dispatcher.UIThread.Post
           AddNode = (addNode false)
           AddLeafNode = (addNode true)
+          OnRowExpanded =
+            (fun (row: TreeViewItem) (action: unit -> unit) ->
+              row.Tag <- Unexpanded action)
           Map = this.PrepareDoubleTap }
 
-      Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
+      async { CoverageFileTree.DoSelected environment index }
+      |> Async.Start)
 
   interface IVisualizerWindow with
     member self.CoverageFiles
@@ -788,4 +792,11 @@ type MainWindow() as this =
 
     member self.ShowMessageOnGuiThread mtype message = self.DisplayMessage mtype message
 
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member",
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 516@517::Invoke(Microsoft.FSharp.Core.Unit)",
+                            Justification =
+                              "Local of type 'Task`1' is not disposed of. Hmm.")>]
 ()
