@@ -540,7 +540,7 @@ module private Gui =
     // coverlet-like case w/o column data
     let ec =
       if n.LineOnly then
-        endchars
+        endchars - 1
       else
         n.EndColumn - 1
 
