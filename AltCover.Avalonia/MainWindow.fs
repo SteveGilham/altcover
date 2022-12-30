@@ -637,7 +637,18 @@ type MainWindow() as this =
       let l = List<TreeViewItem>()
 
       if not leaf then
-        l.Add <| TreeViewItem()
+        let dummy = TreeViewItem()
+
+        // duplicated
+        let image = Image()
+        image.Source <- icons.Progress.Force()
+        image.Margin <- Thickness.Parse("2")
+        let display = StackPanel()
+        display.Orientation <- Avalonia.Layout.Orientation.Horizontal
+        display.Children.Add image
+
+        dummy.Header <- display
+        l.Add dummy
         row.Tag <- New
       else
         row.Tag <- Expanded

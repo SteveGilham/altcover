@@ -352,7 +352,7 @@ module private Gui =
         if expands then
           context.Model.Data.Add(newrow, New)
 
-          context.Model.AppendValues(newrow, [| icon.Force() :> obj |])
+          context.Model.AppendValues(newrow, [| icons.Progress.Force() :> obj |])
           |> ignore
 
         tip
