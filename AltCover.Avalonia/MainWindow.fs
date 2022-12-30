@@ -591,9 +591,7 @@ type MainWindow() as this =
       l.Shutdown())
 
     this.FindControl<MenuItem>("ShowAbout").Click
-    |> Event.add (fun _ ->
-      use _ = AboutBox().ShowDialog(this)
-      ())
+    |> Event.add (fun _ -> AboutBox().ShowDialog(this) |> ignore)
 
     let openFile = Event<String option>()
 
