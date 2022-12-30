@@ -803,9 +803,16 @@ type MainWindow() as this =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 516@517::Invoke(Microsoft.FSharp.Core.Unit)",
                             Justification =
                               "Local of type 'Task`1' is not disposed of. Hmm.")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$MainWindow/InitializeComponent@594-7::Invoke(Avalonia.Interactivity.RoutedEventArgs)",
+                            Justification =
+                              "Local of type 'Task' is not disposed of (at least not locally)")>]
 ()

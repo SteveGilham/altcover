@@ -4,7 +4,12 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # {0} (Habu series release 19)
-* [API] Types Options.CLI, Options.Prepare and Options.Collect in namespace `AltCover`; concrete implementations of the `ICLIOptions`, `IPrepareOptions` and `ICollectOptions` respectively, with getter and setter for each property.  Default values for the latter two are as per the [`Primitive`](https://stevegilham.github.io/altcover/AltCover.Engine/Primitive-fsapidoc) record types.
+* [GTKVisualizer] Fix an off-by-one crash for `coverlet` generated files
+* [AvaloniaVisualizer] Fix possible crash launching the About dialog
+* [Visualizer] Display coverage percentages against nodes of the tree (known issue that the synthetic F# module nodes are not thus decorated)
+* [Visualizer] Improve handling of larger coverage files by deferring more processing until the tree model is actually expanded.
+* [API] Types `Options.CLI`, `Options.Logging`, `Options.Prepare` and `Options.Collect` in namespace `AltCover`; concrete implementations of the `ICLIOptions`, `ILoggingOptions` and `IPrepareOptions` and `ICollectOptions` respectively, with getter and setter for each property.  Default values for the latter two are as per the corresponding [`Primitive`](https://stevegilham.github.io/altcover/AltCover.Engine/Primitive-fsapidoc) record types.
+* [API] Also on the `AltCover.Fake` package in the `AltCoverFake.DotNet.Testing` namespace (except `Options.Logging` which is not useful in that context)
 
 # 8.5.842 (Habu series release 18)
 * [VISUALIZER] As the relevant Avalonia issue is long resolved, move to having separate dialog boxes for the Avalonia Visualizer's "About" and message box, as in the GTK# version.
