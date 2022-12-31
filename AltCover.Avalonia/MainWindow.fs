@@ -150,13 +150,13 @@ type MainWindow() as this =
   let excluded =
     SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
-  let makeTreeNode pc leaf name icon =
+  let makeTreeNode (node: TreeNode<Bitmap>) =
     let text = TextBlock()
-    text.Text <- name
+    text.Text <- node.Name
     text.Margin <- Thickness.Parse("2")
 
     let note = TextBlock()
-    note.Text <- pc
+    note.Text <- node.Percent
     note.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Right
     note.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Bottom
     text.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Bottom
@@ -168,14 +168,14 @@ type MainWindow() as this =
     note.FontFamily <- FontFamily(logfont.faceName)
 
     let image = Image()
-    image.Source <- icon
+    image.Source <- node.Icon
     image.Margin <- Thickness.Parse("2")
     let display = StackPanel()
     display.Orientation <- Avalonia.Layout.Orientation.Horizontal
     display.Children.Add image
     display.Children.Add note
     display.Children.Add text
-    display.Tag <- name
+    display.Tag <- node.Name
     display
 
   do
@@ -307,7 +307,7 @@ type MainWindow() as this =
       this.ShowMessageBox MessageType.Error caption x.Message
 
   member private this.PrepareDoubleTap
-    (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
+    (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem, Bitmap>)
     (xpath: XPathNavigator)
     =
     let visibleName =
@@ -632,11 +632,12 @@ type MainWindow() as this =
       this.FindControl<MenuItem>("Refresh").Click
       |> Event.map (fun _ -> 0)
 
-    let makeNewRow note leaf name (anIcon: Lazy<Bitmap>) =
+    let makeNewRow (node: TreeNode<Bitmap>) =
       let row = TreeViewItem()
       let l = List<TreeViewItem>()
 
-      if not leaf then
+      match node.Children with
+      | Some _ ->
         let dummy = TreeViewItem()
 
         // duplicated
@@ -650,8 +651,7 @@ type MainWindow() as this =
         dummy.Header <- display
         l.Add dummy
         row.Tag <- New
-      else
-        row.Tag <- Expanded
+      | None -> row.Tag <- Expanded
 
       row.Items <- l
 
@@ -684,29 +684,34 @@ type MainWindow() as this =
         row.Items.OfType<TreeViewItem>()
         |> Seq.iter remargin)
 
-      row.Header <- makeTreeNode note leaf name <| anIcon.Force()
+      row.Header <- makeTreeNode node
       row
 
     Event.merge fileSelection refresh
     |> Event.add (fun index ->
+      let root =
+        { Icon = icons.Progress.Force() // dummy
+          Points = 0
+          Visited = 0
+          Name = String.Empty
+          Tooltip = None
+          Mapping = None
+          Children = Some <| List<TreeNode<Bitmap>>() }
+
       let mutable auxModel =
         { Model = List<TreeViewItem>()
-          Row = null }
+          Row = null
+          Root = root
+          Current = root }
 
       let addNode =
-        fun
-          leaf
-          (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
-          icon
-          pc
-          name
-          (tip: string option) ->
-          let newrow = makeNewRow pc leaf name icon
+        fun leaf (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem, Bitmap>) (node: TreeNode<Bitmap>) ->
+          let newrow = makeNewRow node
 
           (context.Row.Items :?> List<TreeViewItem>)
             .Add newrow
 
-          tip
+          node.Tooltip
           |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
 
           { context with Row = newrow }
@@ -724,7 +729,7 @@ type MainWindow() as this =
           Display = this.DisplayMessage
           UpdateMRUFailure =
             fun info ->
-              Dispatcher.UIThread.Post(fun _ ->
+              Dispatcher.UIThread.Post (fun _ ->
                 let tree =
                   this.FindControl<TreeView>("Tree")
 
@@ -763,7 +768,7 @@ type MainWindow() as this =
               if info.IsNotNull then
                 this.UpdateMRU info.FullName true
           SetXmlNode =
-            fun pc name icon tip ->
+            fun node ->
               let tree =
                 this.FindControl<TreeView>("Tree")
 
@@ -772,13 +777,24 @@ type MainWindow() as this =
 
               let model = auxModel.Model
               model.Clear()
-              let row = makeNewRow pc false name icon
+
+              let root =
+                { node with Children = Some <| List<TreeNode<Bitmap>>() }
+
+              let row = makeNewRow root
+
               model.Add row
+
+              let tip =
+                Option.defaultValue null node.Tooltip
 
               if tip |> String.IsNullOrWhiteSpace |> not then
                 ToolTip.SetTip(row, tip)
 
-              { Model = model; Row = row }
+              { Model = model
+                Row = row
+                Root = root
+                Current = root }
           TreeUIDispatch = Dispatcher.UIThread.Post
           AddNode = (addNode false)
           AddLeafNode = (addNode true)

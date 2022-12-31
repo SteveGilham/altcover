@@ -334,28 +334,22 @@ module private Gui =
 
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
-      fun
-        (expands: bool)
-        (context: CoverageTreeContext<TreeStore, TreeIter>)
-        (icon: Lazy<Gdk.Pixbuf>)
-        pc
-        name
-        (tip: string option) ->
+      fun (expands: bool) (context: CoverageTreeContext<TreeStore, TreeIter, Gdk.Pixbuf>) (node: TreeNode<Gdk.Pixbuf>) ->
         let newrow =
           context.Model.AppendValues(
             context.Row,
-            [| icon.Force() :> obj
-               pc :> obj
-               name :> obj |]
+            [| node.Icon :> obj
+               node.Percent :> obj
+               node.Name :> obj |]
           )
 
         if expands then
           context.Model.Data.Add(newrow, New)
 
-          context.Model.AppendValues(newrow, [| icons.Progress.Force() :> obj |])
+          context.Model.AppendValues(newrow, [| node.Icon :> obj |])
           |> ignore
 
-        tip
+        node.Tooltip
         |> Option.iter (fun text ->
           let path = context.Model.GetPath(newrow)
           handler.classStructureTree.Data.Add(path, text))
@@ -377,7 +371,7 @@ module private Gui =
             .ShowMessageOnGuiThread
         UpdateMRUFailure =
           fun info ->
-            Handler.InvokeOnGuiThread(fun () ->
+            Handler.InvokeOnGuiThread (fun () ->
               handler.classStructureTree.Data.Clear()
               let model = handler.auxModel
               model.Clear()
@@ -400,7 +394,7 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun pc name icon tip ->
+          fun node ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
@@ -408,18 +402,33 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(icon.Force(), pc, name)
+              model.AppendValues(node.Icon, node.Percent, node.Name)
 
-            model.AppendValues(topRow, [| icon.Force() :> obj |])
+            model.AppendValues(topRow, [| node.Icon :> obj |])
             |> ignore
 
             model.Data.Add(topRow, New)
+
+            let tip =
+              Option.defaultValue null node.Tooltip
 
             if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)
               table.Add(path, tip)
 
-            { Model = model; Row = topRow }
+            let root =
+              { Icon = icons.Progress.Force() // dummy
+                Points = 0
+                Visited = 0
+                Name = String.Empty
+                Tooltip = None
+                Mapping = None
+                Children = Some <| List<TreeNode<Pixbuf>>() }
+
+            { Model = model
+              Row = topRow
+              Root = root
+              Current = root }
         TreeUIDispatch = (fun f -> f ())
         AddNode = addNode true
         AddLeafNode = addNode false

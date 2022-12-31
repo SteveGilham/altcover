@@ -8,13 +8,62 @@ open AltCover.Shared
 open Augment
 open GuiCommon
 
-[<NoComparison>]
-type CoverageTreeContext<'TModel, 'TRow> = { Model: 'TModel; Row: 'TRow }
+[<AutoSerializable(false)>]
+type TreeNode<'TIcon> =
+  { Icon: 'TIcon
+    Points: int
+    Visited: int
+    Name: String
+    Tooltip: String option
+    Mapping: XPathNavigator option
+    Children: System.Collections.Generic.List<TreeNode<'TIcon>> option }
+  static member internal Make (icon: Lazy<'TIcon>) name =
+    { Icon = icon.Force()
+      Name = name
+      Points = 0
+      Visited = 0
+      Tooltip = None
+      Mapping = None
+      Children = None }
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
-                                                  "AvoidExcessiveParametersOnGenericTypesRule",
-                                                  Justification =
-                                                    "Does this act excessive to you?")>]
+  member node.Percent =
+    let percent p v =
+      if p > 0 then
+        (100.0 * (v |> float) / (p |> float))
+        |> Math.Floor
+        |> int
+      else
+        0
+
+    let pc =
+      if node.Points > 0 then
+        percent node.Points node.Visited
+      else
+        match node.Children with
+        | None -> 0
+        | Some l ->
+          percent
+            (l |> Seq.sumBy (fun n -> n.Points))
+            (l |> Seq.sumBy (fun n -> n.Visited))
+
+    sprintf "%3i%%" pc
+
+[<SuppressMessage("Gendarme.Rules.Design.Generic",
+                  "AvoidExcessiveParametersOnGenericTypesRule",
+                  Justification = "Does this act excessive to you?")>]
+[<SuppressMessage("Microsoft.Design",
+                  "CA1005:AvoidExcessiveParametersOnGenericTypes",
+                  Justification = "Does this act excessive to you?")>]
+[<NoComparison; AutoSerializable(false)>]
+type CoverageTreeContext<'TModel, 'TRow, 'TIcon> =
+  { Model: 'TModel
+    Row: 'TRow
+    Root: TreeNode<'TIcon>
+    Current: TreeNode<'TIcon> }
+
+[<SuppressMessage("Gendarme.Rules.Design.Generic",
+                  "AvoidExcessiveParametersOnGenericTypesRule",
+                  Justification = "Does this act excessive to you?")>]
 [<SuppressMessage("Microsoft.Design",
                   "CA1005:AvoidExcessiveParametersOnGenericTypes",
                   Justification = "Does this act excessive to you?")>]
@@ -25,25 +74,16 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     GetFileInfo: int -> FileInfo
     UpdateMRUFailure: FileInfo -> unit
     UpdateUISuccess: FileInfo -> unit
-    SetXmlNode:
-      String -> String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
+    SetXmlNode: TreeNode<'TIcon> -> CoverageTreeContext<'TModel, 'TRow, 'TIcon>
     TreeUIDispatch: (unit -> unit) -> unit
-    AddNode:
-      CoverageTreeContext<'TModel, 'TRow>
-        -> Lazy<'TIcon>
-        -> String
-        -> String
-        -> String option
-        -> CoverageTreeContext<'TModel, 'TRow>
-    AddLeafNode:
-      CoverageTreeContext<'TModel, 'TRow>
-        -> Lazy<'TIcon>
-        -> String
-        -> String
-        -> String option
-        -> CoverageTreeContext<'TModel, 'TRow>
+    AddNode: CoverageTreeContext<'TModel, 'TRow, 'TIcon>
+      -> TreeNode<'TIcon>
+      -> CoverageTreeContext<'TModel, 'TRow, 'TIcon>
+    AddLeafNode: CoverageTreeContext<'TModel, 'TRow, 'TIcon>
+      -> TreeNode<'TIcon>
+      -> CoverageTreeContext<'TModel, 'TRow, 'TIcon>
     OnRowExpanded: 'TRow -> (unit -> unit) -> unit
-    Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
+    Map: CoverageTreeContext<'TModel, 'TRow, 'TIcon> -> XPathNavigator -> unit }
 
 type CoverageRowState =
   | New
@@ -60,6 +100,48 @@ module CoverageFileTree =
       Icon: Lazy<'TIcon>
       Exists: bool
       Stale: bool }
+
+  let private addTreeNode
+    (context: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
+    (node: TreeNode<'TIcon>)
+    =
+    context.Current.Children.Value.Add node
+    { context with Current = node }
+
+  let private addLeafNode
+    (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
+    (context: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
+    (node: TreeNode<'TIcon>)
+    =
+    let newrow =
+      environment.AddLeafNode context node
+
+    match node.Mapping with
+    | None -> ()
+    | Some navigator -> environment.Map newrow navigator
+
+    newrow
+
+  let private withMapping (predicate: bool) (navigator: XPathNavigator) node =
+    { node with
+        Mapping =
+          if predicate then
+            Some navigator
+          else
+            None }
+
+  let private withCoverage (points: int, visited: int) node =
+    { node with
+        Points = points
+        Visited = visited }
+
+  let private withChildren node =
+    { node with
+        Children =
+          Some
+          <| System.Collections.Generic.List<TreeNode<'TIcon>>() }
+
+  let private withTooltip tip node = { node with Tooltip = tip }
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "ReviewSelfAssignmentRule",
@@ -79,16 +161,13 @@ module CoverageFileTree =
 
   let private coverPoints (points: XPathNavigator seq) =
     if points |> Seq.isEmpty then
-      0
+      (0, 0)
     else
       let visited =
         points
         |> Seq.filter (fun p -> p.GetAttribute("visitcount", String.Empty) != "0")
 
-      (100.0 * (visited |> Seq.length |> float)
-       / (points |> Seq.length |> float))
-      |> Math.Floor
-      |> int
+      (points |> Seq.length, visited |> Seq.length)
 
   let private cover (navigator: XPathNavigator seq) =
     let points =
@@ -99,18 +178,16 @@ module CoverageFileTree =
 
     coverPoints points
 
-  let private coverText pc = sprintf "%3i%%" pc
-
-  let private pcCover (navigator: XPathNavigator seq) = navigator |> cover |> coverText
+  let private pcCover (navigator: XPathNavigator seq) = navigator |> cover
 
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
-    (model: CoverageTreeContext<'TModel, 'TRow>)
+    (model: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
     (nodes: seq<MethodKey>)
     (epoch: DateTime)
     =
     let applyToModel
-      (theModel: CoverageTreeContext<'TModel, 'TRow>)
+      (theModel: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
       (item: (string * MethodType) * MethodKey seq)
       =
       let ((display, special), keys) = item
@@ -125,7 +202,7 @@ module CoverageFileTree =
 
       let gcroot (s: string) =
         let rec step (s: string) (i: int) =
-          let next =
+          let next = // <- this line
             s.IndexOf("gcroot<", i, StringComparison.Ordinal)
 
           if next < 0 then
@@ -161,8 +238,11 @@ module CoverageFileTree =
           else
             fullname.Substring(bracket)
 
-      let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
-        let fullname =
+      let applyMethod
+        (mmodel: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
+        (x: MethodKey)
+        =
+        let fullname = // <- this line
           fixup
           <| x.Navigator.GetAttribute("fullname", String.Empty)
 
@@ -239,91 +319,83 @@ module CoverageFileTree =
             environment.Icons.MethodMissingSource
 
         match sources with
-        | [] ->
-          environment.AddLeafNode
-            mmodel
-            environment.Icons.MethodNoSource
-            String.Empty // TODO maybe 0 or 100% ??
-            (displayname.Substring(offset))
-            None
+        | [] -> // leaf
+          (TreeNode.Make environment.Icons.MethodNoSource (displayname.Substring(offset)))
+          |> addTreeNode mmodel
           |> ignore
 
         | [ source ] ->
-          let newrow =
-            environment.AddLeafNode
-              mmodel
-              (if source.Stale then
-                 environment.Icons.MethodDated
-               else
-                 icon)
-              (pcCover [ x.Navigator ])
-
-              (displayname.Substring(offset))
-              (if hasSource then
-                 if source.Stale then
-                   Some
-                   <| Resource.Format("FileNewerThanReport", [| source.FullName |])
-                 else
-                   None
-               else
-                 Some
-                 <| Resource.Format("FileNotFound", [| source.FullName |]))
-
-          if hasSource && (not source.Stale) then
-            environment.Map newrow x.Navigator
+          TreeNode.Make
+            (if source.Stale then
+               environment.Icons.MethodDated
+             else
+               icon)
+            (displayname.Substring(offset))
+          |> withTooltip (
+            if hasSource then
+              if source.Stale then
+                Some
+                <| Resource.Format("FileNewerThanReport", [| source.FullName |])
+              else
+                None
+            else
+              Some
+              <| Resource.Format("FileNotFound", [| source.FullName |])
+          )
+          |> withCoverage (pcCover [ x.Navigator ])
+          |> withMapping (hasSource && (not source.Stale)) x.Navigator
+          |> addTreeNode mmodel
+          |> ignore
 
         | _ ->
           // If multi-source (has inlines), add the source file nodes to the hittable map
           let newrow =
-            environment.AddNode
-              mmodel
-              icon
-              (pcCover [ x.Navigator ])
-              (displayname.Substring(offset))
-              None
+            TreeNode.Make icon (displayname.Substring(offset))
+            |> withChildren
+            |> withCoverage (pcCover [ x.Navigator ])
+            |> addTreeNode mmodel
 
           sources
           |> List.iter (fun s ->
-            let srow =
-              environment.AddLeafNode
-                newrow
-                (if s.Stale then
-                   environment.Icons.SourceDated
-                 else
-                   icon)
-
-                (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
-                 |> Seq.cast<XPathNavigator>
-                 |> Seq.filter (fun n ->
-                   n.GetAttribute("document", String.Empty)
-                   == s.FullName)
-                 |> coverPoints
-                 |> coverText)
-
-                s.FileName
-                (if s.Exists then
-                   None
-                 else
-                   Some
-                   <| Resource.Format("FileNotFound", [| s.FullName |]))
-
-            if s.Exists && (not s.Stale) then
-              environment.Map srow s.Navigator)
+            TreeNode.Make
+              (if s.Stale then
+                 environment.Icons.SourceDated
+               else
+                 icon)
+              s.FileName
+            |> withTooltip (
+              if s.Exists then
+                None
+              else
+                Some
+                <| Resource.Format("FileNotFound", [| s.FullName |])
+            )
+            |> withCoverage (
+              x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
+              |> Seq.cast<XPathNavigator>
+              |> Seq.filter (fun n ->
+                n.GetAttribute("document", String.Empty)
+                == s.FullName)
+              |> coverPoints
+            )
+            |> withMapping (s.Exists && (not s.Stale)) s.Navigator
+            |> addTreeNode newrow
+            |> ignore)
 
       if special <> MethodType.Normal then
         let pc =
           keys |> Seq.map (fun x -> x.Navigator) |> pcCover
 
         let newrow =
-          environment.AddNode
-            theModel
+          TreeNode.Make
             (if special = MethodType.Property then
                environment.Icons.Property
              else
                environment.Icons.Event)
-            pc
             display
-            None
+          |> withChildren
+          |> withCoverage pc
+          |> addTreeNode theModel
 
         keys
         |> Seq.sortBy (fun key -> key.Name |> DisplayName)
@@ -361,19 +433,19 @@ module CoverageFileTree =
 
   let private populateNamespaceNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
-    (model: CoverageTreeContext<'TModel, 'TRow>)
+    (model: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
     (nodes: seq<MethodKey>)
     (epoch: DateTime)
     =
     let applyToModel
-      (theModel: CoverageTreeContext<'TModel, 'TRow>)
+      (theModel: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
       (group: string * seq<MethodKey>)
       =
       let name = fst group
 
       let icon =
         if group |> snd |> Seq.isEmpty then
-          (environment.Icons.Module, String.Empty) // TODO maybe
+          (environment.Icons.Module, (0, 0)) // TODO marker
         else
           let pc =
             group
@@ -397,7 +469,10 @@ module CoverageFileTree =
             (environment.Icons.Effect, pc)
 
       let newrow =
-        environment.AddNode theModel (fst icon) (snd icon) name None
+        TreeNode.Make (fst icon) name
+        |> withChildren
+        |> withCoverage (snd icon)
+        |> addTreeNode theModel
 
       environment.OnRowExpanded newrow.Row (fun () ->
         populateClassNode environment newrow (snd group) epoch)
@@ -466,13 +541,13 @@ module CoverageFileTree =
 
   let private populateAssemblyNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
-    (model: CoverageTreeContext<'TModel, 'TRow>)
+    (model: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
     (node: XPathNavigator)
     (epoch: DateTime)
     =
     // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
     let applyToModel
-      (theModel: CoverageTreeContext<'TModel, 'TRow>)
+      (theModel: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
       (group: string * seq<MethodKey>)
       =
       let name = fst group
@@ -484,7 +559,10 @@ module CoverageFileTree =
         |> pcCover
 
       let newrow =
-        environment.AddNode theModel environment.Icons.Namespace pc name None
+        TreeNode.Make environment.Icons.Namespace name
+        |> withChildren
+        |> withCoverage pc
+        |> addTreeNode theModel
 
       populateNamespaceNode environment newrow (snd group) epoch
 
@@ -519,10 +597,14 @@ module CoverageFileTree =
 
     let f0 () =
       environment.SetXmlNode
-        String.Empty
-        current.Name
-        environment.Icons.Progress
-        String.Empty
+        { Icon = environment.Icons.Progress.Force()
+          Points = 0
+          Visited = 0
+          Name = current.Name
+          Tooltip = None
+          Mapping = None
+          Children = None // N/A
+        }
       |> ignore
 
       environment.UpdateUISuccess null
@@ -563,14 +645,17 @@ module CoverageFileTree =
       let pc = pcCover [ navigator ]
 
       let applyToModel
-        (theModel: CoverageTreeContext<'TModel, 'TRow>)
+        (theModel: CoverageTreeContext<'TModel, 'TRow, 'TIcon>)
         (group: XPathNavigator * string)
         =
         let name = snd group
         let pc = ([ group |> fst ] |> pcCover)
 
         let newModel =
-          environment.AddNode theModel environment.Icons.Assembly pc name None
+          TreeNode.Make environment.Icons.Assembly name
+          |> withChildren
+          |> withCoverage pc
+          |> addTreeNode theModel
 
         populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
@@ -585,16 +670,22 @@ module CoverageFileTree =
       let f () =
         let model =
           environment.SetXmlNode
-            pc
-            current.Name
-            (if Seq.isEmpty missing then
-               if Seq.isEmpty newer then
-                 environment.Icons.Report
-               else
-                 environment.Icons.ReportDated
-             else
-               environment.Icons.ReportWarning)
-            (String.Join(Environment.NewLine, message))
+            { Icon =
+                (if Seq.isEmpty missing then
+                   if Seq.isEmpty newer then
+                     environment.Icons.Report
+                   else
+                     environment.Icons.ReportDated
+                 else
+                   environment.Icons.ReportWarning)
+                  .Force()
+              Points = fst pc
+              Visited = snd pc
+              Name = current.Name
+              Tooltip = Some(String.Join(Environment.NewLine, message))
+              Mapping = None
+              Children = None // N/A
+            }
 
         environment.OnRowExpanded model.Row (fun () ->
           assemblies
@@ -613,14 +704,18 @@ module CoverageFileTree =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.CoverageFileTree/step@128::Invoke(System.String,System.Int32)",
+                            Scope = "member",  // MethodDefinition
+                            Target = "AltCover.CoverageFileTree/step@205::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
+// TODO -- get rid of these
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.CoverageFileTree/applyMethod@165::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
-                            Justification = "Possibly too much work")>]
+                            Scope = "member",  // MethodDefinition
+                            Target = "AltCover.CoverageFileTree/applyMethod@245::Invoke(AltCover.CoverageTreeContext`3<TModel,TRow,TIcon>,AltCover.GuiCommon/MethodKey)",
+                            Justification = "Needs more refactoring")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUncalledPrivateCodeRule",
+                            Scope = "member",  // MethodDefinition
+                            Target = "AltCover.CoverageFileTree::addLeafNode(AltCover.CoverageModelDisplay`3<TModel,TRow,TIcon>,AltCover.CoverageTreeContext`3<TModel,TRow,TIcon>,AltCover.TreeNode`1<TIcon>)",
+                            Justification = "To be used in replay pass (TODO)")>]
 ()
