@@ -340,13 +340,30 @@ module Targets =
     { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
   let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
-    { o with MSBuildParams = cliArguments }
+    let msb =
+      { o.MSBuildParams with
+          ConsoleLogParameters = []
+          DistributedLoggers = None
+          DisableInternalBinLog = true }
+
+    { o with MSBuildParams = msb }
 
   let buildWithCLIArguments (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliArguments }
 
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
-    { o with MSBuildParams = cliTaggedArguments tag }
+    let p =
+      ("AltCoverTag", (tag + "_"))
+      :: o.MSBuildParams.Properties
+
+    let msb =
+      { o.MSBuildParams with
+          ConsoleLogParameters = []
+          Properties = p
+          DistributedLoggers = None
+          DisableInternalBinLog = true }
+
+    { o with MSBuildParams = msb }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliTaggedArguments tag }
@@ -747,7 +764,7 @@ module Targets =
         rn
         |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
 
-      rn.[tag] <- String.Format (rn.[tag], Version)
+      rn.[tag] <- String.Format(rn.[tag], Version)
       printfn "%s" rn.[tag]
       File.WriteAllLines("./_Generated/ReleaseNotes.md", rn)
 
@@ -5098,7 +5115,7 @@ module Targets =
         DotNet.build
           (fun p ->
             { p.WithCommon dotnetOptions with
-                  Configuration = DotNet.BuildConfiguration.Debug }
+                Configuration = DotNet.BuildConfiguration.Debug }
             |> (buildWithCLITaggedArguments "CoverletForPester"))
           sample
 
@@ -6897,8 +6914,8 @@ module Targets =
             ({ to'.WithCommon(
                  withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests"
                ) with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+                Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = false })
               .WithAltCoverOptions
               pp0
               cc0
@@ -6940,8 +6957,8 @@ module Targets =
             ({ to'.WithCommon(
                  withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests"
                ) with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+                Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = false })
               .WithAltCoverOptions
               pp1
               cc0
