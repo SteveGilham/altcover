@@ -67,7 +67,7 @@ The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invoc
 
 ## module `Options`
 * `[<RequireQualifiedAccess>]`
-* default interface implementations with get and set members, and
+* default interface implementations with get and set members
   * type CLI - implements DotNet.ICLIOptions : default values fale or empty
   * type Collect - implements Abstract.ICollectOptions : default values as per the `Primitive.CollectOptions` record
   * type Prepare - implements Abstract.IPrepareOptions : default values as per the `Primitive.PrepareOptions` record
