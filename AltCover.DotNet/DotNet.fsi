@@ -83,7 +83,6 @@ module DotNet = begin
       val private isSet : s:string -> bool
       val private fromList : name:string -> s:seq<System.String> -> (string*string) * bool
       val fromArg : name:string -> s:string -> (string*string) * bool
-      val join : l:seq<string> -> string
       val toPrepareListArgumentList :
         prepare:Abstract.IPrepareOptions ->
           ((string -> #seq<System.String> -> (string*string) * bool) * string *
@@ -158,14 +157,6 @@ module DotNet = begin
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
 #else
 #if TRACE  // cheat mode here
-    val internal toTestArgumentList :
-      prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string list
-    val internal toTestArguments :
-      prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
-    val ImportModuleProperties : (string*string) list
-    val GetVersionProperties : (string*string) list
   end
 #endif
 #endif

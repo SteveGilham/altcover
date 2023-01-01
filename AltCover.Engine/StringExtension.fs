@@ -14,7 +14,9 @@ module internal StringExtension =
   let (==) (x: string) (y: string) =
     x.Equals(y, System.StringComparison.Ordinal)
 
+#if !FAKEAPI
 #if !DEBUG && !NET20
   [<MethodImplAttribute(MethodImplOptions.AggressiveInlining)>]
 #endif
   let (!=) (x: string) (y: string) = (x == y) |> not
+#endif

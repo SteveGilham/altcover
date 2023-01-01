@@ -83,90 +83,15 @@ open AltCover.Shared
 module DotNet =
   open Fake.DotNet
 
-  let internal activate (info: ParameterInfo) =
-    let t = info.ParameterType
-
-    if t.GetTypeInfo().IsValueType then
-      Activator.CreateInstance(t)
-    else
-      null
-
-  let internal setCustomParams common extended current (f: FieldInfo) =
-    f.SetValue(
-      common,
-      (if f.Name != "CustomParams@" then
-         f.GetValue current
-       else
-         extended :> obj)
-    )
-
-  let internal setCommonParams result common self (f: FieldInfo) =
-    f.SetValue(
-      result,
-      (if f.Name != "Common@" then
-         f.GetValue self
-       else
-         common)
-    )
-
-  let internal extractParameters (o: DotNet.TestOptions) =
-    let t = o.Common.GetType()
-    let p = t.GetProperty("CustomParams")
-    p.GetValue(o.Common, null) :?> string Option
-
-  let internal join (l: string seq) = String.Join(" ", l)
-
-  let internal toArgs a =
-    a
-    |> List.map (fun (name, value) -> sprintf """/p:%s="%s" """ name value)
-    |> join
-
   type DotNet.TestOptions with
 
-    // NOTE: the MSBuildParams member of TestOptions did not exist in Fake 5.0.0
-    // so do it this way for backwards compatibility
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208",
-                      Justification = "Inlined calls to ArgumentNullException")>]
-    member private self.ExtendCustomParams options =
+    member private self.ExtendCLIProperties options =
+      let cliargs = self.MSBuildParams
 
-      // the constructors are version dependent
-      let optionsConstructor =
-        self.Common.GetType().GetConstructors().[0]
+      let nargs =
+        { cliargs with Properties = List.concat [ cliargs.Properties; options ] }
 
-      let args =
-        optionsConstructor.GetParameters()
-        |> Array.map activate
-
-      let common = optionsConstructor.Invoke(args)
-
-      let extended =
-        match self |> extractParameters with
-        | None -> Some options
-        | Some thing -> Some(thing + " " + options)
-
-      self
-        .Common
-        .GetType()
-        .GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
-      |> Array.iter (setCustomParams common extended self.Common)
-
-      let testOptionsConstructor =
-        self.GetType().GetConstructors().[0]
-
-      let args' =
-        testOptionsConstructor.GetParameters()
-        |> Array.map activate
-
-      let result =
-        testOptionsConstructor.Invoke(args')
-
-      self
-        .GetType()
-        .GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
-      |> Array.iter (setCommonParams result common self)
-
-      result :?> DotNet.TestOptions
+      { self with MSBuildParams = nargs }
 
 #if RUNNER
     member self.WithAltCoverOptions
@@ -174,19 +99,19 @@ module DotNet =
       (collect: Abstract.ICollectOptions)
       (force: DotNet.ICLIOptions)
       =
-      DotNet.ToTestArguments
+      DotNet.ToTestPropertiesList
 #else
     member self.WithAltCoverOptions
       (prepare: Testing.Abstract.IPrepareOptions)
       (collect: Testing.Abstract.ICollectOptions)
       (force: AltCoverFake.DotNet.Testing.DotNet.ICLIOptions)
       =
-      AltCoverFake.DotNet.Testing.DotNet.toTestArguments
+      AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList
 #endif
         prepare
         collect
         force
-      |> self.ExtendCustomParams
+      |> self.ExtendCLIProperties
 
     [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Anonymous parameter")>]
     member self.WithAltCoverImportModule() =
@@ -195,8 +120,7 @@ module DotNet =
 #else
       AltCoverFake.DotNet.Testing.DotNet.ImportModuleProperties
 #endif
-      |> toArgs
-      |> self.ExtendCustomParams
+      |> self.ExtendCLIProperties
 
     [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Anonymous parameter")>]
     member self.WithAltCoverGetVersion() =
@@ -205,8 +129,7 @@ module DotNet =
 #else
       AltCoverFake.DotNet.Testing.DotNet.GetVersionProperties
 #endif
-      |> toArgs
-      |> self.ExtendCustomParams
+      |> self.ExtendCLIProperties
 
 #if RUNNER
 [<assembly: CLSCompliant(true)>]

@@ -87,7 +87,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
     abstract member ShowStatic : string with get
     abstract member ShowGenerated : bool with get
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
-    abstract member Trivia: bool with get
+    abstract member Trivia : bool with get
   end
 ```
 
