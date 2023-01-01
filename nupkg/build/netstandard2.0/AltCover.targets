@@ -54,7 +54,7 @@
 
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
-      <AltCoverXmlOutput Include="$(AltCoverReport)" />
+      <AltCoverXmlOutput Include="$([MSBuild]::Unescape($(AltCoverReport)))" />
       <AltCoverInputDirectory Include="$(TargetDir)" />
       <AltCoverOutputDirectory Condition="'$(AltCoverInPlace)' == 'false'" Include="$(AltCoverInstrumentedDirectory)_$(ProjectName)" />
       <AltCoverOutputDirectory Condition="'$(AltCoverInPlace)' != 'false'" Include="$(AltCoverSavedDirectory)_$(ProjectName)" />
@@ -62,11 +62,10 @@
 
     <PropertyGroup>
       <AltCoverDollarChar>$</AltCoverDollarChar>
-      <AltCoverDot>.</AltCoverDot>
       <AltCoverProjectName>$(AltCoverDollarChar)(ProjectName)</AltCoverProjectName>
       <AltCoverSolutionDir>$(AltCoverDollarChar)(SolutionDir)</AltCoverSolutionDir>
       <AltCoverNewGuid>$(AltCoverDollarChar)([System.Guid]::NewGuid())</AltCoverNewGuid>
-      <AltCoverReport Condition="'$(AltCoverReport)' != '' AND '$(TargetFrameworks)' != ''">$(AltCoverReport.Replace(%(AltCoverXmlOutput.Extension), ''))$(AltCoverDot)$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverReport>
+      <AltCoverReport Condition="'$(AltCoverReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverReport>
       <AltCoverReport Condition="'$(AltCoverReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage$(AltCoverFileExtension)</AltCoverReport>
       <AltCoverReport Condition="'$(AltCoverReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework)$(AltCoverFileExtension)</AltCoverReport>
       <AltCoverShowStatic Condition="'$(AltCoverShowStatic' != '+' AND '$(AltCoverShowStatic' != '++'">-</AltCoverShowStatic>
