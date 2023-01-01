@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# {0} (Habu series release 19)
+# {0} (Habu series release 20)
+
+# 8.6.14 (Habu series release 19)
 * [GTKVisualizer] Fix an off-by-one crash for `coverlet` generated files
 * [AvaloniaVisualizer] Fix possible crash launching the About dialog
 * [Visualizer] Display coverage percentages against nodes of the tree (known issue that the synthetic F# module nodes are not thus decorated)
