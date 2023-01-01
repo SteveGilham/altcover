@@ -27,6 +27,7 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     UpdateUISuccess: FileInfo -> unit
     SetXmlNode:
       String -> String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
+    TreeUIDispatch: (unit -> unit) -> unit
     AddNode:
       CoverageTreeContext<'TModel, 'TRow>
         -> Lazy<'TIcon>
@@ -41,7 +42,13 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
         -> String
         -> String option
         -> CoverageTreeContext<'TModel, 'TRow>
+    OnRowExpanded: 'TRow -> (unit -> unit) -> unit
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
+
+type CoverageRowState =
+  | New
+  | Unexpanded of (unit -> unit)
+  | Expanded
 
 module CoverageFileTree =
 
@@ -69,16 +76,19 @@ module CoverageFileTree =
       else
         scan s (index + 1) d
     | _ -> scan s (index + 1) depth
-#if VIS_PERCENT
-  let private coverPoints (points: XPathNavigator seq) =
-    let visited =
-      points
-      |> Seq.filter (fun p -> p.GetAttribute("visitcount", String.Empty) <> "0")
 
-    (100.0 * (visited |> Seq.length |> float)
-     / (points |> Seq.length |> float))
-    |> Math.Floor
-    |> int
+  let private coverPoints (points: XPathNavigator seq) =
+    if points |> Seq.isEmpty then
+      0
+    else
+      let visited =
+        points
+        |> Seq.filter (fun p -> p.GetAttribute("visitcount", String.Empty) != "0")
+
+      (100.0 * (visited |> Seq.length |> float)
+       / (points |> Seq.length |> float))
+      |> Math.Floor
+      |> int
 
   let private cover (navigator: XPathNavigator seq) =
     let points =
@@ -92,7 +102,6 @@ module CoverageFileTree =
   let private coverText pc = sprintf "%3i%%" pc
 
   let private pcCover (navigator: XPathNavigator seq) = navigator |> cover |> coverText
-#endif
 
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
@@ -247,11 +256,8 @@ module CoverageFileTree =
                  environment.Icons.MethodDated
                else
                  icon)
-#if VIS_PERCENT
               (pcCover [ x.Navigator ])
-#else
-              String.Empty
-#endif
+
               (displayname.Substring(offset))
               (if hasSource then
                  if source.Stale then
@@ -272,11 +278,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               icon
-#if VIS_PERCENT
               (pcCover [ x.Navigator ])
-#else
-              String.Empty
-#endif
               (displayname.Substring(offset))
               None
 
@@ -289,16 +291,15 @@ module CoverageFileTree =
                    environment.Icons.SourceDated
                  else
                    icon)
-#if VIS_PERCENT
+
                 (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
                  |> Seq.cast<XPathNavigator>
                  |> Seq.filter (fun n ->
-                   n.GetAttribute("document", String.Empty) = s.FullName)
+                   n.GetAttribute("document", String.Empty)
+                   == s.FullName)
                  |> coverPoints
                  |> coverText)
-#else
-                String.Empty
-#endif
+
                 s.FileName
                 (if s.Exists then
                    None
@@ -310,12 +311,9 @@ module CoverageFileTree =
               environment.Map srow s.Navigator)
 
       if special <> MethodType.Normal then
-#if VIS_PERCENT
         let pc =
           keys |> Seq.map (fun x -> x.Navigator) |> pcCover
-#else
-        let pc = String.Empty
-#endif
+
         let newrow =
           environment.AddNode
             theModel
@@ -377,15 +375,12 @@ module CoverageFileTree =
         if group |> snd |> Seq.isEmpty then
           (environment.Icons.Module, String.Empty) // TODO maybe
         else
-#if VIS_PERCENT
           let pc =
             group
             |> snd
             |> Seq.map (fun x -> x.Navigator)
             |> pcCover
-#else
-          let pc = String.Empty
-#endif
+
           let names =
             group
             |> snd
@@ -404,7 +399,9 @@ module CoverageFileTree =
       let newrow =
         environment.AddNode theModel (fst icon) (snd icon) name None
 
-      populateClassNode environment newrow (snd group) epoch
+      environment.OnRowExpanded newrow.Row (fun () ->
+        populateClassNode environment newrow (snd group) epoch)
+
       newrow
 
     let isNested (name: string) n =
@@ -479,15 +476,12 @@ module CoverageFileTree =
       (group: string * seq<MethodKey>)
       =
       let name = fst group
-#if VIS_PERCENT
+
       let pc =
         group
         |> snd
         |> Seq.map (fun x -> x.Navigator)
         |> pcCover
-#else
-      let pc = String.Empty
-#endif
 
       let newrow =
         environment.AddNode theModel environment.Icons.Namespace pc name None
@@ -523,6 +517,18 @@ module CoverageFileTree =
   let DoSelected (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>) index =
     let current = environment.GetFileInfo index
 
+    let f0 () =
+      environment.SetXmlNode
+        String.Empty
+        current.Name
+        environment.Icons.Progress
+        String.Empty
+      |> ignore
+
+      environment.UpdateUISuccess null
+
+    environment.TreeUIDispatch f0
+
     match CoverageFile.LoadCoverageFile current with
     | Left failed ->
       Messages.InvalidCoverageFileMessage environment.Display failed
@@ -554,33 +560,14 @@ module CoverageFileTree =
         |> Seq.filter (fun (x, y) -> x |> Seq.isEmpty |> not)
         |> Seq.map (fun (x, y) -> Resource.Format(y, [||]))
 
-      let model =
-        environment.SetXmlNode
-#if VIS_PERCENT
-          (pcCover [ navigator ])
-#else
-          String.Empty
-#endif
-          current.Name
-          (if Seq.isEmpty missing then
-             if Seq.isEmpty newer then
-               environment.Icons.Report
-             else
-               environment.Icons.ReportDated
-           else
-             environment.Icons.ReportWarning)
-          (String.Join(Environment.NewLine, message))
+      let pc = pcCover [ navigator ]
 
       let applyToModel
         (theModel: CoverageTreeContext<'TModel, 'TRow>)
         (group: XPathNavigator * string)
         =
         let name = snd group
-#if VIS_PERCENT
         let pc = ([ group |> fst ] |> pcCover)
-#else
-        let pc = String.Empty
-#endif
 
         let newModel =
           environment.AddNode theModel environment.Icons.Assembly pc name None
@@ -594,28 +581,46 @@ module CoverageFileTree =
           .Select("//module")
         |> Seq.cast<XPathNavigator>
 
-      assemblies
-      |> Seq.map (fun node ->
-        (node,
-         node
-           .GetAttribute("assemblyIdentity", String.Empty)
-           .Split(',')
-         |> Seq.head))
-      |> Seq.sortBy snd
-      |> Seq.iter (applyToModel model)
+      // UI thread needed here
+      let f () =
+        let model =
+          environment.SetXmlNode
+            pc
+            current.Name
+            (if Seq.isEmpty missing then
+               if Seq.isEmpty newer then
+                 environment.Icons.Report
+               else
+                 environment.Icons.ReportDated
+             else
+               environment.Icons.ReportWarning)
+            (String.Join(Environment.NewLine, message))
 
-      environment.UpdateUISuccess current
+        environment.OnRowExpanded model.Row (fun () ->
+          assemblies
+          |> Seq.map (fun node ->
+            (node,
+             node
+               .GetAttribute("assemblyIdentity", String.Empty)
+               .Split(',')
+             |> Seq.head))
+          |> Seq.sortBy snd
+          |> Seq.iter (applyToModel model))
+
+        environment.UpdateUISuccess current
+
+      environment.TreeUIDispatch f
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/step@119::Invoke(System.String,System.Int32)",
+                              "AltCover.CoverageFileTree/step@128::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethod@156::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                              "AltCover.CoverageFileTree/applyMethod@165::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
                             Justification = "Possibly too much work")>]
 ()

@@ -28,7 +28,7 @@ module Command =
   let ImportModule () = TaskIO.getStringValue "ImportModule"
 
   let Version () =
-    Version(AssemblyVersionInformation.AssemblyFileVersion)
+    Version(AssemblyVersionInformation.AssemblyPackageVersion)
 
   let FormattedVersion () = TaskIO.getStringValue "Version"
   let Summary () = Runner.summary.ToString()

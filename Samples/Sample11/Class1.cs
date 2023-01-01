@@ -66,4 +66,16 @@ namespace Sample11
         }
     }
 
+    [Obsolete("Don't use this one, use 'Token' instead.")]
+    readonly ref struct AncientToken
+    {
+        public readonly int Start;
+        public readonly int End;
+
+        public AncientToken(int start, int end)
+        {
+            Start = start;
+            End = end;
+        }
+    }
 }

@@ -116,7 +116,7 @@ module private Gui =
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
 
     handler.aboutVisualizer.Version <-
-      AltCover.AssemblyVersionInformation.AssemblyFileVersion
+      AltCover.AssemblyVersionInformation.AssemblyPackageVersion
 
     handler.aboutVisualizer.Copyright <-
       String.Join(
@@ -155,7 +155,6 @@ module private Gui =
     column.PackStart(icon, true)
     let cell = new Gtk.CellRendererText()
     column.PackEnd(cell, true)
-#if VIS_PERCENT
     let note = new Gtk.CellRendererText()
     note.Alignment <- Pango.Alignment.Right
 
@@ -167,18 +166,13 @@ module private Gui =
     copy.Family <- font.Family
     note.FontDesc <- copy
     column.PackEnd(note, true)
-#endif
+
     handler.classStructureTree.AppendColumn(column)
     |> ignore
 
-#if !VIS_PERCENT
-    column.AddAttribute(cell, "text", 2 * i)
-    column.AddAttribute(icon, "pixbuf", 1 + (2 * i))
-#else
     column.AddAttribute(icon, "pixbuf", (3 * i))
     column.AddAttribute(note, "text", (3 * i) + 1)
     column.AddAttribute(cell, "text", (3 * i) + 2)
-#endif
 
   let private prepareTreeView (handler: Handler) =
     handler.classStructureTree.HasTooltip <- true
@@ -193,37 +187,44 @@ module private Gui =
     seq { 0 .. (types.Length - 1) }
     |> Seq.iter (prepareTreeLine handler)
 
-#if !VIS_PERCENT
     handler.classStructureTree.Model <-
       new TreeStore(
-        typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+        typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<string>
       )
 
     handler.auxModel <-
       new TreeStore(
-        typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+        typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<string>
       )
-#endif
 
 #if !NET472
   [<AutoSerializable(false); Sealed>]
@@ -334,6 +335,7 @@ module private Gui =
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
       fun
+        (expands: bool)
         (context: CoverageTreeContext<TreeStore, TreeIter>)
         (icon: Lazy<Gdk.Pixbuf>)
         pc
@@ -342,15 +344,16 @@ module private Gui =
         let newrow =
           context.Model.AppendValues(
             context.Row,
-#if !VIS_PERCENT
-            [| name :> obj; icon.Force() :> obj |]
-          )
-#else
             [| icon.Force() :> obj
                pc :> obj
                name :> obj |]
           )
-#endif
+
+        if expands then
+          context.Model.Data.Add(newrow, New)
+
+          context.Model.AppendValues(newrow, [| icons.Progress.Force() :> obj |])
+          |> ignore
 
         tip
         |> Option.iter (fun text ->
@@ -374,18 +377,26 @@ module private Gui =
             .ShowMessageOnGuiThread
         UpdateMRUFailure =
           fun info ->
-            Handler.InvokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
+            Handler.InvokeOnGuiThread(fun () ->
+              handler.classStructureTree.Data.Clear()
+              let model = handler.auxModel
+              model.Clear()
+              mappings.Clear()
+              handler.classStructureTree.Model <- model
+              doUpdateMRU handler info.FullName false)
         UpdateUISuccess =
           fun info ->
             let updateUI (theModel: TheTreeModel) (info: FileInfo) () =
-              // File is good so enable the refresh button
-              handler.refreshButton.Sensitive <- true
+              // If file is good, enable the refresh button
+              handler.refreshButton.Sensitive <- info.IsNotNull
               // Do real UI work here
               handler.auxModel <- handler.classStructureTree.Model :?> TreeStore
               handler.classStructureTree.Model <- theModel
               setDefaultText handler
               handler.mainWindow.Title <- "AltCover.Visualizer"
-              doUpdateMRU handler info.FullName true
+
+              if info.IsNotNull then
+                doUpdateMRU handler info.FullName true
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
@@ -397,15 +408,24 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name (*pc,*) , icon.Force()) // VIS_PERCENT
+              model.AppendValues(icon.Force(), pc, name)
+
+            model.AppendValues(topRow, [| icon.Force() :> obj |])
+            |> ignore
+
+            model.Data.Add(topRow, New)
 
             if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)
               table.Add(path, tip)
 
             { Model = model; Row = topRow }
-        AddNode = addNode
-        AddLeafNode = addNode
+        TreeUIDispatch = (fun f -> f ())
+        AddNode = addNode true
+        AddLeafNode = addNode false
+        OnRowExpanded =
+          (fun (row: TreeIter) (action: unit -> unit) ->
+            handler.classStructureTree.Data.Add(row, Unexpanded action))
         Map = fun context xpath -> mappings.Add(context.Model.GetPath context.Row, xpath) }
 
     async { CoverageFileTree.DoSelected environment index }
@@ -520,7 +540,7 @@ module private Gui =
     // coverlet-like case w/o column data
     let ec =
       if n.LineOnly then
-        endchars
+        endchars - 1
       else
         n.EndColumn - 1
 
@@ -611,6 +631,38 @@ module private Gui =
   let latch =
     new Threading.ManualResetEvent false
 #endif
+
+  let private onRowExpanded (handler: Handler) (activation: RowExpandedArgs) =
+    let row = activation.Iter
+
+    let clearRow () =
+      let dummy = ref TreeIter.Zero
+
+      let model =
+        handler.classStructureTree.Model :?> TreeStore
+
+      if model.IterNthChild(dummy, row, 0) then
+        model.Remove dummy |> ignore
+
+      handler.classStructureTree.Data.[row] <- Expanded
+
+    let data = handler.classStructureTree.Data
+
+    if data.ContainsKey row then
+      match data.[row] :?> CoverageRowState with
+      | New -> clearRow ()
+      | Unexpanded a ->
+        clearRow ()
+        a ()
+        // annoying, but the altrnative (a() then clearRow ()) messes up paths
+        handler.classStructureTree.ExpandRow(
+          handler.classStructureTree.Model.GetPath row,
+          false
+        )
+        |> ignore
+      | _ -> ()
+    else
+      clearRow ()
 
   let private onRowActivated (handler: Handler) (activation: RowActivatedArgs) =
     let hitFilter (activated: RowActivatedArgs) (path: TreePath) =
@@ -968,6 +1020,9 @@ module private Gui =
     // Tree selection events and such
     handler.classStructureTree.RowActivated
     |> Event.add (onRowActivated handler)
+
+    handler.classStructureTree.RowExpanded
+    |> Event.add (onRowExpanded handler)
 
     Application.Run()
     0 // needs an int return

@@ -108,17 +108,20 @@ module DriveApi =
             WorkingDirectory = Path.getFullName "./_DotnetTest"
             Verbosity = Some DotNet.Verbosity.Minimal }
 
-      let cliArguments =
-        { MSBuild.CliArguments.Create() with
-            ConsoleLogParameters = []
-            DistributedLoggers = None
-            Properties = []
-            DisableInternalBinLog = true }
+      let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
+        let msb =
+          { o.MSBuildParams with
+              ConsoleLogParameters = []
+              DistributedLoggers = None
+              DisableInternalBinLog = true }
+
+        { o with MSBuildParams = msb }
 
       DotNet.test
-        (fun to' ->
-          { (to'.WithCommon(setBaseOptions)
-             |> (withAltCoverOptions pp2 cc2 forceTrue)) with MSBuildParams = cliArguments })
+        ((fun to' ->
+          to'.WithCommon(setBaseOptions)
+          |> (withAltCoverOptions pp2 cc2 forceTrue))
+         >> testWithCLIArguments)
         "apiuse_dotnettest.fsproj"
 
       let im = AltCover.Command.ImportModule()

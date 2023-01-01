@@ -796,7 +796,7 @@ module internal Main =
       | Select "version" _ ->
         CommandLine.writeResourceWithFormatItems
           "AltCover.Version"
-          [| AssemblyVersionInformation.AssemblyFileVersion |]
+          [| AssemblyVersionInformation.AssemblyPackageVersion |]
           false
 
         0

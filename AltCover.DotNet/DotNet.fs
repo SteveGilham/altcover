@@ -79,7 +79,6 @@ module DotNet =
     let private fromList name (s: String seq) = (listArg name s, s.Any())
     let internal fromArg name s = (arg name s, isSet s)
     let internal fromValue name (s: obj) (b: bool) = (arg name <| s.ToString(), b)
-    let internal join (l: string seq) = String.Join(" ", l)
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic",
                       "AvoidMethodWithUnusedGenericTypeRule",
@@ -202,9 +201,6 @@ module DotNet =
 
 #if RUNNER
   let ToTestArgumentList
-#else
-  let internal toTestArgumentList
-#endif
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
     (options: ICLIOptions)
@@ -212,24 +208,14 @@ module DotNet =
     ToTestPropertiesList prepare collect options
     |> List.map (fun (name, value) -> sprintf """/p:%s="%s%c""" name value '"')
 
-#if RUNNER
   let ToTestArguments
-#else
-  let internal toTestArguments
-#endif
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
     (options: ICLIOptions)
     =
-#if RUNNER
-    ToTestArgumentList
-#else
-    toTestArgumentList
+    let join (l: string seq) = String.Join(" ", l)
+    ToTestArgumentList prepare collect options |> join
 #endif
-      prepare
-      collect
-      options
-    |> I.join
 
   let ImportModuleProperties =
     [ ("AltCoverImportModule", "true") ]

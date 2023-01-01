@@ -45,6 +45,7 @@ module ExpectoMain =
       Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
       Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
       Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
+      Tests.FSApiTests.LoggingCanBeExercised, "FSApiTests.LoggingCanBeExercised"
       Tests.FSApiTests.MergeRejectsNonCoverage, "FSApiTests.MergeRejectsNonCoverage"
       Tests.FSApiTests.MergePassesSingleOpenCover, "FSApiTests.MergePassesSingleOpenCover"
       Tests.FSApiTests.MergeCombinesSummaryCoverage,

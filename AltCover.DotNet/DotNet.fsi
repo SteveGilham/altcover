@@ -83,7 +83,6 @@ module DotNet = begin
       val private isSet : s:string -> bool
       val private fromList : name:string -> s:seq<System.String> -> (string*string) * bool
       val fromArg : name:string -> s:string -> (string*string) * bool
-      val join : l:seq<string> -> string
       val toPrepareListArgumentList :
         prepare:Abstract.IPrepareOptions ->
           ((string -> #seq<System.String> -> (string*string) * bool) * string *
@@ -158,14 +157,15 @@ module DotNet = begin
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
 #else
 #if TRACE  // cheat mode here
-    val internal toTestArgumentList :
-      prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string list
-    val internal toTestArguments :
-      prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
-    val ImportModuleProperties : (string*string) list
-    val GetVersionProperties : (string*string) list
   end
 #endif
+#endif
+// ## module `Options`
+// * [<RequireQualifiedAccess>]
+// * default interface implementations with get and set members, and
+//   * type CLI - implements DotNet.ICLIOptions : default values fale or empty
+//   * type Collect - implements Abstract.ICollectOptions : default values as per the `Primitive.CollectOptions` record
+//   * type Prepare - implements Abstract.IPrepareOptions : default values as per the `Primitive.PrepareOptions` record
+#if RUNNER
+//   * type Logging - implements Abstract.ILoggingOptions : default values write to `Console.Out`, except `Failure` which writes to Console.Error
 #endif

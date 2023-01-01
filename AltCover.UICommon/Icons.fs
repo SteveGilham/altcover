@@ -22,6 +22,8 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   //with
   //| x -> CommunityToolkit.Diagnostics.ThrowHelper.ThrowInvalidOperationException<'TIcon>(name, x)
 
+  member self.Progress = makeIcon "ProgressBar"
+
   member self.Report =
     makeIcon "RawCodeCoverageDataFile"
 
