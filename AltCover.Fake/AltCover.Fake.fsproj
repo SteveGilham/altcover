@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
     <Compile Include="Fake.fsi" />
     <Compile Include="Fake.fs" />
   </ItemGroup>

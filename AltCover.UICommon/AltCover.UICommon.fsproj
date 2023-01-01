@@ -44,6 +44,7 @@
     <EmbeddedResource Include="OpenFile.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
+    <EmbeddedResource Include="ProgressBar.png" />
     <EmbeddedResource Include="Property.png" />
     <EmbeddedResource Include="Refresh.png" />
     <EmbeddedResource Include="Refresh_greyThin.png" />

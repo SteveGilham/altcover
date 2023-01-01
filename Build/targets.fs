@@ -35,26 +35,11 @@ module Targets =
   let mutable Copyright = String.Empty
   let mutable Version = String.Empty
 
-  let lastGoodPackage () =
-    let n =
-      !! "./_Packaging/altcover.*.nupkg"
-      |> Seq.map (fun p ->
-        System.Version((Path.GetFileNameWithoutExtension p).Substring(9)))
+  let currentBranch =
+    "."
+    |> Path.getFullName
+    |> Information.getBranchName
 
-    if n |> Seq.isEmpty |> not then
-      let v = n |> Seq.max
-      Version <- v.ToString()
-      printfn "Default version from packages = %A" v
-    else
-      let version = Actions.GetVersionFromYaml()
-
-      let (result, _, _) =
-        Actions.LocalVersion "none" version
-
-      Version <- result
-      printfn "Default version from date = %A" result
-
-  lastGoodPackage ()
 
   let consoleBefore =
     (Console.ForegroundColor, Console.BackgroundColor)
@@ -151,6 +136,29 @@ module Targets =
     match dotnetPath with
     | Some f -> { o with DotNetCliPath = f }
     | None -> o
+
+  let VersionTemplate =
+    let vx =
+      DotNet.exec
+        (fun o -> dotnetOptions (o.WithRedirectOutput true))
+        ""
+        "nbgv get-version -v NuGetPackageVersion"
+
+    (vx.Results |> Seq.head).Message
+
+  let lastGoodPackage () =
+    let n =
+      !! "./_Packaging/altcover.*.nupkg"
+      |> Seq.map (fun p -> (Path.GetFileNameWithoutExtension p).Substring(9))
+
+    if n |> Seq.isEmpty |> not then
+      Version <- n |> Seq.head
+      printfn "Default version from packages = %A" Version
+    else
+      Version <- VersionTemplate.Replace("-", "-pre-", StringComparison.Ordinal)
+      printfn "Default version from environment = %A" Version
+
+  lastGoodPackage ()
 
   let dotnetVersion =
     DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
@@ -332,13 +340,30 @@ module Targets =
     { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
   let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
-    { o with MSBuildParams = cliArguments }
+    let msb =
+      { o.MSBuildParams with
+          ConsoleLogParameters = []
+          DistributedLoggers = None
+          DisableInternalBinLog = true }
+
+    { o with MSBuildParams = msb }
 
   let buildWithCLIArguments (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliArguments }
 
   let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) =
-    { o with MSBuildParams = cliTaggedArguments tag }
+    let p =
+      ("AltCoverTag", (tag + "_"))
+      :: o.MSBuildParams.Properties
+
+    let msb =
+      { o.MSBuildParams with
+          ConsoleLogParameters = []
+          Properties = p
+          DistributedLoggers = None
+          DisableInternalBinLog = true }
+
+    { o with MSBuildParams = msb }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliTaggedArguments tag }
@@ -701,28 +726,18 @@ module Targets =
         System.Xml.Linq.SaveOptions.DisableFormatting
       )
 
-      let appveyor =
-        Environment.environVar "APPVEYOR_BUILD_VERSION"
+      let majmin =
+        String.Join(".", VersionTemplate.Split('.') |> Seq.take 2)
 
-      let github =
-        Environment.environVar "GITHUB_RUN_NUMBER"
-
-      let version = Actions.GetVersionFromYaml()
-
-      let ci =
-        if String.IsNullOrWhiteSpace appveyor then
-          if String.IsNullOrWhiteSpace github then
-            String.Empty
-          else
-            version.Replace("{build}", github + "-github")
-        else
-          appveyor
-
-      let (v, majmin, now) =
-        Actions.LocalVersion ci version
-
+      let now = DateTime.UtcNow
       let y = now.Year
-      Version <- v
+
+      Version <- VersionTemplate.Replace("-", "-pre-", StringComparison.Ordinal)
+      printfn "Version %A" Version
+      let vv = Version + "-"
+
+      let packver =
+        vv.Split([| '-' |]) |> Seq.head
 
       let copy =
         sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
@@ -732,6 +747,26 @@ module Targets =
       Directory.ensure "./_Generated"
       Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
       Actions.InternalsVisibleTo(Version)
+
+      let fileVersionTemplate =
+        let vx =
+          DotNet.exec
+            (fun o -> dotnetOptions (o.WithRedirectOutput true))
+            ""
+            "nbgv get-version -v Version"
+
+        (vx.Results |> Seq.head).Message
+
+      let rn =
+        File.ReadAllLines "./ReleaseNotes.md"
+
+      let tag =
+        rn
+        |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
+
+      rn.[tag] <- String.Format(rn.[tag], Version)
+      printfn "%s" rn.[tag]
+      File.WriteAllLines("./_Generated/ReleaseNotes.md", rn)
 
       [ "./_Generated/AssemblyVersion.fs"
         "./_Generated/AssemblyVersion.cs" ]
@@ -745,11 +780,12 @@ module Targets =
           String.Format(
             text,
             majmin,
-            Version.Split([| '-' |]).[0],
+            fileVersionTemplate,
             commitHash,
             Information.getBranchName ("."),
             y,
-            now.ToString("yyyy-MM-dd HH:mm:sszzz")
+            now.ToString("yyyy-MM-dd HH:mm:sszzz"),
+            packver
           )
 
         File.WriteAllText(f, newtext))
@@ -1241,11 +1277,8 @@ module Targets =
 
       [ (fxcop, // framework targets
          String.Empty,
-         (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
-            [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
-              "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]
-          else // HACK HACK HACK
-            [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
+         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
+           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
          [],
          minimalRules)
         (fxcop, // framework targets
@@ -1490,13 +1523,10 @@ module Targets =
 
       if
         Environment.isWindows
-        && [ "APPVEYOR_BUILD_NUMBER"
-             "GITHUB_RUN_NUMBER" ]
-           |> List.exists (
-             Environment.environVar
-             >> String.IsNullOrWhiteSpace
-             >> not
-           )
+        && "GITHUB_RUN_NUMBER"
+           |> (Environment.environVar
+               >> String.IsNullOrWhiteSpace
+               >> not)
       then
         let maybe envvar fallback =
           let x = Environment.environVar envvar
@@ -1524,14 +1554,13 @@ module Targets =
              "--commitBranch"
              Information.getBranchName (".")
              "--commitAuthor"
-             maybe "APPVEYOR_REPO_COMMIT_AUTHOR" ""
+             maybe "COMMIT_AUTHOR" ""
              "--commitEmail"
-             maybe "APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL" ""
+             maybe "COMMIT_AUTHOR_EMAIL" ""
              "--commitMessage"
              commit
              "--jobId"
-             maybe "APPVEYOR_JOB_ID"
-             <| DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
+             DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
           "Coveralls upload failed"
 
       printfn "Dump uncovered lines"
@@ -4136,7 +4165,7 @@ module Targets =
                 Publish = false
                 ReleaseNotes =
                   let source =
-                    Path.getFullName "ReleaseNotes.md"
+                    Path.getFullName "./_Generated/ReleaseNotes.md"
                     |> File.ReadAllLines
                     |> Seq.map (fun s ->
                       let t =
@@ -4442,7 +4471,11 @@ module Targets =
               Report = report
               InputDirectories = [ unpackapi ]
               StrongNameKey = key
-              TypeFilter = [ "System\\."; "DotNet"; "EntryPoint" ]
+              TypeFilter =
+                [ "System\\."
+                  "DotNet"
+                  "EntryPoint"
+                  "ThisAssembly" ]
               AssemblyFilter =
                 [ "AltCover.Engine"
                   "AltCover.Monitor"
@@ -5082,7 +5115,7 @@ module Targets =
         DotNet.build
           (fun p ->
             { p.WithCommon dotnetOptions with
-                  Configuration = DotNet.BuildConfiguration.Debug }
+                Configuration = DotNet.BuildConfiguration.Debug }
             |> (buildWithCLITaggedArguments "CoverletForPester"))
           sample
 
@@ -6138,9 +6171,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTest"
-              )
+              .WithCommon(withWorkingDirectoryVM "_DotnetTest")
               .WithAltCoverGetVersion()
               .WithAltCoverImportModule())
               .WithAltCoverOptions
@@ -6179,9 +6210,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestInPlace"
-              )
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestInPlace")
               .WithAltCoverGetVersion()
               .WithAltCoverImportModule())
               .WithAltCoverOptions
@@ -6885,8 +6914,8 @@ module Targets =
             ({ to'.WithCommon(
                  withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests"
                ) with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+                Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = false })
               .WithAltCoverOptions
               pp0
               cc0
@@ -6928,8 +6957,8 @@ module Targets =
             ({ to'.WithCommon(
                  withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests"
                ) with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+                Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = false })
               .WithAltCoverOptions
               pp1
               cc0
@@ -7918,6 +7947,33 @@ module Targets =
                 TargetDir = "_Reports/CppInline" })
           [ "_Reports/CppInlineWithOpenCover.xml" ])
 
+  // AOB
+  let All =
+    (fun _ ->
+      if
+        Environment.isWindows
+        && currentBranch.StartsWith "release/"
+        && "NUGET_API_TOKEN"
+           |> Environment.environVar
+           |> String.IsNullOrWhiteSpace
+           |> not
+      then
+        (!! "./_Packagin*/*.nupkg")
+        |> Seq.iter (fun f ->
+          printfn "Publishing %A from %A" f currentBranch
+
+          Actions.Run
+            ("dotnet",
+             ".",
+             [ "nuget"
+               "push"
+               f
+               "--api-key"
+               Environment.environVar "NUGET_API_TOKEN"
+               "--source"
+               "https://api.nuget.org/v3/index.json" ])
+            ("NuGet upload failed " + f)))
+
   let resetColours _ =
     Console.ForegroundColor <- consoleBefore |> fst
     Console.BackgroundColor <- consoleBefore |> snd
@@ -8011,10 +8067,9 @@ module Targets =
     _Target "Issue156" Issue156
     _Target "MakeDocumentation" MakeDocumentation
     _Target "BulkReport" BulkReport
-    _Target "All" ignore
+    _Target "All" All
     _Target "CppInline" CppInline
     _Target "None" ignore
-    _Target "Appveyor" ignore
 
     Target.description "ResetConsoleColours"
     Target.createFinal "ResetConsoleColours" resetColours
@@ -8036,7 +8091,6 @@ module Targets =
     "BuildRelease"
     ==> "BuildMonoSamples"
     ==> "Compilation"
-    ==> "Appveyor"
     |> ignore
 
     // My machine only
@@ -8184,7 +8238,6 @@ module Targets =
     "Compilation"
     ==> "PrepareFrameworkBuild"
     ==> "Packaging"
-    ==> "Appveyor"
     |> ignore
 
     "Compilation"

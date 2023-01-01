@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.Fake.DotNet.Testing.AltCover</RootNamespace>
     <AssemblyName>AltCover.Fake.DotNet.Testing.AltCover</AssemblyName>
-    <GlobalDefineConstants>NoCanonicalDirectories</GlobalDefineConstants>
+    <GlobalDefineConstants>NoCanonicalDirectories;FAKEAPI</GlobalDefineConstants>
     <!-- something; Could not locate the assembly "Mono.Posix" -->
     <MSBuildWarningsAsMessages>MSB3277;MSB3245</MSBuildWarningsAsMessages>
     <NoWarn>NU1701;NU1605</NoWarn>
@@ -35,6 +35,7 @@
     <Compile Include="AltCoverCommand.fs" />
     <Compile Include="..\AltCover.DotNet\DotNet.fsi" Link="DotNet.fsi" />
     <Compile Include="..\AltCover.DotNet\DotNet.fs" Link="DotNet.fs" />
+    <Compile Include="..\AltCover.DotNet\Options.fs" Link="Options.fs" />
     <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>

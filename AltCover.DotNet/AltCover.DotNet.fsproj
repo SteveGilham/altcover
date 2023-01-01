@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>AltCover.DotNet</RootNamespace>
+    <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.DotNet</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
   </PropertyGroup>
@@ -20,6 +20,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="DotNet.fsi" />
     <Compile Include="DotNet.fs" />
+    <Compile Include="Options.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches:
+    - master
+    - feature/*
+    - release/*
     - develop/github/*    
   pull_request:
     branches:
@@ -14,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        fetch-depth: 2
+        fetch-depth: 0
     - uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '7.0.101'
@@ -25,6 +28,7 @@ jobs:
     - name: Build
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
       run: dotnet run --project .\Build\Build.fsproj
     - uses: actions/upload-artifact@v3
       with:
@@ -43,6 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '7.0.101'
