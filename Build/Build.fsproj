@@ -39,7 +39,6 @@
     <PackageReference Include="Markdig" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="Unquote" />
-    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
   <ItemGroup>

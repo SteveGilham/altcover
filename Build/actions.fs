@@ -16,7 +16,6 @@ module Actions =
   open Markdig
   open NUnit.Framework
   open Swensen.Unquote
-  open YamlDotNet.RepresentationModel
 
   open AltCoverFake.DotNet.Testing
 
