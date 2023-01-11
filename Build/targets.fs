@@ -4440,7 +4440,9 @@ module Targets =
           "-ReportName"
           "PoshReport"
           "-FolderName"
-          unpackapi ]
+          unpackapi
+          "-PesterVersion"
+          (toolPackages.Item "Pester") ]
       |> CreateProcess.withWorkingDirectory "."
       |> Proc.run
       |> (Actions.AssertResult "powershell"))
@@ -4509,7 +4511,9 @@ module Targets =
           "-ReportName"
           "PesterReport"
           "-FolderName"
-          unpackapi @@ "__Instrumented" ]
+          unpackapi @@ "__Instrumented"
+          "-PesterVersion"
+          (toolPackages.Item "Pester") ]
       |> CreateProcess.withWorkingDirectory "."
       |> Proc.run
       |> (Actions.AssertResult "pwsh")

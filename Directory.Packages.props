@@ -62,15 +62,15 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.5.119" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageVersion Include="NuGet.CommandLine" Version="6.3.1" />
+    <PackageVersion Include="NuGet.CommandLine" Version="6.4.0" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.3.1" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" Version="3.12.0" />
     <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->
-    <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" Version="3.16.0" />
+    <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" Version="3.16.1" />
     <PackageVersion Include="OpenCover" Version="4.7.1221" />
-    <PackageVersion Include="Pester" Version="5.3.3" />
+    <PackageVersion Include="Pester" Version="5.4.0" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
     <PackageVersion Include="System.Collections.Immutable" Version="1.7.1" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />

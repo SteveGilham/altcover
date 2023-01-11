@@ -62,17 +62,20 @@ module VisualizerMain =
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
                             Scope = "type", // TypeDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
                             Scope = "type", // TypeDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
                             Scope = "type", // TypeDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
                             Justification = "Generated Code")>]
 #endif
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
@@ -85,22 +88,26 @@ module VisualizerMain =
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
-                            Target = "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
                             Justification = "Generated Code")>]
 #endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
@@ -246,17 +253,20 @@ module VisualizerMain =
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
                             Scope = "type", // TypeDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
                             Scope = "type", // TypeDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
                             Scope = "type", // TypeDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
                             Justification = "Generated Code")>]
 #endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
@@ -481,17 +491,20 @@ module VisualizerMain =
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
                             Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
                             Justification = "Generated Code")>]
 #endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
