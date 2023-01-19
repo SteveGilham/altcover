@@ -17,9 +17,12 @@ module internal Extensions =
 #endif
   let
 #if !DEBUG
-      inline
+    inline
 #endif
-             replace (y: string, z: string) (x: string) =
+    replace
+      (y: string, z: string)
+      (x: string)
+      =
 #if !NETCOREAPP2_1
     x.Replace(y, z)
 #else
@@ -33,9 +36,12 @@ module internal Extensions =
 #endif
   let
 #if !DEBUG
-      inline
+    inline
 #endif
-             indexOf (y: char) (x: string) =
+    indexOf
+      (y: char)
+      (x: string)
+      =
 #if !NETCOREAPP2_1
     x.IndexOf y
 #else

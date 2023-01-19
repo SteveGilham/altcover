@@ -7075,10 +7075,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7155,10 +7155,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7252,10 +7252,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7320,12 +7320,12 @@ module Targets =
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
-                    Configuration = DotNet.BuildConfiguration.Debug
-                    NoBuild = false })
-               .WithAltCoverOptions
-               pp1
-               cc0
-               ForceTrue)
+                  Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = false })
+              .WithAltCoverOptions
+              pp1
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7384,10 +7384,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               psln
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              psln
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7613,12 +7613,12 @@ module Targets =
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
-                    Configuration = DotNet.BuildConfiguration.Debug
-                    NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+                  Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = false })
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7704,12 +7704,12 @@ module Targets =
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
-                    Configuration = DotNet.BuildConfiguration.Debug
-                    NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrueOnly)
+                  Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = false })
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrueOnly)
             |> testWithCLIArguments)
           ""
       finally

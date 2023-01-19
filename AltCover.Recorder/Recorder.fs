@@ -48,7 +48,8 @@ module Instance =
 #if DEBUG
       mutable
 #endif
-              internal CoverageFormat = ReportFormat.NCover // fsharplint:disable-line NonPublicValuesNames
+      internal CoverageFormat = // fsharplint:disable-line NonPublicValuesNames
+    ReportFormat.NCover
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -322,9 +323,16 @@ module Instance =
 
     let
 #if !DEBUG
-        inline
+      inline
 #endif
-               internal issue71Wrapper visits moduleId hitPointId context handler add =
+      internal issue71Wrapper
+        visits
+        moduleId
+        hitPointId
+        context
+        handler
+        add
+        =
       try
         add visits moduleId hitPointId context
       with x ->
@@ -336,9 +344,15 @@ module Instance =
 
     let
 #if !DEBUG
-        inline
+      inline
 #endif
-               internal curriedIssue71Wrapper visits moduleId hitPointId context add =
+      internal curriedIssue71Wrapper
+        visits
+        moduleId
+        hitPointId
+        context
+        add
+        =
       issue71Wrapper visits moduleId hitPointId context logException add
 
     let internal addVisit moduleId hitPointId context =

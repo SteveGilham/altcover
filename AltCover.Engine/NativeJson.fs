@@ -44,9 +44,9 @@ module
                     Justification = "Harmless in context")>]
   type
 #if GUI || RUNNER
-      internal
+    internal
 #endif
-                SeqPnt =
+    SeqPnt =
     { VC: int
       SL: int
       SC: int
@@ -73,9 +73,9 @@ module
                     Justification = "Harmless in context")>]
   type
 #if GUI || RUNNER
-      internal
+    internal
 #endif
-                BranchInfo =
+    BranchInfo =
     { Line: int
       Offset: int
       EndOffset: int
@@ -103,9 +103,9 @@ module
                     Justification = "Harmless in context")>]
   type
 #if GUI || RUNNER
-      internal
+    internal
 #endif
-                Method =
+    Method =
     { Lines: Lines
       [<SuppressMessage("Gendarme.Rules.Design.Generic",
                         "DoNotExposeGenericListsRule",
