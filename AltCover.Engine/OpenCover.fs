@@ -164,18 +164,18 @@ module internal OpenCover =
           def
           |> ProgramDatabase.getModuleDocuments
           |> Seq.fold
-               (fun f d ->
-                 let key = d.Url |> Visitor.sourceLinkMapping
-                 let map = snd f
+            (fun f d ->
+              let key = d.Url |> Visitor.sourceLinkMapping
+              let map = snd f
 
-                 let embed =
-                   d
-                   |> Metadata.getSource
-                   |> Option.map (fun s -> Map.add key s map)
-                   |> Option.defaultValue map
+              let embed =
+                d
+                |> Metadata.getSource
+                |> Option.map (fun s -> Map.add key s map)
+                |> Option.defaultValue map
 
-                 (key |> recordFile (fst f) |> fst, embed))
-               (s.Files, s.Embeds)
+              (key |> recordFile (fst f) |> fst, embed))
+            (s.Files, s.Embeds)
         else
           (s.Files, s.Embeds)
 
@@ -448,13 +448,13 @@ module internal OpenCover =
         let (np, _, _) =
           interleave
           |> Seq.fold
-               (fun (np0, bec, sq: XElement) x ->
-                 match x.Name.LocalName with
-                 | "SequencePoint" ->
-                   sq.SetAttributeValue("bec".X, bec)
-                   (safeMultiply np0 bec, 0, x)
-                 | _ -> (np0, bec + 1, sq))
-               (1, 0, sp.Head)
+            (fun (np0, bec, sq: XElement) x ->
+              match x.Name.LocalName with
+              | "SequencePoint" ->
+                sq.SetAttributeValue("bec".X, bec)
+                (safeMultiply np0 bec, 0, x)
+              | _ -> (np0, bec + 1, sq))
+            (1, 0, sp.Head)
 
         method.SetAttributeValue("nPathComplexity".X, np)
       else if bp |> List.isEmpty |> not then
@@ -571,7 +571,8 @@ module internal OpenCover =
         else
           { s with Stack = tail }
       else
-        { s with Excluded = passOnClassExclusion s.Excluded }
+        { s with
+            Excluded = passOnClassExclusion s.Excluded }
 
     let visitAfterType (s: OpenCoverContext) =
       let head, tail = s.Stack.Split
@@ -582,13 +583,12 @@ module internal OpenCover =
           (q |> Option.defaultValue 1, q |> Option.defaultValue 0),
           (if q.IsSome then 1 else 0))
         |> Seq.fold
-             (fun state pair ->
-               let cc = fst state
-               let cc2 = fst pair
+          (fun state pair ->
+            let cc = fst state
+            let cc2 = fst pair
 
-               (Math.Min(fst cc, fst cc2), Math.Max(snd cc, snd cc2)),
-               snd state + snd pair)
-             ((1, 0), 0)
+            (Math.Min(fst cc, fst cc2), Math.Max(snd cc, snd cc2)), snd state + snd pair)
+          ((1, 0), 0)
 
       let classes =
         if s.ClassSeq > 0 || s.ClassBr > 0 then
@@ -632,9 +632,8 @@ module internal OpenCover =
       let min, max =
         s.ClassCC
         |> Seq.fold
-             (fun state pair ->
-               Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
-             (1, 0)
+          (fun state pair -> Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
+          (1, 0)
 
       head.Parent.Elements("Summary".X)
       |> Seq.iter (fun summary ->
@@ -692,9 +691,8 @@ module internal OpenCover =
       let min, max =
         s.ModuleCC
         |> Seq.fold
-             (fun state pair ->
-               Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
-             (1, 0)
+          (fun state pair -> Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
+          (1, 0)
 
       head.Parent.Elements("Summary".X)
       |> Seq.iter (fun summary ->

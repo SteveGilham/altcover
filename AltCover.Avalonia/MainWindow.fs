@@ -1000,16 +1000,15 @@ type MainWindow() as this =
 
       let addNode =
         fun
-          leaf
-          (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
-          icon
-          pc
-          name
-          (tip: string option) ->
+            leaf
+            (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
+            icon
+            pc
+            name
+            (tip: string option) ->
           let newrow = makeNewRow pc leaf name icon
 
-          (context.Row.Items :?> List<TreeViewItem>)
-            .Add newrow
+          (context.Row.Items :?> List<TreeViewItem>).Add newrow
 
           tip
           |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))

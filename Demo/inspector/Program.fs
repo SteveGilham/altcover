@@ -41,8 +41,7 @@ let checkCalls (m: MethodDefinition) =
     let p = v.Previous
 
     if
-      p
-        .OpCode
+      p.OpCode
         .ToString()
         .StartsWith("ldc.i4", StringComparison.OrdinalIgnoreCase)
       |> not

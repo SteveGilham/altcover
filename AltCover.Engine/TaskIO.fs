@@ -16,7 +16,8 @@ module internal TaskIO =
 
   let internal logToStore =
     AltCover.LoggingOptions.Primitive
-      { Primitive.LoggingOptions.Create() with Info = writeToStore }
+      { Primitive.LoggingOptions.Create() with
+          Info = writeToStore }
 
   let internal getStringValue s =
     writeToStore String.Empty

@@ -49,7 +49,8 @@ module ThreadLevel =
     try
       push i
 
-      lock (synchronize) (fun _ -> printfn "push on %A state = %A" here CallTrack.Instance)
+      lock (synchronize) (fun _ ->
+        printfn "push on %A state = %A" here CallTrack.Instance)
 
       Thread.Yield() |> ignore
 

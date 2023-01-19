@@ -43,7 +43,9 @@ module Setup =
     "./Build/NuGet.csproj"
 
   DotNet.restore
-    (fun o -> { o with Common = dotnetOptions o.Common })
+    (fun o ->
+      { o with
+          Common = dotnetOptions o.Common })
     "./Build/DriveApi.fsproj"
 
   let toolPackages =

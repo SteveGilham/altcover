@@ -74,9 +74,7 @@ type internal AsyncSupport =
   static member Update(m: IMemberDefinition) =
     // Maybe get version of assembly being used by m?  Probably not important
     let def =
-      typeof<System.Threading.Tasks.Task>
-        .Assembly
-        .Location
+      typeof<System.Threading.Tasks.Task>.Assembly.Location
       |> AssemblyResolver.ReadAssembly
 
     let task =
@@ -89,9 +87,7 @@ type internal AsyncSupport =
       |> Seq.head
 
     let def2 =
-      typeof<Microsoft.FSharp.Control.AsyncReturn>
-        .Assembly
-        .Location
+      typeof<Microsoft.FSharp.Control.AsyncReturn>.Assembly.Location
       |> AssemblyResolver.ReadAssembly
 
     let fsasync =
@@ -558,13 +554,11 @@ module internal Instrument =
 
       let targets =
         (oo |> Seq.find (fun kv -> kv.Key == "targets"))
-          .Value
-          .Object
+          .Value.Object
 
       let targeted =
         (targets |> Seq.find (fun p -> p.Key == target))
-          .Value
-          .Object
+          .Value.Object
 
       let app =
         (targeted.Values |> Seq.head).Object
@@ -627,7 +621,7 @@ module internal Instrument =
         let runtime =
           version
           |> sprintf
-               """{"AltCover.Recorder.g/%s": {"runtime": { "AltCover.Recorder.g.dll": {}}}}"""
+            """{"AltCover.Recorder.g/%s": {"runtime": { "AltCover.Recorder.g.dll": {}}}}"""
 
         let updateRuntime () =
           let runtimeObject =
@@ -641,14 +635,13 @@ module internal Instrument =
 
       let libraries =
         (oo |> Seq.find (fun p -> p.Key == "libraries"))
-          .Value
-          .Object
+          .Value.Object
 
       do
         let newLibraries =
           version
           |> sprintf
-               """{"AltCover.Recorder.g/%s": {"type": "project", "serviceable": false, "sha512": "" }}"""
+            """{"AltCover.Recorder.g/%s": {"type": "project", "serviceable": false, "sha512": "" }}"""
 
         let updateLibraries () =
           let newlibs =
@@ -687,7 +680,8 @@ module internal Instrument =
               AsyncSupport =
                 state.AsyncSupport
                 |> Option.map (fun a ->
-                  { a with LocalWait = a.Wait |> m.Module.ImportReference }) }
+                  { a with
+                      LocalWait = a.Wait |> m.Module.ImportReference }) }
         | _ -> state
 
       { restate with
@@ -854,196 +848,196 @@ module internal Instrument =
     let internal doTrack state (m: MethodEntry) =
       m.Track
       |> Option.fold
-           (fun (s: InstrumentContext) (n, _) ->
-             let body =
-               [ m.Method.Body; state.MethodBody ].[(m.Inspection.IsInstrumented).ToInt32]
+        (fun (s: InstrumentContext) (n, _) ->
+          let body =
+            [ m.Method.Body; state.MethodBody ].[(m.Inspection.IsInstrumented).ToInt32]
 
-             let methodWorker = body.GetILProcessor()
-             removeTailInstructions methodWorker
+          let methodWorker = body.GetILProcessor()
+          removeTailInstructions methodWorker
 
-             let (endFinally, rtype, leave) =
-               encapsulateWithTryFinally methodWorker
+          let (endFinally, rtype, leave) =
+            encapsulateWithTryFinally methodWorker
 
-             bulkInsertBefore
-               methodWorker
-               endFinally
-               [ methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop) ]
-               true
-             |> ignore
+          bulkInsertBefore
+            methodWorker
+            endFinally
+            [ methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop) ]
+            true
+          |> ignore
 
-             bulkInsertBefore
-               methodWorker
-               (methodWorker.Body.Instructions |> Seq.head)
-               [ methodWorker.Create(OpCodes.Ldc_I4, n)
-                 methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push) ]
-               true
-             |> ignore
+          bulkInsertBefore
+            methodWorker
+            (methodWorker.Body.Instructions |> Seq.head)
+            [ methodWorker.Create(OpCodes.Ldc_I4, n)
+              methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push) ]
+            true
+          |> ignore
 
-             let e = rtype.GetElementType().FullName
+          let e = rtype.GetElementType().FullName
 
-             let isTaskType () =
-               [ "System.Threading.Tasks.Task"
-                 "System.Threading.Tasks.Task`1" ]
-               |> Seq.exists (fun n -> n == e)
+          let isTaskType () =
+            [ "System.Threading.Tasks.Task"
+              "System.Threading.Tasks.Task`1" ]
+            |> Seq.exists (fun n -> n == e)
 
-             let isStateMachine () =
-               m.Method.CustomAttributes // could improve this
-               |> Seq.exists (fun a ->
-                 a.AttributeType.FullName
-                 == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+          let isStateMachine () =
+            m.Method.CustomAttributes // could improve this
+            |> Seq.exists (fun a ->
+              a.AttributeType.FullName
+              == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
 
-             let asyncChecks =
-               [ isTaskType; isStateMachine ]
+          let asyncChecks =
+            [ isTaskType; isStateMachine ]
 
-             let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
+          let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
-               if
-                 unhandled
-                 && asyncChecks |> Seq.forall invokePredicate
-               then
-                 // the instruction list is
-                 // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
-                 // IL_0000: stloc V_1 <<== This one
-                 // IL_0045: leave IL_0000
+            if
+              unhandled
+              && asyncChecks |> Seq.forall invokePredicate
+            then
+              // the instruction list is
+              // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
+              // IL_0000: stloc V_1 <<== This one
+              // IL_0045: leave IL_0000
 
-                 // Want to insert
-                 //+IL_0045: ldloc V_xx <<== whatever
-                 //  and either
-                 //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
-                 //  or
-                 //+IL_0046: ldc.i4 65535
-                 //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
-                 //+IL_0050: pop                    // = discard the return value
-                 // ahead of the leave opcode
+              // Want to insert
+              //+IL_0045: ldloc V_xx <<== whatever
+              //  and either
+              //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+              //  or
+              //+IL_0046: ldc.i4 65535
+              //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
+              //+IL_0050: pop                    // = discard the return value
+              // ahead of the leave opcode
 
-                 let newstate =
-                   { s with
-                       AsyncSupport =
-                         Some(
-                           Option.defaultWith
-                             (fun () -> AsyncSupport.Update m.Method)
-                             state.AsyncSupport
-                         ) }
+              let newstate =
+                { s with
+                    AsyncSupport =
+                      Some(
+                        Option.defaultWith
+                          (fun () -> AsyncSupport.Update m.Method)
+                          state.AsyncSupport
+                      ) }
 
-                 let injectWait ilp (i: Instruction) =
-                   bulkInsertBefore
-                     ilp
-                     i.Next
-                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
-                       ilp.Create(OpCodes.Ldc_I4, 65535)
-                       ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
-                       ilp.Create(OpCodes.Pop) ]
-                     true
+              let injectWait ilp (i: Instruction) =
+                bulkInsertBefore
+                  ilp
+                  i.Next
+                  [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                    ilp.Create(OpCodes.Ldc_I4, 65535)
+                    ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
+                    ilp.Create(OpCodes.Pop) ]
+                  true
 
-                 leave
-                 |> Seq.iter ((injectWait methodWorker) >> ignore)
+              leave
+              |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 (newstate, false)
-               else
-                 (s, unhandled)
+              (newstate, false)
+            else
+              (s, unhandled)
 
-             let isAsyncType () =
-               [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
-               |> Seq.exists (fun n -> n == e)
+          let isAsyncType () =
+            [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
+            |> Seq.exists (fun n -> n == e)
 
-             let processFSAsync (s: InstrumentContext, unhandled: bool) =
+          let processFSAsync (s: InstrumentContext, unhandled: bool) =
 
-               if unhandled && isAsyncType () then
-                 let asyncOf =
-                   (rtype :?> GenericInstanceType).GenericArguments
-                   |> Seq.head // only one
+            if unhandled && isAsyncType () then
+              let asyncOf =
+                (rtype :?> GenericInstanceType).GenericArguments
+                |> Seq.head // only one
 
-                 // the instruction list is
-                 // IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
-                 // IL_0000: stloc V_1 <<== This one
-                 // IL_0045: leave IL_0000
+              // the instruction list is
+              // IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
+              // IL_0000: stloc V_1 <<== This one
+              // IL_0045: leave IL_0000
 
-                 // Want to insert
-                 //+IL_0045: ldloc V_xx <<== whatever
-                 //IL_0014: ldnull
-                 //IL_0015: ldnull
-                 //IL_0016: call !!0 [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync::RunSynchronously<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<valuetype [System.Runtime]System.Threading.CancellationToken>)
-                 //IL_001b: pop
-                 // ahead of the leave opcode
+              // Want to insert
+              //+IL_0045: ldloc V_xx <<== whatever
+              //IL_0014: ldnull
+              //IL_0015: ldnull
+              //IL_0016: call !!0 [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync::RunSynchronously<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<valuetype [System.Runtime]System.Threading.CancellationToken>)
+              //IL_001b: pop
+              // ahead of the leave opcode
 
-                 let newstate =
-                   { s with
-                       AsyncSupport =
-                         Some(
-                           Option.defaultWith
-                             (fun () -> AsyncSupport.Update m.Method) // TODO
-                             state.AsyncSupport
-                         ) }
+              let newstate =
+                { s with
+                    AsyncSupport =
+                      Some(
+                        Option.defaultWith
+                          (fun () -> AsyncSupport.Update m.Method) // TODO
+                          state.AsyncSupport
+                      ) }
 
-                 let injectWait ilp (i: Instruction) =
-                   bulkInsertBefore
-                     ilp
-                     i.Next
-                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
-                       ilp.Create(OpCodes.Ldnull)
-                       ilp.Create(OpCodes.Ldnull)
-                       ilp.Create(
-                         OpCodes.Call,
-                         newstate.AsyncSupport.Value.RunSynchronously m.Method asyncOf
-                       )
-                       ilp.Create(OpCodes.Pop) ]
-                     true
+              let injectWait ilp (i: Instruction) =
+                bulkInsertBefore
+                  ilp
+                  i.Next
+                  [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                    ilp.Create(OpCodes.Ldnull)
+                    ilp.Create(OpCodes.Ldnull)
+                    ilp.Create(
+                      OpCodes.Call,
+                      newstate.AsyncSupport.Value.RunSynchronously m.Method asyncOf
+                    )
+                    ilp.Create(OpCodes.Pop) ]
+                  true
 
-                 leave
-                 |> Seq.iter ((injectWait methodWorker) >> ignore)
+              leave
+              |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 (newstate, false)
-               else
-                 (s, unhandled)
+              (newstate, false)
+            else
+              (s, unhandled)
 
-             let processTaskReturns (s: InstrumentContext, unhandled: bool) =
-               if unhandled && isTaskType () then
-                 let newstate =
-                   { s with
-                       AsyncSupport =
-                         Some(
-                           Option.defaultWith
-                             (fun () -> AsyncSupport.Update m.Method) // TODO
-                             state.AsyncSupport
-                         ) }
+          let processTaskReturns (s: InstrumentContext, unhandled: bool) =
+            if unhandled && isTaskType () then
+              let newstate =
+                { s with
+                    AsyncSupport =
+                      Some(
+                        Option.defaultWith
+                          (fun () -> AsyncSupport.Update m.Method) // TODO
+                          state.AsyncSupport
+                      ) }
 
-                 let injectWait ilp (i: Instruction) =
-                   // before
-                   // IL_003f: stloc V1
-                   // IL_0040: leave.s IL_0054
+              let injectWait ilp (i: Instruction) =
+                // before
+                // IL_003f: stloc V1
+                // IL_0040: leave.s IL_0054
 
-                   // after
-                   // IL_003d: stloc V1
-                   //+IL_003e: ldloc V1
-                   //+IL_003f: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
-                   //+IL_0044: ldloc V1
-                   //+IL_0045: stloc.0
-                   // IL_0046: leave.s IL_005a
+                // after
+                // IL_003d: stloc V1
+                //+IL_003e: ldloc V1
+                //+IL_003f: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+                //+IL_0044: ldloc V1
+                //+IL_0045: stloc.0
+                // IL_0046: leave.s IL_005a
 
-                   bulkInsertBefore
-                     ilp
-                     i.Next
-                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
-                       ilp.Create(OpCodes.Ldc_I4, 65535)
-                       ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
-                       ilp.Create(OpCodes.Pop)
-                       ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
-                       ilp.Create(OpCodes.Stloc_0) ]
-                     true
+                bulkInsertBefore
+                  ilp
+                  i.Next
+                  [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                    ilp.Create(OpCodes.Ldc_I4, 65535)
+                    ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
+                    ilp.Create(OpCodes.Pop)
+                    ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                    ilp.Create(OpCodes.Stloc_0) ]
+                  true
 
-                 leave
-                 |> Seq.iter ((injectWait methodWorker) >> ignore)
+              leave
+              |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 (newstate, false)
-               else
-                 (s, unhandled)
+              (newstate, false)
+            else
+              (s, unhandled)
 
-             (state, true)
-             |> processAsyncAwait
-             |> processFSAsync
-             |> processTaskReturns
-             |> fst)
-           state
+          (state, true)
+          |> processAsyncAwait
+          |> processFSAsync
+          |> processTaskReturns
+          |> fst)
+        state
 
     let private visitAfterMethod state (m: MethodEntry) =
       if m.Inspection.IsInstrumented then

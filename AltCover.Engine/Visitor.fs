@@ -635,19 +635,19 @@ module internal Visitor =
     let internal isFSharpStaticClass (t: TypeDefinition) =
       (t.CustomAttributes
        |> Seq.fold
-            (fun x a ->
-              let fn = a.AttributeType.FullName
+         (fun x a ->
+           let fn = a.AttributeType.FullName
 
-              if
-                fn
-                == "Microsoft.FSharp.Core.AbstractClassAttribute"
-              then
-                x ||| 1
-              else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
-                x ||| 2
-              else
-                x)
-            0) = 3
+           if
+             fn
+             == "Microsoft.FSharp.Core.AbstractClassAttribute"
+           then
+             x ||| 1
+           else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
+             x ||| 2
+           else
+             x)
+         0) = 3
 
     let internal significant (m: MethodDefinition) =
       [ Filter.isFSharpInternal
@@ -763,8 +763,12 @@ module internal Visitor =
           let c =
             (i :?> SourceLinkDebugInformation).Content
 
-          JsonValue.Parse(c).Object.["documents"]
-            .Object.ToDictionary((fun kv -> kv.Key), (fun kv -> kv.Value.String)))
+          JsonValue
+            .Parse(c)
+            .Object.["documents"].Object.ToDictionary(
+              (fun kv -> kv.Key),
+              (fun kv -> kv.Value.String)
+            ))
 
       [ x ]
       |> Seq.takeWhile (fun _ -> x.Inspection <> Inspections.Ignore)
@@ -1350,7 +1354,9 @@ module internal Visitor =
              uid <- uid + 1
              Seq.map (fun bx -> { bx with Uid = i + branchNumber })
            else
-             Seq.map (fun bx -> { bx with Representative = Reporting.None }))
+             Seq.map (fun bx ->
+               { bx with
+                   Representative = Reporting.None }))
       |> Seq.collect id
       |> Seq.sortBy (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
 
@@ -1641,6 +1647,6 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1372::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1378::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 ()

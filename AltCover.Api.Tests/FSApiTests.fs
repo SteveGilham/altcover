@@ -642,9 +642,7 @@ module FSApiTests =
     let time =
       (rewrite.Descendants(XName.Get "coverage")
        |> Seq.head)
-        .Attribute(
-        XName.Get "startTime"
-      )
+        .Attribute(XName.Get "startTime")
         .Value
 
     let expected =
@@ -696,9 +694,7 @@ module FSApiTests =
     let time =
       (rewrite.Descendants(XName.Get "coverage")
        |> Seq.head)
-        .Attribute(
-        XName.Get "startTime"
-      )
+        .Attribute(XName.Get "startTime")
         .Value
 
     let expected =
@@ -1223,7 +1219,7 @@ module FSApiTests =
       (Is.EqualTo((collectNames |> List.length) - 1))
 
     let optionNames =
-      typeof<DotNet.CLIOptions>.GetProperties ()
+      typeof<DotNet.CLIOptions>.GetProperties()
       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -1333,7 +1329,8 @@ module FSApiTests =
       @>
 
     let coll1 =
-      { pcoll with Verbosity = TraceLevel.Verbose }
+      { pcoll with
+          Verbosity = TraceLevel.Verbose }
       |> AltCover.AltCover.CollectOptions.Primitive
 
     test
@@ -1342,7 +1339,8 @@ module FSApiTests =
       @>
 
     let coll2 =
-      { pcoll with Verbosity = TraceLevel.Warning }
+      { pcoll with
+          Verbosity = TraceLevel.Warning }
       |> AltCover.AltCover.CollectOptions.Primitive
 
     let prep2 =

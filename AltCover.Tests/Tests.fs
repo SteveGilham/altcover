@@ -101,7 +101,8 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
 #endif
   let recorderSnk =
-    typeof<AltCover.Node>.Assembly.GetManifestResourceNames ()
+    typeof<AltCover.Node>.Assembly
+      .GetManifestResourceNames()
     |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 
   let infrastructureSnk =
@@ -1063,9 +1064,7 @@ module AltCoverTests =
   [<Test>]
   let ValidateStaticClass () =
     let where =
-      typeof<AltCover.CommandLine.Format>
-        .Assembly
-        .Location
+      typeof<AltCover.CommandLine.Format>.Assembly.Location
 
     use def =
       AssemblyResolver.ReadAssembly where
@@ -1125,7 +1124,7 @@ module AltCoverTests =
       |> Seq.map (fun x ->
         (x
           .Attribute(XName.Get("Include"))
-           .Value.ToLowerInvariant(),
+          .Value.ToLowerInvariant(),
          x.Attribute(XName.Get("Version")).Value))
       |> Map.ofSeq
 
@@ -1310,11 +1309,11 @@ module AltCoverTests =
       let synchStructure =
         Visitor.I.deeper
         <| Node.Method
-             { Method = synch
-               VisibleMethod = synch
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = synch
+            VisibleMethod = synch
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.toList
 
       synchStructure
@@ -1333,11 +1332,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.toList
 
       deeper
@@ -1391,11 +1390,11 @@ module AltCoverTests =
         let deeper =
           Visitor.I.deeper
           <| Node.Method
-               { Method = method
-                 VisibleMethod = method
-                 Inspection = Inspections.Instrument
-                 Track = None
-                 DefaultVisitCount = Exemption.None }
+            { Method = method
+              VisibleMethod = method
+              Inspection = Inspections.Instrument
+              Track = None
+              DefaultVisitCount = Exemption.None }
           |> Seq.toList
         // Expect no branch points here from the async (or yield)
         test
@@ -1445,11 +1444,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.toList
 
       Assert.That(deeper.Length, Is.EqualTo 3)
@@ -1546,11 +1545,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.toList
 
       Assert.That(deeper.Length, Is.EqualTo 3)
@@ -1627,11 +1626,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.Automatic }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.Automatic }
         |> Seq.toList
 
       Assert.That(deeper.Length, Is.EqualTo 3)
@@ -2119,9 +2118,7 @@ module AltCoverTests =
     let computed = pair.PublicKey
 
     let definitive =
-      StrongNameKeyPair(
-        pair.Blob |> List.toArray
-      )
+      StrongNameKeyPair(pair.Blob |> List.toArray)
         .PublicKey
 
     Assert.That(computed, Is.EquivalentTo definitive)
@@ -2375,11 +2372,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.toList
 
       Assert.That(deeper.Length, Is.EqualTo 12)
@@ -2431,11 +2428,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.Declared }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.Declared }
         |> Seq.toList
 
       //deeper |> List.skip 21 |> Seq.iter (fun n -> match n with
@@ -2506,11 +2503,11 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.StaticAnalysis }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.StaticAnalysis }
         |> Seq.toList
 
       let reported =
@@ -2574,10 +2571,10 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Type
-             { Type = type'
-               VisibleType = type'
-               Inspection = Inspections.Instrument
-               DefaultVisitCount = Exemption.None }
+          { Type = type'
+            VisibleType = type'
+            Inspection = Inspections.Instrument
+            DefaultVisitCount = Exemption.None }
         |> Seq.toList
 
       Visitor.visit [] [] // cheat reset
@@ -2641,8 +2638,8 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Module
-             { Module = module'
-               Inspection = Inspections.Instrument }
+          { Module = module'
+            Inspection = Inspections.Instrument }
         |> Seq.toList
 
       Visitor.visit [] [] // cheat reset
@@ -2691,10 +2688,10 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Assembly
-             { Assembly = def
-               Inspection = Inspections.Instrument
-               Identity = Hallmark.Build()
-               Destinations = [] }
+          { Assembly = def
+            Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
+            Destinations = [] }
         |> Seq.toList
 
       Visitor.visit [] [] // cheat reset
@@ -2732,9 +2729,9 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Start
-             [ { AssemblyPath = path
-                 Identity = Hallmark.Build()
-                 Destinations = [] } ]
+          [ { AssemblyPath = path
+              Identity = Hallmark.Build()
+              Destinations = [] } ]
         |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
@@ -2791,9 +2788,9 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Start
-             [ { AssemblyPath = path
-                 Identity = Hallmark.Build()
-                 Destinations = [] } ]
+          [ { AssemblyPath = path
+              Identity = Hallmark.Build()
+              Destinations = [] } ]
         |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
@@ -2831,9 +2828,9 @@ module AltCoverTests =
     let deeper =
       Visitor.I.deeper
       <| Node.Start
-           [ { AssemblyPath = sample1path
-               Identity = Hallmark.Build()
-               Destinations = [] } ]
+        [ { AssemblyPath = sample1path
+            Identity = Hallmark.Build()
+            Destinations = [] } ]
       |> Seq.toList
 
     deeper
@@ -2851,7 +2848,8 @@ module AltCoverTests =
       let op _ = raise <| IOException(unique)
 
       let x =
-        Assert.Throws<InvalidOperationException>(fun () -> (Visitor.I.wrap op n) |> ignore)
+        Assert.Throws<InvalidOperationException>(fun () ->
+          (Visitor.I.wrap op n) |> ignore)
 
       test <@ x.Message = "'" + unique + "' while visiting '" + text + "'" @>)
 
@@ -3529,7 +3527,7 @@ module AltCoverTests =
       test
         <@
           CoverageParameters.configurationHash = Some
-                                                   "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
+            "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
         @>
     finally
       CoverageParameters.nameFilters.Clear()
@@ -4561,8 +4559,7 @@ module AltCoverTests =
     use def = AssemblyResolver.ReadAssembly path
 
     let target =
-      def
-        .MainModule
+      def.MainModule
         .GetType("AltCover.Sample3.Class2")
         .GetMethods()
       |> Seq.filter (fun m -> m.Name = "set_Property")
@@ -4573,11 +4570,11 @@ module AltCoverTests =
       |> Seq.cast<Cil.Instruction>
       |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
       |> Seq.fold
-           (fun state i ->
-             state
-             + (Gendarme.I.``detect ternary pattern``
-                <| Some i.Previous.OpCode.Code))
-           0
+        (fun state i ->
+          state
+          + (Gendarme.I.``detect ternary pattern``
+             <| Some i.Previous.OpCode.Code))
+        0
 
     Assert.That(ternary, Is.EqualTo 1)
     Assert.That(Gendarme.I.``detect ternary pattern`` None, Is.EqualTo 0)
@@ -4599,8 +4596,7 @@ module AltCoverTests =
     use def = AssemblyResolver.ReadAssembly path
 
     let target =
-      def
-        .MainModule
+      def.MainModule
         .GetType("AltCover.Sample3.Class3")
         .GetMethods()
       |> Seq.filter (fun m -> m.Name = "GetOperandType")
@@ -4660,11 +4656,11 @@ module AltCoverTests =
       let branches =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.map (fun n ->
           match n with
           | BranchPoint b -> Some b
@@ -4760,14 +4756,12 @@ module AltCoverTests =
         | "hash" -> ()
         | "fullPath" ->
           Assert.That(
-            a1
-              .Value
+            a1.Value
               .Replace("\\", "/")
               .Replace("Samples/", String.Empty)
               .Replace("altcover", "AltCover"),
             Does.EndWith(
-              a2
-                .Value
+              a2.Value
                 .Replace("\\", "/")
                 .Replace("altcover", "AltCover")
             ),

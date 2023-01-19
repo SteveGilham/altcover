@@ -10,10 +10,10 @@ module Rocks =
   let rec GetAllTypes (t: TypeDefinition) =
     t
     :: (List.collect
-          GetAllTypes
-          (t.NestedTypes
-           |> Seq.cast<TypeDefinition>
-           |> Seq.toList))
+      GetAllTypes
+      (t.NestedTypes
+       |> Seq.cast<TypeDefinition>
+       |> Seq.toList))
 
 module ValidateGendarmeEmulation =
   let importantItems (n, e, r) = Maybe (r <> e) (Some(n, e, r)) None

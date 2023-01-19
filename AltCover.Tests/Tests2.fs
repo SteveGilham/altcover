@@ -17,7 +17,8 @@ open Mono.Options
 
 module AltCoverTests2 =
   let recorderSnk =
-    typeof<AltCover.Node>.Assembly.GetManifestResourceNames ()
+    typeof<AltCover.Node>.Assembly
+      .GetManifestResourceNames()
     |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 
   let infrastructureSnk =
@@ -81,9 +82,9 @@ module AltCoverTests2 =
 
     recorder
     |> List.zip
-         [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
-           "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
-           "System.Void AltCover.Recorder.Instance.Pop()" ]
+      [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
+        "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
+        "System.Void AltCover.Recorder.Instance.Pop()" ]
     |> List.iter (fun (n, m) -> test <@ Naming.fullMethodName m = n @>)
 
   [<Test>]
@@ -121,7 +122,8 @@ module AltCoverTests2 =
     Assert.That(token0, Is.Not.Empty)
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -194,9 +196,7 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
       let path =
-        typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>
-          .Assembly
-          .Location
+        typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -310,9 +310,7 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
       let path =
-        typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>
-          .Assembly
-          .Location
+        typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -1051,7 +1049,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let save = CoverageParameters.theReportPath
 
       use stream =
-        typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+        typeof<AltCover.Node>.Assembly
+          .GetManifestResourceStream(recorderSnk)
 
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
@@ -1608,11 +1607,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def
-        .MainModule
-        .GetType(
-          "Tests.Problematic"
-        )
+      def.MainModule
+        .GetType("Tests.Problematic")
         .Methods
       |> Seq.find (fun m -> m.Name = "Using FsUnit")
 
@@ -1684,11 +1680,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def
-        .MainModule
-        .GetType(
-          "NUnitTestProject1.Tests"
-        )
+      def.MainModule
+        .GetType("NUnitTestProject1.Tests")
         .Methods
       |> Seq.find (fun m -> m.Name = "AddSynch")
 
@@ -1765,11 +1758,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def
-        .MainModule
-        .GetType(
-          "NUnitTestProject1.Tests"
-        )
+      def.MainModule
+        .GetType("NUnitTestProject1.Tests")
         .Methods
       |> Seq.find (fun m -> m.Name = "AddAsync")
 
@@ -2160,11 +2150,11 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let branches =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.map (fun n ->
           match n with
           | BranchPoint b -> Some b
@@ -2258,11 +2248,11 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let branches =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.map (fun n ->
           match n with
           | BranchPoint b -> Some b
@@ -2349,11 +2339,11 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let branches =
         Visitor.I.deeper
         <| Node.Method
-             { Method = method
-               VisibleMethod = method
-               Inspection = Inspections.Instrument
-               Track = None
-               DefaultVisitCount = Exemption.None }
+          { Method = method
+            VisibleMethod = method
+            Inspection = Inspections.Instrument
+            Track = None
+            DefaultVisitCount = Exemption.None }
         |> Seq.map (fun n ->
           match n with
           | BranchPoint b -> Some b
@@ -2506,7 +2496,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       |> Seq.toList
 
     let input =
-      { InstrumentContext.Build [] with MethodBody = func.Body }
+      { InstrumentContext.Build [] with
+          MethodBody = func.Body }
 
     input.MethodBody.SimplifyMacros()
 
@@ -2565,7 +2556,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       |> Seq.toList
 
     let input =
-      { InstrumentContext.Build [] with MethodBody = func.Body }
+      { InstrumentContext.Build [] with
+          MethodBody = func.Body }
 
     input.MethodBody.SimplifyMacros()
 
@@ -2602,7 +2594,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let token0 = def.Name.PublicKeyToken
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2637,7 +2630,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let token0 = def.Name.PublicKeyToken
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2722,7 +2716,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
     ProgramDatabase.readSymbols def
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2747,7 +2742,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
     ProgramDatabase.readSymbols def |> ignore
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2791,7 +2787,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
         KeyStore.arrayToIndex ndef.Name.PublicKey
 
       use stream =
-        typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+        typeof<AltCover.Node>.Assembly
+          .GetManifestResourceStream(recorderSnk)
 
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
@@ -2837,7 +2834,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       def.MainModule.AssemblyReferences |> Seq.toList
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2880,7 +2878,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       def.MainModule.AssemblyReferences |> Seq.toList
 
     use stream =
-      typeof<AltCover.Node>.Assembly.GetManifestResourceStream (recorderSnk)
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2931,7 +2930,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
       Assert.That(
         result,
-        Is.EqualTo { state with ModuleId = def.MainModule.Mvid.ToString() }
+        Is.EqualTo
+          { state with
+              ModuleId = def.MainModule.Mvid.ToString() }
       )
     finally
       CoverageParameters.theReportFormat <- None
@@ -2986,7 +2987,12 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let result =
         Instrument.I.instrumentationVisitor state visited
 
-      Assert.That(result, Is.EqualTo { state with ModuleId = path |> KeyStore.hashFile })
+      Assert.That(
+        result,
+        Is.EqualTo
+          { state with
+              ModuleId = path |> KeyStore.hashFile }
+      )
     finally
       CoverageParameters.theReportFormat <- None
 
@@ -3216,7 +3222,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(string result.RecordingMethodRef, Is.EqualTo(string r))
 
       Assert.That(
-        { result with RecordingMethodRef = RecorderRefs.Build() },
+        { result with
+            RecordingMethodRef = RecorderRefs.Build() },
         Is.EqualTo
           { state' with
               ModuleId = def.MainModule.Mvid.ToString()
@@ -3411,7 +3418,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
     ProgramDatabase.readSymbols prepared
 
     let state =
-      { InstrumentContext.Build [] with RecordingAssembly = prepared }
+      { InstrumentContext.Build [] with
+          RecordingAssembly = prepared }
 
     Assert.Throws<InvalidOperationException>(fun () ->
       ignore (
@@ -3490,7 +3498,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     let state =
-      { InstrumentContext.Build [] with RecordingAssembly = null }
+      { InstrumentContext.Build [] with
+          RecordingAssembly = null }
     // Would be NullreferenceException if we tried it
     Assert.Throws<InvalidOperationException>(fun () ->
       ignore (
@@ -3507,7 +3516,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     let state =
-      { InstrumentContext.Build [] with RecordingAssembly = null }
+      { InstrumentContext.Build [] with
+          RecordingAssembly = null }
 
     use prepared =
       AssemblyResolver.ReadAssembly path
@@ -3690,7 +3700,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     Assert.That(Output.usage, Is.Not.Null)
 
-    typeof<SummaryFormat>.Assembly.GetTypes ()
+    typeof<SummaryFormat>.Assembly.GetTypes()
     |> Seq.filter (fun t ->
       (string t = "AltCover.Output")
       || (string t = "AltCover.AltCover"))

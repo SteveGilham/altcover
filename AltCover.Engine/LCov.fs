@@ -165,17 +165,16 @@ FN:4,(anonymous_0)
               let hit =
                 methods
                 |> Seq.fold
-                     (fun (n: int) (m, _) ->
-                       let v =
-                         (m.Descendants("seqpnt".X) |> Seq.head).Attribute(
-                           "visitcount".X
-                         )
-                           .Value
+                  (fun (n: int) (m, _) ->
+                    let v =
+                      (m.Descendants("seqpnt".X) |> Seq.head)
+                        .Attribute("visitcount".X)
+                        .Value
 
-                       let name = fullname m
-                       writer.WriteLine("FNDA:" + v + "," + name)
-                       n.Increment(v != "0"))
-                     0
+                    let name = fullname m
+                    writer.WriteLine("FNDA:" + v + "," + name)
+                    n.Increment(v != "0"))
+                  0
               // This  list  is followed by two lines containing the number of functions
               // found and hit:
               //
@@ -221,18 +220,18 @@ FN:4,(anonymous_0)
                 |> Seq.groupBy (fun b -> b.Attribute("line".X).Value)
                 |> Seq.sortBy (fst >> Int32.TryParse >> snd)
                 |> Seq.fold
-                     (fun (f, (h: int)) (sl, bs) ->
-                       let vc = I.computeVisitCount bs "visitcount"
+                  (fun (f, (h: int)) (sl, bs) ->
+                    let vc = I.computeVisitCount bs "visitcount"
 
-                       writer.WriteLine(
-                         "DA:"
-                         + sl
-                         + ","
-                         + vc.ToString(CultureInfo.InvariantCulture)
-                       )
+                    writer.WriteLine(
+                      "DA:"
+                      + sl
+                      + ","
+                      + vc.ToString(CultureInfo.InvariantCulture)
+                    )
 
-                       (f + 1, h.Increment(vc <> 0)))
-                     (0, 0)
+                    (f + 1, h.Increment(vc <> 0)))
+                  (0, 0)
               // At  the  end of a section, there is a summary about how many lines were
               // found and how many were actually instrumented:
               //
@@ -319,7 +318,9 @@ FN:4,(anonymous_0)
                     let sl = s.Attribute("sl".X).Value
 
                     if sl |> String.IsNullOrWhiteSpace |> not then
-                      writer.WriteLine("FNDA:" + mp.Attribute("vc".X).Value + "," + n)))
+                      writer.WriteLine(
+                        "FNDA:" + mp.Attribute("vc".X).Value + "," + n
+                      )))
 
               FNDA methods
               // This  list  is followed by two lines containing the number of functions
@@ -365,28 +366,28 @@ FN:4,(anonymous_0)
                     |> String.IsNullOrWhiteSpace
                     |> not)
                   |> Seq.fold
-                       (fun (f, h, (o, u)) b ->
-                         let sl = b.Attribute("sl".X).Value
-                         let off = b.Attribute("offset".X).Value
-                         let usp = b.Attribute("uspid".X).Value
-                         let path = b.Attribute("path".X).Value
-                         let vc = b.Attribute("vc".X).Value
+                    (fun (f, h, (o, u)) b ->
+                      let sl = b.Attribute("sl".X).Value
+                      let off = b.Attribute("offset".X).Value
+                      let usp = b.Attribute("uspid".X).Value
+                      let path = b.Attribute("path".X).Value
+                      let vc = b.Attribute("vc".X).Value
 
-                         writer.WriteLine(
-                           "BRDA:"
-                           + sl
-                           + ","
-                           + (if o == off then u else usp)
-                           + ","
-                           + path
-                           + ","
-                           + (if vc == "0" then "-" else vc)
-                         )
+                      writer.WriteLine(
+                        "BRDA:"
+                        + sl
+                        + ","
+                        + (if o == off then u else usp)
+                        + ","
+                        + path
+                        + ","
+                        + (if vc == "0" then "-" else vc)
+                      )
 
-                         (f + 1,
-                          h + (if vc == "0" then 0 else 1),
-                          (if o == off then (o, u) else (off, usp))))
-                       (0, 0, ("?", "?"))
+                      (f + 1,
+                       h + (if vc == "0" then 0 else 1),
+                       (if o == off then (o, u) else (off, usp))))
+                    (0, 0, ("?", "?"))
                 // Branch coverage summaries are stored in two lines:
                 //
                 // BRF:<number of branches found>
@@ -422,18 +423,18 @@ FN:4,(anonymous_0)
                   b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
                 |> Seq.sortBy fst
                 |> Seq.fold
-                     (fun (f, h) (line, points) ->
-                       let sl =
-                         line.ToString(CultureInfo.InvariantCulture)
+                  (fun (f, h) (line, points) ->
+                    let sl =
+                      line.ToString(CultureInfo.InvariantCulture)
 
-                       let vc = I.computeVisitCount points "vc"
+                    let vc = I.computeVisitCount points "vc"
 
-                       let vcs =
-                         vc.ToString(CultureInfo.InvariantCulture)
+                    let vcs =
+                      vc.ToString(CultureInfo.InvariantCulture)
 
-                       writer.WriteLine("DA:" + sl + "," + vcs)
-                       (f + 1, h + if vcs == "0" then 0 else 1))
-                     (0, 0)
+                    writer.WriteLine("DA:" + sl + "," + vcs)
+                    (f + 1, h + if vcs == "0" then 0 else 1))
+                  (0, 0)
               // At  the  end of a section, there is a summary about how many lines were
               // found and how many were actually instrumented:
               //

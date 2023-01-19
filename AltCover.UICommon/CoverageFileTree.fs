@@ -216,7 +216,8 @@ module CoverageFileTree =
               s.GetAttribute("document", String.Empty)
 
             let state =
-              { (d |> getFileName) with Navigator = s }
+              { (d |> getFileName) with
+                  Navigator = s }
             // get any embed and tweak state and icon accordingly
             match GuiCommon.Embed s d with
             | None -> state
@@ -448,20 +449,20 @@ module CoverageFileTree =
 
     classes
     |> Seq.fold
-         (fun stack c ->
-           let name = fst c
+      (fun stack c ->
+        let name = fst c
 
-           let restack =
-             stack |> List.filter (fst >> (isNested name))
+        let restack =
+          stack |> List.filter (fst >> (isNested name))
 
-           let pr =
-             match restack with
-             | [] -> model
-             | (_, r) :: _ -> r
+        let pr =
+          match restack with
+          | [] -> model
+          | (_, r) :: _ -> r
 
-           let nr = applyToModel pr c
-           (name, nr) :: restack)
-         []
+        let nr = applyToModel pr c
+        (name, nr) :: restack)
+      []
     |> ignore
 
   let private populateAssemblyNode
@@ -575,8 +576,7 @@ module CoverageFileTree =
         populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
       let assemblies =
-        coverage
-          .Document
+        coverage.Document
           .CreateNavigator()
           .Select("//module")
         |> Seq.cast<XPathNavigator>

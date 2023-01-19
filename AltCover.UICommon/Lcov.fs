@@ -79,81 +79,81 @@ module internal Lcov =
         |> sprintf "%A"
         |> ThrowHelper.ThrowInvalidDataException<int>)
     |> Seq.fold
-         (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
-           match r with
-           | FN(_, n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
-             let endclass =
-               n.IndexOf("::", StringComparison.Ordinal)
+      (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
+        match r with
+        | FN(_, n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
+          let endclass =
+            n.IndexOf("::", StringComparison.Ordinal)
 
-             let startclass =
-               n.LastIndexOf(' ', endclass) + 1
+          let startclass =
+            n.LastIndexOf(' ', endclass) + 1
 
-             let c =
-               n.Substring(startclass, endclass - startclass)
+          let c =
+            n.Substring(startclass, endclass - startclass)
 
-             let endname = n.IndexOf('(', endclass)
+          let endname = n.IndexOf('(', endclass)
 
-             let name =
-               n.Substring(endclass + 2, endname - endclass - 2)
+          let name =
+            n.Substring(endclass + 2, endname - endclass - 2)
 
-             let mt =
-               XElement(
-                 XName.Get "method",
-                 XAttribute(XName.Get "excluded", "false"),
-                 XAttribute(XName.Get "instrumented", "true"),
-                 XAttribute(XName.Get "name", name),
-                 XAttribute(XName.Get "class", c),
-                 XAttribute(XName.Get "fullname", n),
-                 XAttribute(
-                   XName.Get "document",
-                   result.Attribute(XName.Get "assembly").Value
-                 )
-               )
+          let mt =
+            XElement(
+              XName.Get "method",
+              XAttribute(XName.Get "excluded", "false"),
+              XAttribute(XName.Get "instrumented", "true"),
+              XAttribute(XName.Get "name", name),
+              XAttribute(XName.Get "class", c),
+              XAttribute(XName.Get "fullname", n),
+              XAttribute(
+                XName.Get "document",
+                result.Attribute(XName.Get "assembly").Value
+              )
+            )
 
-             result.Add mt
-             mt
-           | DA(l, n) ->
-             let sp =
-               XElement(
-                 XName.Get "seqpnt",
-                 XAttribute(XName.Get "visitcount", n),
-                 XAttribute(XName.Get "line", l),
-                 XAttribute(XName.Get "column", 1),
-                 XAttribute(XName.Get "endline", l),
-                 XAttribute(XName.Get "endcolumn", 2),
-                 XAttribute(XName.Get "offset", l),
-                 XAttribute(XName.Get "excluded", "false"),
-                 XAttribute(
-                   XName.Get "document",
-                   result.Attribute(XName.Get "assembly").Value
-                 )
-               )
+          result.Add mt
+          mt
+        | DA(l, n) ->
+          let sp =
+            XElement(
+              XName.Get "seqpnt",
+              XAttribute(XName.Get "visitcount", n),
+              XAttribute(XName.Get "line", l),
+              XAttribute(XName.Get "column", 1),
+              XAttribute(XName.Get "endline", l),
+              XAttribute(XName.Get "endcolumn", 2),
+              XAttribute(XName.Get "offset", l),
+              XAttribute(XName.Get "excluded", "false"),
+              XAttribute(
+                XName.Get "document",
+                result.Attribute(XName.Get "assembly").Value
+              )
+            )
 
-             x.Add sp
-             x
-           // BRDA:<line number>,<block number>,<branch number>,<taken>
-           | BRDA(l, _, n, v) ->
-             let br =
-               XElement(
-                 XName.Get "branch",
-                 XAttribute(XName.Get "visitcount", v),
-                 XAttribute(XName.Get "line", l),
-                 XAttribute(XName.Get "path", n),
-                 XAttribute(XName.Get "offset", l),
-                 XAttribute(XName.Get "offsetend", l),
-                 XAttribute(
-                   XName.Get "document",
-                   result.Attribute(XName.Get "assembly").Value
-                 )
-               )
+          x.Add sp
+          x
+        // BRDA:<line number>,<block number>,<branch number>,<taken>
+        | BRDA(l, _, n, v) ->
+          let br =
+            XElement(
+              XName.Get "branch",
+              XAttribute(XName.Get "visitcount", v),
+              XAttribute(XName.Get "line", l),
+              XAttribute(XName.Get "path", n),
+              XAttribute(XName.Get "offset", l),
+              XAttribute(XName.Get "offsetend", l),
+              XAttribute(
+                XName.Get "document",
+                result.Attribute(XName.Get "assembly").Value
+              )
+            )
 
-             x.Add br
-             x
-           | _ ->
-             r
-             |> sprintf "%A"
-             |> ThrowHelper.ThrowInvalidDataException<XElement>)
-         null
+          x.Add br
+          x
+        | _ ->
+          r
+          |> sprintf "%A"
+          |> ThrowHelper.ThrowInvalidDataException<XElement>)
+      null
     |> ignore
 
     result
@@ -195,14 +195,14 @@ module internal Lcov =
             |> ThrowHelper.ThrowInvalidDataException<LRecord>
         | _ -> Other)
       |> Seq.fold
-           (fun (i, l) r ->
-             match r with
-             | SF _ -> (i + 1, ((i + 1), r) :: l)
-             | DA _
-             | BRDA _
-             | FN _ -> (i, (i, r) :: l)
-             | _ -> (i, l))
-           (0, [])
+        (fun (i, l) r ->
+          match r with
+          | SF _ -> (i + 1, ((i + 1), r) :: l)
+          | DA _
+          | BRDA _
+          | FN _ -> (i, (i, r) :: l)
+          | _ -> (i, l))
+        (0, [])
       |> snd
       |> Seq.groupBy fst
       |> Seq.map (fun (_, l) -> buildModule l)

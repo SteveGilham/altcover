@@ -34,9 +34,7 @@ module private Gui =
     |> List.iter (fun name ->
       use b =
         new Builder(
-          System
-            .Reflection
-            .Assembly
+          System.Reflection.Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
           name
@@ -335,12 +333,12 @@ module private Gui =
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
       fun
-        (expands: bool)
-        (context: CoverageTreeContext<TreeStore, TreeIter>)
-        (icon: Lazy<Gdk.Pixbuf>)
-        pc
-        name
-        (tip: string option) ->
+          (expands: bool)
+          (context: CoverageTreeContext<TreeStore, TreeIter>)
+          (icon: Lazy<Gdk.Pixbuf>)
+          pc
+          name
+          (tip: string option) ->
         let newrow =
           context.Model.AppendValues(
             context.Row,
@@ -892,9 +890,9 @@ module private Gui =
 #endif
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
-           (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
-           (OptionSet())
+        (fun (o: OptionSet) (p, a) ->
+          o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
+        (OptionSet())
 
     options.Parse(arguments) |> ignore
 

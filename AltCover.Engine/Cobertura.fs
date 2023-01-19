@@ -57,22 +57,22 @@ module internal Cobertura =
           s.Attribute("excluded".X).Value != "true"
           && s.Attribute("document".X).Value == document)
         |> Seq.fold
-             (fun (h, t) s ->
-               let vc = s.Attribute("visitcount".X)
+          (fun (h, t) s ->
+            let vc = s.Attribute("visitcount".X)
 
-               let vx = if isNull vc then "0" else vc.Value
+            let vx = if isNull vc then "0" else vc.Value
 
-               let line =
-                 XElement(
-                   "line".X,
-                   XAttribute("number".X, s.Attribute("line".X).Value),
-                   XAttribute("hits".X, vx),
-                   XAttribute("branch".X, "false")
-                 )
+            let line =
+              XElement(
+                "line".X,
+                XAttribute("number".X, s.Attribute("line".X).Value),
+                XAttribute("hits".X, vx),
+                XAttribute("branch".X, "false")
+              )
 
-               lines.Add line
-               (h + (if vx == "0" then 0 else 1), t + 1))
-             (0, 0)
+            lines.Add line
+            (h + (if vx == "0" then 0 else 1), t + 1))
+          (0, 0)
 
       let processMethod
         document
@@ -265,20 +265,20 @@ module internal Cobertura =
           s
           |> snd
           |> Seq.fold
-               (fun (v, c, n) sp ->
-                 (v
-                  + (sp.Attribute("vc".X).Value
-                     |> Int32.TryParse
-                     |> snd),
-                  c
-                  + (sp.Attribute("bec".X).Value
-                     |> Int32.TryParse
-                     |> snd),
-                  n
-                  + (sp.Attribute("bev".X).Value
-                     |> Int32.TryParse
-                     |> snd)))
-               (0, 0, 0)
+            (fun (v, c, n) sp ->
+              (v
+               + (sp.Attribute("vc".X).Value
+                  |> Int32.TryParse
+                  |> snd),
+               c
+               + (sp.Attribute("bec".X).Value
+                  |> Int32.TryParse
+                  |> snd),
+               n
+               + (sp.Attribute("bev".X).Value
+                  |> Int32.TryParse
+                  |> snd)))
+            (0, 0, 0)
 
         let vx =
           vcn.ToString(CultureInfo.InvariantCulture)
@@ -442,10 +442,10 @@ module internal Cobertura =
       let lookUpFiles (``module``: XElement) =
         ``module``.Descendants("File".X)
         |> Seq.fold
-             (fun m x ->
-               m
-               |> Map.add (x.Attribute("uid".X).Value) (x.Attribute("fullPath".X).Value))
-             Map.empty
+          (fun m x ->
+            m
+            |> Map.add (x.Attribute("uid".X).Value) (x.Attribute("fullPath".X).Value))
+          Map.empty
 
       report.Descendants("Module".X)
       |> Seq.filter (fun m -> m.Descendants("Class".X) |> Seq.isEmpty |> not)

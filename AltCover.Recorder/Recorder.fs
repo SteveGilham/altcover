@@ -125,10 +125,10 @@ module Instance =
         [| Track.Entry; Track.Exit |] ]
       |> Seq.concat
       |> Seq.fold
-           (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
-             d.Add(k, Dictionary<int, PointVisit>())
-             d)
-           (Dictionary<string, Dictionary<int, PointVisit>>())
+        (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
+          d.Add(k, Dictionary<int, PointVisit>())
+          d)
+        (Dictionary<string, Dictionary<int, PointVisit>>())
 
     /// <summary>
     /// Accumulation of visit records
@@ -138,10 +138,10 @@ module Instance =
     let internal makeSamples () =
       modules
       |> Seq.fold
-           (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
-             d.Add(k, Dictionary<Sampled, bool>())
-             d)
-           (Dictionary<string, Dictionary<Sampled, bool>>())
+        (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
+          d.Add(k, Dictionary<Sampled, bool>())
+          d)
+        (Dictionary<string, Dictionary<Sampled, bool>>())
 
     let mutable internal samples =
       makeSamples ()
@@ -241,25 +241,23 @@ module Instance =
       let counts = visits
       clear ()
 
-      trace.OnConnected
-        (fun () -> trace.OnFinish counts)
-        (fun () ->
-          match counts.Values |> Seq.sumBy (fun x -> x.Count) with
-          | 0 -> ()
-          | _ ->
-            withMutex (fun own ->
-              let delta =
-                Counter.doFlushFile
-                  ignore
-                  (fun _ _ -> ())
-                  own
-                  counts
-                  CoverageFormat
-                  ReportFile
-                  None
+      trace.OnConnected (fun () -> trace.OnFinish counts) (fun () ->
+        match counts.Values |> Seq.sumBy (fun x -> x.Count) with
+        | 0 -> ()
+        | _ ->
+          withMutex (fun own ->
+            let delta =
+              Counter.doFlushFile
+                ignore
+                (fun _ _ -> ())
+                own
+                counts
+                CoverageFormat
+                ReportFile
+                None
 
-              getResource "Coverage statistics flushing took {0:N} seconds"
-              |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+            getResource "Coverage statistics flushing took {0:N} seconds"
+            |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
 
     let internal flushPause () =
       ("PauseHandler")

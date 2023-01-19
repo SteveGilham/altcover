@@ -62,11 +62,13 @@ module DriveApi =
 
       let collect =
         AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with LcovReport = "x" }
+          { Primitive.CollectOptions.Create() with
+              LcovReport = "x" }
 
       let prepare =
         AltCover.PrepareOptions.Primitive
-          { Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
+          { Primitive.PrepareOptions.Create() with
+              TypeFilter = [| "a"; "b" |] }
 
       // let t = prepare.GetType()
       // printfn "prepare type is %A" t.FullName
@@ -81,7 +83,10 @@ module DriveApi =
       //        (AltCover.DotNet.ToTestArgumentList prepare collect forceTrue)
       printfn
         "Test arguments : '%A'"
-        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect forceTrue)
+        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList
+          prepare
+          collect
+          forceTrue)
 
       let t =
         DotNet.TestOptions.Create()

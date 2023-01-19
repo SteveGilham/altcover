@@ -78,7 +78,8 @@ DotNet.exec id "altcover" "--save --inplace -i ./Echo/bin/Debug/netcoreapp2.2 --
 DotNet.test
     (fun o ->
         let custom =
-            { o.Common with CustomParams = Some "/p:AltCover=true /p:AltCoverForce=true" }
+            { o.Common with
+                CustomParams = Some "/p:AltCover=true /p:AltCoverForce=true" }
 
         { o with Common = custom })
     "./Test/Test.csproj"

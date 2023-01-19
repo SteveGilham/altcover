@@ -90,6 +90,7 @@ module XmlTypes =
 
     cn.OfType<XmlProcessingInstruction>()
     |> Seq.rev
-    |> Seq.iter (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
+    |> Seq.iter (fun func ->
+      xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
 
     xdoc
