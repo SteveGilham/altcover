@@ -60,13 +60,11 @@ let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
       | "fullPath" ->
         test'
           <@
-            a1
-              .Value
+            a1.Value
               .Replace("\\", "/")
               .Replace("altcover", "AltCover")
               .EndsWith(
-                a2
-                  .Value
+                a2.Value
                   .Replace("\\", "/")
                   .Replace("altcover", "AltCover")
               )
@@ -78,7 +76,8 @@ let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
       | "vc" ->
         let expected = maybe zero "0" a2.Value
         test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
-      | _ -> test' <@ a1.Value = a2.Value @> (r.ToString() + " -> " + a1.Name.ToString()))
+      | _ ->
+        test' <@ a1.Value = a2.Value @> (r.ToString() + " -> " + a1.Name.ToString()))
 
     RecursiveValidateOpenCover
       (r.Elements())

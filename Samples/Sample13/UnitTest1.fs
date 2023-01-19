@@ -11,9 +11,7 @@ type SimpleTest() =
   [<SetUp>]
   member this.Setup() =
     let here =
-      System
-        .Reflection
-        .Assembly
+      System.Reflection.Assembly
         .GetExecutingAssembly()
         .Location
 
