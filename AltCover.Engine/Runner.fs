@@ -232,9 +232,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined")>]
     let internal contains o l = l |> Seq.contains o
 
     [<SuppressMessage("Gendarme.Rules.Maintainability",
@@ -317,9 +314,6 @@ module internal Runner =
                       Justification = "In inlined library code")>]
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "In inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "In inlined library code")>]
     let internal emitAltCrapScore go (methods: XElement seq) =
       let value =
@@ -469,9 +463,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined 4 times")>]
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidComplexMethodsRule",
                       Justification = "TODO: refactor even more")>]
@@ -549,9 +540,6 @@ module internal Runner =
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "Library method inlined")>]
     let internal jsonSummary (json: NativeJson.Modules) =
       let summarise go (vc: int) (nc: int) key =
@@ -680,9 +668,6 @@ module internal Runner =
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "Inlined library code")>]
     let internal standardSummary
       (reportDocument: DocumentType)

@@ -606,9 +606,6 @@ module internal Visitor =
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead
 
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "F# inlined code")>]
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
                       Justification = "No suitable overload in netstandard2.0/net472")>]
@@ -1647,6 +1644,6 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1378::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1375::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 ()

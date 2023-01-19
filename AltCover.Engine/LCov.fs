@@ -29,9 +29,6 @@ module internal LCov =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidRepetitiveCallsToPropertiesRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined")>]
     let internal lineOfPartialMethod (m: XElement * XElement seq) =
       let (_, s) = m
 
@@ -57,9 +54,6 @@ module internal LCov =
                       Justification = "Library method inlined")>]
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "Library method inlined")>]
     let internal computeVisitCount (lines: XElement seq) (attr: string) =
       let vx =

@@ -326,11 +326,4 @@ module internal ProgramDatabase =
                                                               "AltCover.ProgramDatabase/I/construct@143::Invoke(System.String,System.Object[])",
                                                             Justification =
                                                               "Compiler generated")>]
-[<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
-                                                            "CA2208:InstantiateArgumentExceptionsCorrectly",
-                                                            Scope = "member",
-                                                            Target =
-                                                              "AltCover.ProgramDatabase+I+construct@143.#Invoke(System.String,System.Object[])",
-                                                            Justification =
-                                                              "Compiler generated")>]
 ()

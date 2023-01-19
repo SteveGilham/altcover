@@ -168,9 +168,6 @@ module internal Persistence =
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "InstantiateArgumentExceptionCorrectlyRule",
                     Justification = "Inlined library code")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
-                    Justification = "Ditto, ditto")>]
   let internal readCoverageFiles (handler: IVisualizerWindow) =
     use fileKey =
       Registry.CurrentUser.CreateSubKey(recent)

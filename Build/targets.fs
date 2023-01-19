@@ -1214,7 +1214,7 @@ module Targets =
         [ "-Microsoft.Design#CA1016" // :MarkAssembliesWithAssemblyVersion"
           "-Microsoft.Performance#CA1822" // :MarkMembersAsStatic"
           "-Microsoft.Design#CA1031" // :DoNotCatchGeneralExceptionTypes"
-          //"-Microsoft.Usage#CA2208" // :InstantiateArgumentExceptionsCorrectly"
+          "-Microsoft.Usage#CA2208" // :InstantiateArgumentExceptionsCorrectly"
           "-Microsoft.Usage#CA1801" // :ReviewUnusedParameters"
           //"-Microsoft.Globalization#CA1307" // :SpecifyStringComparison"
           "-Microsoft.Design#CA1028" // :EnumStorageShouldBeInt32"

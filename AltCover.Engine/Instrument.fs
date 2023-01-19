@@ -1122,9 +1122,6 @@ module internal Instrument =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined")>]
     let framework46 (make: MethodDefinition) (r: AssemblyDefinition) =
       let constructor =
         make.Body.Instructions

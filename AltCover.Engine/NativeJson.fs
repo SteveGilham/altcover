@@ -1146,9 +1146,6 @@ module
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "InstantiateArgumentExceptionCorrectlyRule",
                     Justification = "Library method inlined")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
-                    Justification = "Library method inlined")>]
   let internal jsonToXml (modules: Modules) =
     let x = XDocument()
     x.Add(XElement(XName.Get "CoverageSession"))

@@ -228,9 +228,6 @@ type MergeOpenCoverCommand() =
 
   override self.BeginProcessing() = self.Files.Clear()
 
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
-                    Justification = "Inlined library code")>]
   member private self.FilesToDocuments() =
     self.InputFile
     |> Array.map XDocument.Load
