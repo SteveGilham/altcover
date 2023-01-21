@@ -489,3 +489,11 @@ module internal CommandLine =
     Output.info <- writeOut
     Output.verbose <- writeOut
     Output.warn <- writeOut
+
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.CommandLine/I/transform@286::Invoke(System.String[])",
+                            Justification = "Inlined library code")>]
+()

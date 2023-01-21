@@ -3,7 +3,7 @@
   <ItemGroup>
     <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="5.23.0.42" />
     <PackageVersion Include="AltCode.Dixon" Version="2022.12.6.11014" />
-    <PackageVersion Include="altcode.gendarme" Version="2022.12.6.7345" />
+    <PackageVersion Include="altcode.gendarme" Version="2023.1.21.13293" />
     <PackageVersion Include="altcover" Version="8.6.14" />
     <PackageVersion Include="AltCover.Api" Version="8.6.14" />
     <PackageVersion Include="AltCover.Fake" Version="8.6.14" />
@@ -17,7 +17,7 @@
     <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
-    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.0.0" />
+    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.1.0" />
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
@@ -41,7 +41,7 @@
     <PackageVersion Include="Fake.Tools.git" Version="5.23.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
     <PackageVersion Include="FSharp.Core" Version="7.0.0" />
-    <PackageVersion Include="FsUnit" Version="5.1.0" />
+    <PackageVersion Include="FsUnit" Version="5.2.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.2" />
@@ -50,7 +50,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
@@ -68,7 +68,7 @@
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" Version="3.12.0" />
     <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->
-    <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" Version="3.16.1" />
+    <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" Version="3.16.2" />
     <PackageVersion Include="OpenCover" Version="4.7.1221" />
     <PackageVersion Include="Pester" Version="5.4.0" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />

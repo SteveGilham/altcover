@@ -1646,4 +1646,16 @@ module internal Visitor =
                             Target =
                               "AltCover.Visitor/I/generated@1375::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Visitor/I/start@1230::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                            Justification = "Inlined library code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Visitor/I/finish@1233::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                            Justification = "Inlined library code")>]
 ()

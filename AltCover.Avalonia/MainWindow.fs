@@ -285,9 +285,6 @@ type MainWindow() as this =
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidSwitchStatementsRule",
                     Justification = "This is FP, not OO")>]
-  [<SuppressMessage("Gendarme.Rules.Correctness",
-                    "EnsureLocalDisposalRule",
-                    Justification = "Asynch task to tidy up")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
@@ -1124,18 +1121,4 @@ type MainWindow() as this =
                             Target = "AltCover.MainWindow",
                             Justification = "God Object, alas")>]
 #endif
-[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
-                            "EnsureLocalDisposalRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 520@517::Invoke(Microsoft.FSharp.Core.Unit)",
-                            Justification =
-                              "Local of type 'Task`1' is not disposed of. Hmm.")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
-                            "EnsureLocalDisposalRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "<StartupCode$AltCover-Visualizer>.$MainWindow/InitializeComponent@865-7::Invoke(Avalonia.Interactivity.RoutedEventArgs)",
-                            Justification =
-                              "Local of type 'Task' is not disposed of (at least not locally)")>]
 ()
