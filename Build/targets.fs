@@ -772,7 +772,8 @@ module Targets =
         rn
         |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
 
-      rn.[tag] <- String.Format(rn.[tag], Version)
+      let hashv = String.Format("# {0}", Version)
+      rn.[tag] <- rn.[tag].Replace("#", hashv)
       printfn "%s" rn.[tag]
       File.WriteAllLines("./_Generated/ReleaseNotes.md", rn)
 
