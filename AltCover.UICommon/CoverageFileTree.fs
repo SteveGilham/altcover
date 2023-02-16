@@ -626,6 +626,7 @@ module CoverageFileTree =
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
-                            Target = "AltCover.CoverageFileTree/applyMethods@357-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
+                            Target =
+                              "AltCover.CoverageFileTree/applyMethods@357-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
                             Justification = "Inlined library code")>]
 ()

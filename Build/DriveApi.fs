@@ -43,6 +43,7 @@ module DriveApi =
         AltCover.Command.FormattedVersion()
 
       test <@ acfv = (sprintf "AltCover version %s" expected) @>
+
       printfn
         "AltCover.Command.FormattedVersion - Returned '%s' expected %A"
         acfv
