@@ -15,6 +15,6 @@
     <PackageReference Include="AltCover.Fake" VersionOverride="8.6.14" />
     <PackageReference Include="Fake.Core.Target" VersionOverride="5.23.1" />
     <PackageReference Include="Fake.DotNet.Cli" VersionOverride="5.23.1" />
+    <PackageReference Include="Unquote" />
   </ItemGroup>
-
 </Project>

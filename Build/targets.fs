@@ -6081,7 +6081,7 @@ module Targets =
         Actions.RunDotnet
           (withWorkingDirectoryOnly "_ApiUse")
           "fsi"
-          "./DriveApi.fsx"
+          "./DriveApi.fsx --nowarn:NU1605"
           "running fake script returned with a non-zero exit code"
 
         let x =
