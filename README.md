@@ -91,13 +91,13 @@ It is assumed that `mono` (version 6.12.x or later) and `dotnet` are on the `PAT
 ### Bootstrapping
 
 Start by setting up with `dotnet tool restore`; this sets up local tools.
-Then `dotnet run --project .\Fake\Setup\Setup.fsproj` to do the rest of the set-up.
+Then `dotnet run --project .\Build\Setup.fsproj` to do the rest of the set-up.
 
 ### Normal builds
 
-Running `dotnet run --project .\Fake\Build\Build.fsproj` performs a full build/test/package process.
+Running `dotnet run --project .\Build\Build.fsproj` performs a full build/test/package process.
 
-Use `dotnet run --project .\Fake\Build\Build.fsproj --target <targetname>` to run to a specific target.
+Use `dotnet run --project .\Build.fsproj --target <targetname>` to run to a specific target.
 
 #### If the build fails
 
