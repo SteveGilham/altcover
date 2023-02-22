@@ -97,7 +97,7 @@ Then `dotnet run --project .\Build\Setup.fsproj` to do the rest of the set-up.
 
 Running `dotnet run --project .\Build\Build.fsproj` performs a full build/test/package process.
 
-Use `dotnet run --project .\Build.fsproj --target <targetname>` to run to a specific target.
+Use `dotnet run --project .\Build\Build.fsproj --target <targetname>` to run to a specific target.
 
 #### If the build fails
 
