@@ -1096,9 +1096,9 @@ module Targets =
            "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
         ("./Build/common-rules.xml",
          [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool builds
-           "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
+           "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
         ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
+         [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
         ("./Build/csharp-rules.xml",
          [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
            "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
@@ -1321,9 +1321,9 @@ module Targets =
          minimalRules)
         //          (dixon, // new platform
         //           Option.get refdir,
-        //           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // Avalonia
+        //           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" // Avalonia
         //             //  GetReaderForFile returned an unexpected HResult: 0x80004005. // same at net472 if built thus
-        //             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ], [], defaultRules)
+        //             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ], [], defaultRules)
         (dixon,
          Option.get refdir,
          [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
@@ -4284,7 +4284,7 @@ module Targets =
                     DistributedLoggers = None
                     DisableInternalBinLog = true
                     Properties = options.MSBuildParams.Properties }
-              Framework = Some "netcoreapp2.1" })
+              Framework = Some "net5.0" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
       // dotnet tooling mods
