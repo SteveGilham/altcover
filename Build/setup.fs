@@ -29,7 +29,7 @@ module Setup =
   // Really bootstrap
   let dotnetPath =
     "dotnet" |> ProcessUtils.tryFindFileOnPath
-    
+
   let cliArguments =
     { MSBuild.CliArguments.Create() with
         ConsoleLogParameters = []
