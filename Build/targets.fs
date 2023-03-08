@@ -2649,6 +2649,9 @@ module Targets =
 
               let mparams =
                 { tmp.MSBuildParams with
+                    ConsoleLogParameters = []
+                    DistributedLoggers = None
+                    DisableInternalBinLog = true
                     Properties = tmp.MSBuildParams.Properties }
 
               { tmp with MSBuildParams = mparams })
@@ -4263,6 +4266,9 @@ module Targets =
               Configuration = DotNet.BuildConfiguration.Release
               MSBuildParams =
                 { options.MSBuildParams with
+                    ConsoleLogParameters = []
+                    DistributedLoggers = None
+                    DisableInternalBinLog = true
                     Properties = options.MSBuildParams.Properties }
               Framework = Some "netcoreapp2.0" })
         netcoresource
@@ -4274,6 +4280,9 @@ module Targets =
               Configuration = DotNet.BuildConfiguration.Release
               MSBuildParams =
                 { options.MSBuildParams with
+                    ConsoleLogParameters = []
+                    DistributedLoggers = None
+                    DisableInternalBinLog = true
                     Properties = options.MSBuildParams.Properties }
               Framework = Some "netcoreapp2.1" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
@@ -5771,6 +5780,9 @@ module Targets =
 
           let mparams =
             { tmp.MSBuildParams with
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
                 Properties =
                   ("AltCoverTag", "MSBuildTest_")
                   :: tmp.MSBuildParams.Properties }
@@ -5793,6 +5805,9 @@ module Targets =
         (fun p ->
           { p with
               Verbosity = Some MSBuildVerbosity.Minimal
+              ConsoleLogParameters = []
+              DistributedLoggers = None
+              DisableInternalBinLog = true
               Properties =
                 [ "Configuration", "Debug"
                   "MSBuildTest", "true"
@@ -6921,6 +6936,9 @@ module Targets =
 
             let mparams =
               { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
@@ -6935,6 +6953,9 @@ module Targets =
 
             let mparams =
               { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
@@ -7054,6 +7075,9 @@ module Targets =
 
             let mparams =
               { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
@@ -7133,6 +7157,9 @@ module Targets =
 
             let mparams =
               { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
@@ -7589,6 +7616,9 @@ module Targets =
 
             let mparams =
               { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
@@ -7677,6 +7707,9 @@ module Targets =
 
             let mparams =
               { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
