@@ -192,9 +192,12 @@ module internal Counter =
                       Justification = "Not an IDisposeable at net2.0")>]
     let
 #if !DEBUG
-         inline
+      inline
 #endif
-                  internal selectNodes (node:XmlNode) name =
+      internal selectNodes
+        (node: XmlNode)
+        name
+        =
       node.SelectNodes(name) |> Seq.cast<XmlNode>
 
     // // <summary>
@@ -258,13 +261,9 @@ module internal Counter =
         root.SetAttribute(
           "driverVersion",
           "AltCover.Recorder "
-          + System
-            .Diagnostics
-            .FileVersionInfo
+          + System.Diagnostics.FileVersionInfo
             .GetVersionInfo(
-              System
-                .Reflection
-                .Assembly
+              System.Reflection.Assembly
                 .GetExecutingAssembly()
                 .Location
             )

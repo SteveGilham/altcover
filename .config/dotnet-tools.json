@@ -3,19 +3,19 @@
   "isRoot": true,
   "tools": {
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.1.11",
+      "version": "5.1.18",
       "commands": [
         "reportgenerator"
       ]
     },
     "xmldocmd": {
-      "version": "2.8.0",
+      "version": "2.9.0",
       "commands": [
         "xmldocmd"
       ]
     },
     "altcode.gendarme-tool": {
-      "version": "2022.12.6.7345",
+      "version": "2023.1.22.12221",
       "commands": [
         "gendarme"
       ]

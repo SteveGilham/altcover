@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">net472;netcoreapp2.1;netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(Configuration)'!='Debug'">net472;netcoreapp2.1</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
-    <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <Name>AltCover.Visualizer</Name>
@@ -29,8 +28,7 @@
     <None Include="Prepare.ps1" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net472'" />
-    <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net472'" />
+    <EmbeddedResource Include="Visualizer.glade" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Browser.fs" />
     <Compile Include="Persistence.fs" />
@@ -38,12 +36,7 @@
     <Compile Include="Visualizer.fs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-    <PackageReference Include="GtkSharp" />
-    <PackageReference Include="Mono.Options" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <ItemGroup>
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
@@ -85,7 +78,4 @@
     <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="pwsh -NoProfile Prepare.ps1" />
-  </Target>
 </Project>

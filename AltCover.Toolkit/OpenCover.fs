@@ -50,81 +50,81 @@ module OpenCover =
 
       interleave
       |> Seq.fold
-           (fun (s: XElement, bs: XElement list) x ->
-             match x.Name.LocalName with
-             | "SequencePoint" ->
-               let bx =
-                 if withinSequencePoint then
-                   let next =
-                     x.Attribute(XName.Get "offset").Value
+        (fun (s: XElement, bs: XElement list) x ->
+          match x.Name.LocalName with
+          | "SequencePoint" ->
+            let bx =
+              if withinSequencePoint then
+                let next =
+                  x.Attribute(XName.Get "offset").Value
+                  |> Int32.TryParse
+                  |> snd
+
+                let (kill, keep) =
+                  bs
+                  |> List.partition (fun b ->
+                    b.Attribute(XName.Get "offsetend").Value
+                    |> Int32.TryParse
+                    |> snd < next)
+
+                kill |> Seq.iter (fun b -> b.Remove())
+                keep
+              else
+                bs
+
+            let by =
+              if sameSpan then
+                let (kill, keep) =
+                  bx
+                  |> List.groupBy (fun b ->
+                    (b.Attribute(XName.Get "offset").Value,
+                     b.Attribute(XName.Get "offsetchain").Value,
+                     b.Attribute(XName.Get "offsetend").Value))
+                  |> List.fold
+                    (fun (ki, ke) (_, bz) ->
+                      let totalVisits =
+                        bz
+                        |> Seq.sumBy (fun b ->
+                          b.Attribute(XName.Get "vc").Value
+                          |> Int32.TryParse
+                          |> snd)
+
+                      let h = bz |> Seq.head
+
+                      h.SetAttribute(
+                        "vc",
+                        totalVisits.ToString(CultureInfo.InvariantCulture)
+                      )
+
+                      (List.concat [ ki; bz |> Seq.tail |> Seq.toList ], h :: ke))
+                    ([], [])
+
+                kill |> Seq.iter (fun b -> b.Remove())
+                keep
+              else
+                bx
+
+            // Fix up what remains
+            by
+            |> List.rev // because the list will have been built up in reverse order
+            |> Seq.mapi (fun i b -> (i, b))
+            |> Seq.groupBy (fun (_, b) -> b.Attribute(XName.Get "offset").Value)
+            |> Seq.iter (fun (_, paths) ->
+              paths // assume likely ranges for these numbers!
+              |> Seq.sortBy (fun (n, p) ->
+                n
+                + 100
+                  * (p.Attribute(XName.Get "offsetend").Value
                      |> Int32.TryParse
-                     |> snd
+                     |> snd))
+              |> Seq.iteri (fun i (_, p) ->
+                p.SetAttribute("path", (i + 1).ToString(CultureInfo.InvariantCulture))))
 
-                   let (kill, keep) =
-                     bs
-                     |> List.partition (fun b ->
-                       b.Attribute(XName.Get "offsetend").Value
-                       |> Int32.TryParse
-                       |> snd < next)
-
-                   kill |> Seq.iter (fun b -> b.Remove())
-                   keep
-                 else
-                   bs
-
-               let by =
-                 if sameSpan then
-                   let (kill, keep) =
-                     bx
-                     |> List.groupBy (fun b ->
-                       (b.Attribute(XName.Get "offset").Value,
-                        b.Attribute(XName.Get "offsetchain").Value,
-                        b.Attribute(XName.Get "offsetend").Value))
-                     |> List.fold
-                          (fun (ki, ke) (_, bz) ->
-                            let totalVisits =
-                              bz
-                              |> Seq.sumBy (fun b ->
-                                b.Attribute(XName.Get "vc").Value
-                                |> Int32.TryParse
-                                |> snd)
-
-                            let h = bz |> Seq.head
-
-                            h.SetAttribute(
-                              "vc",
-                              totalVisits.ToString(CultureInfo.InvariantCulture)
-                            )
-
-                            (List.concat [ ki; bz |> Seq.tail |> Seq.toList ], h :: ke))
-                          ([], [])
-
-                   kill |> Seq.iter (fun b -> b.Remove())
-                   keep
-                 else
-                   bx
-
-               // Fix up what remains
-               by
-               |> List.rev // because the list will have been built up in reverse order
-               |> Seq.mapi (fun i b -> (i, b))
-               |> Seq.groupBy (fun (_, b) -> b.Attribute(XName.Get "offset").Value)
-               |> Seq.iter (fun (_, paths) ->
-                 paths // assume likely ranges for these numbers!
-                 |> Seq.sortBy (fun (n, p) ->
-                   n
-                   + 100
-                     * (p.Attribute(XName.Get "offsetend").Value
-                        |> Int32.TryParse
-                        |> snd))
-                 |> Seq.iteri (fun i (_, p) ->
-                   p.SetAttribute("path", (i + 1).ToString(CultureInfo.InvariantCulture))))
-
-               s.SetAttribute("bec", by.Length.ToString(CultureInfo.InvariantCulture))
-               s.SetAttribute("bev", "0")
-               (x, [])
-             | _ -> (s, x :: bs))
-           (sp.Head, [])
+            s.SetAttribute("bec", by.Length.ToString(CultureInfo.InvariantCulture))
+            s.SetAttribute("bev", "0")
+            (x, [])
+          | _ -> (s, x :: bs))
+        (sp.Head, [])
       |> ignore
 
   [<SuppressMessage("Microsoft.Globalization",
@@ -228,8 +228,7 @@ module OpenCover =
         |> Seq.head
 
       token.Value <-
-        x
-          .MetadataToken
+        x.MetadataToken
           .ToUInt32()
           .ToString(CultureInfo.InvariantCulture))
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
@@ -285,41 +284,41 @@ module OpenCover =
 
       seqpts
       |> List.fold
-           (fun (dbgpts: Cil.SequencePoint list, offset: int) xmlpt ->
-             let (ok, line) =
-               Int32.TryParse(
-                 xmlpt.Attribute(XName.Get "sl").Value,
-                 NumberStyles.Integer,
-                 CultureInfo.InvariantCulture
-               )
+        (fun (dbgpts: Cil.SequencePoint list, offset: int) xmlpt ->
+          let (ok, line) =
+            Int32.TryParse(
+              xmlpt.Attribute(XName.Get "sl").Value,
+              NumberStyles.Integer,
+              CultureInfo.InvariantCulture
+            )
 
-             let maybeDbg = dbgpts |> List.tryHead
+          let maybeDbg = dbgpts |> List.tryHead
 
-             let filter (d: Cil.SequencePoint) = d.StartLine <= line
+          let filter (d: Cil.SequencePoint) = d.StartLine <= line
 
-             let next =
-               if
-                 (ok
-                  && maybeDbg |> Option.filter filter |> Option.isSome)
-               then
-                 let dbgline = maybeDbg |> Option.get
-                 let offset' = dbgline.Offset
-                 (dbgpts |> List.skipWhile filter, offset')
-               else
-                 (dbgpts, offset)
+          let next =
+            if
+              (ok
+               && maybeDbg |> Option.filter filter |> Option.isSome)
+            then
+              let dbgline = maybeDbg |> Option.get
+              let offset' = dbgline.Offset
+              (dbgpts |> List.skipWhile filter, offset')
+            else
+              (dbgpts, offset)
 
-             let a = xmlpt.Attributes() |> Seq.toArray
-             xmlpt.RemoveAttributes()
-             xmlpt.Add(a |> Array.take 3)
+          let a = xmlpt.Attributes() |> Seq.toArray
+          xmlpt.RemoveAttributes()
+          xmlpt.Add(a |> Array.take 3)
 
-             xmlpt.SetAttribute(
-               "offset",
-               (snd next).ToString(CultureInfo.InvariantCulture)
-             )
+          xmlpt.SetAttribute(
+            "offset",
+            (snd next).ToString(CultureInfo.InvariantCulture)
+          )
 
-             xmlpt.Add(a |> Array.skip 3)
-             next)
-           (sp, 0)
+          xmlpt.Add(a |> Array.skip 3)
+          next)
+        (sp, 0)
       |> ignore
 
       sp
@@ -576,15 +575,15 @@ module OpenCover =
     let mmin, total =
       records
       |> Seq.fold
-           (fun (low, total) item ->
-             let vc =
-               item
-               |> (attributeOrEmpty "vc")
-               |> Int32.TryParse
-               |> snd
+        (fun (low, total) item ->
+          let vc =
+            item
+            |> (attributeOrEmpty "vc")
+            |> Int32.TryParse
+            |> snd
 
-             (Math.Min(vc, low), total + Math.Max(vc, 0)))
-           (0, 0)
+          (Math.Min(vc, low), total + Math.Max(vc, 0)))
+        (0, 0)
 
     [ total; mmin ]
     |> List.filter (fun n -> n <> 0)
@@ -701,14 +700,14 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let (vc, np) =
       sps
       |> Seq.fold
-           (fun (count, points) group ->
-             let g = group |> snd
+        (fun (count, points) group ->
+          let g = group |> snd
 
-             let (mc, np0) =
-               fixPoint files modu tracked g
+          let (mc, np0) =
+            fixPoint files modu tracked g
 
-             (count + if mc > 0 then 1 else 0), np0 :: points)
-           (0, [])
+          (count + if mc > 0 then 1 else 0), np0 :: points)
+        (0, [])
 
     (vc, np |> Seq.toArray)
 
@@ -745,18 +744,18 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
     interleave
     |> Seq.fold
-         (fun (bev, sq: XElement) x ->
-           match x.Name.LocalName with
-           | "SequencePoint" ->
-             sq.SetAttributeValue(XName.Get "bev", bev)
-             (0, x)
-           | _ ->
-             let visited =
-               attributeOrEmpty "vc" x |> Int32.TryParse |> snd
+      (fun (bev, sq: XElement) x ->
+        match x.Name.LocalName with
+        | "SequencePoint" ->
+          sq.SetAttributeValue(XName.Get "bev", bev)
+          (0, x)
+        | _ ->
+          let visited =
+            attributeOrEmpty "vc" x |> Int32.TryParse |> snd
 
-             let delta = if visited > 0 then 1 else 0
-             (bev + delta, sq))
-         (0, interleave |> Seq.head)
+          let delta = if visited > 0 then 1 else 0
+          (bev + delta, sq))
+      (0, interleave |> Seq.head)
     |> ignore
 
   let mergeMethods
@@ -874,100 +873,97 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let s, x =
       methods
       |> Seq.fold
-           (fun (ss: Summary, xx) group ->
-             let rep = group |> snd |> Seq.head
+        (fun (ss: Summary, xx) group ->
+          let rep = group |> snd |> Seq.head
 
-             let sm = XElement(XName.Get "Summary")
-             let mt = metadataToken group
+          let sm = XElement(XName.Get "Summary")
+          let mt = metadataToken group
 
-             let name =
-               XElement(XName.Get "Name", fst group)
+          let name =
+            XElement(XName.Get "Name", fst group)
 
-             let modu = rep.Parent.Parent.Parent.Parent
+          let modu = rep.Parent.Parent.Parent.Parent
 
-             let fr = fileRef modu group
+          let fr = fileRef modu group
 
-             let (sp, newsps, vs) =
-               sequencePoints modu group
+          let (sp, newsps, vs) =
+            sequencePoints modu group
 
-             let (bp, newbps, vb) =
-               branchPoints modu group
+          let (bp, newbps, vb) =
+            branchPoints modu group
 
-             // bec, bev heuristic
-             if
-               newsps |> Seq.isEmpty |> not
-               && newbps |> Seq.isEmpty |> not
-             then
-               branchEntryHeuristic newsps newbps
+          // bec, bev heuristic
+          if
+            newsps |> Seq.isEmpty |> not
+            && newbps |> Seq.isEmpty |> not
+          then
+            branchEntryHeuristic newsps newbps
 
-             let (mp, mpv) = methodPoints modu group
+          let (mp, mpv) = methodPoints modu group
 
-             let merge = XElement(XName.Get "Method")
+          let merge = XElement(XName.Get "Method")
 
-             [ Some sm
-               Some mt
-               Some name
-               fr
-               Some sp
-               Some bp
-               mp ]
-             |> Seq.choose id
-             |> merge.Add
+          [ Some sm
+            Some mt
+            Some name
+            fr
+            Some sp
+            Some bp
+            mp ]
+          |> Seq.choose id
+          |> merge.Add
 
-             rep.Attributes()
-             |> Seq.map XAttribute
-             |> Seq.toArray
-             |> merge.Add
+          rep.Attributes()
+          |> Seq.map XAttribute
+          |> Seq.toArray
+          |> merge.Add
 
-             merge.SetAttributeValue(
-               XName.Get "visited",
-               if mpv > 0 then "true" else "false"
-             )
+          merge.SetAttributeValue(
+            XName.Get "visited",
+            if mpv > 0 then "true" else "false"
+          )
 
-             merge.SetAttributeValue(
-               XName.Get "sequenceCoverage",
-               percent vs newsps.Length
-             )
+          merge.SetAttributeValue(XName.Get "sequenceCoverage", percent vs newsps.Length)
 
-             merge.SetAttributeValue(XName.Get "branchCoverage", percent vb newbps.Length)
+          merge.SetAttributeValue(XName.Get "branchCoverage", percent vb newbps.Length)
 
-             let cc =
-               attributeOrEmpty "cyclomaticComplexity" rep
-               |> Int32.TryParse
-               |> snd
+          let cc =
+            attributeOrEmpty "cyclomaticComplexity" rep
+            |> Int32.TryParse
+            |> snd
 
-             let ratio =
-               if newsps.Length = 0 then
-                 0.0
-               else
-                 (float vs) / (float newsps.Length)
+          let ratio =
+            if newsps.Length = 0 then
+              0.0
+            else
+              (float vs) / (float newsps.Length)
 
-             let crap =
-               Math.Pow(float cc, 2.0)
-               * Math.Pow((1.0 - ratio), 3.0)
-               + (float cc)
+          let crap =
+            Math.Pow(float cc, 2.0)
+            * Math.Pow((1.0 - ratio), 3.0)
+            + (float cc)
 
-             let summary =
-               { NumSequencePoints = newsps.Length
-                 VisitedSequencePoints = vs
-                 NumBranchPoints = newbps.Length
-                 VisitedBranchPoints = vb
-                 MaxCyclomaticComplexity = cc
-                 MinCyclomaticComplexity = Some cc
-                 VisitedClasses = 0
-                 NumClasses = 0
-                 VisitedMethods = if mpv > 0 then 1 else 0
-                 NumMethods = 1
-                 MinCrapScore = Some crap
-                 MaxCrapScore = crap }
+          let summary =
+            { NumSequencePoints = newsps.Length
+              VisitedSequencePoints = vs
+              NumBranchPoints = newbps.Length
+              VisitedBranchPoints = vb
+              MaxCyclomaticComplexity = cc
+              MinCyclomaticComplexity = Some cc
+              VisitedClasses = 0
+              NumClasses = 0
+              VisitedMethods = if mpv > 0 then 1 else 0
+              NumMethods = 1
+              MinCrapScore = Some crap
+              MaxCrapScore = crap }
 
-             summary.Xml.Attributes()
-             |> Seq.map XAttribute
-             |> Seq.toArray
-             |> sm.Add
+          summary.Xml.Attributes()
+          |> Seq.map XAttribute
+          |> Seq.toArray
+          |> sm.Add
 
-             (ss.Add summary, merge :: xx))
-           (Summary.Create(), [])
+          (ss.Add summary, merge :: xx))
+        (Summary.Create(), [])
 
     (s, x |> List.toArray)
 
@@ -980,41 +976,41 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let s, x =
       classes
       |> Seq.fold
-           (fun (ss: Summary, xx) c ->
-             let sm = XElement(XName.Get "Summary")
-             let mm = XElement(XName.Get "Methods")
+        (fun (ss: Summary, xx) c ->
+          let sm = XElement(XName.Get "Summary")
+          let mm = XElement(XName.Get "Methods")
 
-             let mc =
-               XElement(XName.Get "Class", sm, XElement(XName.Get "FullName", fst c), mm)
+          let mc =
+            XElement(XName.Get "Class", sm, XElement(XName.Get "FullName", fst c), mm)
 
-             let methods =
-               c
-               |> snd
-               |> Seq.collect (fun m -> m.Descendants(XName.Get "Method"))
-               |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-               |> Seq.groupBy (fun x -> x.Element(XName.Get "Name").Value)
+          let methods =
+            c
+            |> snd
+            |> Seq.collect (fun m -> m.Descendants(XName.Get "Method"))
+            |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
+            |> Seq.groupBy (fun x -> x.Element(XName.Get "Name").Value)
 
-             let (msum, merged) =
-               mergeMethods files tracked methods
+          let (msum, merged) =
+            mergeMethods files tracked methods
 
-             mm.Add merged
+          mm.Add merged
 
-             let classVisit =
-               { msum with
-                   NumClasses = 1
-                   VisitedClasses = if msum.VisitedMethods > 0 then 1 else 0 }
+          let classVisit =
+            { msum with
+                NumClasses = 1
+                VisitedClasses = if msum.VisitedMethods > 0 then 1 else 0 }
 
-             classVisit.Xml.Attributes()
-             |> Seq.map XAttribute
-             |> Seq.toArray
-             |> sm.Add
+          classVisit.Xml.Attributes()
+          |> Seq.map XAttribute
+          |> Seq.toArray
+          |> sm.Add
 
-             // skip trivial classes
-             if mm.Descendants() |> Seq.isEmpty then
-               (ss, xx)
-             else
-               (ss.Add(classVisit), mc :: xx))
-           (Summary.Create(), [])
+          // skip trivial classes
+          if mm.Descendants() |> Seq.isEmpty then
+            (ss, xx)
+          else
+            (ss.Add(classVisit), mc :: xx))
+        (Summary.Create(), [])
 
     (s, x |> List.toArray)
 
@@ -1117,22 +1113,22 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
   let mergeTrackedMethods index records =
     records
     |> Seq.fold
-         (fun state r ->
-           { state with
-               Hash = accumulate r.Hash state.Hash
-               Token = accumulate r.Token state.Token
-               Name = accumulate r.Name state.Name
-               Strategy = r.Strategy @ state.Strategy
-               Entry = r.Entry @ state.Entry
-               Exit = r.Exit @ state.Exit
-               Uid = index + 1 })
-         { Hash = String.Empty
-           Token = String.Empty
-           Name = String.Empty
-           Strategy = []
-           Entry = []
-           Exit = []
-           Uid = index + 1 }
+      (fun state r ->
+        { state with
+            Hash = accumulate r.Hash state.Hash
+            Token = accumulate r.Token state.Token
+            Name = accumulate r.Name state.Name
+            Strategy = r.Strategy @ state.Strategy
+            Entry = r.Entry @ state.Entry
+            Exit = r.Exit @ state.Exit
+            Uid = index + 1 })
+      { Hash = String.Empty
+        Token = String.Empty
+        Name = String.Empty
+        Strategy = []
+        Entry = []
+        Exit = []
+        Uid = index + 1 }
 
   let mergeDocuments (inputs: XDocument list) =
     let doc = blankOpenCover ()
@@ -1178,12 +1174,11 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       |> List.groupBy (fun x -> x.Attribute(hash).Value)
       |> List.map (snd >> (mergeModules files tracked))
       |> List.fold
-           (fun (states: Summary, statem) (locals, localm) ->
-             states.Add(locals), localm :: statem)
-           (Summary.Create(), [])
+        (fun (states: Summary, statem) (locals, localm) ->
+          states.Add(locals), localm :: statem)
+        (Summary.Create(), [])
 
-    doc
-      .Root
+    doc.Root
       .Element(XName.Get "Modules")
       .Add(modules |> List.toArray)
 
@@ -1257,6 +1252,6 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/Pipe #4 stage #1 at line 747@748::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/Pipe #4 stage #1 at line 746@747::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

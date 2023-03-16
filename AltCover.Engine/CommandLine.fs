@@ -434,16 +434,14 @@ module internal CommandLine =
     I.validateFileSystemEntity Directory.Exists I.dnf dir x
 
   let internal ensureDirectory directory =
-    I.conditionalOutput
-      (fun () -> directory |> Directory.Exists |> not)
-      (fun () ->
-        if
-          verbosity < 1 // implement it early here
-        then
-          Output.info
-          <| Format.Local("CreateFolder", directory)
+    I.conditionalOutput (fun () -> directory |> Directory.Exists |> not) (fun () ->
+      if
+        verbosity < 1 // implement it early here
+      then
+        Output.info
+        <| Format.Local("CreateFolder", directory)
 
-        Directory.CreateDirectory(directory) |> ignore)
+      Directory.CreateDirectory(directory) |> ignore)
 
   let internal validatePath path x =
     I.validateFileSystemEntity (fun _ -> true) I.iv path x
@@ -491,3 +489,11 @@ module internal CommandLine =
     Output.info <- writeOut
     Output.verbose <- writeOut
     Output.warn <- writeOut
+
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.CommandLine/I/transform@286::Invoke(System.String[])",
+                            Justification = "Inlined library code")>]
+()

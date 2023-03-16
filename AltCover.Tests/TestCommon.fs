@@ -147,8 +147,7 @@ module TestCommonTests =
     let fallback =
       Assert
         .Throws<NUnit.Framework.AssertionException>(fun () -> testEqualValue "yes" exp2)
-        .Message
-        .Replace(
+        .Message.Replace(
           """Expected: True
 Actual:   False
 """,
@@ -189,12 +188,13 @@ false
     )
 
     let m =
-      Assert.Throws<NUnit.Framework.MultipleAssertException>(fun () ->
-        Assert.Multiple(fun () ->
-          Assert.That(3, Is.EqualTo exp1)
-          test <@ 3 = exp1 @>
-          Assert.That("yes", Is.EqualTo exp2)
-          test <@ "yes" = exp2 @>))
+      Assert
+        .Throws<NUnit.Framework.MultipleAssertException>(fun () ->
+          Assert.Multiple(fun () ->
+            Assert.That(3, Is.EqualTo exp1)
+            test <@ 3 = exp1 @>
+            Assert.That("yes", Is.EqualTo exp2)
+            test <@ "yes" = exp2 @>))
         .Message
 
     //printfn "%s" m
@@ -242,9 +242,7 @@ module ExpectoTestCommon =
 
   let consistencyCheck (regular: ((unit -> unit) * string) list) expected =
     let here =
-      System
-        .Reflection
-        .Assembly
+      System.Reflection.Assembly
         .GetExecutingAssembly()
         .Location
 
@@ -284,8 +282,7 @@ module ExpectoTestCommon =
 
           |> Seq.find (fun i ->
             i.OpCode = OpCodes.Call
-            && i
-              .Operand
+            && i.Operand
               .GetType()
               .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
         >> (fun i ->

@@ -67,8 +67,7 @@ module AltCoverXTests =
         | "document" ->
           test'
             <@
-              a1
-                .Value
+              a1.Value
                 .Replace("\\", "/")
                 .EndsWith(a2.Value.Replace("\\", "/"))
             @>
@@ -139,14 +138,12 @@ module AltCoverXTests =
         | "fullPath" ->
           test'
             <@
-              a1
-                .Value
+              a1.Value
                 .Replace("\\", "/")
                 .Replace("altcover", "AltCover")
                 .Replace("Samples/", String.Empty)
                 .EndsWith(
-                  a2
-                    .Value
+                  a2.Value
                     .Replace("\\", "/")
                     .Replace("altcover", "AltCover")
                 )
@@ -554,7 +551,8 @@ module AltCoverXTests =
           ReportFormat = TypeSafe.ReportFormat.NCover
           PathFilter =
             (TypeSafe.Filters [| TypeSafe.MatchItem <| Regex "ok" |])
-              .Join [] }
+              .Join
+              [] }
 
     let scan =
       (AltCover.PrepareOptions.TypeSafe subject)
@@ -620,7 +618,8 @@ module AltCoverXTests =
   [<Test>]
   let PrepareOptionsCanBeValidatedWithNulls () =
     let subject =
-      { Primitive.PrepareOptions.Create() with CallContext = null }
+      { Primitive.PrepareOptions.Create() with
+          CallContext = null }
 
     let scan =
       (AltCover.PrepareOptions.Primitive subject)
@@ -1314,7 +1313,8 @@ module AltCoverXTests =
       CoverageParameters.theOutputDirectories.Add output
 
       let input =
-        { InstrumentContext.Build [] with RecordingAssembly = def }
+        { InstrumentContext.Build [] with
+            RecordingAssembly = def }
 
       let result =
         Instrument.I.instrumentationVisitor input Finish
@@ -1611,7 +1611,8 @@ module AltCoverXTests =
        |> XName.Get
        |> baseline.Descendants
        |> Seq.head)
-        .SetValue path
+        .SetValue
+        path
 
       let document =
         use stash = new MemoryStream()

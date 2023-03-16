@@ -122,9 +122,6 @@ module HandlerCommon =
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "InstantiateArgumentExceptionCorrectlyRule",
                     Justification = "Inlined library code")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
-                    Justification = "Ditto, ditto")>]
   let TagCoverage (methodPath: XPathNavigator) (file: Source) (sourceLines: int) =
     let lineOnly =
       methodPath.Select("//coverage[@lineonly]")

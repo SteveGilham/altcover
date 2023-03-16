@@ -7,6 +7,7 @@ module DriveApi =
   open Fake.Core
   open Fake.DotNet
   open Fake.IO.FileSystemOperators
+  open Swensen.Unquote.Assertions
 
   open AltCoverFake.DotNet.DotNet // extension methods
   open AltCoverFake.DotNet.Testing
@@ -36,20 +37,17 @@ module DriveApi =
       let expected = "{0}"
       let acv = AltCover.Command.Version()
       printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
-
-      if acv.ToString() <> expected then
-        failwith "AltCover.Command.Version mismatch"
+      test <@ acv.ToString() = expected @>
 
       let acfv =
         AltCover.Command.FormattedVersion()
+
+      test <@ acfv = (sprintf "AltCover version %s" expected) @>
 
       printfn
         "AltCover.Command.FormattedVersion - Returned '%s' expected %A"
         acfv
         expected
-
-      if acfv <> (sprintf "AltCover version %s" expected) then
-        failwith "AltCover.Command.FormattedVersion mismatch"
 
       let afcv =
         AltCover.Fake.Command.Version().ToString()
@@ -57,16 +55,17 @@ module DriveApi =
       afcv |> Trace.trace
       printfn "expected %A" expected
 
-      if afcv.ToString() <> expected then
-        failwith "AltCover.Fake.Command.Version mismatch"
+      test <@ afcv.ToString() = expected @>
 
       let collect =
         AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with LcovReport = "x" }
+          { Primitive.CollectOptions.Create() with
+              LcovReport = "x" }
 
       let prepare =
         AltCover.PrepareOptions.Primitive
-          { Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
+          { Primitive.PrepareOptions.Create() with
+              TypeFilter = [| "a"; "b" |] }
 
       // let t = prepare.GetType()
       // printfn "prepare type is %A" t.FullName
@@ -81,7 +80,10 @@ module DriveApi =
       //        (AltCover.DotNet.ToTestArgumentList prepare collect forceTrue)
       printfn
         "Test arguments : '%A'"
-        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect forceTrue)
+        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList
+          prepare
+          collect
+          forceTrue)
 
       let t =
         DotNet.TestOptions.Create()

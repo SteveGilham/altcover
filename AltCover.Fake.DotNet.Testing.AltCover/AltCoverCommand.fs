@@ -28,7 +28,10 @@ module AltCoverCommand =
   let internal setExecutable tool collect =
     match collect with
     | AltCover.Primitive p -> AltCover.Primitive { p with Executable = tool }
-    | AltCover.TypeSafe t -> AltCover.TypeSafe { t with Executable = TypeSafe.Tool tool }
+    | AltCover.TypeSafe t ->
+      AltCover.TypeSafe
+        { t with
+            Executable = TypeSafe.Tool tool }
     | AltCover.Abstract a ->
       let copy: Primitive.CollectOptions =
         { RecorderDirectory = a.RecorderDirectory
@@ -155,8 +158,7 @@ module AltCoverCommand =
     project
     =
     let dotnet =
-      typeof<Fake.DotNet.DotNet.TestOptions>
-        .DeclaringType
+      typeof<Fake.DotNet.DotNet.TestOptions>.DeclaringType
 
     let builder =
       dotnet.GetMethod("buildTestArgs", BindingFlags.Static ||| BindingFlags.NonPublic)
@@ -253,8 +255,8 @@ module AltCoverCommand =
     |> withWorkingDirectory
     |> CreateProcess.ensureExitCode
     |> fun command ->
-         Trace.trace command.CommandLine
-         command
+        Trace.trace command.CommandLine
+        command
 
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
@@ -322,18 +324,18 @@ module AltCoverCommand =
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@294T.#monoPath",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@296T.#monoPath",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@294T.#options",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@296T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@245T.#options",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@247T.#options",
                             Justification = "Generated code")>]
 ()

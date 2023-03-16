@@ -48,7 +48,8 @@ module Instance =
 #if DEBUG
       mutable
 #endif
-              internal CoverageFormat = ReportFormat.NCover // fsharplint:disable-line NonPublicValuesNames
+      internal CoverageFormat = // fsharplint:disable-line NonPublicValuesNames
+    ReportFormat.NCover
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -125,10 +126,10 @@ module Instance =
         [| Track.Entry; Track.Exit |] ]
       |> Seq.concat
       |> Seq.fold
-           (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
-             d.Add(k, Dictionary<int, PointVisit>())
-             d)
-           (Dictionary<string, Dictionary<int, PointVisit>>())
+        (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
+          d.Add(k, Dictionary<int, PointVisit>())
+          d)
+        (Dictionary<string, Dictionary<int, PointVisit>>())
 
     /// <summary>
     /// Accumulation of visit records
@@ -138,10 +139,10 @@ module Instance =
     let internal makeSamples () =
       modules
       |> Seq.fold
-           (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
-             d.Add(k, Dictionary<Sampled, bool>())
-             d)
-           (Dictionary<string, Dictionary<Sampled, bool>>())
+        (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
+          d.Add(k, Dictionary<Sampled, bool>())
+          d)
+        (Dictionary<string, Dictionary<Sampled, bool>>())
 
     let mutable internal samples =
       makeSamples ()
@@ -241,25 +242,23 @@ module Instance =
       let counts = visits
       clear ()
 
-      trace.OnConnected
-        (fun () -> trace.OnFinish counts)
-        (fun () ->
-          match counts.Values |> Seq.sumBy (fun x -> x.Count) with
-          | 0 -> ()
-          | _ ->
-            withMutex (fun own ->
-              let delta =
-                Counter.doFlushFile
-                  ignore
-                  (fun _ _ -> ())
-                  own
-                  counts
-                  CoverageFormat
-                  ReportFile
-                  None
+      trace.OnConnected (fun () -> trace.OnFinish counts) (fun () ->
+        match counts.Values |> Seq.sumBy (fun x -> x.Count) with
+        | 0 -> ()
+        | _ ->
+          withMutex (fun own ->
+            let delta =
+              Counter.doFlushFile
+                ignore
+                (fun _ _ -> ())
+                own
+                counts
+                CoverageFormat
+                ReportFile
+                None
 
-              getResource "Coverage statistics flushing took {0:N} seconds"
-              |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+            getResource "Coverage statistics flushing took {0:N} seconds"
+            |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
 
     let internal flushPause () =
       ("PauseHandler")
@@ -324,9 +323,16 @@ module Instance =
 
     let
 #if !DEBUG
-        inline
+      inline
 #endif
-               internal issue71Wrapper visits moduleId hitPointId context handler add =
+      internal issue71Wrapper
+        visits
+        moduleId
+        hitPointId
+        context
+        handler
+        add
+        =
       try
         add visits moduleId hitPointId context
       with x ->
@@ -338,9 +344,15 @@ module Instance =
 
     let
 #if !DEBUG
-        inline
+      inline
 #endif
-               internal curriedIssue71Wrapper visits moduleId hitPointId context add =
+      internal curriedIssue71Wrapper
+        visits
+        moduleId
+        hitPointId
+        context
+        add
+        =
       issue71Wrapper visits moduleId hitPointId context logException add
 
     let internal addVisit moduleId hitPointId context =

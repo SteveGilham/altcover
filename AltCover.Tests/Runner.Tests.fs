@@ -223,7 +223,8 @@ module AltCoverRunnerTests =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+    |> Seq.find (fun n ->
+      n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
   let internal init n l =
     let tmp =
@@ -848,7 +849,7 @@ module AltCoverRunnerTests =
     )
 
     let fsapiNames =
-      typeof<AltCover.CollectOptions>.GetProperties ()
+      typeof<AltCover.CollectOptions>.GetProperties()
       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -888,10 +889,12 @@ module AltCoverRunnerTests =
     )
 
     let taskNames =
-      typeof<Collect>.GetProperties
-        (BindingFlags.DeclaredOnly
-         ||| BindingFlags.Public
-         ||| BindingFlags.Instance)
+      typeof<Collect>
+        .GetProperties(
+          BindingFlags.DeclaredOnly
+          ||| BindingFlags.Public
+          ||| BindingFlags.Instance
+        )
       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -2538,8 +2541,8 @@ module AltCoverRunnerTests =
       let unique = Guid.NewGuid().ToString()
 
       let main =
-        typeof<Marker>
-          .Assembly.GetType("AltCover.EntryPoint")
+        typeof<Marker>.Assembly
+          .GetType("AltCover.EntryPoint")
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
@@ -3313,7 +3316,10 @@ module AltCoverRunnerTests =
         unique
         (fun l ->
           use sink =
-            new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
+            new DeflateStream(
+              File.OpenWrite(unique + ".0.acv"),
+              CompressionMode.Compress
+            )
 
           use formatter = new BinaryWriter(sink)
 
@@ -3438,7 +3444,10 @@ module AltCoverRunnerTests =
         unique
         (fun l ->
           use sink =
-            new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
+            new DeflateStream(
+              File.OpenWrite(unique + ".0.acv"),
+              CompressionMode.Compress
+            )
 
           let settings = XmlWriterSettings()
           settings.ConformanceLevel <- System.Xml.ConformanceLevel.Auto
@@ -3501,7 +3510,10 @@ module AltCoverRunnerTests =
         unique
         (fun l ->
           use sink =
-            new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
+            new DeflateStream(
+              File.OpenWrite(unique + ".0.acv"),
+              CompressionMode.Compress
+            )
 
           use formatter = new BinaryWriter(sink)
 
@@ -4003,8 +4015,7 @@ module AltCoverRunnerTests =
     |> Seq.iter (fun el -> el.SetAttribute("vc", "0"))
 
     let before =
-      after
-        .OuterXml
+      after.OuterXml
         .Replace("uspid=\"13", "uspid=\"100663298")
         .Replace("uspid=\"1\"", "uspid=\"100663297\"")
 
@@ -4182,8 +4193,7 @@ module AltCoverRunnerTests =
         Assert.That(builder.ToString(), Is.EqualTo expected)
 
         let collected =
-          task
-            .Summary
+          task.Summary
             .Replace("\r", String.Empty)
             .Replace("\n", "|")
 
@@ -4219,8 +4229,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task
-            .Summary
+          task.Summary
             .Replace("\r", String.Empty)
             .Replace("\n", "|")
 
@@ -4256,8 +4265,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task
-            .Summary
+          task.Summary
             .Replace("\r", String.Empty)
             .Replace("\n", "|")
 
@@ -4473,13 +4481,19 @@ module AltCoverRunnerTests =
 
     let thresholds =
       [ Threshold.Default()
-        { Threshold.Default() with Statements = 75uy }
-        { Threshold.Default() with Branches = 70uy }
-        { Threshold.Default() with Methods = 100uy }
-        { Threshold.Default() with AltMethods = 100uy }
+        { Threshold.Default() with
+            Statements = 75uy }
+        { Threshold.Default() with
+            Branches = 70uy }
+        { Threshold.Default() with
+            Methods = 100uy }
+        { Threshold.Default() with
+            AltMethods = 100uy }
         { Threshold.Default() with Crap = 1uy }
-        { Threshold.Default() with AltCrap = 1uy }
-        { Threshold.Default() with Crap = 255uy }
+        { Threshold.Default() with
+            AltCrap = 1uy }
+        { Threshold.Default() with
+            Crap = 255uy }
         { Threshold.Default() with
             Statements = 75uy
             Branches = 70uy }
@@ -4671,8 +4685,7 @@ module AltCoverRunnerTests =
         Assert.That(builder.ToString(), Is.EqualTo expected)
 
         let collected =
-          task
-            .Summary
+          task.Summary
             .Replace("\r", String.Empty)
             .Replace("\n", "|")
 
@@ -4713,8 +4726,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task
-            .Summary
+          task.Summary
             .Replace("\r", String.Empty)
             .Replace("\n", "|")
 
@@ -4755,8 +4767,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task
-            .Summary
+          task.Summary
             .Replace("\r", String.Empty)
             .Replace("\n", "|")
 
@@ -5135,7 +5146,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5656,8 +5668,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -5674,7 +5686,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5740,8 +5753,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="8.2.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -5824,8 +5837,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -5911,8 +5924,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -5997,8 +6010,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
           .Replace( // different computations TODO!!
@@ -6095,8 +6108,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -6148,7 +6161,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n ->
+        n.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal))
 
     use stream2 =
       Assembly
@@ -6330,8 +6344,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.5.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -6405,8 +6419,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="8.2.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 
@@ -6490,8 +6504,8 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>
-              .Assembly.GetName()
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
               .Version.ToString()
           )
 

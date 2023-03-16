@@ -228,8 +228,10 @@ type MergeOpenCoverCommand() =
 
   override self.BeginProcessing() = self.Files.Clear()
 
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "InstantiateArgumentExceptionCorrectlyRule",
+                    Scope = "member", // MethodDefinition
+                    Target = "AltCover.Commands.MergeOpenCoverCommand::FilesToDocuments()",
                     Justification = "Inlined library code")>]
   member private self.FilesToDocuments() =
     self.InputFile

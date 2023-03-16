@@ -187,16 +187,20 @@ module internal CecilExtension =
 
   // address issue 135
   let internal isResolvedProp =
-    typeof<InstructionOffset>.GetProperty
-      ("IsResolved",
-       System.Reflection.BindingFlags.Instance
-       ||| System.Reflection.BindingFlags.NonPublic)
+    typeof<InstructionOffset>
+      .GetProperty(
+        "IsResolved",
+        System.Reflection.BindingFlags.Instance
+        ||| System.Reflection.BindingFlags.NonPublic
+      )
 
   let etypeField =
-    typeof<TypeReference>.GetField
-      ("etype",
-       System.Reflection.BindingFlags.Instance
-       ||| System.Reflection.BindingFlags.NonPublic)
+    typeof<TypeReference>
+      .GetField(
+        "etype",
+        System.Reflection.BindingFlags.Instance
+        ||| System.Reflection.BindingFlags.NonPublic
+      )
 
   let internal offsetTable =
     System.Collections.Generic.SortedDictionary<int, Instruction>()
@@ -238,10 +242,10 @@ module internal CecilExtension =
     let size =
       m.Body.Instructions
       |> Seq.fold
-           (fun _ i ->
-             offsetTable.Add(i.Offset, i)
-             i.Offset + i.GetSize())
-           0
+        (fun _ i ->
+          offsetTable.Add(i.Offset, i)
+          i.Offset + i.GetSize())
+        0
 
     let resolvePoint (point: InstructionOffset) =
       point
@@ -349,10 +353,10 @@ module internal CecilExtension =
       newInstructions
       |> Seq.rev
       |> Seq.fold
-           (fun next i ->
-             ilProcessor.InsertBefore(next, i)
-             i)
-           target
+        (fun next i ->
+          ilProcessor.InsertBefore(next, i)
+          i)
+        target
 
     if updateReferences then
       replaceInstructionReferences target newTarget ilProcessor

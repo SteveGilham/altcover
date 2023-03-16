@@ -89,9 +89,7 @@ module Transformer =
     document.Descendants(XName.Get "line")
     |> Seq.filter (fun x ->
       x
-        .Attribute(
-          XName.Get "condition-coverage"
-        )
+        .Attribute(XName.Get "condition-coverage")
         .IsNotNull)
     |> Seq.iter (fun x ->
       let line =
@@ -168,7 +166,8 @@ module Transformer =
       fixedup.Descendants(XName.Get "seqpnt")
       |> Seq.forall (fun s ->
         let columns =
-          (s.Attribute(XName.Get "column").Value, s.Attribute(XName.Get "endcolumn").Value)
+          (s.Attribute(XName.Get "column").Value,
+           s.Attribute(XName.Get "endcolumn").Value)
 
         s.Attribute(XName.Get "line").Value
         == s.Attribute(XName.Get "endline").Value
@@ -345,12 +344,12 @@ module Extensions =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Transformer/transformFromCobertura@96-2::Invoke(System.Xml.Linq.XElement)",
+                              "AltCover.Transformer/transformFromCobertura@94-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Transformer/lineOnly@169::Invoke(System.Xml.Linq.XElement)",
+                              "AltCover.Transformer/lineOnly@167::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()

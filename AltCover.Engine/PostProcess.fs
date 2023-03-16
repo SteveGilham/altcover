@@ -329,19 +329,19 @@ module internal PostProcess =
 
         interleave
         |> Seq.fold
-             (fun (bev, sq: XmlElementAbstraction) x ->
-               match x.Name with
-               | "SequencePoint" ->
-                 sq.SetAttribute "bev" (sprintf "%d" bev)
-                 (0, x)
-               | _ ->
-                 (bev
-                  + (if x.GetAttribute("vc") == "0" then
-                       0
-                     else
-                       1),
-                  sq))
-             (0, nodes.[0])
+          (fun (bev, sq: XmlElementAbstraction) x ->
+            match x.Name with
+            | "SequencePoint" ->
+              sq.SetAttribute "bev" (sprintf "%d" bev)
+              (0, x)
+            | _ ->
+              (bev
+               + (if x.GetAttribute("vc") == "0" then
+                    0
+                  else
+                    1),
+               sq))
+          (0, nodes.[0])
         |> ignore
 
       // https://blog.ndepend.com/crap-metric-thing-tells-risk-code/
@@ -449,8 +449,8 @@ module internal PostProcess =
         let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
           ``class``.GetElementsByTagName("Method")
           |> Seq.fold
-               (updateMethod dict)
-               (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+            (updateMethod dict)
+            (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
 
         let cover = percentCover cvs cpt
         let bcover = percentCover cvb cbr
@@ -483,8 +483,8 @@ module internal PostProcess =
         let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
           ``module``.GetElementsByTagName("Class")
           |> Seq.fold
-               (dict |> updateClass)
-               (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+            (dict |> updateClass)
+            (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
 
         let cover = percentCover cvs cpt
         let bcover = percentCover cvb cbr
@@ -502,8 +502,8 @@ module internal PostProcess =
       let (vb, vs, vm, vc, pt, br, minc, maxc) =
         document.Elements "Module"
         |> Seq.fold
-             (updateModule counts)
-             (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+          (updateModule counts)
+          (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
 
       let cover = percentCover vs pt
       let bcover = percentCover vb br
