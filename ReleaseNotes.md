@@ -4,6 +4,10 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 20)
+* [BUGFIX] Issue #178 - possible NRE when instrumenting woven code e.g. using Fody
+* [AvaloniaVisualizer] Now requires net5.0 or later
+* Supports Fake 6.0.0.  This is probably the last release that will support earlier versions, as 5.23.1 is almost 6 months old.
+* Supports net8.0 previews 1,2 (so far, no nasty surprises like with the 7.0.100 release)
 
 # 8.6.14 (Habu series release 19)
 * [GTKVisualizer] Fix an off-by-one crash for `coverlet` generated files

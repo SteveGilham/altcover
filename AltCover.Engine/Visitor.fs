@@ -1256,10 +1256,15 @@ module internal Visitor =
         lastOfSequencePoint dbg n
 
     let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
-      if (i |> dbg.GetSequencePoint).IsNotNull then
+      let p = i.Previous
+
+      if
+        p |> isNull // generated code e.g Fody won't have sequence point values
+        || (i |> dbg.GetSequencePoint).IsNotNull
+      then
         i
       else
-        firstOfSequencePoint dbg i.Previous
+        firstOfSequencePoint dbg p
 
     let internal getJumps (dbg: MethodDebugInformation) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
@@ -1644,7 +1649,7 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1375::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1380::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
