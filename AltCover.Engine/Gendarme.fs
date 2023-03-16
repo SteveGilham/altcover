@@ -72,42 +72,42 @@ module internal Gendarme =
       let fast =
         instructions
         |> Seq.fold
-             (fun c i ->
-               match i.OpCode.FlowControl with
-               | FlowControl.Branch ->
-                 c
-                 + (Option.ofObj i.Previous
-                    |> Option.map (fun (previous: Instruction) ->
-                      do
-                        if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
-                          match previous.Operand with
-                          | :? Cil.Instruction as branch ->
-                            if targets.Contains branch then
-                              i |> targets.Add |> ignore
-                          | _ -> ()
+          (fun c i ->
+            match i.OpCode.FlowControl with
+            | FlowControl.Branch ->
+              c
+              + (Option.ofObj i.Previous
+                 |> Option.map (fun (previous: Instruction) ->
+                   do
+                     if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
+                       match previous.Operand with
+                       | :? Cil.Instruction as branch ->
+                         if targets.Contains branch then
+                           i |> targets.Add |> ignore
+                       | _ -> ()
 
-                      previous.OpCode.Code)
-                    |> ``detect ternary pattern``)
-               | FlowControl.Cond_Branch ->
-                 if i.OpCode = OpCodes.Switch then
-                   accumulateSwitchTargets i targets
-                   c
-                 else
-                   let branch = i.Operand :?> Cil.Instruction
+                   previous.OpCode.Code)
+                 |> ``detect ternary pattern``)
+            | FlowControl.Cond_Branch ->
+              if i.OpCode = OpCodes.Switch then
+                accumulateSwitchTargets i targets
+                c
+              else
+                let branch = i.Operand :?> Cil.Instruction
 
-                   c
-                   + (Option.ofObj branch.Previous
-                      |> Option.filter (fun (previous: Instruction) ->
-                        let pp = previous.Previous
-                        // !previous.Previous.Is (Code.Switch)
-                        // where Is(i, code) => i != null && i.OpCode.Code == code
-                        (pp |> isNull
-                         || pp.OpCode.Code <> OpCodes.Switch.Code)
-                        && branch |> targets.Contains |> not)
-                      |> Option.map (fun _ -> 1)
-                      |> Option.defaultValue 0)
-               | _ -> c)
-             1
+                c
+                + (Option.ofObj branch.Previous
+                   |> Option.filter (fun (previous: Instruction) ->
+                     let pp = previous.Previous
+                     // !previous.Previous.Is (Code.Switch)
+                     // where Is(i, code) => i != null && i.OpCode.Code == code
+                     (pp |> isNull
+                      || pp.OpCode.Code <> OpCodes.Switch.Code)
+                     && branch |> targets.Contains |> not)
+                   |> Option.map (fun _ -> 1)
+                   |> Option.defaultValue 0)
+            | _ -> c)
+          1
 
       fast + targets.Count
 
@@ -123,16 +123,16 @@ module internal Gendarme =
       | None ->
         instructions
         |> Seq.fold
-             (fun c i ->
-               match i.OpCode.FlowControl with
-               | FlowControl.Cond_Branch -> c + 1
-               | FlowControl.Branch ->
-                 c
-                 + (Option.ofObj i.Previous
-                    |> Option.map (fun (previous: Instruction) -> previous.OpCode.Code)
-                    |> I.``detect ternary pattern``)
-               | _ -> c)
-             1
+          (fun c i ->
+            match i.OpCode.FlowControl with
+            | FlowControl.Cond_Branch -> c + 1
+            | FlowControl.Branch ->
+              c
+              + (Option.ofObj i.Previous
+                 |> Option.map (fun (previous: Instruction) -> previous.OpCode.Code)
+                 |> I.``detect ternary pattern``)
+            | _ -> c)
+          1
       | _ -> I.switchCyclomaticComplexity instructions
     else
       1

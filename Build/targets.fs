@@ -40,7 +40,6 @@ module Targets =
     |> Path.getFullName
     |> Information.getBranchName
 
-
   let consoleBefore =
     (Console.ForegroundColor, Console.BackgroundColor)
 
@@ -229,7 +228,10 @@ module Targets =
       | Some path ->
         try // detect if we have the SDK
           DotNet.info (fun opt ->
-            { opt with Common = { dotnetOptions opt.Common with DotNetCliPath = path } })
+            { opt with
+                Common =
+                  { dotnetOptions opt.Common with
+                      DotNetCliPath = path } })
           |> ignore
 
           perhaps
@@ -337,7 +339,8 @@ module Targets =
         Verbosity = Some DotNet.Verbosity.Detailed }
 
   let withWorkingDirectoryOnly dir o =
-    { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
+    { dotnetOptions o with
+        WorkingDirectory = Path.getFullName dir }
 
   let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
     let msb =
@@ -366,7 +369,8 @@ module Targets =
     { o with MSBuildParams = msb }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
-    { o with MSBuildParams = cliTaggedArguments tag }
+    { o with
+        MSBuildParams = cliTaggedArguments tag }
 
   let NuGetAltCover =
     toolPackages
@@ -407,7 +411,9 @@ module Targets =
 
   let defaultTestOptions fwk common (o: DotNet.TestOptions) =
     { o.WithCommon(
-        (fun o2 -> { o2 with Verbosity = Some DotNet.Verbosity.Normal })
+        (fun o2 ->
+          { o2 with
+              Verbosity = Some DotNet.Verbosity.Normal })
         >> common
       ) with
         NoBuild = true
@@ -425,7 +431,8 @@ module Targets =
       project
 
   let coverletOptions (o: DotNet.Options) =
-    { dotnetOptions o with CustomParams = Some "--collect:\"XPlat Code Coverage\"" }
+    { dotnetOptions o with
+        CustomParams = Some "--collect:\"XPlat Code Coverage\"" }
 
   let coverletTaggedTestOptions report tag (o: DotNet.TestOptions) =
     { o.WithCommon dotnetOptions with
@@ -489,7 +496,9 @@ module Targets =
     if
       numbers
       |> List.tryFind (fun (n, f) ->
-        if (f |> Path.GetDirectoryName |> Path.GetFileName) = "_UnitTestWithCoverlet" then
+        if
+          (f |> Path.GetDirectoryName |> Path.GetFileName) = "_UnitTestWithCoverlet"
+        then
           n > 0 && n < 100 // don't expect to get that high
         // w/o flakeout or other ones failing too
         else
@@ -511,7 +520,8 @@ module Targets =
     { p with
         Properties =
           ("DebugType", "Portable")
-          :: ("Configuration", "Debug") :: p.Properties
+          :: ("Configuration", "Debug")
+          :: p.Properties
         DoRestore = true }
 
   let withRelease (p: MSBuildParams) =
@@ -693,9 +703,7 @@ module Targets =
         Manatee.Json.JsonValue.Parse configjson
 
       let gendarmeVersion =
-        json.Object.["tools"].Object.["altcode.gendarme-tool"]
-          .Object.["version"]
-          .String
+        json.Object.["tools"].Object.["altcode.gendarme-tool"].Object.["version"].String
 
       let project1 =
         XDocument.Load("./Directory.Packages.props")
@@ -764,7 +772,8 @@ module Targets =
         rn
         |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
 
-      rn.[tag] <- String.Format(rn.[tag], Version)
+      let hashv = String.Format("# {0}", Version)
+      rn.[tag] <- rn.[tag].Replace("#", hashv)
       printfn "%s" rn.[tag]
       File.WriteAllLines("./_Generated/ReleaseNotes.md", rn)
 
@@ -986,8 +995,8 @@ module Targets =
       let doLint f =
         CreateProcess.fromRawCommand "dotnet" [ "fsharplint"; "lint"; "-l"; cfg; f ]
         |> CreateProcess.setEnvironmentVariable
-             "DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"
-             "2"
+          "DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"
+          "2"
         |> CreateProcess.ensureExitCodeWithMessage "Lint issues were found"
         |> Proc.run
 
@@ -1079,7 +1088,7 @@ module Targets =
            "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
            "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
            "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
-           "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
+           "_Binaries/AltCover.Visualizer3/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
            "_Binaries/AltCover.Cake/Debug+AnyCPU/netcoreapp3.1/AltCover.Cake.dll" // Cake 2+
            "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
         ("./Build/common-rules.xml", // Framework builds
@@ -1087,7 +1096,9 @@ module Targets =
            "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
         ("./Build/common-rules.xml",
          [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool builds
-           "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
+           "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
+        ("./Build/common-rules.xml",
+         [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
         ("./Build/csharp-rules.xml",
          [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
            "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
@@ -1204,7 +1215,7 @@ module Targets =
         [ "-Microsoft.Design#CA1016" // :MarkAssembliesWithAssemblyVersion"
           "-Microsoft.Performance#CA1822" // :MarkMembersAsStatic"
           "-Microsoft.Design#CA1031" // :DoNotCatchGeneralExceptionTypes"
-          //"-Microsoft.Usage#CA2208" // :InstantiateArgumentExceptionsCorrectly"
+          "-Microsoft.Usage#CA2208" // :InstantiateArgumentExceptionsCorrectly"
           "-Microsoft.Usage#CA1801" // :ReviewUnusedParameters"
           //"-Microsoft.Globalization#CA1307" // :SpecifyStringComparison"
           "-Microsoft.Design#CA1028" // :EnumStorageShouldBeInt32"
@@ -1253,16 +1264,16 @@ module Targets =
         try
           files
           |> FxCop.run
-               { FxCop.Params.Create() with
-                   WorkingDirectory = "."
-                   ToolPath = Option.get fxcop
-                   UseGAC = true
-                   Verbose = false
-                   ReportFileName = "_Reports/FxCopReport.xml"
-                   Types = types
-                   Rules = ruleset
-                   FailOnError = FxCop.ErrorLevel.Warning
-                   IgnoreGeneratedCode = true }
+            { FxCop.Params.Create() with
+                WorkingDirectory = "."
+                ToolPath = Option.get fxcop
+                UseGAC = true
+                Verbose = false
+                ReportFileName = "_Reports/FxCopReport.xml"
+                Types = types
+                Rules = ruleset
+                FailOnError = FxCop.ErrorLevel.Warning
+                IgnoreGeneratedCode = true }
         with x ->
           printfn "%A" x
           dumpSuppressions "_Reports/FxCopReport.xml"
@@ -1290,7 +1301,7 @@ module Targets =
         (dixon,
          Option.get refdir,
          [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3
-           "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
+           "_Binaries/AltCover.Visualizer3/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
            "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
            "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
            "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
@@ -1310,9 +1321,9 @@ module Targets =
          minimalRules)
         //          (dixon, // new platform
         //           Option.get refdir,
-        //           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // Avalonia
+        //           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" // Avalonia
         //             //  GetReaderForFile returned an unexpected HResult: 0x80004005. // same at net472 if built thus
-        //             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ], [], defaultRules)
+        //             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ], [], defaultRules)
         (dixon,
          Option.get refdir,
          [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
@@ -1345,105 +1356,105 @@ module Targets =
 
           files
           |> FxCop.run
-               { FxCop.Params.Create() with
-                   WorkingDirectory = "."
-                   DependencyDirectories =
-                     [ "./ThirdParty/gtk-sharp2"
-                       nugetCache
-                       @@ "blackfox.commandline/"
-                          + (ddItem "blackfox.commandline")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "blackfox.vswhere/1.1.0/lib/netstandard2.0"
-                       nugetCache
-                       @@ "cake.common/"
-                          + (ddItem "cake.common")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "cake.core/"
-                          + (ddItem "cake.core")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "communitytoolkit.diagnostics/"
-                          + (ddItem "communitytoolkit.diagnostics")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "fake.core.environment/"
-                          + (ddItem "fake.core.environment")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "fake.core.process/"
-                          + (ddItem "fake.core.process")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "fake.core.trace/"
-                          + (ddItem "fake.core.trace")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "fake.dotnet.cli/"
-                          + (ddItem "fake.dotnet.cli")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "fake.dotnet.msbuild/"
-                          + (ddItem "fake.dotnet.cli")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "fsharp.core/"
-                          + (ddItem "fsharp.core")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "gdksharp/"
-                          + (ddItem "gtksharp")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "glibsharp/"
-                          + (ddItem "gtksharp")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "gtksharp/"
-                          + (ddItem "gtksharp")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "mono.cecil/"
-                          + (ddItem "mono.cecil")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "mono.options/"
-                          + (ddItem "mono.options")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "microsoft.build.framework/"
-                          + (ddItem "microsoft.build.utilities.core")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "microsoft.build.utilities.core/"
-                          + (ddItem "microsoft.build.utilities.core")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "microsoft.testplatform.objectmodel/"
-                          + (ddItem "microsoft.testplatform.objectmodel")
-                          + "/lib/netstandard1.5"
-                       nugetCache
-                       @@ "microsoft.netframework.referenceassemblies.net472/"
-                          + "1.0.3" // assume all increment versions in step
-                          + "/build/.NETFramework/v4.7.2"
-                       nugetCache
-                       @@ "pangosharp/"
-                          + (ddItem "gtksharp")
-                          + "/lib/netstandard2.0"
-                       nugetCache
-                       @@ "powershellstandard.library/"
-                          + (ddItem "powershellstandard.library")
-                          + "/lib/netstandard2.0" ]
-                   ToolPath = Option.get tool
-                   PlatformDirectory = platform
-                   UseGAC = true
-                   Verbose = false
-                   ReportFileName = "_Reports/FxCopReport.xml"
-                   Types = types
-                   Rules = ruleset
-                   FailOnError = FxCop.ErrorLevel.Warning
-                   IgnoreGeneratedCode = true }
+            { FxCop.Params.Create() with
+                WorkingDirectory = "."
+                DependencyDirectories =
+                  [ "./ThirdParty/gtk-sharp2"
+                    nugetCache
+                    @@ "blackfox.commandline/"
+                       + (ddItem "blackfox.commandline")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "blackfox.vswhere/1.1.0/lib/netstandard2.0"
+                    nugetCache
+                    @@ "cake.common/"
+                       + (ddItem "cake.common")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "cake.core/"
+                       + (ddItem "cake.core")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "communitytoolkit.diagnostics/"
+                       + (ddItem "communitytoolkit.diagnostics")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "fake.core.environment/"
+                       + (ddItem "fake.core.environment")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "fake.core.process/"
+                       + (ddItem "fake.core.process")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "fake.core.trace/"
+                       + (ddItem "fake.core.trace")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "fake.dotnet.cli/"
+                       + (ddItem "fake.dotnet.cli")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "fake.dotnet.msbuild/"
+                       + (ddItem "fake.dotnet.cli")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "fsharp.core/"
+                       + (ddItem "fsharp.core")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "gdksharp/"
+                       + (ddItem "gtksharp")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "glibsharp/"
+                       + (ddItem "gtksharp")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "gtksharp/"
+                       + (ddItem "gtksharp")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "mono.cecil/"
+                       + (ddItem "mono.cecil")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "mono.options/"
+                       + (ddItem "mono.options")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "microsoft.build.framework/"
+                       + (ddItem "microsoft.build.utilities.core")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "microsoft.build.utilities.core/"
+                       + (ddItem "microsoft.build.utilities.core")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "microsoft.testplatform.objectmodel/"
+                       + (ddItem "microsoft.testplatform.objectmodel")
+                       + "/lib/netstandard1.5"
+                    nugetCache
+                    @@ "microsoft.netframework.referenceassemblies.net472/"
+                       + "1.0.3" // assume all increment versions in step
+                       + "/build/.NETFramework/v4.7.2"
+                    nugetCache
+                    @@ "pangosharp/"
+                       + (ddItem "gtksharp")
+                       + "/lib/netstandard2.0"
+                    nugetCache
+                    @@ "powershellstandard.library/"
+                       + (ddItem "powershellstandard.library")
+                       + "/lib/netstandard2.0" ]
+                ToolPath = Option.get tool
+                PlatformDirectory = platform
+                UseGAC = true
+                Verbose = false
+                ReportFileName = "_Reports/FxCopReport.xml"
+                Types = types
+                Rules = ruleset
+                FailOnError = FxCop.ErrorLevel.Warning
+                IgnoreGeneratedCode = true }
         with x ->
           printfn "2 %A" x
           dumpSuppressions "_Reports/FxCopReport.xml"
@@ -1477,19 +1488,18 @@ module Targets =
       try
         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
         |> FxCop.run
-             { FxCop.Params.Create() with
-                 WorkingDirectory = "."
-                 ToolPath = Option.get dixon
-                 PlatformDirectory = Option.get refdir
-                 DependencyDirectories = dd
-                 UseGAC = true
-                 Verbose = false
-                 ReportFileName = "_Reports/FxCopReport.xml"
-                 RuleLibraries =
-                   [ Path.getFullName
-                       "ThirdParty/Microsoft.PowerShell.CodeAnalysis.16.dll" ]
-                 FailOnError = FxCop.ErrorLevel.Warning
-                 IgnoreGeneratedCode = true }
+          { FxCop.Params.Create() with
+              WorkingDirectory = "."
+              ToolPath = Option.get dixon
+              PlatformDirectory = Option.get refdir
+              DependencyDirectories = dd
+              UseGAC = true
+              Verbose = false
+              ReportFileName = "_Reports/FxCopReport.xml"
+              RuleLibraries =
+                [ Path.getFullName "ThirdParty/Microsoft.PowerShell.CodeAnalysis.16.dll" ]
+              FailOnError = FxCop.ErrorLevel.Warning
+              IgnoreGeneratedCode = true }
       with _ ->
         dumpSuppressions "_Reports/FxCopReport.xml"
         reraise ())
@@ -1687,7 +1697,8 @@ module Targets =
         { p with
             Properties =
               ("AltCoverTag", "UnitTestDotNet_")
-              :: ("Configuration", "Debug") :: p.Properties
+              :: ("Configuration", "Debug")
+              :: p.Properties
             DoRestore = true }
 
       let msbuildDebug = doMSBuild withTagDebug
@@ -1743,7 +1754,8 @@ module Targets =
         { p with
             Properties =
               ("AltCoverTag", "Coverlet_")
-              :: ("Configuration", "Debug") :: p.Properties
+              :: ("Configuration", "Debug")
+              :: p.Properties
             DoRestore = true }
 
       let msbuildDebug = doMSBuild withTagDebug
@@ -1787,52 +1799,52 @@ module Targets =
         let xml =
           l
           |> Seq.fold
-               (fun l f ->
-                 let here = Path.GetDirectoryName f
-                 let name = here |> Path.GetFileName
+            (fun l f ->
+              let here = Path.GetDirectoryName f
+              let name = here |> Path.GetFileName
 
-                 let report =
-                   Path.Combine(Path.getFullName "./_Reports", "Coverlet_" + name)
+              let report =
+                Path.Combine(Path.getFullName "./_Reports", "Coverlet_" + name)
 
-                 let tr = report @@ "TestResults"
-                 Directory.ensure tr
-                 Shell.cleanDir tr
+              let tr = report @@ "TestResults"
+              Directory.ensure tr
+              Shell.cleanDir tr
 
-                 try
-                   f
-                   |> DotNet.test (coverletTaggedTestOptions tr "Coverlet")
-                 with x ->
-                   eprintf "%A" x
+              try
+                f
+                |> DotNet.test (coverletTaggedTestOptions tr "Coverlet")
+              with x ->
+                eprintf "%A" x
 
-                 // Can't seem to get this any other way
-                 let ocovxml =
-                   (!!(tr @@ "*/coverage.opencover.xml")
-                    |> Seq.tryHead)
-                   |> Option.map Path.getFullName
+              // Can't seem to get this any other way
+              let ocovxml =
+                (!!(tr @@ "*/coverage.opencover.xml")
+                 |> Seq.tryHead)
+                |> Option.map Path.getFullName
 
-                 match ocovxml with
-                 | None -> l
-                 | Some covxml ->
-                   let doc = covxml |> XDocument.Load
+              match ocovxml with
+              | None -> l
+              | Some covxml ->
+                let doc = covxml |> XDocument.Load
 
-                   let key =
-                     doc.Descendants(XName.Get "Name")
-                     |> Seq.filter (fun x ->
-                       x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
-                     |> Seq.toList
+                let key =
+                  doc.Descendants(XName.Get "Name")
+                  |> Seq.filter (fun x ->
+                    x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
+                  |> Seq.toList
 
-                   key |> List.iter (fun x -> x.Parent.Remove())
+                key |> List.iter (fun x -> x.Parent.Remove())
 
-                   let target =
-                     (Path.getFullName "./_Reports")
-                     @@ ((Path.GetFileNameWithoutExtension f)
-                         + ".coverlet.xml")
+                let target =
+                  (Path.getFullName "./_Reports")
+                  @@ ((Path.GetFileNameWithoutExtension f)
+                      + ".coverlet.xml")
 
-                   doc.Save target
+                doc.Save target
 
-                   // Shell.copyFile target covxml
-                   target :: l)
-               []
+                // Shell.copyFile target covxml
+                target :: l)
+            []
 
         ReportGenerator.generateReports
           (fun p ->
@@ -1909,7 +1921,8 @@ module Targets =
                 Filter =
                   "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]* -[AltCover.*]*StartupCode*SolutionRoot"
                 MergeByHash = true
-                ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                ReturnTargetCode =
+                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                 OptionalArguments =
                   "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                 Register = OpenCover.RegisterType.Path64
@@ -1927,7 +1940,8 @@ module Targets =
                 Filter =
                   "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]* -[AltCover.*]*StartupCode*SolutionRoot"
                 MergeByHash = true
-                ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                ReturnTargetCode =
+                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                 OptionalArguments =
                   "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                 Register = OpenCover.RegisterType.Path64
@@ -1945,7 +1959,8 @@ module Targets =
                 Filter =
                   "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.* -[AltCover.*]*StartupCode*SolutionRoot"
                 MergeByHash = true
-                ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                ReturnTargetCode =
+                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                 OptionalArguments =
                   "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                 Register = OpenCover.RegisterType.RegisterUser // Path64 doesn't work on my machine
@@ -1962,7 +1977,8 @@ module Targets =
                 Filter =
                   "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.* -[AltCover.*]*StartupCode*SolutionRoot"
                 MergeByHash = true
-                ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                ReturnTargetCode =
+                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                 OptionalArguments =
                   "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                 Register = OpenCover.RegisterType.Path64
@@ -2052,14 +2068,14 @@ module Targets =
                 [| "."
                    weakDir
                    recorder4Dir
-                   apiDir (*; visDir ; monitorDir*)  |]
+                   apiDir (*; visDir ; monitorDir*) |]
               OutputDirectories =
                 [| "./__UnitTestWithAltCover"
                    weakDir
                    @@ "__ValidateGendarmeEmulationWithAltCover"
                    recorder4Dir @@ "__RecorderTestWithAltCover"
                    apiDir
-                   @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*)  |]
+                   @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*) |]
               StrongNameKey = keyfile
               ReportFormat = "NCover"
               InPlace = false
@@ -2292,7 +2308,8 @@ module Targets =
 
       tests
       |> List.iter
-        (fun (testDirectory,
+        (fun
+             (testDirectory,
               outputDirectory,
               coverageReport,
               nunitReport,
@@ -2572,7 +2589,8 @@ module Targets =
            Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
           (reports
            @@ "VisualizerTestWithAltCoverCoreRunner.xml",
-           Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj")
+           Path.getFullName
+             "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj")
           (reports
            @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
            Path.getFullName
@@ -2630,7 +2648,11 @@ module Targets =
                 o.WithCommon(withWorkingDirectoryVM testdir)
 
               let mparams =
-                { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+                { tmp.MSBuildParams with
+                    ConsoleLogParameters = []
+                    DistributedLoggers = None
+                    DisableInternalBinLog = true
+                    Properties = tmp.MSBuildParams.Properties }
 
               { tmp with MSBuildParams = mparams })
             proj
@@ -2654,11 +2676,11 @@ module Targets =
             doMSBuild
               (withDebug
                >> fun p ->
-                    { p with
-                        Properties =
-                          ("AltCoverTag", "UnitTestWithCoreRunner_")
-                          :: p.Properties
-                        Verbosity = Some MSBuildVerbosity.Minimal })
+                 { p with
+                     Properties =
+                       ("AltCoverTag", "UnitTestWithCoreRunner_")
+                       :: p.Properties
+                     Verbosity = Some MSBuildVerbosity.Minimal })
               MSBuildPath
               newproj
 
@@ -3212,7 +3234,8 @@ module Targets =
 
       let collect =
         AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with RecorderDirectory = sampleRoot }
+          { Primitive.CollectOptions.Create() with
+              RecorderDirectory = sampleRoot }
         |> AltCoverCommand.Collect
 
       { AltCoverCommand.Options.Create collect with
@@ -3248,17 +3271,17 @@ module Targets =
     (fun _ ->
       monoOnWindows
       |> Actions.SimpleInstrumentingRunUnderMono
-           "_Binaries/Sample1/Debug+AnyCPU/net20"
-           "_Binaries/AltCover/Release+AnyCPU/net472"
-           "BasicCSharpUnderMono")
+        "_Binaries/Sample1/Debug+AnyCPU/net20"
+        "_Binaries/AltCover/Release+AnyCPU/net472"
+        "BasicCSharpUnderMono")
 
   let BasicCSharpMonoUnderMono =
     (fun _ ->
       monoOnWindows
       |> Actions.SimpleInstrumentingRunUnderMono
-           "_Mono/Sample1"
-           "_Binaries/AltCover/Release+AnyCPU/net472"
-           "BasicCSharpMono")
+        "_Mono/Sample1"
+        "_Binaries/AltCover/Release+AnyCPU/net472"
+        "BasicCSharpMono")
 
   let CSharpMonoWithDotNet =
     (fun _ ->
@@ -3295,7 +3318,10 @@ module Targets =
       |> AltCoverCommand.run
 
       Actions.Run (o @@ "/Sample1.exe", o, []) "Instrumented .exe failed"
-      Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet")
+
+      Actions.ValidateSample1
+        "./_Reports/CSharpMonoWithDotNet.xml"
+        "CSharpMonoWithDotNet")
 
   let CSharpDotNetWithDotNet =
     (fun _ ->
@@ -3457,7 +3483,8 @@ module Targets =
 
       let collect =
         AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with RecorderDirectory = instrumented }
+          { Primitive.CollectOptions.Create() with
+              RecorderDirectory = instrumented }
         |> AltCoverCommand.Collect
 
       { AltCoverCommand.Options.Create collect with
@@ -3580,7 +3607,8 @@ module Targets =
 
       let collect =
         AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with RecorderDirectory = instrumented }
+          { Primitive.CollectOptions.Create() with
+              RecorderDirectory = instrumented }
         |> AltCoverCommand.Collect
 
       { AltCoverCommand.Options.Create collect with
@@ -3670,7 +3698,9 @@ module Targets =
         (sampleRoot @@ instrumented) @@ "Sample8.dll"
 
       Actions.RunDotnet
-        (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot })
+        (fun o ->
+          { dotnetOptions o with
+              WorkingDirectory = sampleRoot })
         ""
         (testing + " " + simpleReport + ".acv")
         "RecordResumeTestDotNet 2"
@@ -3706,7 +3736,8 @@ module Targets =
 
       let collect =
         AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with RecorderDirectory = instrumented }
+          { Primitive.CollectOptions.Create() with
+              RecorderDirectory = instrumented }
         |> AltCoverCommand.Collect
 
       { AltCoverCommand.Options.Create collect with
@@ -4234,7 +4265,11 @@ module Targets =
               OutputPath = Some publish
               Configuration = DotNet.BuildConfiguration.Release
               MSBuildParams =
-                { options.MSBuildParams with Properties = options.MSBuildParams.Properties }
+                { options.MSBuildParams with
+                    ConsoleLogParameters = []
+                    DistributedLoggers = None
+                    DisableInternalBinLog = true
+                    Properties = options.MSBuildParams.Properties }
               Framework = Some "netcoreapp2.0" })
         netcoresource
 
@@ -4244,8 +4279,12 @@ module Targets =
               OutputPath = Some(publish + ".visualizer")
               Configuration = DotNet.BuildConfiguration.Release
               MSBuildParams =
-                { options.MSBuildParams with Properties = options.MSBuildParams.Properties }
-              Framework = Some "netcoreapp2.1" })
+                { options.MSBuildParams with
+                    ConsoleLogParameters = []
+                    DistributedLoggers = None
+                    DisableInternalBinLog = true
+                    Properties = options.MSBuildParams.Properties }
+              Framework = Some "net5.0" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
       // dotnet tooling mods
@@ -4439,7 +4478,9 @@ module Targets =
           "-ReportName"
           "PoshReport"
           "-FolderName"
-          unpackapi ]
+          unpackapi
+          "-PesterVersion"
+          (toolPackages.Item "Pester") ]
       |> CreateProcess.withWorkingDirectory "."
       |> Proc.run
       |> (Actions.AssertResult "powershell"))
@@ -4508,7 +4549,9 @@ module Targets =
           "-ReportName"
           "PesterReport"
           "-FolderName"
-          unpackapi @@ "__Instrumented" ]
+          unpackapi @@ "__Instrumented"
+          "-PesterVersion"
+          (toolPackages.Item "Pester") ]
       |> CreateProcess.withWorkingDirectory "."
       |> Proc.run
       |> (Actions.AssertResult "pwsh")
@@ -4696,7 +4739,9 @@ module Targets =
       |> AltCoverCommand.run
 
       Actions.RunDotnet
-        (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
+        (fun o ->
+          { dotnetOptions o with
+              WorkingDirectory = instrumented })
         ""
         "Sample1.dll"
         "ReleaseDotNetWithFramework test"
@@ -5729,10 +5774,15 @@ module Targets =
       DotNet.msbuild
         (fun opt ->
           let tmp =
-            opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample })
+            opt.WithCommon(fun o' ->
+              { dotnetOptions o' with
+                  WorkingDirectory = sample })
 
           let mparams =
             { tmp.MSBuildParams with
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
                 Properties =
                   ("AltCoverTag", "MSBuildTest_")
                   :: tmp.MSBuildParams.Properties }
@@ -5755,6 +5805,9 @@ module Targets =
         (fun p ->
           { p with
               Verbosity = Some MSBuildVerbosity.Minimal
+              ConsoleLogParameters = []
+              DistributedLoggers = None
+              DisableInternalBinLog = true
               Properties =
                 [ "Configuration", "Debug"
                   "MSBuildTest", "true"
@@ -5854,7 +5907,9 @@ module Targets =
         |> List.iter (fun (cakeversion, script) ->
           try
             Actions.RunDotnet
-              (fun o' -> { dotnetOptions o' with WorkingDirectory = "./_Cake" })
+              (fun o' ->
+                { dotnetOptions o' with
+                    WorkingDirectory = "./_Cake" })
               "tool"
               ("install -g cake.tool" + cakeversion)
               "Installed"
@@ -5866,7 +5921,9 @@ module Targets =
                 cakeversion.Trim()
 
             Actions.RunDotnet
-              (fun o' -> { dotnetOptions o' with WorkingDirectory = "./_Cake" })
+              (fun o' ->
+                { dotnetOptions o' with
+                    WorkingDirectory = "./_Cake" })
               "tool"
               ("list -g ")
               "Checked"
@@ -5893,7 +5950,9 @@ module Targets =
             Actions.CheckSample4 before x
           finally
             Actions.RunDotnet
-              (fun o' -> { dotnetOptions o' with WorkingDirectory = "./_Cake" })
+              (fun o' ->
+                { dotnetOptions o' with
+                    WorkingDirectory = "./_Cake" })
               "tool"
               ("uninstall -g cake.tool")
               "uninstalled")
@@ -6037,7 +6096,7 @@ module Targets =
         Actions.RunDotnet
           (withWorkingDirectoryOnly "_ApiUse")
           "fsi"
-          "./DriveApi.fsx"
+          "./DriveApi.fsx --nowarn:NU1605"
           "running fake script returned with a non-zero exit code"
 
         let x =
@@ -6313,7 +6372,8 @@ module Targets =
           |> AltCover.PrepareOptions.Primitive
 
         let pf1a =
-          { p0a with AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
+          { p0a with
+              AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
           |> AltCover.PrepareOptions.Primitive
 
         try
@@ -6424,11 +6484,13 @@ module Targets =
           Path.getFullName "./_DotnetTestFailFastInPlace/coverage.xml"
 
         let pf1 =
-          { p0 with AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
+          { p0 with
+              AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
           |> AltCover.PrepareOptions.Primitive
 
         let pf1a =
-          { p0 with AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
+          { p0 with
+              AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
           |> asInPlace
           |> AltCover.PrepareOptions.Primitive
 
@@ -6543,9 +6605,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestLineCoverInPlace"
-              )
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestLineCoverInPlace")
               .WithAltCoverOptions
               pp2a
               cc0
@@ -6559,9 +6619,7 @@ module Targets =
         DotNet.test
           (fun to' ->
             to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestLineCover"
-              )
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover")
               .WithAltCoverOptions
               pp2
               cc0
@@ -6651,13 +6709,11 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestBranchCoverInPlace"
-              )
-               .WithAltCoverOptions
-               pp3a
-               cc0
-               ForceTrue)
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCoverInPlace")
+              .WithAltCoverOptions
+              pp3a
+              cc0
+              ForceTrue)
             |> testWithCLIArguments)
           ""
 
@@ -6695,13 +6751,11 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "_DotnetTestBranchCover"
-              )
-               .WithAltCoverOptions
-               pp3
-               cc0
-               ForceTrue)
+              .WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover")
+              .WithAltCoverOptions
+              pp3
+              cc0
+              ForceTrue)
             |> testWithCLIArguments)
           ""
 
@@ -6765,13 +6819,11 @@ module Targets =
         DotNet.test
           (fun to' ->
             (to'
-              .WithCommon(
-                withWorkingDirectoryVM "RegressionTesting/issue29"
-              )
-               .WithAltCoverOptions
-               pp29
-               cc0
-               ForceTrueFast)
+              .WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29")
+              .WithAltCoverOptions
+              pp29
+              cc0
+              ForceTrueFast)
             |> testWithCLIArguments)
           ""
 
@@ -6796,7 +6848,8 @@ module Targets =
         proj.Save "./RegressionTesting/issue37/issue37.csproj"
 
         let p4 =
-          { p0 with AssemblyFilter = [ "NUnit"; "Monitor" ] }
+          { p0 with
+              AssemblyFilter = [ "NUnit"; "Monitor" ] }
 
         let pp4 =
           AltCover.PrepareOptions.Primitive p4
@@ -6805,9 +6858,10 @@ module Targets =
           (fun to' ->
             { ((to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue37"))
                 .WithAltCoverOptions
-                 pp4
-                 cc0
-                 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
+                pp4
+                cc0
+                ForceTrue) with
+                Configuration = DotNet.BuildConfiguration.Release }
             |> testWithCLIArguments)
           ""
 
@@ -6876,10 +6930,16 @@ module Targets =
         DotNet.restore
           (fun o ->
             let tmp =
-              o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")
+              o.WithCommon(
+                withWorkingDirectoryVM "./RegressionTesting/issue20/classlib"
+              )
 
             let mparams =
-              { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+              { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
+                  Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
           ""
@@ -6892,14 +6952,19 @@ module Targets =
               )
 
             let mparams =
-              { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+              { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
+                  Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
           ""
 
         // would like to assert "succeeds with warnings"
         let p0 =
-          { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
+          { Primitive.PrepareOptions.Create() with
+              AssemblyFilter = [| "xunit" |] }
 
         let pp0 =
           AltCover.PrepareOptions.Primitive p0
@@ -6947,7 +7012,8 @@ module Targets =
         printfn "**************** And now with silence..."
 
         let p1 =
-          { p0 with Verbosity = System.Diagnostics.TraceLevel.Error }
+          { p0 with
+              Verbosity = System.Diagnostics.TraceLevel.Error }
 
         let pp1 =
           AltCover.PrepareOptions.Primitive p1
@@ -7008,13 +7074,18 @@ module Targets =
               o.WithCommon(withWorkingDirectoryVM "_Issue23")
 
             let mparams =
-              { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+              { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
+                  Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
           ""
 
         let p0 =
-          { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
+          { Primitive.PrepareOptions.Create() with
+              AssemblyFilter = [| "xunit" |] }
 
         let pp0 =
           AltCover.PrepareOptions.Primitive p0
@@ -7029,10 +7100,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7085,7 +7156,11 @@ module Targets =
               o.WithCommon(withWorkingDirectoryVM "_Issue67")
 
             let mparams =
-              { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+              { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
+                  Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
           ""
@@ -7108,10 +7183,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7205,10 +7280,10 @@ module Targets =
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7273,12 +7348,12 @@ module Targets =
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
-                    Configuration = DotNet.BuildConfiguration.Debug
-                    NoBuild = false })
-               .WithAltCoverOptions
-               pp1
-               cc0
-               ForceTrue)
+                  Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = false })
+              .WithAltCoverOptions
+              pp1
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7329,17 +7404,18 @@ module Targets =
 
         let psln =
           AltCover.PrepareOptions.Primitive
-            { p0 with Report = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml" }
+            { p0 with
+                Report = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml" }
 
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test") with
                   Configuration = DotNet.BuildConfiguration.Debug
                   NoBuild = false })
-               .WithAltCoverOptions
-               psln
-               cc0
-               ForceTrue)
+              .WithAltCoverOptions
+              psln
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7397,7 +7473,9 @@ module Targets =
         Shell.copyDir "./_DotnetGlobalTest/Data" "./Samples/Sample4/Data" File.Exists
 
         Actions.RunDotnet
-          (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
+          (fun o' ->
+            { dotnetOptions o' with
+                WorkingDirectory = working })
           "tool"
           ("install -g altcover.global --add-source "
            + (Path.getFullName "./_Packaging.global")
@@ -7406,7 +7484,9 @@ module Targets =
           "Installed"
 
         Actions.RunDotnet
-          (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
+          (fun o' ->
+            { dotnetOptions o' with
+                WorkingDirectory = working })
           "tool"
           ("list -g ")
           "Checked"
@@ -7417,7 +7497,9 @@ module Targets =
         |> DotNet.build (fun p ->
           { p with
               Configuration = DotNet.BuildConfiguration.Debug
-              Common = { dotnetOptions p.Common with WorkingDirectory = working }
+              Common =
+                { dotnetOptions p.Common with
+                    WorkingDirectory = working }
               MSBuildParams = cliArguments })
 
         let x =
@@ -7450,7 +7532,8 @@ module Targets =
           )
           |> AltCoverCommand.Prepare
 
-        { AltCoverCommand.Options.Create prep with WorkingDirectory = working }
+        { AltCoverCommand.Options.Create prep with
+            WorkingDirectory = working }
         |> AltCoverCommand.run
 
         Actions.CheckSample4Content x
@@ -7468,7 +7551,8 @@ module Targets =
                 CommandLine = args }
           |> AltCoverCommand.Collect
 
-        { AltCoverCommand.Options.Create collect with WorkingDirectory = working }
+        { AltCoverCommand.Options.Create collect with
+            WorkingDirectory = working }
         |> AltCoverCommand.run
 
         Actions.CheckSample4Visits before x
@@ -7484,7 +7568,9 @@ module Targets =
       finally
         if set then
           Actions.RunDotnet
-            (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
+            (fun o' ->
+              { dotnetOptions o' with
+                  WorkingDirectory = working })
             "tool"
             ("uninstall -g altcover.global")
             "uninstalled"
@@ -7529,7 +7615,11 @@ module Targets =
               o.WithCommon(withWorkingDirectoryVM "_Issue114")
 
             let mparams =
-              { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+              { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
+                  Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
           ""
@@ -7554,12 +7644,12 @@ module Targets =
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
-                    Configuration = DotNet.BuildConfiguration.Debug
-                    NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrue)
+                  Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = false })
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7616,7 +7706,11 @@ module Targets =
               o.WithCommon(withWorkingDirectoryVM "_Issue156/Tests")
 
             let mparams =
-              { tmp.MSBuildParams with Properties = tmp.MSBuildParams.Properties }
+              { tmp.MSBuildParams with
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
+                  Properties = tmp.MSBuildParams.Properties }
 
             { tmp with MSBuildParams = mparams })
           ""
@@ -7644,12 +7738,12 @@ module Targets =
         DotNet.test
           (fun p ->
             (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
-                    Configuration = DotNet.BuildConfiguration.Debug
-                    NoBuild = false })
-               .WithAltCoverOptions
-               pp0
-               cc0
-               ForceTrueOnly)
+                  Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = false })
+              .WithAltCoverOptions
+              pp0
+              cc0
+              ForceTrueOnly)
             |> testWithCLIArguments)
           ""
       finally
@@ -7931,7 +8025,8 @@ module Targets =
                 ExePath = openCoverConsole
                 TestRunnerExePath = "./Samples/Sample29/Debug/SimpleMix.exe"
                 MergeByHash = true
-                ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                ReturnTargetCode =
+                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                 Register = OpenCover.RegisterType.Path64
                 Output = Path.getFullName "_Reports/CppInlineWithOpenCover.xml"
                 TimeOut = TimeSpan(0, 10, 0) })

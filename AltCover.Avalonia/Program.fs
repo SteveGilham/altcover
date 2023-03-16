@@ -26,9 +26,9 @@ module VisualizerMain =
            Persistence.save <- false))
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
-           (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
-           (OptionSet())
+        (fun (o: OptionSet) (p, a) ->
+          o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
+        (OptionSet())
 
     options.Parse(arguments) |> ignore
 
@@ -39,370 +39,520 @@ module VisualizerMain =
     0
 #endif
 
+#if AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
-                            Justification = "Generated code")>]
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.AboutBox.xaml",
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
-                            Justification = "Generated code")>]
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.App11.xaml",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Security",
+                            "StaticConstructorsShouldBePrivateRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.MainWindow11.xaml",
+                            Justification = "Generated Code")>]
+#else
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
                             Scope = "type", // TypeDefinition
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidLargeNumberOfLocalVariablesRule",
-                            Scope = "member",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Security",
+                            "StaticConstructorsShouldBePrivateRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Security",
+                            "StaticConstructorsShouldBePrivateRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
+                            Justification = "Generated Code")>]
+#endif
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidLongMethodsRule",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
+#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
-                            Scope = "member",
-                            Target =
-                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Smells",
-                            "AvoidLongMethodsRule",
-                            Scope = "member",
-                            Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Smells",
-                            "AvoidLongMethodsRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidLongMethodsRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
+                            Justification = "Generated Code")>]
+#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUncalledPrivateCodeRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.MainWindow/XamlClosure_1::Build(System.IServiceProvider)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUncalledPrivateCodeRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.XamlIlHelpers::Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension,Avalonia.Markup.Xaml.RelativeSource!Property()",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUncalledPrivateCodeRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUninstantiatedInternalClassesRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUninstantiatedInternalClassesRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.XamlIlContext",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUninstantiatedInternalClassesRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!XamlLoader",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUninstantiatedInternalClassesRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUninstantiatedInternalClassesRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUninstantiatedInternalClassesRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlTrampolines",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUninstantiatedInternalClassesRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlContext",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUninstantiatedInternalClassesRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!XamlLoader",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUninstantiatedInternalClassesRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!AvaloniaResources",
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
-                            "EnsureLocalDisposalRule",
-                            Scope = "member",
+                            "DisposableFieldsShouldBeDisposedRule",
+                            Scope = "type", // TypeDefinition
                             Target =
-                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
-                            Justification = "Generated code")>]
+                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
+                            "DoNotDecreaseVisibilityRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.AboutBox::!XamlIlPopulateTrampoline(AltCover.AboutBox)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
+                            "DoNotDecreaseVisibilityRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
+                            "DoNotDecreaseVisibilityRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
-                            "DisposableFieldsShouldBeDisposedRule",
-                            Scope = "type",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Maintainability",
-                            "AvoidAlwaysNullFieldRule",
-                            Scope = "type",
-                            Target = "AltCover.MainWindow",
-                            Justification = "Generated code")>]
+                              "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Maintainability",
                             "AvoidAlwaysNullFieldRule",
                             Scope = "type", // TypeDefinition
                             Target = "AltCover.AboutBox",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Maintainability",
                             "AvoidAlwaysNullFieldRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
+                            Target = "AltCover.MainWindow",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Maintainability",
+                            "AvoidAlwaysNullFieldRule",
+                            Scope = "type", // TypeDefinition
                             Target = "AltCover.App",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLargeClassesRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target =
                               "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLargeClassesRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target =
                               "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidSpeculativeGeneralityRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.XamlIlHelpers",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
+#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target = "AltCover.MainWindow/XamlClosure_1",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.XamlIlHelpers",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.XamlIlContext",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.XamlIlContext/Context`1",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target =
-                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target =
-                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!XamlLoader",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidUnsealedUninheritedInternalTypeRule",
-                            Scope = "type",
-                            Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
                             Scope = "type", // TypeDefinition
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "ConsiderUsingStaticTypeRule",
-                            Scope = "type",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
+                            Justification = "Generated Code")>]
+#endif
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
                             Target = "AltCover.MainWindow/XamlClosure_1",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "ConsiderUsingStaticTypeRule",
-                            Scope = "type",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.XamlIlHelpers",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "ConsiderUsingStaticTypeRule",
-                            Scope = "type",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "ConsiderUsingStaticTypeRule",
-                            Scope = "type",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlTrampolines",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.XamlIlContext",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "ConsiderUsingStaticTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!XamlLoader",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "ConsiderUsingStaticTypeRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!EmbeddedResource",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "EnumeratorsShouldBeStronglyTypedRule",
-                            Scope = "type",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlContext/Context`1",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
                             Target =
                               "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!XamlLoader",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!AvaloniaResources",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.AboutBox.xaml",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.App11.xaml",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnsealedUninheritedInternalTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.MainWindow11.xaml",
+                            Justification = "Generated Code")>]
+#if !AVALONIA11
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!EmbeddedResource",
+                            Justification = "Generated Code")>]
+#endif
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "AltCover.MainWindow/XamlClosure_1",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlHelpers",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlTrampolines",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.XamlIlContext",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!XamlLoader",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "ConsiderUsingStaticTypeRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!AvaloniaResources",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "EnumeratorsShouldBeStronglyTypedRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "ParameterNamesShouldMatchOverriddenMethodRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.XamlIlContext/Context`1::set_BaseUri(System.Uri)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "ParameterNamesShouldMatchOverriddenMethodRule",
-                            Scope = "member",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.XamlIlContext/Context`1::GetService(System.Type)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "member",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "member",
+                              "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "member",
+                              "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.App::!XamlIlPopulate(System.IServiceProvider,AltCover.App)",
-                            Justification = "Generated code")>]
+                              "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
+                            Justification = "Generated Code")>]
+#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
-                            Scope = "member",
-                            Target =
-                              "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "type",
-                            Target = "CompiledAvaloniaXaml.!XamlLoader",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "type",
+                            Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
+#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.AboutBox::!XamlIlPopulate(System.IServiceProvider,AltCover.AboutBox)",
-                            Justification = "Generated code")>]
+                            Justification = "Generated Code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.AboutBox::!XamlIlPopulateTrampoline(AltCover.AboutBox)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "UseCorrectDisposeSignaturesRule",
-                            Scope = "type",
-                            Target =
-                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "UseObjectDisposedExceptionRule",
-                            Scope = "member",
-                            Target =
-                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator::MoveNext()",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "UseStringEmptyRule",
-                            Scope = "member",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "UseStringEmptyRule",
-                            Scope = "member",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "UseStringEmptyRule",
-                            Scope = "member",
+                              "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
-                            Justification = "Generated code")>]
+                              "AltCover.App::!XamlIlPopulate(System.IServiceProvider,AltCover.App)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!IndexerAccessorFactoryClosure",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!XamlLoader",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "CompiledAvaloniaXaml.!AvaloniaResources",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "UseCorrectDisposeSignaturesRule",
+                            Scope = "type", // TypeDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "UseObjectDisposedExceptionRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator::MoveNext()",
+                            Justification = "Generated Code")>]
+#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.AboutBox.xaml::.ctor()",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
-                            "DoNotDecreaseVisibilityRule",
-                            Scope = "member",
-                            Target =
-                              "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
-                            "DoNotDecreaseVisibilityRule",
-                            Scope = "member",
-                            Target =
-                              "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
-                            "DoNotDecreaseVisibilityRule",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.AboutBox::!XamlIlPopulateTrampoline(AltCover.AboutBox)",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
-                            "PreferStringComparisonOverrideRule",
-                            Scope = "member",
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
                             Target =
-                              "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
-                            Justification = "Generated code")>]
+                              "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
+                            Justification = "Generated Code")>]
+#endif
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.AboutBox.xaml::CreateNamespaces()",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.App11.xaml::CreateNamespaces()",
+                            Justification = "Generated Code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "UseStringEmptyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.MainWindow11.xaml::CreateNamespaces()",
+                            Justification = "Generated Code")>]
 ()

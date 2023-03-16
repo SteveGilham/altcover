@@ -606,9 +606,6 @@ module internal Visitor =
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead
 
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "F# inlined code")>]
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
                       Justification = "No suitable overload in netstandard2.0/net472")>]
@@ -635,19 +632,19 @@ module internal Visitor =
     let internal isFSharpStaticClass (t: TypeDefinition) =
       (t.CustomAttributes
        |> Seq.fold
-            (fun x a ->
-              let fn = a.AttributeType.FullName
+         (fun x a ->
+           let fn = a.AttributeType.FullName
 
-              if
-                fn
-                == "Microsoft.FSharp.Core.AbstractClassAttribute"
-              then
-                x ||| 1
-              else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
-                x ||| 2
-              else
-                x)
-            0) = 3
+           if
+             fn
+             == "Microsoft.FSharp.Core.AbstractClassAttribute"
+           then
+             x ||| 1
+           else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
+             x ||| 2
+           else
+             x)
+         0) = 3
 
     let internal significant (m: MethodDefinition) =
       [ Filter.isFSharpInternal
@@ -763,8 +760,12 @@ module internal Visitor =
           let c =
             (i :?> SourceLinkDebugInformation).Content
 
-          JsonValue.Parse(c).Object.["documents"]
-            .Object.ToDictionary((fun kv -> kv.Key), (fun kv -> kv.Value.String)))
+          JsonValue
+            .Parse(c)
+            .Object.["documents"].Object.ToDictionary(
+              (fun kv -> kv.Key),
+              (fun kv -> kv.Value.String)
+            ))
 
       [ x ]
       |> Seq.takeWhile (fun _ -> x.Inspection <> Inspections.Ignore)
@@ -1255,10 +1256,15 @@ module internal Visitor =
         lastOfSequencePoint dbg n
 
     let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
-      if (i |> dbg.GetSequencePoint).IsNotNull then
+      let p = i.Previous
+
+      if
+        p |> isNull // generated code e.g Fody won't have sequence point values
+        || (i |> dbg.GetSequencePoint).IsNotNull
+      then
         i
       else
-        firstOfSequencePoint dbg i.Previous
+        firstOfSequencePoint dbg p
 
     let internal getJumps (dbg: MethodDebugInformation) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
@@ -1350,7 +1356,9 @@ module internal Visitor =
              uid <- uid + 1
              Seq.map (fun bx -> { bx with Uid = i + branchNumber })
            else
-             Seq.map (fun bx -> { bx with Representative = Reporting.None }))
+             Seq.map (fun bx ->
+               { bx with
+                   Representative = Reporting.None }))
       |> Seq.collect id
       |> Seq.sortBy (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
 
@@ -1641,6 +1649,18 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1372::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1380::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Visitor/I/start@1230::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                            Justification = "Inlined library code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Visitor/I/finish@1233::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                            Justification = "Inlined library code")>]
 ()

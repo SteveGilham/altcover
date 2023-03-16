@@ -25,9 +25,7 @@ module internal Report =
             "profilerVersion".X,
             "AltCover "
             + (System.Diagnostics.FileVersionInfo.GetVersionInfo(
-              System
-                .Reflection
-                .Assembly
+              System.Reflection.Assembly
                 .GetExecutingAssembly()
                 .Location
             ))

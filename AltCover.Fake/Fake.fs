@@ -89,7 +89,8 @@ module DotNet =
       let cliargs = self.MSBuildParams
 
       let nargs =
-        { cliargs with Properties = List.concat [ cliargs.Properties; options ] }
+        { cliargs with
+            Properties = List.concat [ cliargs.Properties; options ] }
 
       { self with MSBuildParams = nargs }
 

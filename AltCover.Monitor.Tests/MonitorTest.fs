@@ -26,9 +26,7 @@ module MonitorTests =
   [<Test>]
   let ShouldCountOpenCoverTotals () =
     use stream =
-      System
-        .Reflection
-        .Assembly
+      System.Reflection.Assembly
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.Monitor.Tests.HandRolledMonoCoverage.xml")
 

@@ -44,9 +44,9 @@ module
                     Justification = "Harmless in context")>]
   type
 #if GUI || RUNNER
-      internal
+    internal
 #endif
-                SeqPnt =
+    SeqPnt =
     { VC: int
       SL: int
       SC: int
@@ -73,9 +73,9 @@ module
                     Justification = "Harmless in context")>]
   type
 #if GUI || RUNNER
-      internal
+    internal
 #endif
-                BranchInfo =
+    BranchInfo =
     { Line: int
       Offset: int
       EndOffset: int
@@ -103,9 +103,9 @@ module
                     Justification = "Harmless in context")>]
   type
 #if GUI || RUNNER
-      internal
+    internal
 #endif
-                Method =
+    Method =
     { Lines: Lines
       [<SuppressMessage("Gendarme.Rules.Design.Generic",
                         "DoNotExposeGenericListsRule",
@@ -467,21 +467,21 @@ module
 
     report
     |> Seq.fold
-         (fun b kvp ->
-           b
-           |> (if first then
-                 first <- false
-                 id
-               else
-                 appendLine ",")
-           |> append slugs.[depth]
-           |> appendCharacter '"'
-           |> jsonEscape kvp.Key
-           |> appendLine ("\": {")
-           |> next kvp.Value
-           |> append slugs.[depth + 1]
-           |> appendCharacter '}')
-         w
+      (fun b kvp ->
+        b
+        |> (if first then
+              first <- false
+              id
+            else
+              appendLine ",")
+        |> append slugs.[depth]
+        |> appendCharacter '"'
+        |> jsonEscape kvp.Key
+        |> appendLine ("\": {")
+        |> next kvp.Value
+        |> append slugs.[depth + 1]
+        |> appendCharacter '}')
+      w
     |> newLine
 
   let private lineToBuilder (kvp: KeyValuePair<int, int>) (w: StringBuilder) =
@@ -520,17 +520,17 @@ module
       |> append (slugs.[12])
       |> append ("\"Times\": [")
       |> fold2
-           (fun b t ->
-             timeToBuilder
-               14
-               t
-               (b
-                |> if firstTime then
-                     firstTime <- false
-                     newLine
-                   else
-                     appendLine (",")))
-           times
+        (fun b t ->
+          timeToBuilder
+            14
+            t
+            (b
+             |> if firstTime then
+                  firstTime <- false
+                  newLine
+                else
+                  appendLine (",")))
+        times
       |> newLine
       |> append (slugs.[13])
       |> append ("]")
@@ -543,17 +543,17 @@ module
     if times.IsNotNull && times.Count > 0 then
       w
       |> fold2
-           (fun b t ->
-             timeToBuilder
-               11
-               t
-               (b
-                |> if firstTime then
-                     firstTime <- false
-                     newLine
-                   else
-                     appendLine (",")))
-           times
+        (fun b t ->
+          timeToBuilder
+            11
+            t
+            (b
+             |> if firstTime then
+                  firstTime <- false
+                  newLine
+                else
+                  appendLine (",")))
+        times
       |> newLine
       |> append (slugs.[10])
     else
@@ -568,16 +568,16 @@ module
          >> append (slugs.[12])
          >> append ("\"Tracks\": [")
          >> fold2
-              (fun b (t: int) ->
-                b
-                |> if firstTime then
-                     firstTime <- false
-                     newLine
-                   else
-                     appendLine (",")
-                |> append (slugs.[14])
-                |> append (t.ToString(CultureInfo.InvariantCulture)))
-              tracks
+           (fun b (t: int) ->
+             b
+             |> if firstTime then
+                  firstTime <- false
+                  newLine
+                else
+                  appendLine (",")
+             |> append (slugs.[14])
+             |> append (t.ToString(CultureInfo.InvariantCulture)))
+           tracks
          >> newLine
          >> append (slugs.[13])
          >> append ("]")
@@ -658,15 +658,15 @@ module
 
         preamble
         >> fold2
-             (fun b kvp ->
-               b
-               |> if first then
-                    first <- false
-                    id
-                  else
-                    appendLine (",")
-               |> operation kvp)
-             collection
+          (fun b kvp ->
+            b
+            |> if first then
+                 first <- false
+                 id
+               else
+                 appendLine (",")
+            |> operation kvp)
+          collection
         >> postamble
       else
         id
@@ -691,12 +691,12 @@ module
 
     // After Branches, now SeqPnts
     |> ifNotEmpty
-         method.SeqPnts
-         seqpntToBuilder
-         (appendLine (",")
-          >> append (slugs.[9])
-          >> appendLine ("\"SeqPnts\": ["))
-         id
+      method.SeqPnts
+      seqpntToBuilder
+      (appendLine (",")
+       >> append (slugs.[9])
+       >> appendLine ("\"SeqPnts\": ["))
+      id
     |> if Seq.isEmpty method.SeqPnts then
          id
        else
@@ -823,14 +823,16 @@ module
     sd.Attribute(XName.Get "numBranchPoints").Value <-
       nb.ToString(CultureInfo.InvariantCulture)
 
-    sd.Attribute(XName.Get "visitedBranchPoints").Value <-
-      vb.ToString(CultureInfo.InvariantCulture)
+    sd
+      .Attribute(XName.Get "visitedBranchPoints")
+      .Value <- vb.ToString(CultureInfo.InvariantCulture)
 
     sd.Attribute(XName.Get "numSequencePoints").Value <-
       ns.ToString(CultureInfo.InvariantCulture)
 
-    sd.Attribute(XName.Get "visitedSequencePoints").Value <-
-      vs.ToString(CultureInfo.InvariantCulture)
+    sd
+      .Attribute(XName.Get "visitedSequencePoints")
+      .Value <- vs.ToString(CultureInfo.InvariantCulture)
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
@@ -905,7 +907,9 @@ module
           |> Seq.distinctBy (fun bx -> bx.EndOffset)
           |> Seq.length)
 
-      m.Attribute(XName.Get "cyclomaticComplexity").Value <-
+      m
+        .Attribute(XName.Get "cyclomaticComplexity")
+        .Value <-
         (1 + targets)
           .ToString(CultureInfo.InvariantCulture)
 
@@ -997,12 +1001,12 @@ module
       let mvc =
         points // not Seq.max as that exposes repeated calls to enumerator.Current when bootstrapping
         |> Seq.fold
-             (fun max x ->
-               let tmp =
-                 x.Attribute("vc".X).Value |> Int32.TryParse |> snd
+          (fun max x ->
+            let tmp =
+              x.Attribute("vc".X).Value |> Int32.TryParse |> snd
 
-               if tmp > max then tmp else max)
-             0 // know this is a hard floor
+            if tmp > max then tmp else max)
+          0 // know this is a hard floor
 
       mp.Attribute("vc".X).Value <- mvc.ToString(CultureInfo.InvariantCulture)
 
@@ -1034,12 +1038,12 @@ module
       m.Descendants(XName.Get name)
       |> Seq.collect (fun m2 -> m2.Elements(XName.Get "Summary"))
       |> Seq.fold
-           (fun (bn, bv, sn, sv) ms ->
-             (bn + valueOf ms "numBranchPoints",
-              bv + valueOf ms "visitedBranchPoints",
-              sn + valueOf ms "numSequencePoints",
-              sv + valueOf ms "visitedSequencePoints"))
-           (0, 0, 0, 0)
+        (fun (bn, bv, sn, sv) ms ->
+          (bn + valueOf ms "numBranchPoints",
+           bv + valueOf ms "visitedBranchPoints",
+           sn + valueOf ms "numSequencePoints",
+           sv + valueOf ms "visitedSequencePoints"))
+        (0, 0, 0, 0)
 
     makeSummary nb vb ns vs sd
 
@@ -1123,7 +1127,8 @@ module
       kvp.Value
       |> Seq.tryFind (fun kvp -> kvp.Key == "\u00ABAltCover.embed\u00BB")
       |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
-      |> Option.iter (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
+      |> Option.iter (fun embed ->
+        item.Add(XAttribute(XName.Get "altcover.embed", embed)))
 
       files.Add item
       classesToXml i classTable methodTable kvp.Value)
@@ -1140,9 +1145,6 @@ module
                     Justification = "AvoidSpeculativeGenerality too")>]
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "InstantiateArgumentExceptionCorrectlyRule",
-                    Justification = "Library method inlined")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification = "Library method inlined")>]
   let internal jsonToXml (modules: Modules) =
     let x = XDocument()
@@ -1163,10 +1165,10 @@ module
     let mcc =
       x.Descendants(XName.Get "Method")
       |> Seq.fold
-           (fun top x ->
-             let value = valueOf x "cyclomaticComplexity"
-             if value > top then value else top)
-           1
+        (fun top x ->
+          let value = valueOf x "cyclomaticComplexity"
+          if value > top then value else top)
+        1
 
     sd.Add(
       XAttribute(

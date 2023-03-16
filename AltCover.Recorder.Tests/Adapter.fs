@@ -160,7 +160,8 @@ module Adapter =
       (called: bool array)
     ) =
     let constructor =
-      typeof<'T>.GetConstructor ([| typeof<System.String> |])
+      typeof<'T>
+        .GetConstructor([| typeof<System.String> |])
 
     let pitcher =
       fun _ _ _ _ ->
@@ -182,7 +183,8 @@ module Adapter =
     (unique: string)
     =
     let constructor =
-      typeof<'T>.GetConstructor ([| typeof<System.String> |])
+      typeof<'T>
+        .GetConstructor([| typeof<System.String> |])
 
     let pitcher =
       fun _ _ _ _ ->

@@ -4,8 +4,9 @@ open System
 open System.IO
 open System.Reflection
 
-#if NETCOREAPP3_0
 open AltCover
+
+#if !NET472
 open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -16,19 +17,24 @@ type Assert = NUnit.Framework.Assert
 type Does = NUnit.Framework.Does
 type Is = NUnit.Framework.Is
 
-#if NETCOREAPP3_0
+#if NET472
+type TestAttribute = NUnit.Framework.TestAttribute
+#else
 [<System.AttributeUsage(AttributeTargets.Method)>]
 type TestAttribute() =
   class
     inherit Attribute()
   end
-#else
-type TestAttribute = NUnit.Framework.TestAttribute
+
 #endif
 
 [<AutoOpen>]
 module TestCommon =
   let SolutionDir () = AltCover.SolutionRoot.location
+
+  let maybeIgnore f =
+    if f () then
+      Assert.Ignore()
 
   let maybeIOException f =
     try
@@ -48,23 +54,50 @@ module TestCommon =
       g ()
       reraise ()
 
-  let maybe a b c = if a then b else c
+  let private test0 x = Swensen.Unquote.Assertions.test x
 
-  let test x = Swensen.Unquote.Assertions.test x
+  let test x =
+    try
+      test0 x
+    with fail ->
+      NUnit.Framework.Assert.Fail(fail.Message)
 
   let test' x message =
     try
-      test x
+      test0 x
     with fail ->
-      Swensen.Unquote.AssertionFailedException(
-        message + Environment.NewLine + fail.Message,
-        fail
-      )
-      |> raise
+      NUnit.Framework.Assert.Fail(message + Environment.NewLine + fail.Message)
+
+  let testWithFallback<'a>
+    x
+    (value: 'a)
+    (constraining: NUnit.Framework.Constraints.IResolveConstraint)
+    =
+    try
+      test0 x
+    with fail ->
+      Assert.That<'a>(value, constraining, fail.Message.Trim())
+
+  let testEqualValue actual expected =
+    testWithFallback <@ actual = expected @> actual (Is.EqualTo expected)
 
 module TestCommonTests =
   [<Test>]
+  let TestIgnoredTests () =
+    let allOK = (fun () -> true)
+
+    Assert.Throws<NUnit.Framework.IgnoreException>(fun () -> maybeIgnore allOK)
+    |> ignore
+#if !NET472
+    maybeIgnore allOK
+#endif
+
+  [<Test>]
   let ExerciseItAll () =
+#if !NET472
+    let attr = TestAttribute()
+    test <@ attr.IsNotNull @>
+#endif
     let where =
       Assembly.GetExecutingAssembly().Location
       |> Path.GetDirectoryName
@@ -90,8 +123,8 @@ module TestCommonTests =
     maybeIOException (fun () -> maybeReraise (fun () -> IOException() |> raise) ignore)
     maybeIOException (fun () -> System.UnauthorizedAccessException() |> raise)
 
-    test <@ (maybe true 1 2) = 1 @>
-    test <@ (maybe false 1 2) = 2 @>
+    test <@ (Maybe true 1 2) = 1 @>
+    test <@ (Maybe false 1 2) = 2 @>
     test <@ SolutionDir() |> String.IsNullOrEmpty |> not @>
     test <@ SolutionDir() = AltCover.SolutionRoot.location @>
     test <@ where.StartsWith(AltCover.SolutionRoot.location, StringComparison.Ordinal) @>
@@ -99,34 +132,117 @@ module TestCommonTests =
   [<Test>]
   let SelfTest () =
     test <@ true @>
-#if NETCOREAPP3_0
-    Assert.Throws<Expecto.AssertException>
-      (
-#else
-#if (ValidateGendarmeEmulation || GUI)
-    Assert.Throws<NUnit.Framework.AssertionException>
-      (
-#else
-    Assert.Throws<Xunit.Sdk.TrueException>
-      (
-#endif
-#endif
-      fun () -> test <@ false @>)
+
+    Assert.Throws<NUnit.Framework.AssertionException>(fun () -> test <@ false @>)
     |> ignore
 
-    Assert.Throws<Swensen.Unquote.AssertionFailedException>(fun () ->
-      test' <@ false @> "junk")
+    Assert.Throws<NUnit.Framework.AssertionException>(fun () -> test' <@ false @> "junk")
     |> ignore
 
-#if NETCOREAPP3_0
+  [<Test>]
+  let TestMultiple () =
+    let exp1 = 4
+    let exp2 = "no"
+
+    let fallback =
+      Assert
+        .Throws<NUnit.Framework.AssertionException>(fun () -> testEqualValue "yes" exp2)
+        .Message.Replace(
+          """Expected: True
+Actual:   False
+""",
+          String.Empty
+        )
+        .Replace(
+          """
+
+""",
+          """
+"""
+        )
+
+    // printfn "*********************************************"
+
+    // printfn
+    //   "%s"
+    //   (System
+    //     .Reflection
+    //     .Assembly
+    //     .GetExecutingAssembly()
+    //     .FullName)
+
+    // printfn "%s" fallback
+    // printfn "*********************************************"
+
+    Assert.That(
+      fallback,
+      Does.EndWith
+        """  actual = expected
+"yes" = "no"
+false
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+"""
+    )
+
+    let m =
+      Assert
+        .Throws<NUnit.Framework.MultipleAssertException>(fun () ->
+          Assert.Multiple(fun () ->
+            Assert.That(3, Is.EqualTo exp1)
+            test <@ 3 = exp1 @>
+            Assert.That("yes", Is.EqualTo exp2)
+            test <@ "yes" = exp2 @>))
+        .Message
+
+    //printfn "%s" m
+
+    let m2 =
+      m.Replace(
+        """Expected: True
+Actual:   False
+""",
+        String.Empty
+      )
+
+    //printfn "%s" m2
+
+    Assert.That(
+      m2,
+      Is.EqualTo
+        """Multiple failures or warnings in test:
+  1)   Expected: 4
+  But was:  3
+
+  2) 
+
+3 = exp1
+3 = 4
+false
+
+  3)   Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+
+  4) 
+
+"yes" = exp2
+"yes" = "no"
+false
+
+"""
+    )
+
+#if !NET472
 module ExpectoTestCommon =
   let sync = System.Object()
 
   let consistencyCheck (regular: ((unit -> unit) * string) list) expected =
     let here =
-      System
-        .Reflection
-        .Assembly
+      System.Reflection.Assembly
         .GetExecutingAssembly()
         .Location
 
@@ -166,8 +282,7 @@ module ExpectoTestCommon =
 
           |> Seq.find (fun i ->
             i.OpCode = OpCodes.Call
-            && i
-              .Operand
+            && i.Operand
               .GetType()
               .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
         >> (fun i ->
@@ -192,11 +307,15 @@ module ExpectoTestCommon =
     pretest
     =
     testList name
-    <| (((check, "ConsistencyCheck") :: regular
+    <| (((check, "ConsistencyCheck") :: regular :: regular
          |> List.map (fun (f, name) ->
            testCase name (fun () ->
              lock sync (fun () ->
                pretest ()
-               f ()))))
+
+               try
+                 f ()
+               with :? NUnit.Framework.IgnoreException ->
+                 ()))))
         @ specials)
 #endif

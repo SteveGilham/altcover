@@ -30,6 +30,13 @@ module Setup =
   let dotnetPath =
     "dotnet" |> ProcessUtils.tryFindFileOnPath
 
+  let cliArguments =
+    { MSBuild.CliArguments.Create() with
+        ConsoleLogParameters = []
+        DistributedLoggers = None
+        Properties = []
+        DisableInternalBinLog = true }
+
   let dotnetOptions (o: DotNet.Options) =
     match dotnetPath with
     | Some f -> { o with DotNetCliPath = f }
@@ -39,11 +46,15 @@ module Setup =
     (fun o ->
       { o with
           Packages = [ "./packages" ]
+          MSBuildParams = cliArguments
           Common = dotnetOptions o.Common })
     "./Build/NuGet.csproj"
 
   DotNet.restore
-    (fun o -> { o with Common = dotnetOptions o.Common })
+    (fun o ->
+      { o with
+          MSBuildParams = cliArguments
+          Common = dotnetOptions o.Common })
     "./Build/DriveApi.fsproj"
 
   let toolPackages =

@@ -144,7 +144,11 @@ module internal Main =
 
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
-                 CommandLine.Format.Local("DuplicatesNotAllowed", arg, "--inputDirectory")
+                 CommandLine.Format.Local(
+                   "DuplicatesNotAllowed",
+                   arg,
+                   "--inputDirectory"
+                 )
                  :: CommandLine.error
              else
                CoverageParameters.theInputDirectories.Add arg))
@@ -330,9 +334,9 @@ module internal Main =
              CommandLine.Format.Local("InvalidValue", "AltCover", x)
              :: CommandLine.error)) ] // default end stop
       |> List.fold
-           (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
-           (OptionSet())
+        (fun (o: OptionSet) (p, a) ->
+          o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
+        (OptionSet())
 
     let private echoDirectories (outputDirectory: string, inputDirectory: string) =
       if
@@ -494,24 +498,24 @@ module internal Main =
         let filemap =
           files
           |> Seq.fold
-               (fun (d: Dictionary<string, string>) info ->
-                 let fullName = info.FullName
-                 let dirname = info.DirectoryName
+            (fun (d: Dictionary<string, string>) info ->
+              let fullName = info.FullName
+              let dirname = info.DirectoryName
 
-                 let reldir =
-                   Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
+              let reldir =
+                Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
 
-                 let copy =
-                   Path.Combine(outputInfo.FullName, reldir, info.Name)
+              let copy =
+                Path.Combine(outputInfo.FullName, reldir, info.Name)
 
-                 copy
-                 |> Path.GetDirectoryName
-                 |> Directory.CreateDirectory
-                 |> ignore
+              copy
+              |> Path.GetDirectoryName
+              |> Directory.CreateDirectory
+              |> ignore
 
-                 d.Add(fullName, copy)
-                 d)
-               (Dictionary<string, string>())
+              d.Add(fullName, copy)
+              d)
+            (Dictionary<string, string>())
 
         // filter no-ops here
 
@@ -541,69 +545,69 @@ module internal Main =
         |> Seq.map (fun sourceInfo ->
           sourceInfo.GetFiles()
           |> Seq.fold
-               (fun (accumulator: AssemblyInfo list) info ->
-                 let fullName = info.FullName
+            (fun (accumulator: AssemblyInfo list) info ->
+              let fullName = info.FullName
 
-                 fullName
-                 |> sprintf "%s : beginning process"
-                 |> Output.verbose
+              fullName
+              |> sprintf "%s : beginning process"
+              |> Output.verbose
 
-                 imageLoadResilient
-                   (fun () ->
-                     use stream = File.OpenRead(fullName)
+              imageLoadResilient
+                (fun () ->
+                  use stream = File.OpenRead(fullName)
 
-                     use def =
-                       AssemblyResolver.ReadAssembly(stream)
+                  use def =
+                    AssemblyResolver.ReadAssembly(stream)
 
-                     ProgramDatabase.readSymbols def
+                  ProgramDatabase.readSymbols def
 
-                     Some def
-                     |> Option.bind (screenAssembly fullName)
-                     |> Option.filter (fun def ->
-                       let symbols = def.MainModule.HasSymbols
+                  Some def
+                  |> Option.bind (screenAssembly fullName)
+                  |> Option.filter (fun def ->
+                    let symbols = def.MainModule.HasSymbols
 
-                       let passesFilter =
-                         (def.IsIncluded).IsInstrumented
+                    let passesFilter =
+                      (def.IsIncluded).IsInstrumented
 
-                       let pureIL =
-                         def.MainModule.Attributes
-                         &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly
+                    let pureIL =
+                      def.MainModule.Attributes
+                      &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly
 
-                       let ok = symbols && passesFilter && pureIL
+                    let ok = symbols && passesFilter && pureIL
 
-                       sprintf
-                         "%s : ** Failed one of : symbols %A/ pass filter %A/ ILOnly %A **"
-                         def.MainModule.FileName
-                         symbols
-                         passesFilter
-                         pureIL
-                       |> (Output.maybeVerbose (not ok))
+                    sprintf
+                      "%s : ** Failed one of : symbols %A/ pass filter %A/ ILOnly %A **"
+                      def.MainModule.FileName
+                      symbols
+                      passesFilter
+                      pureIL
+                    |> (Output.maybeVerbose (not ok))
 
-                       ok)
-                     |> Option.map (fun def ->
-                       CommandLine.Format.Local("instrumenting", fullName)
-                       |> Output.info
+                    ok)
+                  |> Option.map (fun def ->
+                    CommandLine.Format.Local("instrumenting", fullName)
+                    |> Output.info
 
-                       { Path = [ fullName ]
-                         Name = def.Name.Name
-                         Hash =
-                           use stream = File.OpenRead fullName
+                    { Path = [ fullName ]
+                      Name = def.Name.Name
+                      Hash =
+                        use stream = File.OpenRead fullName
 
-                           stream
-                           |> CoverageParameters.hash.ComputeHash
-                           |> Convert.ToBase64String
-                         Refs =
-                           def.MainModule.AssemblyReferences
-                           |> Seq.map (fun r -> r.Name)
-                           |> Seq.toList }
-                       :: accumulator)
-                     |> Option.defaultValue accumulator)
-                   (fun x ->
-                     sprintf "%s : ** not a valid assembly because %A **" info.FullName x
-                     |> Output.verbose
+                        stream
+                        |> CoverageParameters.hash.ComputeHash
+                        |> Convert.ToBase64String
+                      Refs =
+                        def.MainModule.AssemblyReferences
+                        |> Seq.map (fun r -> r.Name)
+                        |> Seq.toList }
+                    :: accumulator)
+                  |> Option.defaultValue accumulator)
+                (fun x ->
+                  sprintf "%s : ** not a valid assembly because %A **" info.FullName x
+                  |> Output.verbose
 
-                     accumulator))
-               [])
+                  accumulator))
+            [])
         |> Seq.toList
         |> Seq.concat
         |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique

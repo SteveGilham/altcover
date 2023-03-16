@@ -430,10 +430,10 @@ module AltCoverTests =
     lines
     |> Seq.take 4
     |> Seq.zip
-         [ "ModuleId = \"a\""
-           "hitPointId = \"b\""
-           "context = \"c\""
-           "exception = ex" ]
+      [ "ModuleId = \"a\""
+        "hitPointId = \"b\""
+        "context = \"c\""
+        "exception = ex" ]
     |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo b))
 
     let third =
@@ -471,11 +471,11 @@ module AltCoverTests =
     lines
     |> Seq.take 4
     |> Seq.zip
-         [ "ModuleId = \"b\""
-           "hitPointId = \"c\""
-           "context = \"d\""
-           "exception = System.NullReferenceException: "
-           + unique ]
+      [ "ModuleId = \"b\""
+        "hitPointId = \"c\""
+        "context = \"d\""
+        "exception = System.NullReferenceException: "
+        + unique ]
     |> Seq.iter (fun (a, b) -> Assert.That(b, Is.EqualTo a))
 
     let third =
@@ -568,10 +568,10 @@ module AltCoverTests =
         lines
         |> Seq.take 4
         |> Seq.zip
-             [ "ModuleId = \" \""
-               "hitPointId = 23"
-               "context = Null"
-               "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
+          [ "ModuleId = \" \""
+            "hitPointId = 23"
+            "context = Null"
+            "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
         |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
 
         let third =
@@ -1231,7 +1231,11 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            Adapter.VisitsAdd("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
           Adapter.DoPause().Invoke(null, null)
 
@@ -1430,7 +1434,11 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            Adapter.VisitsAdd("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
           Adapter.DoExit().Invoke(null, null)
 
@@ -1532,7 +1540,11 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            Adapter.VisitsAdd("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
           Adapter.DoUnload().Invoke(null, null)
 
@@ -2030,7 +2042,11 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            Adapter.VisitsAdd("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
           Adapter.DoExit().Invoke(null, null)
 

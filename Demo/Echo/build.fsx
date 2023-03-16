@@ -29,21 +29,22 @@ open Fake.IO.Globbing.Operators
 open System.IO
 
 if Directory.Exists "./Report" then
-    Shell.cleanDir "./Report"
+  Shell.cleanDir "./Report"
 
 if Directory.Exists "./Echo/bin" then
-    Shell.cleanDir "./Echo/bin"
+  Shell.cleanDir "./Echo/bin"
 
 if Directory.Exists "./Test/bin" then
-    Shell.cleanDir "./Test/bin"
+  Shell.cleanDir "./Test/bin"
 
 !!(@"./**/coverage.xm*") |> Seq.iter File.Delete
 
 
-let target = Path.Combine(Path.GetFullPath "Test", "SolutionRoot.cs")
+let target =
+  Path.Combine(Path.GetFullPath "Test", "SolutionRoot.cs")
 
 let template =
-    """
+  """
 namespace Test
 {
     internal static class SolutionRoot
@@ -53,9 +54,9 @@ namespace Test
             get
             {
                 return @"""
-    + "\""
-    + (Path.GetFullPath ".")
-    + """\";
+  + "\""
+  + (Path.GetFullPath ".")
+  + """\";
             }
         }
     }
@@ -66,23 +67,29 @@ File.WriteAllText(target, template)
 
 "Echo.sln"
 |> MSBuild.build (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Normal
-        ConsoleLogParameters = []
-        DistributedLoggers = None
-        DisableInternalBinLog = true
-        Properties = [ "Configuration", "Debug"; "DebugSymbols", "True" ] })
+  { p with
+      Verbosity = Some MSBuildVerbosity.Normal
+      ConsoleLogParameters = []
+      DistributedLoggers = None
+      DisableInternalBinLog = true
+      Properties =
+        [ "Configuration", "Debug"
+          "DebugSymbols", "True" ] })
 
 DotNet.exec id "altcover" "--save --inplace -i ./Echo/bin/Debug/netcoreapp2.2 --opencover"
 
 DotNet.test
-    (fun o ->
-        let custom =
-            { o.Common with CustomParams = Some "/p:AltCover=true /p:AltCoverForce=true" }
+  (fun o ->
+    let custom =
+      { o.Common with
+          CustomParams = Some "/p:AltCover=true /p:AltCoverForce=true" }
 
-        { o with Common = custom })
-    "./Test/Test.csproj"
+    { o with Common = custom })
+  "./Test/Test.csproj"
 
 DotNet.exec id "altcover" "runner --collect -r ./Echo/bin/Debug/netcoreapp2.2"
 
-DotNet.exec id "reportgenerator" """-reports:"./**/coverage.xml" -targetdir:Report -reporttypes:Html"""
+DotNet.exec
+  id
+  "reportgenerator"
+  """-reports:"./**/coverage.xml" -targetdir:Report -reporttypes:Html"""

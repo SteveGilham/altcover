@@ -157,7 +157,7 @@ module AltCoverTests3 =
     )
 
     let fsapiNames =
-      typeof<AltCover.PrepareOptions>.GetProperties ()
+      typeof<AltCover.PrepareOptions>.GetProperties()
       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -204,10 +204,12 @@ module AltCoverTests3 =
     )
 
     let taskNames =
-      typeof<Prepare>.GetProperties
-        (BindingFlags.DeclaredOnly
-         ||| BindingFlags.Public
-         ||| BindingFlags.Instance)
+      typeof<Prepare>
+        .GetProperties(
+          BindingFlags.DeclaredOnly
+          ||| BindingFlags.Public
+          ||| BindingFlags.Instance
+        )
       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -1083,8 +1085,8 @@ module AltCoverTests3 =
         CoverageParameters.outputDirectories ()
         |> Seq.toList
         |> List.zip
-             [ canonicalDirectory "maybe"
-               ".." |> (pcom "__Saved") ]
+          [ canonicalDirectory "maybe"
+            ".." |> (pcom "__Saved") ]
         |> List.iter Assert.AreEqual
 
     finally
@@ -3678,8 +3680,8 @@ module AltCoverTests3 =
       Console.SetError stderr
 
       let main =
-        typeof<Marker>
-          .Assembly.GetType("AltCover.EntryPoint")
+        typeof<Marker>.Assembly
+          .GetType("AltCover.EntryPoint")
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
@@ -3724,8 +3726,8 @@ module AltCoverTests3 =
       let unique = Guid.NewGuid().ToString()
 
       let main =
-        typeof<Marker>
-          .Assembly.GetType("AltCover.EntryPoint")
+        typeof<Marker>.Assembly
+          .GetType("AltCover.EntryPoint")
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
@@ -3765,8 +3767,7 @@ module AltCoverTests3 =
       )
 
       let helptext =
-        Output
-          .resources
+        Output.resources
           .GetString("HelpText")
           .Replace("\r\n", "\n")
 
@@ -3834,9 +3835,7 @@ module AltCoverTests3 =
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
       let dir =
-        System
-          .Reflection
-          .Assembly
+        System.Reflection.Assembly
           .GetExecutingAssembly()
           .Location
         |> Path.GetDirectoryName

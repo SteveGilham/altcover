@@ -12,10 +12,7 @@ module internal Canonical =
 
   let canonicalPath (path: string) =
     // Mono+Linux barfs at a path of "/_" without the "file://" prefix
-    Uri(
-      "file://" + (Path.GetFullPath path),
-      UriKind.Absolute
-    )
+    Uri("file://" + (Path.GetFullPath path), UriKind.Absolute)
       .LocalPath
 
 #if !FAKE && !NoCanonicalDirectories

@@ -16,7 +16,6 @@ module Actions =
   open Markdig
   open NUnit.Framework
   open Swensen.Unquote
-  open YamlDotNet.RepresentationModel
 
   open AltCoverFake.DotNet.Testing
 
@@ -57,8 +56,7 @@ module Actions =
         !!(@"./**/InternalTrace.*.log")
         |> Seq.iter File.Delete
 
-        !!(@"./**/*.orig")
-        |> Seq.iter File.Delete
+        !!(@"./**/*.orig") |> Seq.iter File.Delete
 
         let temp = Environment.environVar "TEMP"
 

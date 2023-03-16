@@ -61,16 +61,16 @@ type internal SummaryFormat =
       expanded
       |> Seq.distinct
       |> Seq.fold
-           (fun state c ->
-             match (c, state) with
-             | ('N', _)
-             | (_, N) -> N
-             | ('B', _) -> Many(B :: (SummaryFormat.ToList state))
-             | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
-             | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
-             | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
-             | _ -> s |> FormatException.Throw)
-           (Many [])
+        (fun state c ->
+          match (c, state) with
+          | ('N', _)
+          | (_, N) -> N
+          | ('B', _) -> Many(B :: (SummaryFormat.ToList state))
+          | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
+          | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
+          | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
+          | _ -> s |> FormatException.Throw)
+        (Many [])
     with :? FormatException ->
       Default
 
@@ -128,25 +128,25 @@ type internal Threshold =
     let parts =
       partition chars []
       |> List.fold
-           (fun (ok, t) (h, h2) ->
-             let fail t _ = (false, t)
+        (fun (ok, t) (h, h2) ->
+          let fail t _ = (false, t)
 
-             let defaultMapper =
-               parse 100uy (fun t v -> { t with Statements = v })
+          let defaultMapper =
+            parse 100uy (fun t v -> { t with Statements = v })
 
-             let mapper =
-               match (ok, h) with // can't say String.Empty
-               | (true, x) when x.Length = 0 -> defaultMapper
-               | (true, "S") -> defaultMapper
-               | (true, "B") -> parse 100uy (fun t v -> { t with Branches = v })
-               | (true, "M") -> parse 100uy (fun t v -> { t with Methods = v })
-               | (true, "C") -> parse 255uy (fun t v -> { t with Crap = v })
-               | (true, "AM") -> parse 100uy (fun t v -> { t with AltMethods = v })
-               | (true, "AC") -> parse 255uy (fun t v -> { t with AltCrap = v })
-               | _ -> fail
+          let mapper =
+            match (ok, h) with // can't say String.Empty
+            | (true, x) when x.Length = 0 -> defaultMapper
+            | (true, "S") -> defaultMapper
+            | (true, "B") -> parse 100uy (fun t v -> { t with Branches = v })
+            | (true, "M") -> parse 100uy (fun t v -> { t with Methods = v })
+            | (true, "C") -> parse 255uy (fun t v -> { t with Crap = v })
+            | (true, "AM") -> parse 100uy (fun t v -> { t with AltMethods = v })
+            | (true, "AC") -> parse 255uy (fun t v -> { t with AltCrap = v })
+            | _ -> fail
 
-             mapper t h2)
-           (true, Threshold.Default())
+          mapper t h2)
+        (true, Threshold.Default())
 
     parts
     |> (fun (a, b) -> (a, (if a then Some b else None)))
@@ -232,9 +232,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined")>]
     let internal contains o l = l |> Seq.contains o
 
     [<SuppressMessage("Gendarme.Rules.Maintainability",
@@ -317,9 +314,6 @@ module internal Runner =
                       Justification = "In inlined library code")>]
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "In inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "In inlined library code")>]
     let internal emitAltCrapScore go (methods: XElement seq) =
       let value =
@@ -469,9 +463,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined 4 times")>]
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidComplexMethodsRule",
                       Justification = "TODO: refactor even more")>]
@@ -549,9 +540,6 @@ module internal Runner =
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "Library method inlined")>]
     let internal jsonSummary (json: NativeJson.Modules) =
       let summarise go (vc: int) (nc: int) key =
@@ -681,9 +669,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Inlined library code")>]
     let internal standardSummary
       (reportDocument: DocumentType)
       (format: ReportFormat)
@@ -759,10 +744,8 @@ module internal Runner =
       | [] -> best
       | _ -> possibles |> List.maxBy (fun (a, _, _) -> a)
 
-    let mutable internal summaries: (DocumentType
-      -> ReportFormat
-      -> int
-      -> (int * byte * string)) list =
+    let mutable internal summaries
+      : (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary () = summaries <- LCov.summary :: summaries
@@ -872,9 +855,9 @@ module internal Runner =
            CommandLine.Format.Local("InvalidValue", "AltCover", x)
            :: CommandLine.error)) ] // default end stop
     |> List.fold
-         (fun (o: OptionSet) (p, a) ->
-           o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
-         (OptionSet())
+      (fun (o: OptionSet) (p, a) ->
+        o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
+      (OptionSet())
 
   let internal requireRecorderTest recordingDirectory success fail =
     match recordingDirectory with
@@ -1006,141 +989,141 @@ module internal Runner =
           Path.GetFileName(report) + ".*.acv"
         )
         |> Seq.fold
-             (fun before f ->
-               timer.Restart()
+          (fun before f ->
+            timer.Restart()
 
-               let length =
-                 FileInfo(f)
-                   .Length.ToString("#,#", CultureInfo.CurrentCulture)
+            let length =
+              FileInfo(f)
+                .Length.ToString("#,#", CultureInfo.CurrentCulture)
 
-               sprintf "... %s (%sb)" f length |> Output.info
-               use fileStream = File.OpenRead f
+            sprintf "... %s (%sb)" f length |> Output.info
+            use fileStream = File.OpenRead f
 
-               use results =
-                 new DeflateStream(fileStream, CompressionMode.Decompress)
+            use results =
+              new DeflateStream(fileStream, CompressionMode.Decompress)
 
-               use formatter =
-                 new System.IO.BinaryReader(results)
+            use formatter =
+              new System.IO.BinaryReader(results)
 
-               let rec sink hitcount =
-                 let hit =
-                   try
-                     let id = formatter.ReadString()
-                     let strike = formatter.ReadInt32()
-                     let tag = formatter.ReadByte() |> int
+            let rec sink hitcount =
+              let hit =
+                try
+                  let id = formatter.ReadString()
+                  let strike = formatter.ReadInt32()
+                  let tag = formatter.ReadByte() |> int
 
-                     Some(
-                       id,
-                       strike,
-                       match enum tag with
-                       | Tag.Time -> Time <| formatter.ReadInt64()
-                       | Tag.Call -> Call <| formatter.ReadInt32()
-                       | Tag.Both ->
-                         let time = formatter.ReadInt64()
-                         let call = formatter.ReadInt32()
-                         Both { Time = time; Call = call }
-                       | Tag.Table ->
-                         let t =
-                           Dictionary<string, Dictionary<int, PointVisit>>()
+                  Some(
+                    id,
+                    strike,
+                    match enum tag with
+                    | Tag.Time -> Time <| formatter.ReadInt64()
+                    | Tag.Call -> Call <| formatter.ReadInt32()
+                    | Tag.Both ->
+                      let time = formatter.ReadInt64()
+                      let call = formatter.ReadInt32()
+                      Both { Time = time; Call = call }
+                    | Tag.Table ->
+                      let t =
+                        Dictionary<string, Dictionary<int, PointVisit>>()
 
-                         let rec ``module`` () =
-                           let m = formatter.ReadString()
+                      let rec ``module`` () =
+                        let m = formatter.ReadString()
 
-                           if String.IsNullOrEmpty m then
-                             ()
-                           else
-                             if m |> t.ContainsKey |> not then
-                               t.Add(m, Dictionary<int, PointVisit>())
+                        if String.IsNullOrEmpty m then
+                          ()
+                        else
+                          if m |> t.ContainsKey |> not then
+                            t.Add(m, Dictionary<int, PointVisit>())
 
-                             let points = formatter.ReadInt32()
+                          let points = formatter.ReadInt32()
 
-                             let rec sequencePoint pts =
-                               if pts > 0 then
-                                 let p = formatter.ReadInt32()
-                                 let n = formatter.ReadInt64()
+                          let rec sequencePoint pts =
+                            if pts > 0 then
+                              let p = formatter.ReadInt32()
+                              let n = formatter.ReadInt64()
 
-                                 if p |> t.[m].ContainsKey |> not then
-                                   t.[m].Add(p, PointVisit.Create())
+                              if p |> t.[m].ContainsKey |> not then
+                                t.[m].Add(p, PointVisit.Create())
 
-                                 let pv = t.[m].[p]
-                                 pv.Count <- pv.Count + n
+                              let pv = t.[m].[p]
+                              pv.Count <- pv.Count + n
 
-                                 let rec tracking () =
-                                   let track = formatter.ReadByte() |> int
+                              let rec tracking () =
+                                let track = formatter.ReadByte() |> int
 
-                                   match enum track with
-                                   | Tag.Time ->
-                                     pv.Tracks.Add(Time <| formatter.ReadInt64())
-                                     tracking ()
-                                   | Tag.Call ->
-                                     pv.Tracks.Add(Call <| formatter.ReadInt32())
-                                     tracking ()
-                                   | Tag.Both ->
-                                     pv.Tracks.Add(
-                                       let time = formatter.ReadInt64()
-                                       let call = formatter.ReadInt32()
-                                       Both { Time = time; Call = call }
-                                     )
+                                match enum track with
+                                | Tag.Time ->
+                                  pv.Tracks.Add(Time <| formatter.ReadInt64())
+                                  tracking ()
+                                | Tag.Call ->
+                                  pv.Tracks.Add(Call <| formatter.ReadInt32())
+                                  tracking ()
+                                | Tag.Both ->
+                                  pv.Tracks.Add(
+                                    let time = formatter.ReadInt64()
+                                    let call = formatter.ReadInt32()
+                                    Both { Time = time; Call = call }
+                                  )
 
-                                     tracking ()
-                                   // Expect never to happen                                    | Tag.Table -> ``module``()
-                                   | _ -> sequencePoint (pts - 1)
+                                  tracking ()
+                                // Expect never to happen                                    | Tag.Table -> ``module``()
+                                | _ -> sequencePoint (pts - 1)
 
-                                 tracking ()
-                               else
-                                 ``module`` ()
+                              tracking ()
+                            else
+                              ``module`` ()
 
-                             sequencePoint points
+                          sequencePoint points
 
-                         ``module`` ()
-                         Table t
-                       | _ -> Null
-                     )
-                   with :? EndOfStreamException ->
-                     None
+                      ``module`` ()
+                      Table t
+                    | _ -> Null
+                  )
+                with :? EndOfStreamException ->
+                  None
 
-                 match hit with
-                 | Some tuple ->
-                   let (key, hitPointId, visit) = tuple
+              match hit with
+              | Some tuple ->
+                let (key, hitPointId, visit) = tuple
 
-                   let increment =
-                     if
-                       key |> String.IsNullOrWhiteSpace |> not
-                       || ((String.IsNullOrEmpty key)
-                           && hitPointId = 0
-                           && visit.GetType().ToString()
-                              == "AltCover.Track+Table")
-                     then
-                       if
-                         hits.ContainsKey key |> not
-                         && key |> String.IsNullOrWhiteSpace |> not // terminator
-                       then
-                         hits.Add(key, Dictionary<int, PointVisit>())
+                let increment =
+                  if
+                    key |> String.IsNullOrWhiteSpace |> not
+                    || ((String.IsNullOrEmpty key)
+                        && hitPointId = 0
+                        && visit.GetType().ToString()
+                           == "AltCover.Track+Table")
+                  then
+                    if
+                      hits.ContainsKey key |> not
+                      && key |> String.IsNullOrWhiteSpace |> not // terminator
+                    then
+                      hits.Add(key, Dictionary<int, PointVisit>())
 
-                       Counter.addVisit hits key hitPointId visit
-                     else
-                       0L
+                    Counter.addVisit hits key hitPointId visit
+                  else
+                    0L
 
-                   sink (hitcount + increment)
-                 | None -> hitcount
+                sink (hitcount + increment)
+              | None -> hitcount
 
-               let after = sink before
-               timer.Stop()
+            let after = sink before
+            timer.Stop()
 
-               if after > before then
-                 let delta = after - before
-                 let interval = timer.Elapsed
+            if after > before then
+              let delta = after - before
+              let interval = timer.Elapsed
 
-                 let rate =
-                   (float delta) / interval.TotalSeconds
+              let rate =
+                (float delta) / interval.TotalSeconds
 
-                 CommandLine.writeResourceWithFormatItems
-                   "%d visits recorded in %A (%A visits/sec)"
-                   [| delta :> obj; interval; rate |]
-                   false
+              CommandLine.writeResourceWithFormatItems
+                "%d visits recorded in %A (%A visits/sec)"
+                [| delta :> obj; interval; rate |]
+                false
 
-               after)
-             0L
+            after)
+          0L
 
       timer.Stop()
 
@@ -1433,14 +1416,14 @@ module internal Runner =
       let (code, t, f) =
         I.summaries
         |> List.fold
-             (fun (r, t, f) summary ->
-               let rx, t2, f2 = summary document format r
+          (fun (r, t, f) summary ->
+            let rx, t2, f2 = summary document format r
 
-               if rx > r then
-                 (rx, t2, f2)
-               else
-                 (r, t, f))
-             (result, 0uy, String.Empty)
+            if rx > r then
+              (rx, t2, f2)
+            else
+              (r, t, f))
+          (result, 0uy, String.Empty)
 
       if (code > 0 && result = 0 && code <> result) then
         CommandLine.writeErrorResourceWithFormatItems f [| code :> obj; t :> obj |]
