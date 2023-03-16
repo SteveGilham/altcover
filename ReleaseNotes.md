@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 20)
+# (Habu series release 21)
+
+# 8.6.40 (Habu series release 20)
 * [BUGFIX] Issue #178 - possible NRE when instrumenting woven code e.g. using Fody
 * [AvaloniaVisualizer] Now requires net5.0 or later
 * Supports Fake 6.0.0.  This is probably the last release that will support earlier versions, as 5.23.1 is almost 6 months old.
