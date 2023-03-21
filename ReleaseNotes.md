@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 21)
+# (Habu series release 22)
+
+# 8.6.45 (Habu series release 21)
 * [BUGFIX] Issue #179 - Improve and strengthen the heuristic for locating dependent assemblies, prossibly slightly speeding the look-up in the process by eliminating potentially duplicated effort.
 
 # 8.6.40 (Habu series release 20)
