@@ -13,7 +13,6 @@ open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
-open Mono.Cecil.Metadata
 
 module AssemblyConstants =
   let internal nugetCache =
@@ -25,7 +24,7 @@ module AssemblyConstants =
       "packages"
     )
 
-  let dotnetDir =
+  let internal dotnetDir =
     let list =
       Environment
         .GetEnvironmentVariable("PATH")
@@ -37,7 +36,7 @@ module AssemblyConstants =
       File.Exists(Path.Combine(p, "dotnet"))
       || File.Exists(Path.Combine(p, "dotnet.exe")))
 
-  let packageEnv =
+  let internal packageEnv =
     let e =
       Environment.GetEnvironmentVariable "NUGET_PACKAGES"
       |> Option.ofObj

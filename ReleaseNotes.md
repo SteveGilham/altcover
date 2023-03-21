@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 21)
+* [BUGFIX] Issue #179 - Improve and strengthen the heuristic for locating dependent assemblies, prossibly slightly speeding the look-up in the process by eliminating potentially duplicated effort.
 
 # 8.6.40 (Habu series release 20)
 * [BUGFIX] Issue #178 - possible NRE when instrumenting woven code e.g. using Fody
