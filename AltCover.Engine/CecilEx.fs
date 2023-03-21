@@ -25,6 +25,29 @@ module AssemblyConstants =
       "packages"
     )
 
+  let dotnetDir =
+    let list =
+      Environment
+        .GetEnvironmentVariable("PATH")
+        .Split([| Path.PathSeparator |])
+      |> Seq.map (fun p -> p.Trim([| '"' |]))
+
+    list
+    |> Seq.tryFind (fun p ->
+      File.Exists(Path.Combine(p, "dotnet"))
+      || File.Exists(Path.Combine(p, "dotnet.exe")))
+
+  let packageEnv =
+    let e =
+      Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+      |> Option.ofObj
+      |> (Option.defaultValue String.Empty)
+
+    e.Split([| Path.PathSeparator |])
+    |> Seq.map (fun p -> p.Trim([| '"' |]))
+    |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+    |> Seq.toList
+
   let internal resolutionTable =
     Dictionary<string, AssemblyDefinition>()
 
@@ -98,20 +121,29 @@ type internal AssemblyResolver() as self =
         "|usr|share"
           .Replace('|', Path.DirectorySeparatorChar)
 
-      let shared =
+      let shareLocal =
+        "|usr|local|share"
+          .Replace('|', Path.DirectorySeparatorChar)
+
+      let dotnetShared =
         "dotnet|shared"
           .Replace('|', Path.DirectorySeparatorChar)
 
+
       let sources =
-        [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
-          Path.Combine(
-            Environment.GetEnvironmentVariable "ProgramFiles"
+        [ AssemblyConstants.packageEnv
+          [ Environment.GetEnvironmentVariable "ProgramFiles"
             |> Option.ofObj
-            |> (Option.defaultValue share),
-            shared
-          )
-          Path.Combine(share, shared)
-          AssemblyConstants.nugetCache ]
+            |> Option.map (fun p -> Path.Combine(p, dotnetShared))
+            Some <| Path.Combine(share, dotnetShared)
+            Some <| Path.Combine(shareLocal, dotnetShared)
+            AssemblyConstants.dotnetDir
+            |> Option.map (fun p -> Path.Combine(p, "shared"))
+            Some AssemblyConstants.nugetCache ]
+          |> List.choose id ]
+        |> List.concat
+        |> List.filter Directory.Exists
+        |> List.distinct
 
       let candidate source =
         source
