@@ -61,7 +61,7 @@ All `To do` and  `On Hold` items are implicitly `up for grabs` and `Help Wanted`
 
 tl;dr -- legacy framework/Mono support is not going away any time soon.
 
-Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework-targeted builds are kept to a minimum (executable entry-points and the recorder).
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues until such a time as it is no longer possible to retain those API levels.  Framework-targeted builds are kept to a minimum (executable entry-points and the recorder).
 
 ## Building
 
@@ -74,7 +74,7 @@ It is assumed that the following are available
 .net SDK version as per global.json, or later minor version (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 7.3.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
-The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net6.0` for unit tests, but does not need any pre-6.0 runtimes to be installed (roll-forward policies are in place).
+The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net7.0` for unit tests, but does not need any pre-7.0 runtimes to be installed (roll-forward policies are in place).
 
 **Note:** F# compiler code generation changes may cause incompatibilities due to some of the IL inspection performed by AltCover and its self-tests (e.g. by, at 5.0.201, generating non-closure function objects as static fields rather than locally instantiated objects)
 
@@ -101,13 +101,13 @@ Use `dotnet run --project .\Build\Build.fsproj --target <targetname>` to run to 
 
 #### If the build fails
 
-If there's a passing build on the CI servers for this commit, then it's likely to be one of the [intermittent build failures](https://github.com/SteveGilham/altcover/wiki/Intermittent-build-issues) that can arise from the tooling used. The standard remedy is to try again.
+If there's a passing build on the CI server for this commit, then it's likely to be one of the [intermittent build failures](https://github.com/SteveGilham/altcover/wiki/Intermittent-build-issues) that can arise from the tooling used. The standard remedy is to try again.
 
 ### Unit Tests
 
 The tests in the `AltCover.Test` project are broadly ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
-Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; these tests will be marked `ignore` when running the unit tests under `net472` and `pass` without doing anything under `net5.0` (as Expecto has no `ignore` option) if the build is not complete and thus those expected assemblies are not found e.g. in Visual Studio from clean, or after a build to targets like `Analysis` that only build code to be analysed.
+Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; these tests will be marked `ignore` when running the unit tests under `net472` and `pass` without doing anything under `net7.0` (as Expecto has no `ignore` option) if the build is not complete and thus those expected assemblies are not found e.g. in Visual Studio from clean, or after a build to targets like `Analysis` that only build code to be analysed.
 
 ## Thanks to
 
