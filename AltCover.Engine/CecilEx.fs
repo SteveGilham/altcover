@@ -31,10 +31,12 @@ module AssemblyConstants =
         .Split([| Path.PathSeparator |])
       |> Seq.map (fun p -> p.Trim([| '"' |]))
 
+    let files = [ "dotnet"; "dotnet.exe" ]
+
     list
     |> Seq.tryFind (fun p ->
-      File.Exists(Path.Combine(p, "dotnet"))
-      || File.Exists(Path.Combine(p, "dotnet.exe")))
+      files
+      |> List.exists (fun f -> File.Exists(Path.Combine(p, f))))
 
   let internal packageEnv =
     let e =
