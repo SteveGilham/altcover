@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 21a)
+# (Habu series release 22)
+
+# 8.6.48 (Habu series release 21a)
 * [BUGFIX] Correctly package the visualizer for net5.0, as well as building it against the later platform
 
 # 8.6.45 (Habu series release 21)
