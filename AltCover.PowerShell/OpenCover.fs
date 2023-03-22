@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Collections.Generic
@@ -136,9 +136,11 @@ type CompressBranchingCommand() =
           self.WithinSequencePoint.IsPresent
           self.SameSpan.IsPresent
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         xmlDocument.Save(self.OutputFile)
 
       self.WriteObject xmlDocument
@@ -161,10 +163,12 @@ type CompressBranchingCommand() =
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell",
                   "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
-                  Justification = "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
+                  Justification =
+                    "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
 [<SuppressMessage("Microsoft.PowerShell",
                   "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
-                  Justification = "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
+                  Justification =
+                    "The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
 type MergeOpenCoverCommand() =
   inherit PSCmdlet()
 
@@ -191,7 +195,8 @@ type MergeOpenCoverCommand() =
   [<ValidateNotNull; ValidateCount(1, Int32.MaxValue)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val XDocument: XDocument array = [||] with get, set
 
@@ -206,7 +211,8 @@ type MergeOpenCoverCommand() =
   [<ValidateNotNull; ValidateCount(1, Int32.MaxValue)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val InputFile: string array = [||] with get, set
 
@@ -218,12 +224,14 @@ type MergeOpenCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   member val OutputFile: string = String.Empty with get, set
 
-  member val private Files = new List<XDocument>()
+  member val private Files = List<XDocument>()
 
   override self.BeginProcessing() = self.Files.Clear()
 
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "InstantiateArgumentExceptionCorrectlyRule",
+                    Scope = "member", // MethodDefinition
+                    Target = "AltCover.Commands.MergeOpenCoverCommand::FilesToDocuments()",
                     Justification = "Inlined library code")>]
   member private self.FilesToDocuments() =
     self.InputFile
@@ -231,23 +239,22 @@ type MergeOpenCoverCommand() =
     |> self.Files.AddRange
 
   override self.ProcessRecord() =
-    whileInCurrentDirectory
-      self
-      (fun _ ->
-        if self.ParameterSetName.StartsWith("File", StringComparison.Ordinal) then
-          self.FilesToDocuments()
+    whileInCurrentDirectory self (fun _ ->
+      if self.ParameterSetName.StartsWith("File", StringComparison.Ordinal) then
+        self.FilesToDocuments()
 
-        self.Files.AddRange self.XDocument)
+      self.Files.AddRange self.XDocument)
 
   override self.EndProcessing() =
-    whileInCurrentDirectory
-      self
-      (fun _ ->
-        let xmlDocument = AltCover.OpenCover.Merge self.Files
+    whileInCurrentDirectory self (fun _ ->
+      let xmlDocument =
+        AltCover.OpenCover.Merge self.Files
 
-        if self.OutputFile
-           |> String.IsNullOrWhiteSpace
-           |> not then
-          xmlDocument.Save(self.OutputFile)
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
+        xmlDocument.Save(self.OutputFile)
 
-        self.WriteObject xmlDocument)
+      self.WriteObject xmlDocument)

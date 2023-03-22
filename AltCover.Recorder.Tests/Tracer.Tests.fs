@@ -1,4 +1,4 @@
-#if !NET472
+﻿#if !NET472
 #if NET20
 namespace Tests.Recorder.Clr2
 #else
@@ -22,136 +22,180 @@ open NUnit.Framework
 module AltCoverCoreTests =
   let maybeIOException f =
     try
-      f()
-    with :? IOException -> ()
+      f ()
+    with :? IOException ->
+      ()
 
   let maybeDeleteFile f =
-    if File.Exists f
-    then File.Delete f
+    if File.Exists f then
+      File.Delete f
 
   let maybeReraise f g =
     try
-      f()
+      f ()
     with _ ->
-      g()
-      reraise()
+      g ()
+      reraise ()
 
   [<Test>]
-  let ExcerciseItAll() =
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
+  let ExcerciseItAll () =
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
+
     maybeDeleteFile unique
-    maybeIOException (fun () ->
-      maybeReraise (fun () -> File.Delete unique) ignore
-    )
-    maybeIOException (fun () ->
-      maybeReraise (fun () -> IOException() |> raise) ignore
-    )
+    maybeIOException (fun () -> maybeReraise (fun () -> File.Delete unique) ignore)
+    maybeIOException (fun () -> maybeReraise (fun () -> IOException() |> raise) ignore)
 
   [<Test>]
-  let WillNotConnectSpontaneously() =
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+  let WillNotConnectSpontaneously () =
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
     let mutable client = Tracer.Create unique
     let close = (fun () -> client.Close())
 
     maybeReraise
-     (fun () ->
+      (fun () ->
         client <- client.OnStart()
         Assert.True(client.IsConnected |> not)
-        close())
+        close ())
       close
 
   [<Test>]
-  let ValidTokenWillConnect() =
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(where, Guid.NewGuid().ToString())
-    do use stream = File.Create(unique)
-       ()
+  let ValidTokenWillConnect () =
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    do
+      use stream = File.Create(unique)
+      ()
+
     let mutable client = Tracer.Create unique
+
     try
       client <- client.OnStart()
       Assert.True(client.IsConnected)
     finally
       client.Close()
 
-  let internal readResults(stream : Stream) =
+  let internal readResults (stream: Stream) =
     let hits = List<string * int * Track>()
-    use formatter = new System.IO.BinaryReader(stream)
 
-    let rec sink() =
+    use formatter = // fsharplint:disable-next-line  RedundantNewKeyword
+      new System.IO.BinaryReader(stream)
+
+    let rec sink () =
       maybeIOException (fun () ->
         let id = formatter.ReadString()
         let strike = formatter.ReadInt32()
         let tag = formatter.ReadByte() |> int
-        (id, strike,
+
+        (id,
+         strike,
          match enum tag with
          //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
          | Tag.Call -> Adapter.asCall <| formatter.ReadInt32()
          //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
          | Tag.Table ->
-             Assert.True(( id = String.Empty ))
-             Assert.True(( strike = 0 ))
-             let t = Dictionary<string, Dictionary<int, PointVisit>>()
+           Assert.True((id = String.Empty))
+           Assert.True((strike = 0))
 
-             let rec ``module``() =
-               let m = formatter.ReadString()
-               if String.IsNullOrEmpty m then
-                 ()
-               else
-                 t.Add(m, Dictionary<int, PointVisit>())
-                 let points = formatter.ReadInt32()
+           let t =
+             Dictionary<string, Dictionary<int, PointVisit>>()
 
-                 let rec sequencePoint pts =
-                   if pts > 0 then
-                     let p = formatter.ReadInt32()
-                     let n = formatter.ReadInt64()
-                     let pv = Adapter.init(n, [])
-                     t.[m].Add(p, pv)
-                     let rec tracking() =
-                       let track = formatter.ReadByte() |> int
-                       match enum track with
-                       | Tag.Time ->
-                           pv.Tracks.Add(Adapter.time <| formatter.ReadInt64())
-                           tracking()
-                       | Tag.Call ->
-                           pv.Tracks.Add(Adapter.asCall <| formatter.ReadInt32())
-                           tracking()
-                       | Tag.Both ->
-                           pv.Tracks.Add
-                             (Adapter.newBoth
-                               ((formatter.ReadInt64()), (formatter.ReadInt32())))
-                           tracking()
-                       //| Tag.Table -> Assert.True( false, "No nested tables!!")
-                       | _ -> sequencePoint (pts - 1)
-                     tracking()
-                   else
-                     ``module``()
-                 sequencePoint points
-             ``module``()
-             Adapter.table t
-         | _ -> Adapter.asNull())
+           let rec ``module`` () =
+             let m = formatter.ReadString()
+
+             if String.IsNullOrEmpty m then
+               ()
+             else
+               t.Add(m, Dictionary<int, PointVisit>())
+               let points = formatter.ReadInt32()
+
+               let rec sequencePoint pts =
+                 if pts > 0 then
+                   let p = formatter.ReadInt32()
+                   let n = formatter.ReadInt64()
+                   let pv = Adapter.init (n, [])
+                   t.[m].Add(p, pv)
+
+                   let rec tracking () =
+                     let track = formatter.ReadByte() |> int
+
+                     match enum track with
+                     | Tag.Time ->
+                       pv.Tracks.Add(Adapter.time <| formatter.ReadInt64())
+                       tracking ()
+                     | Tag.Call ->
+                       pv.Tracks.Add(Adapter.asCall <| formatter.ReadInt32())
+                       tracking ()
+                     | Tag.Both ->
+                       pv.Tracks.Add(
+                         Adapter.newBoth (
+                           (formatter.ReadInt64()),
+                           (formatter.ReadInt32())
+                         )
+                       )
+
+                       tracking ()
+                     //| Tag.Table -> Assert.True( false, "No nested tables!!")
+                     | _ -> sequencePoint (pts - 1)
+
+                   tracking ()
+                 else
+                   ``module`` ()
+
+               sequencePoint points
+
+           ``module`` ()
+           Adapter.table t
+         | _ -> Adapter.asNull ())
         |> hits.Add
-        sink())
-    sink()
+
+        sink ())
+
+    sink ()
     hits
 
   [<Test>]
-  let VisitShouldSignal() =
+  let VisitShouldSignal () =
     let save = Instance.I.trace
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
     let tag = unique + ".acv"
 
-    let expected = [ ("name", 23, Adapter.asNull()) ]
-    do use stream = File.Create tag
-       ()
+    let expected =
+      [ ("name", 23, Adapter.asNull ()) ]
+
+    do
+      use stream = File.Create tag
+      ()
+
     try
       let mutable client = Tracer.Create tag
+
       try
-        Adapter.VisitsClear()
+        Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
-        Assert.True( Instance.I.trace.IsConnected, "connection failed")
+        Assert.True(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
@@ -159,86 +203,138 @@ module AltCoverCoreTests =
         Instance.I.trace.Close()
         Instance.I.trace.Close()
         Instance.I.trace <- save
-      use stream =
+
+      use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
-      let results = readResults stream |> Seq.toList
-      Assert.True( Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
-      Assert.True((results = expected), "unexpected result")
+
+      let results =
+        readResults stream |> Seq.toList
+
+      Adapter.VisitsSeq()
+      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      |> Seq.iter (fun v ->
+        Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+
+      Assert.That(
+        Adapter.VisitsSeq() |> Seq.length,
+        Is.EqualTo 3,
+        sprintf "unexpected local write %A"
+        <| Adapter.VisitsSeq()
+      )
+
+      Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
-      Adapter.Reset()
+      Adapter.HardReset()
 
   [<Test>]
-  let VisitShouldSignalTrack() =
+  let VisitShouldSignalTrack () =
     let save = Instance.I.trace
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
     let tag = unique + ".acv"
-    let t = Dictionary<string, Dictionary<int, PointVisit>>()
+
+    let t =
+      Dictionary<string, Dictionary<int, PointVisit>>()
+
     t.["name"] <- Dictionary<int, PointVisit>()
+
     let expect23 =
-      [ Adapter.asCall 17
-        Adapter.asCall 42 ]
+      [ Adapter.asCall 17; Adapter.asCall 42 ]
 
     let expect24 =
       [ Adapter.time 17L
-        Adapter.newBoth(42L, 23) ]
+        Adapter.newBoth (42L, 23) ]
 
-    t.["name"].[23] <- Adapter.init(1L, expect23)
-    t.["name"].[24] <- Adapter.init(2L, expect24)
+    t.["name"].[23] <- Adapter.init (1L, expect23)
+    t.["name"].[24] <- Adapter.init (2L, expect24)
 
     let expected =
       [ (String.Empty, 0, Adapter.table t)
         ("name", 23, Adapter.asCall 5) ]
-    do use stream = File.Create tag
-       ()
+
+    do
+      use stream = File.Create tag
+      ()
+
     try
       let mutable client = Tracer.Create tag
+
       try
         Instance.I.trace <- client.OnStart()
-        Assert.True( Instance.I.trace.IsConnected, "connection failed")
+        Assert.True(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
 
-        Adapter.VisitsClear()
+        Adapter.HardReset()
         Adapter.VisitsAddTrack("name", 23, 1L)
         Adapter.VisitImplMethod("name", 23, 5)
       finally
         Instance.I.isRunner <- false
         Instance.I.trace.Close()
         Instance.I.trace <- save
-      use stream =
+
+      use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
+
       let results = readResults stream
-      Assert.True( ("no", 0, Adapter.asNull())
-                   |> Adapter.untable
-                   |> Seq.isEmpty)
-      Assert.True( Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
-      Assert.True( results.Count = 2 )
-      Assert.True( (results
-                    |> Seq.skip 1
-                    |> Seq.head) =
-                     (expected
-                      |> Seq.skip 1
-                      |> Seq.head), "unexpected result")
+
+      Assert.True(
+        ("no", 0, Adapter.asNull ())
+        |> Adapter.untable
+        |> Seq.isEmpty
+      )
+
+      Adapter.VisitsSeq()
+      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      |> Seq.iter (fun v ->
+        Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+
+      Assert.That(
+        Adapter.VisitsSeq() |> Seq.length,
+        Is.EqualTo 3,
+        sprintf "unexpected local write %A"
+        <| Adapter.VisitsSeq()
+      )
+
+      Assert.True(results.Count = 2)
+
+      Assert.True(
+        (results |> Seq.skip 1 |> Seq.head) = (expected |> Seq.skip 1 |> Seq.head),
+        sprintf "unexpected result %A" results
+      )
 
       let [ n'; p'; d' ] =
-             results
-            |> Seq.head
-            |> Adapter.untable
-            |> Seq.toList
+        results
+        |> Seq.head
+        |> Adapter.untable
+        |> Seq.toList
+
       let n = n' :?> String
       let p = p' :?> int
-      let d = d' :?> Dictionary<string, Dictionary<int, PointVisit>>
-      Assert.True( n |> Seq.isEmpty )
-      Assert.True(( p = 0 ))
-      Assert.True(( d.Count = 1 ))
-      Assert.True( d.["name"]
-                    |> Seq.sortBy (fun kv -> kv.Key)
-                    |> Seq.map (fun kv -> kv.Key)
-                    |> Seq.toList =
-                      (t.["name"]
-                      |> Seq.sortBy (fun kv -> kv.Key)
-                      |> Seq.map (fun kv -> kv.Key)
-                      |> Seq.toList) )
+
+      let d =
+        d' :?> Dictionary<string, Dictionary<int, PointVisit>>
+
+      Assert.True(n |> Seq.isEmpty)
+      Assert.True((p = 0))
+      Assert.True((d.Count = 1))
+
+      Assert.True(
+        d.["name"]
+        |> Seq.sortBy (fun kv -> kv.Key)
+        |> Seq.map (fun kv -> kv.Key)
+        |> Seq.toList =
+          (t.["name"]
+           |> Seq.sortBy (fun kv -> kv.Key)
+           |> Seq.map (fun kv -> kv.Key)
+           |> Seq.toList)
+      )
+
       let left =
         d.["name"]
         |> Seq.sortBy (fun kv -> kv.Key)
@@ -251,7 +347,8 @@ module AltCoverCoreTests =
         |> Seq.map (fun kv -> kv.Value.Count)
         |> Seq.toList
 
-      Assert.True(( left = right ))
+      Assert.True((left = right))
+
       let left2 =
         d.["name"]
         |> Seq.sortBy (fun kv -> kv.Key)
@@ -264,43 +361,69 @@ module AltCoverCoreTests =
         |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
         |> Seq.toList
 
-      Assert.True(( left2 = right2 ))
+      Assert.True((left2 = right2))
     finally
-      Adapter.VisitsClear()
+      Adapter.HardReset()
 
   [<Test>]
-  let FlushShouldTidyUp() = // also throw a bone to OpenCover 615
+  let FlushShouldTidyUp () = // also throw a bone to OpenCover 615
     let save = Instance.I.trace
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let root = Path.Combine(where, Guid.NewGuid().ToString())
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let root =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
     let unique = root + ".acv"
-    do use stream = File.Create unique
-       ()
+
+    do
+      use stream = File.Create unique
+      ()
+
     try
       let client = Tracer.Create unique
-      let expected = [ ("name", client.GetHashCode(), Adapter.asNull()) ]
+
+      let expected =
+        [ ("name", client.GetHashCode(), Adapter.asNull ()) ]
+
       try
-        Adapter.VisitsClear()
+        Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
         Assert.That(Instance.I.trace.Equals client, Is.False)
         Assert.That(Instance.I.trace.Equals expected, Is.False)
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
-        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+
+        let formatter =
+          System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+
         let (a, b, c) = expected |> Seq.head
-        Adapter.tracePush(a, b, c)
+        Adapter.tracePush (a, b, c)
         Instance.FlushFinish()
       finally
         Instance.I.trace.Close()
         System.Threading.Thread.Sleep 100
         Instance.I.trace <- save
-      use stream =
+
+      use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(root + ".0.acv"), CompressionMode.Decompress)
 
       let results =
-        stream
-        |> readResults
-        |> Seq.toList
-      Assert.True(Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
-      Assert.True((results = expected), "unexpected result")
+        stream |> readResults |> Seq.toList
+
+      Adapter.VisitsSeq()
+      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      |> Seq.iter (fun v ->
+        Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+
+      Assert.That(
+        Adapter.VisitsSeq() |> Seq.length,
+        Is.EqualTo 3,
+        sprintf "unexpected local write %A"
+        <| Adapter.VisitsSeq()
+      )
+
+      Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
       Adapter.VisitsClear()

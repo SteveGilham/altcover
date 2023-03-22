@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Collections.Generic
@@ -61,7 +61,8 @@ type ConvertToBarChartCommand() =
   /// </summary>
   [<SuppressMessage("Microsoft.Globalization",
                     "CA1307:SpecifyStringComparison",
-                    Justification = "String.Replace doesn't have a comparison overload at net472/netstandard2.0, and the use case is not relevant anyway")>]
+                    Justification =
+                      "String.Replace doesn't have a comparison overload at net472/netstandard2.0, and the use case is not relevant anyway")>]
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
 
@@ -77,12 +78,15 @@ type ConvertToBarChartCommand() =
       let rewrite =
         AltCover.Xhtml.ConvertToBarChart self.XDocument
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         use w =
           { new StringWriter(System.Globalization.CultureInfo.InvariantCulture) with
-              override self.Encoding = System.Text.Encoding.UTF8 }
+              override self.Encoding =
+                System.Text.Encoding.UTF8 }
 
         rewrite.Save(w)
         File.WriteAllText(self.OutputFile, w.ToString().Replace("\u2442", "&#x2442;"))
@@ -160,17 +164,18 @@ type ConvertToSourceMapCommand(outputFolder: String) =
       let rewrite =
         AltCover.RenderToHtml.Action self.XDocument
 
-      if self.OutputFolder
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFolder
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         let folder =
           Directory.CreateDirectory(self.OutputFolder)
 
         rewrite
-        |> Seq.iter
-             (fun (name, doc) ->
-               Path.Combine(folder.FullName, name + ".html")
-               |> doc.Save)
+        |> Seq.iter (fun (name, doc) ->
+          Path.Combine(folder.FullName, name + ".html")
+          |> doc.Save)
 
       let result =
         new Dictionary<string, System.Xml.XmlDocument>() //todo

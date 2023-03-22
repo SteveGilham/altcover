@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Xml.Linq
@@ -25,11 +25,9 @@ module internal Report =
             "profilerVersion".X,
             "AltCover "
             + (System.Diagnostics.FileVersionInfo.GetVersionInfo(
-                System
-                  .Reflection
-                  .Assembly
-                  .GetExecutingAssembly()
-                  .Location
+              System.Reflection.Assembly
+                .GetExecutingAssembly()
+                .Location
             ))
               .FileVersion
           ),
@@ -60,13 +58,32 @@ module internal Report =
         XElement(
           "module".X,
           XAttribute("moduleId".X, def.Mvid.ToString()),
-          XAttribute("name".X, def.FileName |> System.IO.Path.GetFullPath),
+          XAttribute("name".X, def.FileName |> canonicalPath),
           XAttribute("assembly".X, def.Assembly.Name.Name),
           XAttribute("assemblyIdentity".X, def.Assembly.Name.FullName),
           XAttribute("excluded".X, toExcluded moduleDef.Inspection.IsInstrumented)
         )
 
       head.Add(element)
+
+      // embed support <altcover.file document="{@fullPath}" embed="{@altcover.embed}" />
+      moduleDef.Module
+      |> ProgramDatabase.getModuleDocuments
+      |> Seq.iter (fun d ->
+        let key = d.Url |> Visitor.sourceLinkMapping
+
+        d
+        |> Metadata.getSource
+        |> Option.iter (fun s ->
+          let x =
+            XElement(
+              "altcover.file".X,
+              XAttribute("document".X, key),
+              XAttribute("embed".X, s)
+            )
+
+          element.Add x))
+
       element :: s
 
     let visitMethod
@@ -87,36 +104,47 @@ module internal Report =
           XAttribute("fullname".X, Naming.fullMethodName methodDef)
         )
 
-      head.Add(element)
+      (head.Elements("altcover.file".X)
+       |> Seq.tryHead
+       |> Option.map (fun x -> x.AddBeforeSelf)
+       |> Option.defaultValue head.Add)
+        [| element |]
+
       element :: s
 
     let visitMethodPoint (s: list<XElement>) (head: XElement) (e: StatementEntry) =
       match e.SeqPnt with
       | Some codeSegment ->
-          let element =
-            XElement(
-              "seqpnt".X,
-              XAttribute("visitcount".X, int e.DefaultVisitCount),
-              XAttribute("line".X, codeSegment.StartLine),
-              XAttribute("column".X, codeSegment.StartColumn),
-              XAttribute("endline".X, codeSegment.EndLine),
-              XAttribute("endcolumn".X, codeSegment.EndColumn),
-              XAttribute("excluded".X, toExcluded e.Interesting),
-              XAttribute("document".X, codeSegment.Document |> Visitor.sourceLinkMapping)
+        let element =
+          XElement(
+            "seqpnt".X,
+            XAttribute("visitcount".X, int e.DefaultVisitCount),
+            XAttribute("line".X, codeSegment.StartLine),
+            XAttribute("column".X, codeSegment.StartColumn),
+            XAttribute("endline".X, codeSegment.EndLine),
+            XAttribute("endcolumn".X, codeSegment.EndColumn),
+            XAttribute("excluded".X, toExcluded e.Interesting),
+            XAttribute(
+              "document".X,
+              codeSegment.Document.Url
+              |> Visitor.sourceLinkMapping
             )
+          )
 
-          if head.IsEmpty then
-            head.Add(element)
-          else
-            head.FirstNode.AddBeforeSelf(element)
+        if head.IsEmpty then
+          head.Add(element)
+        else
+          head.FirstNode.AddBeforeSelf(element)
       | None -> ()
 
       s
 
     let reportVisitor (s: list<XElement>) (node: Node) =
-      let head = if List.isEmpty s then null else s.Head
+      let head =
+        if List.isEmpty s then null else s.Head
 
-      let tail = if List.isEmpty s then [] else s.Tail
+      let tail =
+        if List.isEmpty s then [] else s.Tail
 
       match node with
       | Start _ -> startVisit s
@@ -124,9 +152,13 @@ module internal Report =
       | Method m -> visitMethod s head m.Method (m.Inspection.IsInstrumented)
       | MethodPoint m -> visitMethodPoint s head m
       | AfterMethod _ ->
-          if head.IsEmpty then head.Remove()
-          tail
-      | AfterModule _ -> tail
+        if head.IsEmpty then
+          head.Remove()
+
+        tail
+      | AfterModule _ ->
+        Visitor.moduleReport <- head.ToString()
+        tail
       | Finish -> s
       | _ -> s
 

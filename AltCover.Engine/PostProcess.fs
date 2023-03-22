@@ -7,6 +7,8 @@ open System.Globalization
 open System.Xml
 open System.Xml.Linq
 
+open AltCover.Shared
+
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -34,28 +36,28 @@ type internal XmlElementAbstraction =
   member self.CreateElement name =
     match self with
     | XmlEl x ->
-        name
-        |> x.OwnerDocument.CreateElement
-        |> XmlElementAbstraction.XmlEl
+      name
+      |> x.OwnerDocument.CreateElement
+      |> XmlElementAbstraction.XmlEl
     | XEl _ ->
-        name
-        |> XName.Get
-        |> Linq.XElement
-        |> XmlElementAbstraction.XEl
+      name
+      |> XName.Get
+      |> Linq.XElement
+      |> XmlElementAbstraction.XEl
 
   member self.GetElementsByTagName name =
     match self with
     | XmlEl x ->
-        use elements = x.GetElementsByTagName name
+      use elements = x.GetElementsByTagName name
 
-        elements
-        |> Seq.cast<XmlElement>
-        |> Seq.map XmlElementAbstraction.XmlEl
-        |> Seq.toList
+      elements
+      |> Seq.cast<XmlElement>
+      |> Seq.map XmlElementAbstraction.XmlEl
+      |> Seq.toList
     | XEl x ->
-        x.Descendants(XName.Get name)
-        |> Seq.map XmlElementAbstraction.XEl
-        |> Seq.toList
+      x.Descendants(XName.Get name)
+      |> Seq.map XmlElementAbstraction.XEl
+      |> Seq.toList
 
   member self.GetAttribute name =
     match self with
@@ -66,33 +68,33 @@ type internal XmlElementAbstraction =
     match self with
     | XmlEl x -> x.SetAttribute(name, value)
     | XEl x ->
-        let attr = x.Attribute(XName.Get name)
+      let attr = x.Attribute(XName.Get name)
 
-        if attr |> isNull then
-          x.Add(Linq.XAttribute(XName.Get name, value))
-        else
-          attr.Value <- value
+      if attr |> isNull then
+        x.Add(Linq.XAttribute(XName.Get name, value))
+      else
+        attr.Value <- value
 
   member self.SetNSAttribute name ns value =
     match self with
     | XmlEl x -> x.SetAttribute(name, ns, value) |> ignore
     | XEl x ->
-        let attr = x.Attribute(XName.Get(name, ns))
+      let attr = x.Attribute(XName.Get(name, ns))
 
-        if attr |> isNull then
-          x.Add(Linq.XAttribute(XName.Get(name, ns), value))
-        else
-          attr.Value <- value
+      if attr |> isNull then
+        x.Add(Linq.XAttribute(XName.Get(name, ns), value))
+      else
+        attr.Value <- value
 
   member self.Attributes =
     match self with
     | XmlEl x ->
-        x.Attributes
-        |> Seq.cast<XmlAttribute>
-        |> Seq.map XmlAttributeAbstraction.XmlAttr
+      x.Attributes
+      |> Seq.cast<XmlAttribute>
+      |> Seq.map XmlAttributeAbstraction.XmlAttr
     | XEl x ->
-        x.Attributes()
-        |> Seq.map XmlAttributeAbstraction.XAttr
+      x.Attributes()
+      |> Seq.map XmlAttributeAbstraction.XAttr
 
   member self.Name =
     match self with
@@ -117,24 +119,24 @@ type internal XmlAbstraction =
   member self.Elements name =
     match self with
     | XmlDoc x ->
-        use elements =
-          x.DocumentElement.SelectNodes("//" + name)
+      use elements =
+        x.DocumentElement.SelectNodes("//" + name)
 
-        elements
-        |> Seq.cast<XmlElement>
-        |> Seq.map XmlElementAbstraction.XmlEl
-        |> Seq.toList
+      elements
+      |> Seq.cast<XmlElement>
+      |> Seq.map XmlElementAbstraction.XmlEl
+      |> Seq.toList
     | XDoc x ->
-        x.Descendants(XName.Get name)
-        |> Seq.map XmlElementAbstraction.XEl
-        |> Seq.toList
+      x.Descendants(XName.Get name)
+      |> Seq.map XmlElementAbstraction.XEl
+      |> Seq.toList
 
   member self.RootElement =
     match self with
     | XmlDoc x -> x.DocumentElement |> XmlElementAbstraction.XmlEl
     | XDoc x ->
-        (x.Elements() |> Seq.head)
-        |> XmlElementAbstraction.XEl
+      (x.Elements() |> Seq.head)
+      |> XmlElementAbstraction.XEl
 
 [<RequireQualifiedAccess>]
 module internal PostProcess =
@@ -143,22 +145,19 @@ module internal PostProcess =
     (sp: XmlElementAbstraction seq)
     =
     mp
-    |> Seq.iter
-         (fun m ->
-           m.SetNSAttribute
-             "type"
-             "http://www.w3.org/2001/XMLSchema-instance"
-             "SequencePoint"
-           |> ignore
+    |> Seq.iter (fun m ->
+      m.SetNSAttribute "type" "http://www.w3.org/2001/XMLSchema-instance" "SequencePoint"
+      |> ignore
 
-           sp
-           |> Seq.take 1
-           |> Seq.collect (fun p -> p.Attributes)
-           |> Seq.iter (fun a -> m.SetAttribute a.Name a.Value))
+      sp
+      |> Seq.take 1
+      |> Seq.collect (fun p -> p.Attributes)
+      |> Seq.iter (fun a -> m.SetAttribute a.Name a.Value))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal lookUpVisitsByToken token (dict: Dictionary<int, PointVisit>) =
     let (ok, index) =
       Int32.TryParse(
@@ -181,32 +180,32 @@ module internal PostProcess =
       |> Seq.map (fun m -> m.InnerText)
       |> Seq.head
 
-    let vc = (lookUpVisitsByToken token dict).Total()
+    let vc =
+      (lookUpVisitsByToken token dict).Total()
 
     mp
-    |> Seq.iter
-         (fun m ->
-           m.SetAttribute "vc" (vc.ToString(CultureInfo.InvariantCulture))
-           m.SetAttribute "uspid" token
-           m.SetAttribute "ordinal" "0"
-           m.SetAttribute "offset" "0")
+    |> Seq.iter (fun m ->
+      m.SetAttribute "vc" (vc.ToString(CultureInfo.InvariantCulture))
+      m.SetAttribute "uspid" token
+      m.SetAttribute "ordinal" "0"
+      m.SetAttribute "offset" "0")
 
   let visitCount (nodes: XmlElementAbstraction seq) =
     nodes
-    |> Seq.filter
-         (fun s ->
-           Int64.TryParse(
-             s.GetAttribute("vc"),
-             NumberStyles.Integer,
-             CultureInfo.InvariantCulture
-           )
-           |> snd
-           <> 0L)
+    |> Seq.filter (fun s ->
+      Int64.TryParse(
+        s.GetAttribute("vc"),
+        NumberStyles.Integer,
+        CultureInfo.InvariantCulture
+      )
+      |> snd
+      <> 0L)
     |> Seq.length
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal tryGetValue (d: Dictionary<'a, 'b>) (key: 'a) =
     match d with
     | null -> (false, Unchecked.defaultof<'b>)
@@ -218,25 +217,23 @@ module internal PostProcess =
     (attribute: string)
     =
     document.RootElement.GetElementsByTagName "TrackedMethod"
-    |> Seq.iter
-         (fun xel ->
-           let (ok, index) =
-             xel.GetAttribute("uid") |> Int32.TryParse
+    |> Seq.iter (fun xel ->
+      let (ok, index) =
+        xel.GetAttribute("uid") |> Int32.TryParse
 
-           if ok && tracks.ContainsKey index then
-             let times =
-               tracks.[index].Tracks
-               |> Seq.map
-                    (fun t ->
-                      match t with
-                      | Time tx -> sprintf "%d" tx
-                      | _ -> String.Empty) // never happens
-               |> Seq.filter (fun s -> s.Length > 0)
+      if ok && tracks.ContainsKey index then
+        let times =
+          tracks.[index].Tracks
+          |> Seq.map (fun t ->
+            match t with
+            | Time tx -> sprintf "%d" tx
+            | _ -> String.Empty) // never happens
+          |> Seq.filter (fun s -> s.Length > 0)
 
-             let attrVal = String.Join(";", times)
+        let attrVal = String.Join(";", times)
 
-             if attrVal.Length > 0 then
-               xel.SetAttribute attribute attrVal)
+        if attrVal.Length > 0 then
+          xel.SetAttribute attribute attrVal)
 
   let internal action
     orderAttr
@@ -247,259 +244,276 @@ module internal PostProcess =
     match format with
     | ReportFormat.OpenCoverWithTracking
     | ReportFormat.OpenCover ->
-        if counts.ContainsKey Track.Entry then
-          fillTrackedVisits document counts.[Track.Entry] "entry"
+      if counts.ContainsKey Track.Entry then
+        fillTrackedVisits document counts.[Track.Entry] "entry"
 
-        if counts.ContainsKey Track.Exit then
-          fillTrackedVisits document counts.[Track.Exit] "exit"
+      if counts.ContainsKey Track.Exit then
+        fillTrackedVisits document counts.[Track.Exit] "exit"
 
-        let scoreToString raw =
-          (sprintf "%.2f" raw)
-            .TrimEnd([| '0' |])
-            .TrimEnd([| '.' |])
+      let scoreToString raw =
+        (sprintf "%.2f" raw)
+          .TrimEnd([| '0' |])
+          .TrimEnd([| '.' |])
 
-        let stringToScore (node: XmlElementAbstraction) name =
-          node.GetAttribute(name).InvariantParseDouble()
-          |> snd
+      let stringToScore (node: XmlElementAbstraction) name =
+        node.GetAttribute(name).InvariantParseDouble()
+        |> snd
 
-        let percentCover visits points =
-          if points = 0 then
-            "0"
-          else
-            ((float (visits * 100)) / (float points))
+      let percentCover visits points =
+        if points = 0 then
+          "0"
+        else
+          ((float (visits * 100)) / (float points))
+          |> scoreToString
+
+      let setSummary
+        (x: XmlElementAbstraction)
+        pointVisits
+        branchVisits
+        methodVisits
+        classVisits
+        ptcover
+        brcover
+        minCrap
+        maxCrap
+        =
+        x.GetElementsByTagName("Summary")
+        |> Seq.tryHead
+        |> Option.iter (fun s ->
+          let minc =
+            (if minCrap = Double.MaxValue then
+               0.0
+             else
+               minCrap)
             |> scoreToString
 
-        let setSummary
-          (x: XmlElementAbstraction)
-          pointVisits
-          branchVisits
-          methodVisits
+          let maxc =
+            (if maxCrap = Double.MinValue then
+               0.0
+             else
+               maxCrap)
+            |> scoreToString
+
+          s.SetAttribute "visitedSequencePoints" (sprintf "%d" pointVisits)
+          s.SetAttribute "visitedBranchPoints" (sprintf "%d" branchVisits)
+          s.SetAttribute "visitedMethods" (sprintf "%d" methodVisits)
+
           classVisits
-          ptcover
-          brcover
-          minCrap
-          maxCrap
-          =
-          x.GetElementsByTagName("Summary")
-          |> Seq.tryHead
-          |> Option.iter
-               (fun s ->
-                 let minc =
-                   (if minCrap = Double.MaxValue then
-                      0.0
-                    else
-                      minCrap)
-                   |> scoreToString
+          |> Option.iter (
+            (sprintf "%d")
+            >> (s.SetAttribute "visitedClasses")
+          )
 
-                 let maxc =
-                   (if maxCrap = Double.MinValue then
-                      0.0
-                    else
-                      maxCrap)
-                   |> scoreToString
+          s.SetAttribute "branchCoverage" brcover
+          s.SetAttribute "sequenceCoverage" ptcover
+          s.SetAttribute "minCrapScore" minc
+          s.SetAttribute "maxCrapScore" maxc)
 
-                 s.SetAttribute "visitedSequencePoints" (sprintf "%d" pointVisits)
-                 s.SetAttribute "visitedBranchPoints" (sprintf "%d" branchVisits)
-                 s.SetAttribute "visitedMethods" (sprintf "%d" methodVisits)
+      let computeBranchExitCount
+        (anchor: XmlElementAbstraction)
+        (sp: XmlElementAbstraction list)
+        bp
+        =
+        let tail =
+          anchor.CreateElement("SequencePoint")
 
-                 classVisits
-                 |> Option.iter
-                      ((sprintf "%d") >> (s.SetAttribute "visitedClasses"))
+        tail.SetAttribute
+          orderAttr
+          (Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
 
-                 s.SetAttribute "branchCoverage" brcover
-                 s.SetAttribute "sequenceCoverage" ptcover
-                 s.SetAttribute "minCrapScore" minc
-                 s.SetAttribute "maxCrapScore" maxc)
+        let nodes = List.concat [ sp; [ tail ]; bp ]
 
-        let computeBranchExitCount
-          (anchor: XmlElementAbstraction)
-          (sp: XmlElementAbstraction list)
-          bp
-          =
-          let tail = anchor.CreateElement("SequencePoint")
+        let interleave =
+          nodes
+          |> Seq.sortBy (fun x -> x.GetAttribute(orderAttr) |> Int32.TryParse |> snd)
 
-          tail.SetAttribute
-            orderAttr
-            (Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
+        interleave
+        |> Seq.fold
+          (fun (bev, sq: XmlElementAbstraction) x ->
+            match x.Name with
+            | "SequencePoint" ->
+              sq.SetAttribute "bev" (sprintf "%d" bev)
+              (0, x)
+            | _ ->
+              (bev
+               + (if x.GetAttribute("vc") == "0" then
+                    0
+                  else
+                    1),
+               sq))
+          (0, nodes.[0])
+        |> ignore
 
-          let nodes = List.concat [ sp; [ tail ]; bp ]
-
-          let interleave =
-            nodes
-            |> Seq.sortBy (fun x -> x.GetAttribute(orderAttr) |> Int32.TryParse |> snd)
-
-          interleave
-          |> Seq.fold
-               (fun (bev, sq: XmlElementAbstraction) x ->
-                 match x.Name with
-                 | "SequencePoint" ->
-                     sq.SetAttribute "bev" (sprintf "%d" bev)
-                     (0, x)
-                 | _ ->
-                     (bev
-                      + (if x.GetAttribute("vc") = "0" then
-                           0
-                         else
-                           1),
-                      sq))
-               (0, nodes.[0])
-          |> ignore
-
-        // https://blog.ndepend.com/crap-metric-thing-tells-risk-code/
-        // Let CC(m) = cyclomatic complexity of a method and
-        // U(m) = the percentage of a method not covered by unit tests.
-        // CRAP(m) = CC(m)^2 * U(m)^3 + CC(m).
-        let crapScore forceVisited (method: XmlElementAbstraction) =
-          let coverage =
-            if forceVisited then
-              100.0
-            else
-              let cover = stringToScore method "sequenceCoverage"
-
-              if cover > 0.0 then
-                cover
-              else
-                stringToScore method "branchCoverage"
-
-          let complexity =
-            stringToScore method "cyclomaticComplexity"
-
-          let raw =
-            Math.Pow(complexity, 2.0)
-            * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
-            + complexity
-
-          let score = raw |> scoreToString
-          method.SetAttribute "crapScore" score
-          raw
-
-        let updateMethod
-          (dict: Dictionary<int, PointVisit>)
-          (vb, vs, vm: int, pt, br, minc, maxc)
-          (method: XmlElementAbstraction)
-          =
-          let sp =
-            method.GetElementsByTagName("SequencePoint")
-
-          let bp =
-            method.GetElementsByTagName("BranchPoint")
-
-          let mp =
-            method.GetElementsByTagName("MethodPoint")
-
-          let count = sp |> List.length
-          let rawCount = bp |> List.length
-
-          // inconsistent name to shut Gendarme up
-          let numBranches = rawCount + Math.Sign(count + rawCount)
-
-          if count > 0 then
-            copyFillMethodPoint mp sp
+      // https://blog.ndepend.com/crap-metric-thing-tells-risk-code/
+      // Let CC(m) = cyclomatic complexity of a method and
+      // U(m) = the percentage of a method not covered by unit tests.
+      // CRAP(m) = CC(m)^2 * U(m)^3 + CC(m).
+      let crapScore forceVisited (method: XmlElementAbstraction) =
+        let coverage =
+          if forceVisited then
+            100.0
           else
-            fillMethodPoint mp method dict
+            let cover =
+              stringToScore method "sequenceCoverage"
 
-          let pointVisits = visitCount sp
-          let b0 = visitCount bp
-          let branchVisits = b0 + Math.Sign b0
-          let mVisits = visitCount mp
-
-          let methodVisit =
-            if pointVisits > 0 || b0 > 0 then
-              1
+            if cover > 0.0 then
+              cover
             else
-              0
+              stringToScore method "branchCoverage"
 
-          if methodVisit = 1 || mVisits > 0 then
-            method.SetAttribute "visited" "true"
+        let complexity =
+          stringToScore method "cyclomaticComplexity"
 
-          // zero visits still need to fill in CRAP score
-          let cover = percentCover pointVisits count
-          let bcover = percentCover branchVisits numBranches
-          method.SetAttribute "sequenceCoverage" cover
-          method.SetAttribute "branchCoverage" bcover
-          let raw = crapScore (mVisits > count) method
+        let raw =
+          Math.Pow(complexity, 2.0)
+          * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
+          + complexity
 
-          // degenerate methods don't contribute to counts by default
-          let (maxcrap, mincrap) =
-            if count > 0 || rawCount > 0 then
-              (Math.Max(maxc, raw), Math.Min(minc, raw))
-            else
-              (maxc, minc)
+        let score = raw |> scoreToString
+        method.SetAttribute "crapScore" score
+        raw
 
-          setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
-          computeBranchExitCount method sp bp
+      let updateMethod
+        (dict: Dictionary<int, PointVisit>)
+        (vb, vs, vm: int, pt, br, minc, maxc)
+        (method: XmlElementAbstraction)
+        =
+        let sp =
+          method.GetElementsByTagName("SequencePoint")
 
-          (vb + branchVisits,
-           vs + pointVisits,
-           vm + methodVisit,
-           pt + count,
-           br + numBranches,
-           mincrap,
-           maxcrap)
+        let bp =
+          method.GetElementsByTagName("BranchPoint")
 
-        let updateClass
-          (dict: Dictionary<int, PointVisit>)
-          (vb, vs, vm, vc, pt, br, minc0, maxc0)
-          (``class``: XmlElementAbstraction)
-          =
-          let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
-            ``class``.GetElementsByTagName("Method")
-            |> Seq.fold
-                 (updateMethod dict)
-                 (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+        let mp =
+          method.GetElementsByTagName("MethodPoint")
 
-          let cover = percentCover cvs cpt
-          let bcover = percentCover cvb cbr
+        let count = sp |> List.length
+        let rawCount = bp |> List.length
 
-          let cvc = if cvm > 0 then 1 else 0
-          setSummary ``class`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+        // inconsistent name to shut Gendarme up
+        let numBranches =
+          rawCount + Math.Sign(count + rawCount)
 
-          (vb + cvb,
-           vs + cvs,
-           vm + cvm,
-           vc + cvc,
-           pt + cpt,
-           br + cbr,
-           Math.Min(minc, minc0),
-           Math.Max(maxc, maxc0))
+        if count > 0 then
+          copyFillMethodPoint mp sp
+        else
+          fillMethodPoint mp method dict
 
-        let updateModule
-          (counts: Dictionary<string, Dictionary<int, PointVisit>>)
-          (vb, vs, vm, vc, pt, br, minc0, maxc0)
-          (``module``: XmlElementAbstraction)
-          =
-          let dict =
-            match (tryGetValue counts)
-                  <| ``module``.GetAttribute("hash") with
-            | (false, _) -> Dictionary<int, PointVisit>()
-            | (true, d) -> d
+        let pointVisits = visitCount sp
+        let b0 = visitCount bp
+        let branchVisits = b0 + Math.Sign b0
+        let mVisits = visitCount mp
 
-          let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
-            ``module``.GetElementsByTagName("Class")
-            |> Seq.fold
-                 (dict |> updateClass)
-                 (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+        let methodVisit =
+          if pointVisits > 0 || b0 > 0 then
+            1
+          else
+            0
 
-          let cover = percentCover cvs cpt
-          let bcover = percentCover cvb cbr
-          setSummary ``module`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+        if methodVisit = 1 || mVisits > 0 then
+          method.SetAttribute "visited" "true"
 
-          (vb + cvb,
-           vs + cvs,
-           vm + cvm,
-           vc + cvc,
-           pt + cpt,
-           br + cbr,
-           Math.Min(minc, minc0),
-           Math.Max(maxc, maxc0))
+        // zero visits still need to fill in CRAP score
+        let cover = percentCover pointVisits count
 
-        let (vb, vs, vm, vc, pt, br, minc, maxc) =
-          document.Elements "Module"
+        let bcover =
+          percentCover branchVisits numBranches
+
+        method.SetAttribute "sequenceCoverage" cover
+        method.SetAttribute "branchCoverage" bcover
+        let raw = crapScore (mVisits > count) method
+
+        // degenerate methods don't contribute to counts by default
+        let (maxcrap, mincrap) =
+          if count > 0 || rawCount > 0 then
+            (Math.Max(maxc, raw), Math.Min(minc, raw))
+          else
+            (maxc, minc)
+
+        setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
+        computeBranchExitCount method sp bp
+
+        (vb + branchVisits,
+         vs + pointVisits,
+         vm + methodVisit,
+         pt + count,
+         br + numBranches,
+         mincrap,
+         maxcrap)
+
+      let updateClass
+        (dict: Dictionary<int, PointVisit>)
+        (vb, vs, vm, vc, pt, br, minc0, maxc0)
+        (``class``: XmlElementAbstraction)
+        =
+        let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
+          ``class``.GetElementsByTagName("Method")
           |> Seq.fold
-               (updateModule counts)
-               (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+            (updateMethod dict)
+            (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
 
-        let cover = percentCover vs pt
-        let bcover = percentCover vb br
-        setSummary document.RootElement vs vb vm (Some vc) cover bcover minc maxc
+        let cover = percentCover cvs cpt
+        let bcover = percentCover cvb cbr
+
+        let cvc = if cvm > 0 then 1 else 0
+        setSummary ``class`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+
+        (vb + cvb,
+         vs + cvs,
+         vm + cvm,
+         vc + cvc,
+         pt + cpt,
+         br + cbr,
+         Math.Min(minc, minc0),
+         Math.Max(maxc, maxc0))
+
+      let updateModule
+        (counts: Dictionary<string, Dictionary<int, PointVisit>>)
+        (vb, vs, vm, vc, pt, br, minc0, maxc0)
+        (``module``: XmlElementAbstraction)
+        =
+        let dict =
+          match
+            (tryGetValue counts)
+            <| ``module``.GetAttribute("hash")
+          with
+          | (false, _) -> Dictionary<int, PointVisit>()
+          | (true, d) -> d
+
+        let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
+          ``module``.GetElementsByTagName("Class")
+          |> Seq.fold
+            (dict |> updateClass)
+            (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+        let cover = percentCover cvs cpt
+        let bcover = percentCover cvb cbr
+        setSummary ``module`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+
+        (vb + cvb,
+         vs + cvs,
+         vm + cvm,
+         vc + cvc,
+         pt + cpt,
+         br + cbr,
+         Math.Min(minc, minc0),
+         Math.Max(maxc, maxc0))
+
+      let (vb, vs, vm, vc, pt, br, minc, maxc) =
+        document.Elements "Module"
+        |> Seq.fold
+          (updateModule counts)
+          (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+      let cover = percentCover vs pt
+      let bcover = percentCover vb br
+      setSummary document.RootElement vs vb vm (Some vc) cover bcover minc maxc
     | _ -> ()
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.PostProcess/Pipe #2 stage #1 at line 331@332-1::Invoke(AltCover.XmlElementAbstraction)",
+                            Justification = "Compiler generated")>]
+()

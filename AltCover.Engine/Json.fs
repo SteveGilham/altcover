@@ -5,12 +5,15 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
 
+open AltCover.Shared
+
 open Mono.Cecil
 open Mono.Cecil.Rocks
 
 [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "'Json' is jargon")>]
 module internal Json =
-  let internal path : Option<string> ref = ref None
+  let internal path: Option<string> ref =
+    ref None
 
   // --- NCover ---
 
@@ -20,42 +23,45 @@ module internal Json =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal getMethodRecords
     (modul: NativeJson.Documents)
-    (doc: string)
+    (doc: string * string)
     (cname: string)
     (mname: string)
     =
     let classes =
-      match modul.TryGetValue doc with
+      match modul.TryGetValue(fst doc) with
       | true, c -> c
       | _ ->
-          let c = NativeJson.Classes()
-          modul.Add(doc, c)
-          c
+        let c = NativeJson.Classes()
+        modul.Add(fst doc, c)
+        NativeJson.injectEmbed c (snd doc)
+        c
 
     let methods =
       match classes.TryGetValue cname with
       | true, m -> m
       | _ ->
-          let m = NativeJson.Methods()
-          classes.Add(cname, m)
-          m
+        let m = NativeJson.Methods()
+        classes.Add(cname, m)
+        m
 
     match methods.TryGetValue mname with
     | true, m -> (methods, m)
     | _ ->
-        let m = NativeJson.Method.Create(None)
-        methods.Add(mname, m)
-        (methods, m)
+      let m = NativeJson.Method.Create(None)
+      methods.Add(mname, m)
+      (methods, m)
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal getMethodRecord
     (modul: NativeJson.Documents)
-    (doc: string)
+    (doc: string * string)
     (cname: string)
     (mname: string)
     =
@@ -69,12 +75,14 @@ module internal Json =
                     Justification = "Long enough but no longer")>]
   let internal updateMethodRecord
     (modul: NativeJson.Documents)
-    (doc: string)
+    (doc: string * string)
     (cname: string)
     (mname: string)
     (update: (Nullable<int> * NativeJson.Times * NativeJson.Times))
     =
-    let methods, m0 = getMethodRecords modul doc cname mname
+    let methods, m0 =
+      getMethodRecords modul doc cname mname
+
     let tid, entry, exit = update
 
     if tid.HasValue && tid <> m0.TId then
@@ -92,11 +100,10 @@ module internal Json =
   let internal maybeAssembly path =
     Some path
     |> Option.filter File.Exists
-    |> Option.map
-         (fun p ->
-           let def = AssemblyDefinition.ReadAssembly p
-           ProgramDatabase.readSymbols def
-           def)
+    |> Option.map (fun p ->
+      let def = AssemblyResolver.ReadAssembly p
+      ProgramDatabase.readSymbols def
+      def)
 
   let internal maybeDispose (def: AssemblyDefinition option) =
     def |> Option.iter (fun d -> d.Dispose())
@@ -115,30 +122,25 @@ module internal Json =
     =
     let td =
       def
-      |> Option.map
-           (fun a ->
-             a.MainModule.GetAllTypes()
-             |> Seq.tryFind (fun t -> t.FullName = cname))
-      |> Option.flatten
+      |> Option.bind (fun a ->
+        a.MainModule.GetAllTypes()
+        |> Seq.tryFind (fun t -> t.FullName == cname))
 
     let md =
       td
-      |> Option.map
-           (fun t ->
-             t.Methods
-             |> Seq.tryFind
-                  (fun m ->
-                    m.FullName = mname
-                    || (m.Name = mname
-                        && (let dbg = m.DebugInformation
+      |> Option.bind (fun t ->
+        t.Methods
+        |> Seq.tryFind (fun m ->
+          m.FullName == mname
+          || (m.Name == mname
+              && (let dbg = m.DebugInformation
 
-                            dbg.HasSequencePoints
-                            && Option.isSome sp
-                            && (let pt = dbg.SequencePoints |> Seq.head
+                  dbg.HasSequencePoints
+                  && Option.isSome sp
+                  && (let pt = dbg.SequencePoints |> Seq.head
 
-                                pt.StartLine = sp.Value.SL
-                                && pt.StartColumn = sp.Value.SC)))))
-      |> Option.flatten
+                      pt.StartLine = sp.Value.SL
+                      && pt.StartColumn = sp.Value.SC)))))
 
     let truemd =
       md
@@ -163,333 +165,381 @@ module internal Json =
     let json = NativeJson.Modules()
 
     report.Descendants(XName.Get "module")
-    |> Seq.iter
-         (fun x ->
-           let path = x.Attribute(XName.Get "name").Value
-           let modul = NativeJson.Documents()
+    |> Seq.iter (fun x ->
+      let path =
+        x.Attribute(XName.Get "name").Value
 
-           let counts =
-             System.Collections.Generic.Dictionary<string, int>()
+      let modul = NativeJson.Documents()
 
-           let def = maybeAssembly path
+      let counts =
+        System.Collections.Generic.Dictionary<string, int>()
 
-           try
-             x.Descendants(XName.Get "method")
-             |> Seq.iter
-                  (fun m ->
-                    let mname = m.Attribute(XName.Get "name").Value
+      let embeds =
+        System.Collections.Generic.Dictionary<string, string>()
 
-                    let cname =
-                      m
-                        .Attribute(XName.Get "class")
-                        .Value.Replace('+', '/')
+      let def = maybeAssembly path
 
-                    let outerclass = cname.Split('/') |> Seq.head
+      try
+        x.Descendants(XName.Get "method")
+        |> Seq.iter (fun m ->
+          let mname =
+            m.Attribute(XName.Get "name").Value
 
-                    let _, excluded =
-                      m.Attribute(XName.Get "excluded").Value
-                      |> Boolean.TryParse
+          let cname =
+            m
+              .Attribute(XName.Get "class")
+              .Value.Replace('+', '/')
 
-                    let mutable docname = String.Empty
+          let outerclass =
+            cname.Split('/') |> Seq.head
 
-                    if not excluded then
-                      let sp = NativeJson.SeqPnts()
+          let _, excluded =
+            m.Attribute(XName.Get "excluded").Value
+            |> Boolean.TryParse
 
-                      m.Descendants(XName.Get "seqpnt")
-                      |> Seq.iter
-                           (fun s ->
-                             let _, excluded =
-                               s.Attribute(XName.Get "excluded").Value
-                               |> Boolean.TryParse
+          let jmethods =
+            System.Collections.Generic.Dictionary<string, NativeJson.Method>()
 
-                             let parse n =
-                               s.Attribute(XName.Get n)
-                               |> Option.ofObj
-                               |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
-                               |> Option.defaultValue 0
+          if not excluded then
+            let basename = sprintf "%s::%s" cname mname
+            let _, count = counts.TryGetValue basename
+            let index = count + 1
+            counts.[basename] <- index
 
-                             if not excluded then
-                               if String.IsNullOrWhiteSpace docname then
-                                 docname <- s.Attribute(XName.Get "document").Value
+            let synth =
+              sprintf "ReturnType%d %s(Argument List%d)" index basename index
 
-                               { NativeJson.SeqPnt.VC = parse "visitcount"
-                                 NativeJson.SeqPnt.SL = parse "line"
-                                 NativeJson.SeqPnt.SC = parse "column"
-                                 NativeJson.SeqPnt.EL = parse "endline"
-                                 NativeJson.SeqPnt.EC = parse "endcolumn"
-                                 NativeJson.SeqPnt.Offset = 0
-                                 NativeJson.SeqPnt.Id = 0
-                                 NativeJson.SeqPnt.Times = null
-                                 NativeJson.SeqPnt.Tracks = null }
-                               |> sp.Add)
+            let spoints =
+              m.Descendants(XName.Get "seqpnt")
 
-                      if sp.Count > 0 then
-                        let basename = sprintf "%s::%s" cname mname
-                        let _, count = counts.TryGetValue basename
-                        let index = count + 1
-                        counts.[basename] <- index
+            let makeSeqPnt (x: XElement) =
+              let parse n =
+                x.Attribute(XName.Get n)
+                |> Option.ofObj
+                |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+                |> Option.defaultValue 0
 
-                        let synth =
-                          sprintf "ReturnType%d %s(Argument List%d)" index basename index
+              { NativeJson.SeqPnt.VC = parse "visitcount"
+                NativeJson.SeqPnt.SL = parse "line"
+                NativeJson.SeqPnt.SC = parse "column"
+                NativeJson.SeqPnt.EL = parse "endline"
+                NativeJson.SeqPnt.EC = parse "endcolumn"
+                NativeJson.SeqPnt.Offset = parse "offset"
+                NativeJson.SeqPnt.Id = 0
+                NativeJson.SeqPnt.Times = null
+                NativeJson.SeqPnt.Tracks = null }
 
-                        let (className, methodName) =
-                          maybeNames
-                            def
-                            synth
-                            outerclass
-                            (sp |> Seq.head |> Some)
-                            cname
-                            mname
+            let sp =
+              spoints |> Seq.tryHead |> Option.map makeSeqPnt
 
-                        let m =
-                          getMethodRecord modul docname className methodName
+            let (className, methodName) =
+              maybeNames def synth outerclass sp cname mname
 
-                        m.SeqPnts.AddRange sp
+            spoints
+            |> Seq.iter (fun s ->
+              let _, excluded =
+                s.Attribute(XName.Get "excluded").Value
+                |> Boolean.TryParse
 
-                        m.SeqPnts
-                        |> Seq.groupBy (fun s -> s.SL)
-                        |> Seq.iter (fun (l, ss) -> m.Lines.[l] <- lineVisits ss))
-           finally
-             maybeDispose def
+              if not excluded then
+                let doc =
+                  s.Attribute(XName.Get "document").Value
 
-           if modul.Count > 0 then
-             json.Add(path |> Path.GetFileName, modul))
+                let embed =
+                  let (ok, result) = embeds.TryGetValue(doc)
+
+                  if ok then
+                    result
+                  else
+                    let found =
+                      s.Ancestors("module".X)
+                      |> Seq.collect (fun m -> m.Descendants("altcover.file".X))
+                      |> Seq.filter (fun f ->
+                        f.Attribute(XName.Get "document").Value == doc)
+                      |> Seq.tryHead
+                      |> Option.map (fun f -> f.Attribute(XName.Get "embed").Value)
+                      |> Option.filter (String.IsNullOrWhiteSpace >> not)
+                      |> Option.defaultValue String.Empty
+
+                    embeds.Add(doc, found)
+                    found
+
+                let docname = (doc, embed)
+
+                let jmethod =
+                  getMethodRecord modul docname className methodName
+
+                jmethods.[doc] <- jmethod
+
+                s |> makeSeqPnt |> jmethod.SeqPnts.Add)
+
+            jmethods.Values
+            |> Seq.iter (fun jm ->
+              jm.SeqPnts
+              |> Seq.groupBy (fun s -> s.SL)
+              |> Seq.iter (fun (l, ss) -> jm.Lines.[l] <- lineVisits ss)))
+      finally
+        maybeDispose def
+
+      if modul.Count > 0 then
+        json.Add(path |> Path.GetFileName, modul))
 
     json
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal opencoverToJson (report: XElement) =
     let json = NativeJson.Modules()
 
     report.Descendants(XName.Get "Module")
-    |> Seq.iter
-         (fun x ->
-           let path =
-             (x.Elements(XName.Get "ModulePath") |> Seq.head)
-               .Value
+    |> Seq.iter (fun x ->
+      let path =
+        (x.Elements(XName.Get "ModulePath") |> Seq.head)
+          .Value
 
-           let modul = NativeJson.Documents()
+      let modul = NativeJson.Documents()
 
-           let files =
-             System.Collections.Generic.Dictionary<string, string>()
+      let files =
+        System.Collections.Generic.Dictionary<string, (string * string)>()
 
-           x.Descendants(XName.Get "File")
-           |> Seq.iter
-                (fun x ->
-                  files.Add(
-                    x.Attribute(XName.Get "uid").Value,
-                    x.Attribute(XName.Get "fullPath").Value
-                  ))
+      x.Descendants(XName.Get "File")
+      |> Seq.iter (fun x ->
+        let document =
+          x.Attribute(XName.Get "fullPath").Value
 
-           let tracked =
-             System.Collections.Generic.Dictionary<string, int * NativeJson.Times * NativeJson.Times>
-               ()
+        let embed =
+          x.Attribute(XName.Get "altcover.embed")
+          |> Option.ofObj
+          |> Option.map (fun e -> e.Value)
+          |> Option.defaultValue String.Empty
 
-           x.Descendants(XName.Get "TrackedMethod")
-           |> Seq.iter
-                (fun x ->
-                  tracked.Add(
-                    x.Attribute(XName.Get "name").Value,
-                    (x.Attribute(XName.Get "uid").Value
-                     |> Int32.TryParse
-                     |> snd,
-                     (let e = NativeJson.Times()
+        files.Add(
+          x.Attribute(XName.Get "uid").Value,
+          (document, embed)
 
-                      x.Attribute(XName.Get "entry").Value.Split(';')
-                      |> Seq.map (Int64.TryParse >> snd >> NativeJson.fromTracking)
-                      |> e.AddRange
+        ))
 
-                      e),
-                     (let e = NativeJson.Times()
+      let tracked =
+        System.Collections.Generic.Dictionary<string, int *
+        NativeJson.Times *
+        NativeJson.Times>
+          ()
 
-                      x.Attribute(XName.Get "exit").Value.Split(';')
-                      |> Seq.map (Int64.TryParse >> snd >> NativeJson.fromTracking)
-                      |> e.AddRange
+      x.Descendants(XName.Get "TrackedMethod")
+      |> Seq.iter (fun x ->
+        tracked.Add(
+          x.Attribute(XName.Get "name").Value,
+          (x.Attribute(XName.Get "uid").Value
+           |> Int32.TryParse
+           |> snd,
+           (let e = NativeJson.Times()
 
-                      e))
-                  ))
+            x.Attribute(XName.Get "entry").Value.Split(';')
+            |> Seq.map (Int64.TryParse >> snd >> NativeJson.fromTracking)
+            |> e.AddRange
 
-           let def = maybeAssembly path
+            e),
+           (let e = NativeJson.Times()
 
-           try
-             x.Descendants(XName.Get "Method")
-             |> Seq.iter
-                  (fun m ->
-                    let mname =
-                      (m.Elements(XName.Get "Name") |> Seq.head).Value
+            x.Attribute(XName.Get "exit").Value.Split(';')
+            |> Seq.map (Int64.TryParse >> snd >> NativeJson.fromTracking)
+            |> e.AddRange
 
-                    let cname =
-                      (m.Parent.Parent.Elements(XName.Get "FullName")
-                       |> Seq.head)
-                        .Value.Replace('+', '/')
+            e))
+        ))
 
-                    let outerclass = cname.Split('/') |> Seq.head
+      let def = maybeAssembly path
 
-                    let mutable docname = String.Empty
+      try
+        x.Descendants(XName.Get "Method")
+        |> Seq.iter (fun m ->
+          let mname =
+            (m.Elements(XName.Get "Name") |> Seq.head).Value
 
-                    let updateDocname (s: XElement) =
-                      if String.IsNullOrWhiteSpace docname then
-                        docname <- files.[s.Attribute(XName.Get "fileid").Value]
+          let cname =
+            (m.Parent.Parent.Elements(XName.Get "FullName")
+             |> Seq.head)
+              .Value.Replace('+', '/')
 
-                    let sp = NativeJson.SeqPnts()
+          let outerclass =
+            cname.Split('/') |> Seq.head
 
-                    m.Descendants(XName.Get "SequencePoint")
-                    |> Seq.iter
-                         (fun s ->
-                           let parse n =
-                             s.Attribute(XName.Get n)
-                             |> Option.ofObj
-                             |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
-                             |> Option.defaultValue 0
+          let jmethods =
+            System.Collections.Generic.Dictionary<string, NativeJson.Method>()
 
-                           updateDocname s
+          m.Descendants(XName.Get "SequencePoint")
+          |> Seq.iter (fun s ->
+            let parse n =
+              s.Attribute(XName.Get n)
+              |> Option.ofObj
+              |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+              |> Option.defaultValue 0
 
-                           { NativeJson.SeqPnt.VC = parse "vc"
-                             NativeJson.SeqPnt.SL = parse "sl"
-                             NativeJson.SeqPnt.SC = parse "sc"
-                             NativeJson.SeqPnt.EL = parse "el"
-                             NativeJson.SeqPnt.EC = parse "ec"
-                             NativeJson.SeqPnt.Offset = parse "offset"
-                             NativeJson.SeqPnt.Id = parse "uspid"
-                             NativeJson.SeqPnt.Times =
-                               let t = s.Descendants(XName.Get "Time")
+            let docname =
+              files.[s.Attribute(XName.Get "fileid").Value]
 
-                               if t |> isNull || t |> Seq.isEmpty then
-                                 null
-                               else
-                                 let t2 = NativeJson.Times()
+            let sp =
+              { NativeJson.SeqPnt.VC = parse "vc"
+                NativeJson.SeqPnt.SL = parse "sl"
+                NativeJson.SeqPnt.SC = parse "sc"
+                NativeJson.SeqPnt.EL = parse "el"
+                NativeJson.SeqPnt.EC = parse "ec"
+                NativeJson.SeqPnt.Offset = parse "offset"
+                NativeJson.SeqPnt.Id = parse "uspid"
+                NativeJson.SeqPnt.Times =
+                  let t = s.Descendants(XName.Get "Time")
 
-                                 t
-                                 |> Seq.map
-                                      (fun x ->
-                                        x.Attribute(XName.Get "time").Value
-                                        |> Int64.TryParse
-                                        |> snd
-                                        |> NativeJson.fromTracking)
-                                 |> t2.AddRange
+                  if t |> isNull || t |> Seq.isEmpty then
+                    null
+                  else
+                    let t2 = NativeJson.Times()
 
-                                 t2
+                    t
+                    |> Seq.map (fun x ->
+                      x.Attribute(XName.Get "time").Value
+                      |> Int64.TryParse
+                      |> snd
+                      |> NativeJson.fromTracking)
+                    |> t2.AddRange
 
-                             NativeJson.SeqPnt.Tracks =
-                               let t =
-                                 s.Descendants(XName.Get "TrackedMethodRef")
+                    t2
 
-                               if t |> isNull || t |> Seq.isEmpty then
-                                 null
-                               else
-                                 let t2 = NativeJson.Tracks()
+                NativeJson.SeqPnt.Tracks =
+                  let t =
+                    s.Descendants(XName.Get "TrackedMethodRef")
 
-                                 t
-                                 |> Seq.map
-                                      (fun x ->
-                                        x.Attribute(XName.Get "uid").Value
-                                        |> Int32.TryParse
-                                        |> snd)
-                                 |> t2.AddRange
+                  if t |> isNull || t |> Seq.isEmpty then
+                    null
+                  else
+                    let t2 = NativeJson.Tracks()
 
-                                 t2
+                    t
+                    |> Seq.map (fun x ->
+                      x.Attribute(XName.Get "uid").Value
+                      |> Int32.TryParse
+                      |> snd)
+                    |> t2.AddRange
 
-                           }
-                           |> sp.Add)
+                    t2
 
-                    let bp = NativeJson.Branches()
+              }
 
-                    m.Descendants(XName.Get "BranchPoint")
-                    |> Seq.iter
-                         (fun s ->
-                           let parse n =
-                             s.Attribute(XName.Get n)
-                             |> Option.ofObj
-                             |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
-                             |> Option.defaultValue 0
+            let (className, methodName) =
+              maybeNames def mname outerclass None cname mname
 
-                           updateDocname s
-                           let offset = parse "offset"
+            let (tid, entry, exit) =
+              if tracked.ContainsKey mname then
+                let (tid0, entry, exit) = tracked.[mname]
+                (Nullable<int>(tid0), entry, exit)
+              else
+                (System.Nullable(), null, null)
 
-                           { NativeJson.BranchInfo.Hits = parse "vc"
-                             NativeJson.BranchInfo.Line = parse "sl"
-                             NativeJson.BranchInfo.EndOffset = parse "offsetend"
-                             NativeJson.BranchInfo.Path =
-                               bp
-                               |> Seq.filter (fun k -> k.Offset = offset)
-                               |> Seq.length
-                             NativeJson.BranchInfo.Ordinal = uint bp.Count
-                             NativeJson.BranchInfo.Offset = offset
-                             NativeJson.BranchInfo.Id = parse "uspid"
-                             NativeJson.BranchInfo.Times =
-                               let t = s.Descendants(XName.Get "Time")
+            updateMethodRecord modul docname className mname (tid, entry, exit)
+            |> ignore
 
-                               if t |> isNull || t |> Seq.isEmpty then
-                                 null
-                               else
-                                 let t2 = NativeJson.Times()
+            let jmethod =
+              getMethodRecord modul docname className methodName
 
-                                 t
-                                 |> Seq.map
-                                      (fun x ->
-                                        x.Attribute(XName.Get "time").Value
-                                        |> Int64.TryParse
-                                        |> snd
-                                        |> NativeJson.fromTracking)
-                                 |> t2.AddRange
+            jmethods.[fst docname] <- jmethod
+            jmethod.SeqPnts.Add sp)
 
-                                 t2
+          let bp = NativeJson.Branches()
 
-                             NativeJson.BranchInfo.Tracks =
-                               let t =
-                                 s.Descendants(XName.Get "TrackedMethodRef")
+          m.Descendants(XName.Get "BranchPoint")
+          |> Seq.iter (fun s ->
+            let parse n =
+              s.Attribute(XName.Get n)
+              |> Option.ofObj
+              |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+              |> Option.defaultValue 0
 
-                               if t |> isNull || t |> Seq.isEmpty then
-                                 null
-                               else
-                                 let t2 = NativeJson.Tracks()
+            let docname =
+              files.[s.Attribute(XName.Get "fileid").Value]
 
-                                 t
-                                 |> Seq.map
-                                      (fun x ->
-                                        x.Attribute(XName.Get "uid").Value
-                                        |> Int32.TryParse
-                                        |> snd)
-                                 |> t2.AddRange
+            let offset = parse "offset"
 
-                                 t2
+            let jbp =
+              { NativeJson.BranchInfo.Hits = parse "vc"
+                NativeJson.BranchInfo.Line = parse "sl"
+                NativeJson.BranchInfo.EndOffset = parse "offsetend"
+                NativeJson.BranchInfo.Path =
+                  bp
+                  |> Seq.filter (fun k -> k.Offset = offset)
+                  |> Seq.length
+                NativeJson.BranchInfo.Ordinal = uint bp.Count
+                NativeJson.BranchInfo.Offset = offset
+                NativeJson.BranchInfo.Id = parse "uspid"
+                NativeJson.BranchInfo.Times =
+                  let t = s.Descendants(XName.Get "Time")
 
-                           }
-                           |> bp.Add)
+                  if t |> isNull || t |> Seq.isEmpty then
+                    null
+                  else
+                    let t2 = NativeJson.Times()
 
-                    if sp.Count > 0 || bp.Count > 0 then
-                      let (className, methodName) =
-                        maybeNames def mname outerclass None cname mname
+                    t
+                    |> Seq.map (fun x ->
+                      x.Attribute(XName.Get "time").Value
+                      |> Int64.TryParse
+                      |> snd
+                      |> NativeJson.fromTracking)
+                    |> t2.AddRange
 
-                      let (tid, entry, exit) =
-                        if tracked.ContainsKey mname then
-                          let (tid0, entry, exit) = tracked.[mname]
-                          (Nullable<int>(tid0), entry, exit)
-                        else
-                          (System.Nullable(), null, null)
+                    t2
 
-                      updateMethodRecord modul docname className mname (tid, entry, exit)
-                      |> ignore
+                NativeJson.BranchInfo.Tracks =
+                  let t =
+                    s.Descendants(XName.Get "TrackedMethodRef")
 
-                      let m =
-                        getMethodRecord modul docname className methodName
+                  if t |> isNull || t |> Seq.isEmpty then
+                    null
+                  else
+                    let t2 = NativeJson.Tracks()
 
-                      if sp.Count > 0 then
-                        m.SeqPnts.AddRange sp
+                    t
+                    |> Seq.map (fun x ->
+                      x.Attribute(XName.Get "uid").Value
+                      |> Int32.TryParse
+                      |> snd)
+                    |> t2.AddRange
 
-                        m.SeqPnts
-                        |> Seq.groupBy (fun s -> s.SL)
-                        |> Seq.iter (fun (l, ss) -> m.Lines.[l] <- lineVisits ss)
+                    t2
 
-                      if bp.Count > 0 then
-                        m.Branches.AddRange bp)
-           finally
-             maybeDispose def
+              }
 
-           if modul.Count > 0 then
-             json.Add(path |> Path.GetFileName, modul))
+            let (className, methodName) =
+              maybeNames def mname outerclass None cname mname
+
+            let (tid, entry, exit) =
+              if tracked.ContainsKey mname then
+                let (tid0, entry, exit) = tracked.[mname]
+                (Nullable<int>(tid0), entry, exit)
+              else
+                (System.Nullable(), null, null)
+
+            updateMethodRecord modul docname className mname (tid, entry, exit)
+            |> ignore
+
+            let jmethod =
+              getMethodRecord modul docname className methodName
+
+            jmethods.[fst docname] <- jmethod
+            jmethod.Branches.Add jbp
+            bp.Add jbp // for counting paths
+          )
+
+          jmethods.Values
+          |> Seq.iter (fun jm ->
+            jm.SeqPnts
+            |> Seq.groupBy (fun s -> s.SL)
+            |> Seq.iter (fun (l, ss) -> jm.Lines.[l] <- lineVisits ss)))
+      finally
+        maybeDispose def
+
+      if modul.Count > 0 then
+        json.Add(path |> Path.GetFileName, modul))
 
     json
 

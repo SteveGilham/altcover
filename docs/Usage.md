@@ -8,9 +8,9 @@
 
 The full command line is 
 ```
-AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
+AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
@@ -75,8 +75,8 @@ In detail
                                matches the regex are considered top-level, and
                                are not excluded from coverage on the basis of
                                any method which textually encloses them.
-  -l, --localSource          Don't instrument code for which the source file is
-                               not present.
+  -l, --localSource          Optional: Don't instrument code for which the
+                               source file is not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
@@ -119,9 +119,10 @@ In detail
                                paths if present.
       --defer                Optional, defers writing runner-mode coverage data
                                until process exit.
-  -v, --visibleBranches      Hide complex internal IL branching implementation
-                               details in switch/match constructs, and just
-                               show what the source level logic implies.
+  -v, --visibleBranches      Optional: Hide complex internal IL branching
+                               implementation details in switch/match
+                               constructs, and just show what the source level
+                               logic implies.
       --showstatic[=VALUE]   Optional: Instrument and show code that is by
                                default skipped as trivial.  --showstatic:- is
                                equivalent to omitting the parameter; --
@@ -130,12 +131,16 @@ In detail
                                visualizer (but treated as zero by
                                ReportGenerator) ; --showstatic:++ sets the
                                unvisited count to zero.
-      --showGenerated        Mark generated code with a visit count of -2 (
-                               Automatic) for the Visualizer if unvisited
+      --showGenerated        Optional: Mark generated code with a visit count
+                               of -2 (Automatic) for the Visualizer if unvisited
+      --trivia               Optional: Omit trivial sequence points
   -q                         Optional, multiple: Quiet mode -- once to switch
                                off informational messages, twice to switch off
                                warnings as well, three (or more) times to
                                switch off all messages.
+      --verbose              Optional, multiple: Verbose mode -- once to switch
+                               on detailed messages (or undo one level of -q if
+                               any have been set)
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
 ```
@@ -199,6 +204,9 @@ or
                                off informational messages, twice to switch off
                                warnings as well, three (or more) times to
                                switch off all messages.
+      --verbose              Optional, multiple: Verbose mode -- once to switch
+                               on detailed messages (or undo one level of -q if
+                               any have been set)
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.
 ```

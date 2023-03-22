@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open System
 open System.IO
@@ -10,12 +10,25 @@ type SimpleTest() =
 
   [<SetUp>]
   member this.Setup() =
-    let here = System.Reflection.Assembly.GetExecutingAssembly().Location
-    let heredir =  here |> Path.GetDirectoryName
+    let here =
+      System.Reflection.Assembly
+        .GetExecutingAssembly()
+        .Location
+
+    let heredir = here |> Path.GetDirectoryName
     let herefile = here |> Path.GetFileName
-    filepath <- Path.Combine((if (heredir |> Path.GetFileName).StartsWith("__Instrumented", StringComparison.Ordinal)
-                              then heredir |> Path.GetDirectoryName
-                              else heredir), herefile + ".txt")
+
+    filepath <-
+      Path.Combine(
+        (if
+           (heredir |> Path.GetFileName)
+             .StartsWith("__Instrumented", StringComparison.Ordinal)
+         then
+           heredir |> Path.GetDirectoryName
+         else
+           heredir),
+        herefile + ".txt"
+      )
 
     System.IO.File.WriteAllText(filepath, filepath)
 

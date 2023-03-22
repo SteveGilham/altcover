@@ -1,4 +1,4 @@
-﻿TN:
+﻿TN: Sample5, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 SF:altcover/Sample5/Class1.cs
 FN:12,System.Int32 Sample5.Class1.F1(System.String)
 FN:14,System.Int32 Sample5.Class1+<>c.<F1>b__0_0(System.Char)
@@ -16,25 +16,22 @@ BRF:0
 BRH:0
 DA:12,0
 DA:14,0
-DA:30,0
-DA:35,0
-DA:14,0
-DA:14,0
-DA:14,0
 DA:18,0
-DA:25,0
-DA:26,0
 DA:21,0
 DA:22,0
 DA:23,0
+DA:25,0
+DA:26,0
+DA:30,0
 DA:31,0
 DA:32,0
 DA:33,0
 DA:34,0
+DA:35,0
 LH:0
-LF:17
+LF:14
 end_of_record
-TN:
+TN: Sample5, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 SF:altcover/Sample5/Class1a.cs
 FN:15,System.Boolean Sample5.Class1+<F2>d__1.MoveNext()
 FN:25,System.Void Sample5.Class1+<F3>d__2.MoveNext()
@@ -86,12 +83,9 @@ BRF:0
 BRH:0
 DA:15,0
 DA:17,0
-DA:17,0
-DA:17,0
 DA:18,0
 DA:19,0
 DA:20,0
-DA:17,0
 DA:21,0
 DA:25,0
 DA:27,0
@@ -100,36 +94,30 @@ DA:29,0
 DA:30,0
 DA:37,0
 DA:39,0
-DA:60,0
-DA:65,0
-DA:39,0
-DA:39,0
-DA:39,0
 DA:42,0
 DA:43,0
 DA:44,0
 DA:48,0
-DA:55,0
-DA:56,0
 DA:51,0
 DA:52,0
 DA:53,0
+DA:55,0
+DA:56,0
+DA:60,0
 DA:61,0
 DA:62,0
 DA:63,0
 DA:64,0
+DA:65,0
 DA:68,0
 DA:69,0
 DA:70,0
 DA:74,0
 DA:76,0
 DA:77,0
-DA:77,0
-DA:77,0
 DA:78,0
 DA:79,0
 DA:80,0
-DA:77,0
 DA:81,0
 DA:84,0
 DA:85,0
@@ -143,12 +131,9 @@ DA:98,0
 DA:99,0
 DA:100,0
 DA:117,0
-DA:117,0
 DA:126,0
 DA:127,0
 DA:128,0
-DA:137,0
-DA:137,0
 DA:137,0
 DA:143,0
 DA:144,0
@@ -157,5 +142,5 @@ DA:148,0
 DA:150,0
 DA:152,0
 LH:0
-LF:72
+LF:60
 end_of_record

@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.IO
@@ -6,6 +6,8 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 open System.Diagnostics.CodeAnalysis
+
+open AltCover.Shared
 
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
@@ -19,7 +21,8 @@ module internal TaskHelpers =
 
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "AvoidLargeClassesRule",
-                  Justification = "So many options available, so many compiler generated fields");
+                  Justification =
+                    "So many options available, so many compiler generated fields");
   AutoSerializable(false)>]
 type Prepare() =
   inherit Task(null)
@@ -134,9 +137,10 @@ type Prepare() =
   member val ShowGenerated = false with get, set
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
+  member val Trivia = false with get, set
 
   member private self.Message text =
-    base.Log.LogMessage(MessageImportance.High, text)
+    ``base``.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
     let log =
@@ -145,7 +149,8 @@ type Prepare() =
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
               Warn = base.Log.LogWarning
-              Info = self.Message })
+              Info = self.Message
+              Verbose = self.Message })
         self.ACLog
 
     let task =
@@ -184,7 +189,8 @@ type Prepare() =
           VisibleBranches = self.VisibleBranches
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated
-          Verbosity = TaskHelpers.parse self.Verbosity }
+          Verbosity = TaskHelpers.parse self.Verbosity
+          Trivia = self.Trivia }
 
     Command.Prepare task log = 0
 
@@ -208,10 +214,7 @@ type Collect() =
 
   member val Threshold = String.Empty with get, set
 
-  [<SuppressMessage("Microsoft.Naming",
-                    "CA1704",
-                    Justification = "'  member val Cobertura = String.Empty with get, set
-' is jargon")>]
+  [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "'Cobertura' is jargon")>]
   member val Cobertura = String.Empty with get, set
 
   member val OutputFile = String.Empty with get, set
@@ -226,16 +229,13 @@ type Collect() =
   member val Verbosity = "Info" with get, set
 
   [<Output>]
-  [<SuppressMessage("Microsoft.Performance",
-                    "CA1822:MarkMembersAsStatic",
-                    Justification = "Instance property needed");
-    SuppressMessage("Gendarme.Rules.Correctness",
+  [<SuppressMessage("Gendarme.Rules.Correctness",
                     "MethodCanBeMadeStaticRule",
                     Justification = "Instance property needed")>]
   member self.Summary = Command.Summary()
 
   member private self.Message text =
-    base.Log.LogMessage(MessageImportance.High, text)
+    ``base``.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
     let log =
@@ -244,7 +244,8 @@ type Collect() =
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
               Warn = base.Log.LogWarning
-              Info = self.Message })
+              Info = self.Message
+              Verbose = self.Message })
         self.ACLog
 
     let task =
@@ -316,9 +317,11 @@ type Echo() =
   // member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
-    if self.Text |> String.IsNullOrWhiteSpace |> not
-       && (self.Verbosity |> TaskHelpers.parse |> int)
-          >= int System.Diagnostics.TraceLevel.Info then
+    if
+      self.Text |> String.IsNullOrWhiteSpace |> not
+      && (self.Verbosity |> TaskHelpers.parse |> int)
+         >= int System.Diagnostics.TraceLevel.Info
+    then
       let original = Console.ForegroundColor
 
       try
@@ -344,7 +347,7 @@ type RunSettings() =
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
   member private self.Message text =
-    base.Log.LogMessage(MessageImportance.High, text)
+    ``base``.Log.LogMessage(MessageImportance.High, text)
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
@@ -368,10 +371,12 @@ type RunSettings() =
 
     try
       let settings =
-        if self.TestSetting
-           |> String.IsNullOrWhiteSpace
-           |> not
-           && self.TestSetting |> File.Exists then
+        if
+          self.TestSetting
+          |> String.IsNullOrWhiteSpace
+          |> not
+          && self.TestSetting |> File.Exists
+        then
           try
             use s = File.OpenRead(self.TestSetting)
             XDocument.Load(s)
@@ -387,11 +392,12 @@ type RunSettings() =
         match parent.Descendants(xname childName) |> Seq.tryHead with
         | Some child -> child
         | _ ->
-            let extra = XElement(xname childName)
-            parent.Add extra
-            extra
+          let extra = XElement(xname childName)
+          parent.Add extra
+          extra
 
-      let here = Assembly.GetExecutingAssembly().Location
+      let here =
+        Assembly.GetExecutingAssembly().Location
 
       let expected =
         Path.Combine(Path.GetDirectoryName(here), self.DataCollector)
@@ -404,9 +410,11 @@ type RunSettings() =
         let ip1 =
           ensureHas rs "InProcDataCollectionRunSettings"
 
-        let ip2 = ensureHas ip1 "InProcDataCollectors"
+        let ip2 =
+          ensureHas ip1 "InProcDataCollectors"
 
-        let name = AssemblyName.GetAssemblyName(expected)
+        let name =
+          AssemblyName.GetAssemblyName(expected)
 
         let altcover =
           XElement(
@@ -461,6 +469,9 @@ type ContingentCopy() =
   [<Required>]
   member val InstrumentDirectory = String.Empty with get, set
 
+  member internal self.Write message =
+    ``base``.Log.LogMessage(MessageImportance.High, message)
+
   override self.Execute() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "Project dir %A" self.ProjectDir)
     //base.Log.LogMessage(MessageImportance.High, sprintf "Relative dir %A" self.RelativeDir)
@@ -469,26 +480,34 @@ type ContingentCopy() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "BuildOutputDirectory %A" self.BuildOutputDirectory)
     //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
 
-    let relativeDir = if self.ProjectDir |> String.IsNullOrWhiteSpace |> not &&
-                         self.ProjectDir  |> Path.IsPathRooted &&
-                         self.RelativeDir |> Path.IsPathRooted
-                      then Visitor.I.getRelativePath self.ProjectDir self.RelativeDir
-                      else self.RelativeDir
+    let relativeDir =
+      if
+        self.ProjectDir
+        |> String.IsNullOrWhiteSpace
+        |> not
+        && self.ProjectDir |> Path.IsPathRooted
+        && self.RelativeDir |> Path.IsPathRooted
+      then
+        Visitor.I.getRelativeDirectoryPath self.ProjectDir self.RelativeDir
+      else
+        self.RelativeDir
 
     // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
 
-    if (self.CopyToOutputDirectory = "Always"
-        || self.CopyToOutputDirectory = "PreserveNewest")
-       && (relativeDir |> Path.IsPathRooted |> not)
+    if
+      (self.CopyToOutputDirectory == "Always"
+       || self.CopyToOutputDirectory == "PreserveNewest")
+      && (relativeDir |> Path.IsPathRooted |> not)
       //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
-       && (relativeDir
-           |> String.IsNullOrWhiteSpace
-           |> not)
-       && (self.FileName |> String.IsNullOrWhiteSpace |> not) then
+      && (relativeDir |> String.IsNullOrWhiteSpace |> not)
+      && (self.FileName |> String.IsNullOrWhiteSpace |> not)
+    then
       let toDir =
         Path.Combine(self.InstrumentDirectory, relativeDir)
 
-      let filename = self.FileName |> Path.GetFileName
+      let filename =
+        self.FileName |> Path.GetFileName
+
       let toFile = Path.Combine(toDir, filename)
 
       let from =
@@ -497,7 +516,11 @@ type ContingentCopy() =
       if File.Exists from then
         if toDir |> Directory.Exists |> not then
           toDir |> Directory.CreateDirectory |> ignore
-        File.Copy(from, toFile, true)
+
+        let copy x = File.Copy(x, toFile, true)
+
+        from
+        |> CommandLine.I.doRetry copy self.Write 10 1000 0
 
     true
 
@@ -510,7 +533,7 @@ type RetryDelete() =
   member val Files: string array = [||] with get, set
 
   member internal self.Write message =
-    base.Log.LogMessage(MessageImportance.High, message)
+    ``base``.Log.LogMessage(MessageImportance.High, message)
 
   override self.Execute() =
     if self.Files.IsNotNull then

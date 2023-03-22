@@ -42,46 +42,44 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./_Binaries/Invoke-Altcover_Sample2/Debug+AnyCPU/net7.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-        $i = "./_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $i = "./_Binaries/Sample2/Debug+AnyCPU/net7.0"
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
         if (Test-Path $x) { Remove-Item -force $x }
 
-        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter ("Adapter", "FSharp", "nunit") -ReportFormat NCover -InformationAction Continue
+        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter ("Adapter", "FSharp", "nunit") -ReportFormat NCover -InformationAction Continue -Verbosity Verbose
         $o | Should -Exist
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
-        [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
+        [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar .ctor makeThing testMakeThing bytes"
         $result = [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount)
-        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-                            #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w = ""
         $format = @([AltCover.Commands.Summary]::O, [AltCover.Commands.Summary]::C)
 
         Invoke-AltCover -Runner -RecorderDirectory $o -SummaryFormat $format -WarningVariable w
         $xm = [xml](Get-Content $x)
 
-        [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
+        [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar .ctor makeThing testMakeThing bytes"
         $result = [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount)
-        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-                            #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
+        $env:AltCoverTag = "Invoke-Altcover_"
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net7.0", "Sample2.fsproj") #, "/p:AltCoverTag=Invoke-Altcover_")
+        $env:AltCoverTag = ""
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
-        $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
-                            #"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        $result | Should -Be "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
         $result = $summary.Replace("`r", [String]::Empty).Replace("`n", "|") 
-        $result | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 11 of 28 (39.29)|"
-                            #"Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 23 (43.48)|"
+        $result | Should -Be "Visited Classes 4 of 6 (66.67)|Visited Methods 7 of 10 (70)|Visited Points 12 of 20 (60)|"
     }
 
     It "Fails on garbage" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net7.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
@@ -92,10 +90,10 @@ Describe "Invoke-Altcover" {
         {
           $ev | Should -Be ("--inputDirectory : Directory ./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0 not found" +
                             [Environment]::NewLine +"255")
-		    }
+        }
     }
 
-    It "Reports the version" {        
+    It "Reports the version" {
         $version = Invoke-AltCover -Version -InformationAction Continue 6>&1
         $version.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
     }
@@ -276,6 +274,7 @@ Describe "ConvertTo-NCover" {
       <seqpnt visitcount="0" line="20" column="4" endline="20" endcolumn="5" offset="68" excluded="false" document="altcover/Sample1/Program.cs" />
       <seqpnt visitcount="1" line="21" column="3" endline="21" endcolumn="4" offset="69" excluded="false" document="altcover/Sample1/Program.cs" />
     </method>
+    <altcover.file document="altcover/Sample1/Program.cs" embed="hU9NS8NAED0nkP/wzKnVkgavRT3Uk6gIDRQRD2ucJkuTnTC7SQjS/+5mq+DNwwzDvI9501ttKuwm66jdJHESr9dwZB064UpUGxYHFgh1LA4VGRLlNJuZbFRLtlMloeC+rAsvTOKvJI60cSRGNSgbZS1efs2iGYw60YNyBOu8U4mB9SeelDYL68THeXuHksouZ2rgR4MSGB5xg3uvK3RL2TOPm4DpAxYey17Jk25xned5UP5Ioy0byw1le9GOHrWhRbqvSQjaop0gXB7Jv6vK4x1SXGEXMmQP7POkl+nqnGV5PnYKnRpL/5woRjJOk6ux9UMv0wofPF2kf33m5uv0DQ==" />
   </module>
 </coverage>
 "@
@@ -367,16 +366,16 @@ Describe "ConvertTo-BarChart" {
     $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
     $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/HandRolledMonoCoverage.html")
 
-    $result = $sw.ToString().Replace("`r", "")
+    $result = $sw.ToString().Replace("`r", "").Replace("ID0ES", "ID0ET") # flakiness in label autogenerator
     $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString()).Replace("`"utf-8`"?>", "`"utf-16`"?>")
-    $written.Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+    $written.Replace("`r", "").Replace("ID0ES", "ID0ET")  | Should -Be $expected.Replace("`r", "")
   }
 }
 
 Describe "ConvertFrom-NCover" {
   It "converts" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"
     $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
     $xml | Should -BeOfType [xdoc]
 
@@ -400,8 +399,8 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
-    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
-                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
+    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll",
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
@@ -413,7 +412,7 @@ Describe "ConvertFrom-NCover" {
 
   It "converts from the pipeline" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"
     $xml = [xdoc]::Load("./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
     $xml | Should -BeOfType [xdoc]
 
@@ -437,8 +436,8 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
-    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
-                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
+    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll",
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")

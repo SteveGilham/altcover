@@ -1,5 +1,155 @@
 # Previously
 
+# 8.4.840 (Habu series release 16)
+* New option `--trivia` to omit coverage of sequence points containing no logic (no-op, return or unconditional branches only)
+* Added context for exceptions thrown during instrumentation.  This is aimed at tracing what was being inspected when exceptions arise from `Mono.Cecil` being presented with a new corner case.
+
+# 8.3.839 (Habu series release 15)
+* [BUGFIX] -- Issue #161: Add retry logic to `ContingentCopy` task 
+* [BUGFIX] -- Issue #165: Work around Cecil issue #873 by omitting debug information for constants that cause that issue. **N.B.** will not catch cases in methods that are not instrumented.
+
+# 8.3.838 (Habu series release 14)
+* [GTK-VISUALIZER] Fix off-by-one error in markup for the very last line of the file
+* [BUGFIX] -- Out-of-process APIs generating `dotnet test`: fix to allow activating ZipFile, MethodPoint, SingleVisit and SourceLink
+* [BUGFIX] -- Issue #156: Out-of-process APIs generating `dotnet test`: fix `/p:AltCoverDependencyList` to work around the behaviour of `dotnet test` with an argument ending `.dll` or `.exe`.  Users rolling their own command lines, note that the assembly list is separated _and terminated_ with `'|'` characters.  The `--dependency` command line argument for the tool is not affected.
+* [BUGFIX] -- Issue #156: Make explicit dependencies through `--dependency` have priority over other assembly resolution lookup.  This works around a Mono.Cecil misfeature (Mono.Cecil issue #863) where the `netstandard2.0` Cecil binaries do not consider the GAC for Framework system assemblies, but instead will find stubs in `dotnet/shared/Microsoft.NETCore.App` for e.g. .net Framework WPF related assemblies
+* [BUGFIX] -- Improve selection of non-embedded symbol files (between location in assembly debug header, the same directory as the assembly and any `--symbolDirectory` values) to avoid symbol mismatch when there are multiple possible files on offer
+* Add a `--verbose` option for AltCover, the converse of `-q`.  Away from the command line, adds meaning to the `Verbosity` option value `System.Diagnostics.TraceLevel.Verbose`.  Currently `Verbose` output shows more of the selection of files for instrumentation, noting when files are excluded from the process, symbol file selection etc.
+* Add a matching field, `ILoggingOptions.Verbose`, to the API as a sink to capture verbose output.
+* Other minor build process adjustments for SDK 6.0.300/F# 6.0.4, 6.0.5
+
+# 8.2.837 (Habu series release 13)
+* [VISUALIZER] Critical bug fixes for GTK and Avalonia : mismatched new icon names causing crashes
+* [VISUALIZER] Use new coverage data icon for the coverage report file, not a generic report icon
+
+# 8.2.836 (Habu series release 12)
+* [BUGFIX] Fix project file path handling in Cake support
+* [BUGFIX] Improve heuristic to recognise (and ignore)  state-machine injected branches in `async` methods; this may cause subtle changes, up or down, in branch detection for other generated code ("hidden" sequence points) contexts with branches
+* Use VS2022 icons in the Visualizer
+
+# 8.2.835 (Habu series release 11)
+* [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet
+* [BUGFIX] Fix blocking issue in Cake support; and add operational test
+* Move Fake.Build support to 5.21 as minimum; updating other supporting libraries
+
+# 8.2.833 (Habu series release 10)
+* [BUGFIX] Work-round more (problems with ill-formed debug data)[https://github.com/jbevain/cecil/issues/816] (issue #135)
+* [BUGFIX] An infinite loop while instrumenting when faced with an inner function that is also a closure (also issue #135)
+* [BUGFIX] Address issue #71 by pre-allocating storage for each instrumented assembly; rather than allocating on demand, with any timing related issues not adequately dealt with subject to catch-and-ignore
+* For instrumented assemblies, write embedded debug symbols, independent of the input choice.
+* Improved release note formatting
+* Some overhaul and updating of neglected parts of the build and test script
+* Reduce to a minimum the differences in the source between the net20 and net46-for-async versions of the recorder; then just rewrite the net20 version with the delta on demand.
+* Some minor improvements to the data collector for `dotnet test` use, with example of how to employ explicitly in AltCover "classic" mode in the "`UnitTestWithAltCoverCore`" fake build target
+
+# 8.2.831 (Habu series release 9)
+* [BUGFIX] Make the static-linked parts of the recorder assembly internal, so only the AltCover instrumentation API is exposed -- removes type duplications from the environment that may confuse run-time assembly creation e.g. by Marten (issue #133)
+* For `CallContext`, add async-aware tracking for all methods returning `Task` or `Task<T>` not just ones with the C# `async` shape.  This includes functions returning the new F#6 `task{}` computation expression. 
+  * **Note** there is a support gap : running this under .net Framework less than v4.6 (i.e. a test machine with a pre-2015-JUL-20 environment) will not work, even though `Task` is a .net 4.0 feature, as the tracking support relies on .net 4.6 `async` features.
+* Emit (a warning)[https://stevegilham.github.io/altcover/AltCover.Engine/AltCover/AltCover.LoggingOptions/Warn-apidoc] if any of the files input to the instrumentations have previously been instrumented, leaving those files untouched (apart from any Recorder assembly, which will still be overwritten).  For `dotnet test` this is an MSBuild warning, for powershell, it is delivered via `Cmdlet.WriteWarning`.
+  * This behaviour is subject to change in future releases
+* Rework of the build process to keep artifacts out of the tracked directories
+
+# 8.2.828 (Habu series release 8)
+* Absorb .net 6 release into build tooling (awaiting a non-preview updated release of (`fake.build`)[https://fake.build/] to be able to upgrade to FSharp.Core 6.x -- still have to target the v5.x library even if the build uses the F#6 compiler)
+* Where the debug symbols used in the instrumentation contain embedded source (e.g. from source generators), represent that within the generated report --
+  * for OpenCover format, as an `altcover.embed` attribute added to the `File` element
+  * for NCover classic, `altcover.file` elements are added after the `method` records in a `module`, with attributes `document` and `embed`
+  * and for the extended coverlet JSON format, as a type `«AltCover.embed»` with an empty method with name being the embedded text.
+* [VISUALIZER] Support the extended formats for display, using the embedded source in preference to the file system whenever present
+* Support these extensions in conversions between formats -- conversion to Lcov and Cobertura currently lose this information
+* Other fixes/enhancements to these conversions, esp. in the cases of partial classes and inlined code
+* Compute summary data correctly in the output from Json to OpenCover
+* Carry both recorder versions (net20 and net46) as resources to simplify self-test behaviour
+* Move baseline Cake support to v1.1.0 and Fake to v5.20.4
+
+# 8.2.825 (Habu series release 7)
+* Next release will be post .net 6 release to accomodate its impact, barring show-stoppers
+* [BUGFIX] As noted in [Q&A discussion (#107)](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies, and in [issue #47](https://github.com/SteveGilham/altcover/issues/47#issuecomment-461838463)  platform specific library subfolders, were not being copied appropriately relative to the instrumented location; this is now resolved.
+* [BUGFIX] Prevent `--localSource` possibly excluding locally built assemblies using source generators.
+* [VISUALIZER] Fixes and updates
+  * On the global tool, don't put expander icons (˃) on leaf nodes, i.e. most methods, all source -- such icons are an automatic feature in GTK, but are manual in Avalonia.
+  * Don't throw while trying to determine if a file that doesn't exist is outdated
+
+# 8.2.824 (Habu series release 6c)
+* [VISUALIZER] Fixes and updates
+  * [REGRESSION] Fix where multiple source file support broke JSON coverage support
+  * Not all coverage reports are XML -- fix root node icon
+  * Add more icons indicating non-default states (files missing, changed, via sourcelink &c)
+  * Replace most of the annoying pop-ups with tool-tips
+
+# 8.2.823 (Habu series release 6b)
+* [VISUALIZER] Fixes and updates
+  * [REGRESSION] Fix where multiple source file support broke methods with no source file
+  * [BUGFIX] Fix where some types were erroneously shown as functions (ƒₓ)
+  * Allow for TAB characters (which occupy 1 column only in the .PDB), and display → rather than ◻ in the global tool (TAB expands to 8 spaces in the GTK# build)
+  * Update icons to VS2019 from VS2017 (except where taken from GTK in the GTK# build), which means slightly more colours in the tree view, and a small change to the branch indicator.
+
+# 8.2.822 (Habu series release 6a)
+* [VISUALIZER] Support OpenCover's output from C++/CLI assemblies compiled `/Zi` (line information only, zero column values)
+  * account for (& simplify) the C++/CLI attribute decorations in method names
+  * allow for (& simplify) `gcroot<type::with::Cpp::namespacing ^>` types in method names
+  * allow source file selection for methods with code inlined from multiple source files
+
+# 8.2.821 (Habu series release 6)
+* Support deterministic builds `/p:ContinuousIntegrationBuild=true`, with or without `--sourcelink`/`/p:AltCoverSourceLink=true`.  Note that assemblies created by deterministic builds will be excluded by `-l`/`/p:AltCoverLocalSource=true`.
+* Experiment with the ReadMe feature recently added to NuGet
+* Internal refactoring of the JSON processing following the replacement of `System.Text.Encodings.Web` in the previous release.
+
+# 8.2.820 (Habu series release 5)
+* Replace `System.Text.Encodings.Web` for JSON-escaping module, class and method names 
+* [BUGFIX] issue #125 -- prevent an NullReferenceException in some cases of computing cyclomatic complexity (a failure to exactly copy the algorithm from Mono.Gendarme)
+* [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingentCopy` MSBuild task
+
+# 8.1.819 (Habu series release 4)
+* Adapt to recent F# compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
+* If the report format is JSON, ensure that the coverage file doesn't end `.xml`, and if not JSON, that it doesn't end `.json` (case-blind comparison)
+
+# 8.1.817 (Habu series release 3)
+* `Merge-OpenCover` cmdlet and `OpenCover.Merge` API.  It should handle both strict (`OpenCover`, `AltCover --reportFormat=OpenCover`) and more relaxed (`coverlet`, `ConvertFrom-CoverageJson`, `Write-OpenCoverDerivedState -Coverlet`) interpretations
+* When `--callContext` indicates a method returning an F# `async` computation, then track all calls within the same async flow, just as with C# `async` methods from v7.2.800
+
+# 8.0.816 (Habu series release 2)
+* Move to Cake 1.0 as baseline for Cake support
+* [VISUALIZER] Support for LCov and Cobertura format reports
+* [VISUALIZER] For formats with only line-level information (e.g. LCov, Covertura or from coverlet), colour the whole line, and not just the line number gutter
+
+# 8.0.815 (Habu series release 1)
+* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature values in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
+* [NEW] Native JSON report formatting (`--reportFormat=Json` or equivalents), a superset of coverlet's JSON
+  * AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
+  * `ConvertFrom-CoverageJson` cmdlet to convert from coverlet or AltCover JSON to a miminal OpenCover format
+  * Preparing as Native JSON, to generate an LCov or Cobertura report at collection is supported
+* [VISUALIZER] Both versions will now consume and display from coverlet and AltCover JSON output
+* [BREAKING] the `-x, --xmlReport` argument or equivalent becomes just `-r, --report` since not all reports are XML
+* [BREAKING] the stop-gap `--jsonReport` collection option from v7.6 is withdrawn, and the related `ConvertTo-CoverageJson` cmdlet now produces the AltCover native JSON format
+* For both LCov and Cobertura output, coalesce cases of multiple sequence points per line into one entry per line
+* Extensions to coverlet's JSON format are as follows
+  * `Method` has optional fields
+    * `SeqPnts` (array of `SeqPnt`) 
+    * `TId` (integer tracking ID) 
+    * `Entry` and
+    * `Exit` (arrays of timestamps)
+  * `BranchInfo` has optional fields
+   * `Id` (integer unique ID)
+   * `Times` (array of timestamps) and
+   * `Tracks` (array of tracking IDs)
+  * `SeqPnt` is `VC` (visit count), `SL` (start line), `SC` (start column), `EL`, `EC` (ditto for end), `Offset`, `Id`, all integers, and optional `Times` and `Tracks` as for `BranchInfo`
+  * Because int64 doesn't fit as a double, tracking-related timestamps are represented as Base64Encoded strings of the ticks count as a network byte order quantity `Convert.ToBase64String(BitConverter.GetBytes(IPAddresss.HostToNetworkOrder(ticks)))`
+
+# 7.6.812 (Genbu series release 15)
+* [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
+* Monitor API
+  * [BUGFIX] Harden the monitor API `TryGetVisitTotals` against race conditions in multi-threaded tests
+  * Publish the AltCover.Monitor API as API (i.e. under `lib/`) in the main package `altcover` as well as in `altcover.api` (but not in `altcover.global`; global tools aren't library compatible to be accessed through a `package add` reference).  It's there next to the PowerShell assembly (per `altcover ImportModule`) if you want to manually link to it, though
+  * Support writing unit tests involving the API back to `net20` as well as `netstandard2.0`
+* Add `--jsonReport` option (and equivalents) to output the NCover or OpenCover data in a minified JSON format, like the existing `--lcovReport` option does for that format.  The JSON is a direct map of the XML, with values appropriately typed.
+* Add a `ConvertTo-CoverageJson` cmdlet and a `ConvertToJson` toolkit API to post-precess existing NCover/OpenCover reports 
+
+# 7.5.809 (Genbu series release 14)
+* [NEW] AltCover.Monitor API to track current coverage from running unit tests.  Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
+* [BUGFIX] In OpenCover format output, only emit `<File />` records relevant to the respective module, not for all source files encountered so far.
+
 # 7.4.808 (Genbu series release 13)
 * [BUGFIX] In some use cases, the error `The "AltCover.ContingentCopy" task was not given a value for the required parameter "FileName".` could be provoked by `dotnet test` (Issue #113)
 * Extend  to other Build Action types (at least all those that my VS2019 Community Edition was prepared to mention) the "If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<[Action] Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files" behaviour added for the `None` action in the previous release.  File an issue report if you have yet another build action type that you need copying for a not-in-place test scenario.

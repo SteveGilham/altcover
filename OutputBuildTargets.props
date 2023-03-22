@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup Label="OutputBuildTargets">
+    <BaseOutDir>$(OutputPathWithoutEndSlash)</BaseOutDir>
+    <OutDir>$(BaseOutDir)/$(TargetFramework)\</OutDir>
+    <TargetDir>$(OutDir)</TargetDir>
+    <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
+    <TargetRefPath>$(TargetDir)ref\$(TargetFileName)</TargetRefPath>
+    <PublishDir>$(BaseOutDir)/$(TargetFramework)_$(RuntimeIdentifier)</PublishDir>
+  </PropertyGroup>
+ 
+  <!--
+  WPF projects output temporary assemblies in directories that are not deleted after use.
+  See https://github.com/dotnet/wpf/issues/2930
+  <Target Name="RemoveWpfTemp" AfterTargets="Build">
+    <ItemGroup>
+      <WpfTempDirectories Include="$([System.IO.Directory]::GetDirectories(&quot;$(BuildDir)&quot;,&quot;$(MSBuildProjectName)*_wpftmp_*&quot;))"/>
+    </ItemGroup>
+    <RemoveDir Directories="@(WpfTempDirectories)" />
+  </Target>  
+    -->
+</Project>

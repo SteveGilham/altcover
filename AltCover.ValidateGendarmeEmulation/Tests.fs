@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open System
 open System.IO
@@ -10,17 +10,17 @@ module Rocks =
   let rec GetAllTypes (t: TypeDefinition) =
     t
     :: (List.collect
-          GetAllTypes
-          (t.NestedTypes
-           |> Seq.cast<TypeDefinition>
-           |> Seq.toList))
+      GetAllTypes
+      (t.NestedTypes
+       |> Seq.cast<TypeDefinition>
+       |> Seq.toList))
 
 module ValidateGendarmeEmulation =
-  let importantItems (n, e, r) = maybe (r <> e) (Some(n, e, r)) None
+  let importantItems (n, e, r) = Maybe (r <> e) (Some(n, e, r)) None
 
   let stringify x =
     match x with
-    | Some (n, e, r) -> Some(sprintf "Expected %d got %d in %s" e r n)
+    | Some(n, e, r) -> Some(sprintf "Expected %d got %d in %s" e r n)
     | None -> None
 
   let seqStringify x = x |> Seq.map stringify
@@ -138,11 +138,10 @@ module ValidateGendarmeEmulation =
 
     let output =
       ([ r; l ]
-       |> List.map
-            (fun e ->
-              match e with
-              | Right b -> b.ToString().ToUpperInvariant()
-              | Left i -> String(i.ToString() |> Seq.rev |> Seq.toArray)))
+       |> List.map (fun e ->
+         match e with
+         | Right b -> b.ToString().ToUpperInvariant()
+         | Left i -> String(i.ToString() |> Seq.rev |> Seq.toArray)))
         .Split
 
     test <@ output = ("TRUE", [ "32" ]) @>

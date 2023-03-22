@@ -1,4 +1,4 @@
-#if RUNNER
+﻿#if RUNNER
 namespace AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
@@ -21,6 +21,14 @@ open System.Reflection
 open AltCoverFake.DotNet.Testing
 open Fake.Core
 open Fake.DotNet
+
+[<assembly: SuppressMessage("Microsoft.Naming",
+                            "CA1724:TypeNamesShouldNotMatchNamespaces",
+                            Scope = "type",
+                            Target = "AltCoverFake.DotNet.Testing.AltCover",
+                            Justification = "Design decision")>]
+()
+
 #endif
 
 [<RequireQualifiedAccess>]
@@ -32,16 +40,11 @@ module AltCover =
       Errors: string seq }
     override self.ToString() =
       let cl =
-        String.Join(
-          " ",
-          Seq.concat [ [ "altcover" ]
-                       self.Command ]
-        )
+        String.Join(" ", Seq.concat [ [ "altcover" ]; self.Command ])
 
       String.Join(
         Environment.NewLine,
-        Seq.concat [ [| cl |] |> Array.toSeq
-                     self.Errors ]
+        Seq.concat [ [| cl |] |> Array.toSeq; self.Errors ]
       )
 #endif
 
@@ -132,15 +135,22 @@ module AltCover =
       | TypeSafe t -> t.Verbosity
 
     interface Abstract.ICollectOptions with
-      member self.RecorderDirectory = self.RecorderDirectory
-      member self.WorkingDirectory = self.WorkingDirectory
+      member self.RecorderDirectory =
+        self.RecorderDirectory
+
+      member self.WorkingDirectory =
+        self.WorkingDirectory
+
       member self.Executable = self.Executable
       member self.LcovReport = self.LcovReport
       member self.Threshold = self.Threshold
       member self.Cobertura = self.Cobertura
       member self.OutputFile = self.OutputFile
       member self.CommandLine = self.CommandLine
-      member self.ExposeReturnCode = self.ExposeReturnCode
+
+      member self.ExposeReturnCode =
+        self.ExposeReturnCode
+
       member self.SummaryFormat = self.SummaryFormat
       member self.Verbosity = self.Verbosity
 
@@ -418,6 +428,12 @@ module AltCover =
       | Abstract a -> a.Verbosity
       | TypeSafe t -> t.Verbosity
 
+    member self.Trivia =
+      match self with
+      | Primitive p -> p.Trivia
+      | Abstract a -> a.Trivia
+      | TypeSafe t -> t.Trivia.AsBool()
+
     interface Abstract.IPrepareOptions with
       member self.InputDirectories =
         self.InputDirectories |> PrepareOptions.ToSeq
@@ -431,10 +447,14 @@ module AltCover =
       member self.Dependencies =
         self.Dependencies |> PrepareOptions.ToSeq
 
-      member self.Keys = self.Keys |> PrepareOptions.ToSeq
+      member self.Keys =
+        self.Keys |> PrepareOptions.ToSeq
+
       member self.StrongNameKey = self.StrongNameKey
       member self.Report = self.Report
-      member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
+
+      member self.FileFilter =
+        self.FileFilter |> PrepareOptions.ToSeq
 
       member self.AssemblyFilter =
         self.AssemblyFilter |> PrepareOptions.ToSeq
@@ -442,7 +462,8 @@ module AltCover =
       member self.AssemblyExcludeFilter =
         self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
 
-      member self.TypeFilter = self.TypeFilter |> PrepareOptions.ToSeq
+      member self.TypeFilter =
+        self.TypeFilter |> PrepareOptions.ToSeq
 
       member self.MethodFilter =
         self.MethodFilter |> PrepareOptions.ToSeq
@@ -450,7 +471,8 @@ module AltCover =
       member self.AttributeFilter =
         self.AttributeFilter |> PrepareOptions.ToSeq
 
-      member self.PathFilter = self.PathFilter |> PrepareOptions.ToSeq
+      member self.PathFilter =
+        self.PathFilter |> PrepareOptions.ToSeq
 
       member self.AttributeTopLevel =
         self.AttributeTopLevel |> PrepareOptions.ToSeq
@@ -461,7 +483,9 @@ module AltCover =
       member self.MethodTopLevel =
         self.MethodTopLevel |> PrepareOptions.ToSeq
 
-      member self.CallContext = self.CallContext |> PrepareOptions.ToSeq
+      member self.CallContext =
+        self.CallContext |> PrepareOptions.ToSeq
+
       member self.ReportFormat = self.ReportFormat
       member self.InPlace = self.InPlace
       member self.Save = self.Save
@@ -470,15 +494,24 @@ module AltCover =
       member self.SingleVisit = self.SingleVisit
       member self.LineCover = self.LineCover
       member self.BranchCover = self.BranchCover
-      member self.CommandLine = self.CommandLine |> PrepareOptions.ToSeq
-      member self.ExposeReturnCode = self.ExposeReturnCode
+
+      member self.CommandLine =
+        self.CommandLine |> PrepareOptions.ToSeq
+
+      member self.ExposeReturnCode =
+        self.ExposeReturnCode
+
       member self.SourceLink = self.SourceLink
       member self.Defer = self.Defer
       member self.LocalSource = self.LocalSource
-      member self.VisibleBranches = self.VisibleBranches
+
+      member self.VisibleBranches =
+        self.VisibleBranches
+
       member self.ShowStatic = self.ShowStatic
       member self.ShowGenerated = self.ShowGenerated
       member self.Verbosity = self.Verbosity
+      member self.Trivia = self.Trivia
 
 #if RUNNER
     static member private ValidateArray a f key =
@@ -495,7 +528,7 @@ module AltCover =
         CommandLine.error <-
           String.Format(
             System.Globalization.CultureInfo.CurrentCulture,
-            CommandLine.resources.GetString "Incompatible",
+            Output.resources.GetString "Incompatible",
             "--branchcover",
             "--linecover"
           )
@@ -506,11 +539,12 @@ module AltCover =
 
       let validateContext context =
         let select state x =
-          let (_, n) = Main.validateCallContext state x
+          let (_, n) =
+            Main.validateCallContext state x
 
           match (state, n) with
           | (true, _)
-          | (_, Left (Some _)) -> true
+          | (_, Left(Some _)) -> true
           | _ -> false
 
         context
@@ -557,8 +591,8 @@ module AltCover =
           self.MethodFilter
           self.AttributeFilter
           self.PathFilter ]
-        |> Seq.iter
-             (fun a -> PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
+        |> Seq.iter (fun a ->
+          PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
 
         self.Consistent()
         validateContext self.CallContext
@@ -585,7 +619,8 @@ module AltCover =
           Failure = options.Failure |> LoggingOptions.ActionAdapter
           Warn = options.Warn |> LoggingOptions.ActionAdapter
           Echo = options.Echo |> LoggingOptions.ActionAdapter
-          Info = options.Info |> LoggingOptions.ActionAdapter }
+          Info = options.Info |> LoggingOptions.ActionAdapter
+          Verbose = options.Verbose |> LoggingOptions.ActionAdapter }
       |> Primitive
 
     static member ActionAdapter(action: Action<String>) =
@@ -612,4 +647,9 @@ module AltCover =
       match self with
       | Primitive p -> p.Info
       | Abstract a -> a.Info |> LoggingOptions.ActionAdapter
+
+    member self.Verbose =
+      match self with
+      | Primitive p -> p.Verbose
+      | Abstract a -> a.Verbose |> LoggingOptions.ActionAdapter
 #endif

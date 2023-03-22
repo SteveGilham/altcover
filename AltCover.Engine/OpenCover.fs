@@ -1,13 +1,15 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Xml.Linq
 
 open Mono.Cecil
+open AltCover.Shared
 
 [<ExcludeFromCodeCoverage>]
 type internal Exclusion =
@@ -23,6 +25,7 @@ type internal OpenCoverContext =
   { Stack: XElement list
     Excluded: Exclusion
     Files: Map<string, int>
+    Embeds: Map<string, string>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -43,6 +46,7 @@ type internal OpenCoverContext =
     { Stack = List.empty<XElement>
       Excluded = Nothing
       Files = Map.empty<string, int>
+      Embeds = Map.empty<string, string>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -64,7 +68,8 @@ module internal OpenCover =
   let internal safeMultiply x y =
     try
       Checked.op_Multiply x <| Math.Max(1, y)
-    with :? OverflowException -> Int32.MaxValue
+    with :? OverflowException ->
+      Int32.MaxValue
 
   module internal I =
     let internal setChain (xbranch: XElement) branch =
@@ -76,11 +81,11 @@ module internal OpenCover =
         match chain with
         | [] -> null
         | l ->
-            String.Join(
-              " ",
-              l
-              |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))
-            )
+          String.Join(
+            " ",
+            l
+            |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))
+          )
       )
 
   let internal reportGenerator () =
@@ -125,9 +130,19 @@ module internal OpenCover =
       element.Add(modules)
       { s with Stack = modules :: s.Stack }
 
+    let recordFile (files: Map<string, int>) file =
+      if files.ContainsKey file then
+        files, files.Item file
+      else
+        let index = files.Count + 1
+        files.Add(file, index), index
+
     let visitModule (s: OpenCoverContext) (moduleDef: ModuleEntry) =
       let def = moduleDef.Module
-      let instrumented = moduleDef.Inspection.IsInstrumented
+
+      let instrumented =
+        moduleDef.Inspection.IsInstrumented
+
       let element = XElement("Module".X)
 
       if not instrumented then
@@ -138,24 +153,47 @@ module internal OpenCover =
       element.SetAttributeValue("hash".X, KeyStore.hashFile def.FileName)
       let head = s.Stack |> Seq.head
       head.Add(element)
-      element.Add(XElement("ModulePath".X, def.FileName |> Path.GetFullPath))
+      element.Add(XElement("ModulePath".X, def.FileName |> canonicalPath))
       element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc def.FileName))
       element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
 
-      if instrumented then
-        element.Add(XElement("Files".X))
+      let (files, embeds) =
+        if instrumented then
+          element.Add(XElement("Files".X))
+
+          def
+          |> ProgramDatabase.getModuleDocuments
+          |> Seq.fold
+            (fun f d ->
+              let key = d.Url |> Visitor.sourceLinkMapping
+              let map = snd f
+
+              let embed =
+                d
+                |> Metadata.getSource
+                |> Option.map (fun s -> Map.add key s map)
+                |> Option.defaultValue map
+
+              (key |> recordFile (fst f) |> fst, embed))
+            (s.Files, s.Embeds)
+        else
+          (s.Files, s.Embeds)
 
       let classes = XElement("Classes".X)
       element.Add(classes)
 
-      if CoverageParameters.trackingNames
-         |> Seq.isEmpty
-         |> not then
+      if
+        CoverageParameters.trackingNames
+        |> Seq.isEmpty
+        |> not
+      then
         element.Add(XElement("TrackedMethods".X))
 
       { s with
           Stack = classes :: s.Stack
           Excluded = Nothing
+          Files = files
+          Embeds = embeds
           ModuleSeq = 0
           ModuleBr = 0
           ModuleMethods = 0
@@ -163,7 +201,9 @@ module internal OpenCover =
           ClassCC = [] }
 
     let visitType (s: OpenCoverContext) (typeDef: TypeEntry) =
-      let instrumented = typeDef.Inspection.IsInstrumented
+      let instrumented =
+        typeDef.Inspection.IsInstrumented
+
       let methods = XElement("Methods".X)
 
       if typeDef.Inspection <> Inspections.TrackOnly then
@@ -192,7 +232,8 @@ module internal OpenCover =
     let boolString b = if b then "true" else "false"
 
     let methodElement (methodDef: MethodDefinition) =
-      let cc = Gendarme.cyclomaticComplexity methodDef
+      let cc =
+        Gendarme.cyclomaticComplexity methodDef
 
       (cc,
        XElement(
@@ -229,8 +270,10 @@ module internal OpenCover =
       seqpnts
 
     let visitMethod (s: OpenCoverContext) (methodDef: MethodDefinition) included =
-      if s.Excluded = Nothing
-         && included <> Inspections.TrackOnly then
+      if
+        s.Excluded = Nothing
+        && included <> Inspections.TrackOnly
+      then
         let instrumented = included.IsInstrumented
         let cc, element = methodElement methodDef
 
@@ -277,18 +320,16 @@ module internal OpenCover =
         XAttribute("fileid".X, ref)
       )
 
-    let recordFile (s: OpenCoverContext) file =
-      if s.Files.ContainsKey file then
-        s.Files, s.Files.Item file
-      else
-        let index = s.Files.Count + 1
-        s.Files.Add(file, index), index
-
     let visitCodeSegment (s: OpenCoverContext) (codeSegment: SeqPnt) i vc =
       let fileset, ref =
-        recordFile s (codeSegment.Document |> Visitor.sourceLinkMapping)
+        recordFile
+          s.Files
+          (codeSegment.Document.Url
+           |> Visitor.sourceLinkMapping)
 
-      let element = methodPointElement codeSegment ref i vc
+      let element =
+        methodPointElement codeSegment ref i vc
+
       let head = s.Stack |> Seq.head
 
       if head.IsEmpty then
@@ -314,12 +355,12 @@ module internal OpenCover =
 
       match (e.Interesting, e.SeqPnt, s.Excluded) with
       | (true, Some codeSegment, Nothing) ->
-          visitCodeSegment s codeSegment e.Uid e.DefaultVisitCount
+        visitCodeSegment s codeSegment e.Uid e.DefaultVisitCount
       | _ -> s
 
     let visitGoTo s branch =
       let doc = branch.SequencePoint.Document.Url
-      let fileset, ref = recordFile s doc
+      let fileset, ref = recordFile s.Files doc
       let fileid = fileset.Item doc
 
       (XElement(
@@ -338,14 +379,18 @@ module internal OpenCover =
        ref)
 
     let visitBranchPoint s branch =
-      if s.Excluded = Nothing
-         && branch.Included
-         && branch.Representative = Reporting.Representative then
+      if
+        s.Excluded = Nothing
+        && branch.Included
+        && branch.Representative = Reporting.Representative
+      then
         let branches =
           s.Stack.Head.Parent.Descendants("BranchPoints".X)
           |> Seq.head
 
-        let (xbranch, fileset, ref) = visitGoTo s branch
+        let (xbranch, fileset, ref) =
+          visitGoTo s branch
+
         I.setChain xbranch branch
 
         if branches.IsEmpty then
@@ -386,29 +431,30 @@ module internal OpenCover =
       bp
       |> Seq.iteri (fun i x -> x.SetAttributeValue("ordinal".X, i))
 
-      if sp |> List.isEmpty |> not
-         && bp |> List.isEmpty |> not then
+      if
+        sp |> List.isEmpty |> not
+        && bp |> List.isEmpty |> not
+      then
         let tail =
           XElement("SequencePoint".X, XAttribute("offset".X, Int32.MaxValue))
 
         let interleave =
           List.concat [ sp; bp; [ tail ] ]
-          |> List.sortBy
-               (fun x ->
-                 x.Attribute("offset".X).Value
-                 |> Int32.TryParse
-                 |> snd)
+          |> List.sortBy (fun x ->
+            x.Attribute("offset".X).Value
+            |> Int32.TryParse
+            |> snd)
 
         let (np, _, _) =
           interleave
           |> Seq.fold
-               (fun (np0, bec, sq: XElement) x ->
-                 match x.Name.LocalName with
-                 | "SequencePoint" ->
-                     sq.SetAttributeValue("bec".X, bec)
-                     (safeMultiply np0 bec, 0, x)
-                 | _ -> (np0, bec + 1, sq))
-               (1, 0, sp.Head)
+            (fun (np0, bec, sq: XElement) x ->
+              match x.Name.LocalName with
+              | "SequencePoint" ->
+                sq.SetAttributeValue("bec".X, bec)
+                (safeMultiply np0 bec, 0, x)
+              | _ -> (np0, bec + 1, sq))
+            (1, 0, sp.Head)
 
         method.SetAttributeValue("nPathComplexity".X, np)
       else if bp |> List.isEmpty |> not then
@@ -421,27 +467,25 @@ module internal OpenCover =
 
     let addTracking (s: OpenCoverContext) (m: MethodDefinition) t =
       t
-      |> Option.iter
-           (fun (uid, strategy) ->
-             let classes =
-               s.Stack
-               |> Seq.find (fun x -> x.Name.LocalName = "Classes")
+      |> Option.iter (fun (uid, strategy) ->
+        let classes =
+          s.Stack
+          |> Seq.find (fun x -> x.Name.LocalName == "Classes")
 
-             let tracked =
-               classes.Parent.Elements("TrackedMethods".X)
+        let tracked =
+          classes.Parent.Elements("TrackedMethods".X)
 
-             tracked
-             |> Seq.iter
-                  (fun t ->
-                    t.Add(
-                      XElement(
-                        "TrackedMethod".X,
-                        XAttribute("uid".X, uid),
-                        XAttribute("token".X, m.MetadataToken.ToUInt32().ToString()),
-                        XAttribute("name".X, m.FullName),
-                        XAttribute("strategy".X, strategy)
-                      )
-                    )))
+        tracked
+        |> Seq.iter (fun t ->
+          t.Add(
+            XElement(
+              "TrackedMethod".X,
+              XAttribute("uid".X, uid),
+              XAttribute("token".X, m.MetadataToken.ToUInt32().ToString()),
+              XAttribute("name".X, m.FullName),
+              XAttribute("strategy".X, strategy)
+            )
+          )))
 
     let addMethodSummary (s: OpenCoverContext) cc (summary: XElement) =
       summary.SetAttributeValue("numSequencePoints".X, s.MethodSeq)
@@ -475,14 +519,15 @@ module internal OpenCover =
 
       head.Parent.Elements("FileRef".X)
       |> Seq.toList
-      |> Seq.iter
-           (fun fileref ->
-             if s.Index < 0 then
-               fileref.Remove()
-             else
-               fileref.Add(XAttribute("uid".X, s.Index)))
+      |> Seq.iter (fun fileref ->
+        if s.Index < 0 then
+          fileref.Remove()
+        else
+          fileref.Add(XAttribute("uid".X, s.Index)))
 
-      let cc = Option.defaultValue 1 s.MethodCC.Head
+      let cc =
+        Option.defaultValue 1 s.MethodCC.Head
+
       let method = head.Parent
 
       if skipped then
@@ -503,19 +548,23 @@ module internal OpenCover =
           ClassBr =
             s.ClassBr
             + s.MethodBr
-            + // make the number agree with OpenCover
-            if s.MethodSeq > 0 || s.MethodBr > 0 then
-              1
-            else
-              0
+            + if // make the number agree with OpenCover
+                s.MethodSeq > 0 || s.MethodBr > 0
+              then
+                1
+              else
+                0
           MethodCC = limitMethodCC (s.MethodSeq + s.MethodBr) s.MethodCC }
 
     let visitAfterMethod (s: OpenCoverContext) m =
       addTracking s m.Method m.Track
 
-      if s.Excluded = Nothing
-         && m.Inspection <> Inspections.TrackOnly then
-        let tail, skipped = visitAfterMethodIncluded s
+      if
+        s.Excluded = Nothing
+        && m.Inspection <> Inspections.TrackOnly
+      then
+        let tail, skipped =
+          visitAfterMethodIncluded s
 
         if skipped |> not then
           updateClassCountsByMethod s tail
@@ -530,18 +579,16 @@ module internal OpenCover =
 
       let (min, max), methods =
         s.MethodCC
-        |> Seq.map
-             (fun q ->
-               (q |> Option.defaultValue 1, q |> Option.defaultValue 0),
-               (if q.IsSome then 1 else 0))
+        |> Seq.map (fun q ->
+          (q |> Option.defaultValue 1, q |> Option.defaultValue 0),
+          (if q.IsSome then 1 else 0))
         |> Seq.fold
-             (fun state pair ->
-               let cc = fst state
-               let cc2 = fst pair
+          (fun state pair ->
+            let cc = fst state
+            let cc2 = fst pair
 
-               (Math.Min(fst cc, fst cc2), Math.Max(snd cc, snd cc2)),
-               snd state + snd pair)
-             ((1, 0), 0)
+            (Math.Min(fst cc, fst cc2), Math.Max(snd cc, snd cc2)), snd state + snd pair)
+          ((1, 0), 0)
 
       let classes =
         if s.ClassSeq > 0 || s.ClassBr > 0 then
@@ -550,19 +597,20 @@ module internal OpenCover =
           0
 
       head.Parent.Elements("Summary".X)
-      |> Seq.iter
-           (fun summary ->
-             summary.SetAttributeValue("numSequencePoints".X, s.ClassSeq)
-             summary.SetAttributeValue("numBranchPoints".X, s.ClassBr)
-             summary.SetAttributeValue("maxCyclomaticComplexity".X, max)
-             summary.SetAttributeValue("minCyclomaticComplexity".X, Math.Min(min, max))
-             summary.SetAttributeValue("numClasses".X, classes)
-             summary.SetAttributeValue("numMethods".X, methods))
+      |> Seq.iter (fun summary ->
+        summary.SetAttributeValue("numSequencePoints".X, s.ClassSeq)
+        summary.SetAttributeValue("numBranchPoints".X, s.ClassBr)
+        summary.SetAttributeValue("maxCyclomaticComplexity".X, max)
+        summary.SetAttributeValue("minCyclomaticComplexity".X, Math.Min(min, max))
+        summary.SetAttributeValue("numClasses".X, classes)
+        summary.SetAttributeValue("numMethods".X, methods))
 
-      if head.Descendants("Method".X) |> Seq.isEmpty
-         &&
-         //head.Attributes("skippedDueTo".X) |> Seq.isEmpty &&
-         s.Excluded = Nothing then
+      if
+        head.Descendants("Method".X) |> Seq.isEmpty
+        &&
+        //head.Attributes("skippedDueTo".X) |> Seq.isEmpty &&
+        s.Excluded = Nothing
+      then
         head.Parent.Remove()
 
       { s with
@@ -584,19 +632,17 @@ module internal OpenCover =
       let min, max =
         s.ClassCC
         |> Seq.fold
-             (fun state pair ->
-               Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
-             (1, 0)
+          (fun state pair -> Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
+          (1, 0)
 
       head.Parent.Elements("Summary".X)
-      |> Seq.iter
-           (fun summary ->
-             summary.SetAttributeValue("numSequencePoints".X, s.ModuleSeq)
-             summary.SetAttributeValue("numBranchPoints".X, s.ModuleBr)
-             summary.SetAttributeValue("maxCyclomaticComplexity".X, max)
-             summary.SetAttributeValue("minCyclomaticComplexity".X, min)
-             summary.SetAttributeValue("numClasses".X, s.ModuleClasses)
-             summary.SetAttributeValue("numMethods".X, s.ModuleMethods))
+      |> Seq.iter (fun summary ->
+        summary.SetAttributeValue("numSequencePoints".X, s.ModuleSeq)
+        summary.SetAttributeValue("numBranchPoints".X, s.ModuleBr)
+        summary.SetAttributeValue("maxCyclomaticComplexity".X, max)
+        summary.SetAttributeValue("minCyclomaticComplexity".X, min)
+        summary.SetAttributeValue("numClasses".X, s.ModuleClasses)
+        summary.SetAttributeValue("numMethods".X, s.ModuleMethods))
 
       let files = head.Parent.Elements("Files".X)
 
@@ -618,18 +664,18 @@ module internal OpenCover =
       |> Map.toSeq
       |> Seq.filter (fun (_, v) -> Set.contains v uids)
       |> Seq.sortBy snd
-      |> Seq.iter
-           (fun (k, v) ->
-             files
-             |> Seq.iter
-                  (fun f ->
-                    f.Add(
-                      XElement(
-                        "File".X,
-                        XAttribute("uid".X, v),
-                        XAttribute("fullPath".X, k)
-                      )
-                    )))
+      |> Seq.iter (fun (k, v) ->
+        files
+        |> Seq.iter (fun f ->
+          let file =
+            XElement("File".X, XAttribute("uid".X, v), XAttribute("fullPath".X, k))
+
+          f.Add(file)
+
+          if s.Embeds.ContainsKey k then
+            file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
+
+      Visitor.moduleReport <- head.Parent.ToString()
 
       { s with
           Stack = tail
@@ -645,19 +691,17 @@ module internal OpenCover =
       let min, max =
         s.ModuleCC
         |> Seq.fold
-             (fun state pair ->
-               Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
-             (1, 0)
+          (fun state pair -> Math.Min(fst state, fst pair), Math.Max(snd state, snd pair))
+          (1, 0)
 
       head.Parent.Elements("Summary".X)
-      |> Seq.iter
-           (fun summary ->
-             summary.SetAttributeValue("numSequencePoints".X, s.TotalSeq)
-             summary.SetAttributeValue("numBranchPoints".X, s.TotalBr)
-             summary.SetAttributeValue("maxCyclomaticComplexity".X, max)
-             summary.SetAttributeValue("minCyclomaticComplexity".X, Math.Max(1, min))
-             summary.SetAttributeValue("numClasses".X, s.TotalClasses)
-             summary.SetAttributeValue("numMethods".X, s.TotalMethods))
+      |> Seq.iter (fun summary ->
+        summary.SetAttributeValue("numSequencePoints".X, s.TotalSeq)
+        summary.SetAttributeValue("numBranchPoints".X, s.TotalBr)
+        summary.SetAttributeValue("maxCyclomaticComplexity".X, max)
+        summary.SetAttributeValue("minCyclomaticComplexity".X, Math.Max(1, min))
+        summary.SetAttributeValue("numClasses".X, s.TotalClasses)
+        summary.SetAttributeValue("numMethods".X, s.TotalMethods))
 
       s
 
@@ -680,3 +724,11 @@ module internal OpenCover =
       Visitor.encloseState reportVisitor (OpenCoverContext.Build())
 
     (result, (fun (s: Stream) -> document.Save s)) // fsharplint:disable-line
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.OpenCover/handleOrdinals@451-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Justification = "Compiler generated")>]
+()

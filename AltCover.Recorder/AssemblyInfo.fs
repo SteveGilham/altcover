@@ -1,4 +1,4 @@
-namespace AltCover.Recorder
+﻿namespace AltCover.Recorder
 
 open System
 open System.Runtime.InteropServices

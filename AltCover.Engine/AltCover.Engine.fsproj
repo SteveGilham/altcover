@@ -1,35 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
-    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Engine</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <!-- If static linking, fix up in the Unpack documentation stage!!-->
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <!-- Maybe this to publish -->
-    <!-- CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <NoWarn>52</NoWarn>
-    <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
     <!-- OtherFlags>- -keyfile:$(SolutionDir)Build\Infrastructure.snk - -staticlink:Manatee.Json</OtherFlags -->
   </PropertyGroup>
@@ -38,11 +19,18 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="StringExtension.fs" />
+    <Compile Include="Compatibility.fs" />
     <Compile Include="Exemption.fs" />
+    <Compile Include="Abstraction.fs" />
+    <Compile Include="Output.fs" />
+    <Compile Include="Canonical.fs" />
     <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
+    <Compile Include="Metadata.fs" />
+    <Compile Include="CecilEx.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
@@ -50,7 +38,6 @@
     <Compile Include="OpenCover.fs" />
     <Compile Include="NativeJson.fs" />
     <Compile Include="CommandLine.fs" />
-    <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="LCov.fs" />
     <Compile Include="Cobertura.fs" />
@@ -80,58 +67,41 @@
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(SolutionDir)_Binaries\AltCover.Recorder\Release+AnyCPU\net46\AltCover.Recorder.dll">
-      <Link>AltCover.Recorder.dll</Link>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Recorder\Release+AnyCPU\net20\AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.net20.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Async\Release+AnyCPU\net46\AltCover.Async.dll">
+      <Link>AltCover.Async.net46.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
-    <PackageReference Include="System.ValueTuple" />
-    <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
-    <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
-    <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
-    <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
-    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="System.IO.Compression" />
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-
-    <!-- Maybe this to publish -->
-    <!-- PackageReference Include="System.Buffers" version="4.5.1">
-        <PrivateAssets>All</PrivateAssets>
-        <Publish>true</Publish>
-      </PackageReference -->
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Manatee.Json">
       <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+      <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
+      <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
+      <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
+      <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
     </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
-    <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
-    <Reference Include="AltCover.Recorder">
-      <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
-    </Reference>
     <Reference Include="BlackFox.CommandLine">
       <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.2">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>

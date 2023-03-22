@@ -3,7 +3,8 @@ Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimpl
 
 ## Never mind the fluff -- how do I get started?
 
-Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide)
+* Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide)
+* Read the [FAQ](https://github.com/SteveGilham/altcover/wiki/FAQ)
 
 The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget packages](#nuget-packages).
 
@@ -25,7 +26,8 @@ For Mono, .net framework and .net core, except as noted
 * [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/Avalonia Visualizer as a global tool
-* [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.18.1 or later), only in this package
+* [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.23.0 or later), only in this package
+* [![Nuget](https://buildstats.info/nuget/altcover.cake) Cake build task utilities](https://www.nuget.org/packages/AltCover.Cake) -- just AltCover related helper types for Cake scripts (v2.0.0 or later), only in this package
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
@@ -40,10 +42,10 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 ## Continuous Integration
 
-| | | | 
-| --- | --- | --- | 
-| **Build** | <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)| <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)  ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) |
-| **Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) | <sup>AppVeyor</sup> [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)
+| | | 
+| --- | --- | 
+| **Build** | <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)|
+| **Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover)
 
 ## Usage
 
@@ -59,7 +61,7 @@ All `To do` and  `On Hold` items are implicitly `up for grabs` and `Help Wanted`
 
 tl;dr -- legacy framework/Mono support is not going away any time soon.
 
-Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues until such a time as it is no longer possible to retain those API levels.  Framework-targeted builds are kept to a minimum (executable entry-points and the recorder).
 
 ## Building
 
@@ -70,15 +72,15 @@ Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstanda
 It is assumed that the following are available
 
 .net SDK version as per global.json, or later minor version (`dotnet`) -- try https://www.microsoft.com/net/download  
-PowerShell Core 7.1.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
+PowerShell Core 7.3.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
-The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net5.0` for unit tests, but does not need any pre-5.0 runtimes to be installed (roll-forward policies are in place).
+The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net7.0` for unit tests, but does not need any pre-7.0 runtimes to be installed (roll-forward policies are in place).
 
 **Note:** F# compiler code generation changes may cause incompatibilities due to some of the IL inspection performed by AltCover and its self-tests (e.g. by, at 5.0.201, generating non-closure function objects as static fields rather than locally instantiated objects)
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.10.3 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.
+If an IDE is desired, Visual Studio VS2022 (Community Edition) with desktop option, including F# language support
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.
 
@@ -88,26 +90,25 @@ It is assumed that `mono` (version 6.12.x or later) and `dotnet` are on the `PAT
 
 ### Bootstrapping
 
-Start by setting up with `dotnet tool restore`; this sets up local tools including `dotnet fake`.
-Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
+Start by setting up with `dotnet tool restore`; this sets up local tools.
+Then `dotnet run --project .\Build\Setup.fsproj` to do the rest of the set-up.
 
 ### Normal builds
 
-Running `dotnet fake run ./Build/build.fsx` performs a full build/test/package process.
+Running `dotnet run --project .\Build\Build.fsproj` performs a full build/test/package process.
 
-Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specific target.
+Use `dotnet run --project .\Build\Build.fsproj --target <targetname>` to run to a specific target.
 
 #### If the build fails
 
-If there's a passing build on the CI servers for this commit, then it's likely to be one of the [intermittent build failures](https://github.com/SteveGilham/altcover/wiki/Intermittent-build-issues) that can arise from the tooling used. The standard remedy is to try again.
+If there's a passing build on the CI server for this commit, then it's likely to be one of the [intermittent build failures](https://github.com/SteveGilham/altcover/wiki/Intermittent-build-issues) that can arise from the tooling used. The standard remedy is to try again.
 
 ### Unit Tests
 
 The tests in the `AltCover.Test` project are broadly ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
-Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; these tests will be marked `ignore` when running the unit tests under `net472` and `pass` without doing anything under `net5.0` (as Expecto has no `ignore` option) if the build is not complete and thus those expected assemblies are not found e.g. in Visual Studio from clean, or after a build to targets like `Analysis` that only build code to be analysed.
+Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; these tests will be marked `ignore` when running the unit tests under `net472` and `pass` without doing anything under `net7.0` (as Expecto has no `ignore` option) if the build is not complete and thus those expected assemblies are not found e.g. in Visual Studio from clean, or after a build to targets like `Analysis` that only build code to be analysed.
 
 ## Thanks to
 
-* [AppVeyor](https://ci.appveyor.com/project/SteveGilham/altcover) for allowing free build CI services for Open Source projects
 * [Coveralls](https://coveralls.io/r/SteveGilham/altcover) for allowing free services for Open Source projects

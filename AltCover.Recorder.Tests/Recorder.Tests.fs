@@ -1,4 +1,4 @@
-#if !NET472
+﻿#if !NET472
 #if NET20
 namespace Tests.Recorder.Clr2
 #else
@@ -27,7 +27,7 @@ open NUnit.Framework
 module AltCoverTests =
 
   [<MethodImpl(MethodImplOptions.NoInlining)>]
-  let private GetMyMethodName tag = ignore tag
+  let private getMyMethodName tag = ignore tag
   //    let st = StackTrace(StackFrame(1))
   //    st.GetFrame(0).GetMethod().Name |>
   //#if NET20
@@ -42,27 +42,35 @@ module AltCoverTests =
       .GetManifestResourceNames()
     |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
-  let private UpdateReport a b =
-    Adapter.updateReport(a, ReportFormat.NCover, b, b)
+  let private updateReport a b =
+    Adapter.updateReport (a, ReportFormat.NCover, b, b)
     |> ignore
 
-  let private PointVisitInit a b = Adapter.init(a, b)
+  let private pointVisitInit a b = Adapter.init (a, b)
 
   let resource2 =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find
-         (fun n ->
-           n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
+    |> Seq.find (fun n ->
+      n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
+
+  [<Test>]
+  let ShouldCoverTrivalClass () =
+    let mark = InstrumentationAttribute() // Constructor has all the instrumented code
+    Assert.That(mark.Assembly, Is.EqualTo "AltCover.Recorder.g!")
+    Assert.That(mark.Configuration, Is.EqualTo "Uninstrumented!!")
+    mark.Assembly <- String.Empty
+    mark.Configuration <- String.Empty
+    Assert.True(String.IsNullOrEmpty mark.Assembly)
+    Assert.True(String.IsNullOrEmpty mark.Configuration)
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
-    Assert.Throws<NotSupportedException>
-      (fun () ->
-        ReportFormat.NativeJson
-        |> Counter.I.xmlByFormat
-        |> ignore)
+    Assert.Throws<NotSupportedException>(fun () ->
+      ReportFormat.NativeJson
+      |> Counter.I.xmlByFormat
+      |> ignore)
     |> ignore
 
   [<Test>]
@@ -80,81 +88,103 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldBeLinkingTheCorrectCopyOfThisCode () =
-    GetMyMethodName "=>"
-    let tracer = Adapter.makeNullTrace String.Empty
+    getMyMethodName "=>"
+
+    let tracer =
+      Adapter.makeNullTrace String.Empty
 
     Assert.True(tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder")
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let OnlyNewIdPairShouldBeSampled () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        try
-          Adapter.SamplesClear()
-          Assert.True(Adapter.addSample("module", 23, Null))
-          Assert.True(Adapter.addSample("module", 24, Null))
-          Assert.True(Adapter.addSample("newmodule", 23, Null))
-          Assert.True(Adapter.addSample("module", 23, Null) |> not)
-          Assert.True(Adapter.addSampleUnconditional("module", 23, Null))
-          Assert.True(Adapter.addSample("module", 23, Call 1))
-          Assert.True(Adapter.addSample("module", 23, Time 0L))
-          Assert.True(Adapter.addSample("module", 24, Both { Call = 1; Time = 0L }))
-          Assert.True(Adapter.addSample("module", 25, Both { Call = 1; Time = 0L }))
-          Assert.True(Adapter.addSample("module", 25, Call 1) |> not)
-          Assert.True(Adapter.addSample("module", 25, Call 1) |> not)
-          Assert.True(Adapter.addSample("module", 25, Null) |> not)
+    lock Adapter.Lock (fun () ->
+      try
+        Adapter.ModuleReset [| "module"; "newmodule" |]
 
-          Assert.Throws<InvalidDataException>
-            (fun () ->
-              Adapter.addSample("module", 23, Table null)
-              |> ignore)
-          |> ignore
-        finally
-          Adapter.SamplesClear())
+        Assert.True(Adapter.addSample ("module", 23, Null), "Test 1")
+        Assert.True(Adapter.addSample ("module", 24, Null), "Test 2")
+        Assert.True(Adapter.addSample ("newmodule", 23, Null), "Test 3")
+        Assert.True(Adapter.addSample ("module", 23, Null) |> not, "Test 4")
+        Assert.True(Adapter.addSampleUnconditional ("module", 23, Null), "Test 5")
+        Assert.True(Adapter.addSample ("module", 23, Call 1), "Test 6")
+        Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
 
-    GetMyMethodName "<="
+        Assert.True(
+          Adapter.addSample ("module", 24, Both { Call = 1; Time = 0L }),
+          "Test 8"
+        )
+
+        Assert.True(
+          Adapter.addSample ("module", 25, Both { Call = 1; Time = 0L }),
+          "Test 9"
+        )
+
+        Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 10")
+        Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 11")
+        Assert.True(Adapter.addSample ("module", 25, Null) |> not, "Test 12")
+
+        // out of band example
+        Assert.True(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
+
+        Assert.Throws<InvalidDataException>(fun () ->
+          Adapter.addSample ("module", 23, Table null)
+          |> ignore)
+        |> ignore
+      finally
+        Adapter.HardReset())
+
+    getMyMethodName "<="
 
   let RealIdShouldIncrementCount () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        let save = Instance.I.trace
+    lock Adapter.Lock (fun () ->
+      let save = Instance.I.trace
 
-        try
-          Adapter.VisitsClear()
-          Instance.I.trace <- Adapter.makeNullTrace null
+      try
+        let key = " "
+        Adapter.ModuleReset [| key |]
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-          let key = " "
-          Instance.I.recording <- false
-          Instance.Visit "key" 17
-          Instance.I.recording <- true
-          Instance.CoverageFormat <- ReportFormat.NCover
-          Instance.Visit key -23
-          Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-          Instance.Visit key -23
-          Assert.True(Adapter.VisitsSeq() |> Seq.length = 1)
-          Assert.True(Adapter.VisitsEntrySeq key |> Seq.length = 1)
-          Assert.True(Adapter.VisitCount(key, -23) = 2L)
-          Assert.That(Counter.totalVisits, Is.EqualTo 1L)
-          Assert.That(Counter.branchVisits, Is.EqualTo 1L)
-        finally
-          Instance.CoverageFormat <- ReportFormat.NCover
-          Instance.I.recording <- true
-          Adapter.VisitsClear()
-          Instance.I.trace <- save)
+        Instance.I.recording <- false
+        Instance.Visit "key" 17
+        Instance.I.recording <- true
+        Instance.CoverageFormat <- ReportFormat.NCover
+        Instance.Visit key -23
+        Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+        Instance.Visit key -23
 
-    GetMyMethodName "<="
+        let vs = Adapter.VisitsSeq()
+        Assert.True(vs |> Seq.length = 3, sprintf "Adapter.VisitsSeq() = %A" vs)
+
+        let vesk = Adapter.VisitsEntrySeq key
+
+        Assert.True(
+          vesk |> Seq.length = 1,
+          sprintf "Adapter.VisitsEntrySeq %A = %A" key vesk
+        )
+
+        Assert.True(Adapter.VisitCount(key, -23) = 2L)
+        Assert.That(Counter.totalVisits, Is.EqualTo 1L)
+        Assert.That(Counter.branchVisits, Is.EqualTo 1L)
+      finally
+        Instance.CoverageFormat <- ReportFormat.NCover
+        Instance.I.recording <- true
+        Adapter.HardReset()
+        Instance.I.trace <- save)
+
+    getMyMethodName "<="
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
     let key = " "
-    let index = Counter.I.findIndexFromUspid 0 key
+
+    let index =
+      Counter.I.findIndexFromUspid 0 key
+
     Assert.True(index < 0)
 
   [<Test>]
@@ -163,20 +193,20 @@ module AltCoverTests =
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
       Assert.True(Instance.I.callerId () |> Option.isNone)
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
-      Assert.True(Adapter.payloadSelector true = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
       Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
         let result =
-          Adapter.payloadSelection(1311693406324658740L, 1000L, true)
+          Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
         let expected =
-          Adapter.newBoth(1311693406324658000L, 6789)
+          Adapter.newBoth (1311693406324658000L, 6789)
 
         Assert.True((result = expected))
       finally
@@ -188,15 +218,23 @@ module AltCoverTests =
       Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 =
-      Adapter.payloadSelection(1311693406324658740L, 1000L, true)
+      Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
-    let expected2 = Adapter.time 1311693406324658000L
+    let expected2 =
+      Adapter.time 1311693406324658000L
+
     Assert.True((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
-    let probed = Adapter.payloadControl(1000L, true)
+
+    let probed =
+      Adapter.payloadControl (1000L, true)
+
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Adapter.asNull() |> Adapter.untime |> Seq.isEmpty)
-    let [ probe ] = Adapter.untime probed |> Seq.toList
+    Assert.True(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
+
+    let [ probe ] =
+      Adapter.untime probed |> Seq.toList
+
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
     Assert.True(probe >= (1000L * (v1 / 1000L)))
@@ -206,26 +244,28 @@ module AltCoverTests =
 
   [<Test>]
   let PayloadWithEntryExitGeneratedIsAsExpected () =
+    Adapter.ModuleReset [||]
+
     try
       Instance.I.isRunner <- true
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
       Adapter.VisitsClear()
 
       Assert.True(Instance.I.callerId () |> Option.isNone)
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
-      Assert.True(Adapter.payloadSelector true = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
       Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
         let result =
-          Adapter.payloadSelection(1311693406324658740L, 1000L, true)
+          Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
         let expected =
-          Adapter.newBoth(1311693406324658000L, 6789)
+          Adapter.newBoth (1311693406324658000L, 6789)
 
         Assert.True((result = expected))
       finally
@@ -238,15 +278,23 @@ module AltCoverTests =
       Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 =
-      Adapter.payloadSelection(1311693406324658740L, 1000L, true)
+      Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
-    let expected2 = Adapter.time 1311693406324658000L
+    let expected2 =
+      Adapter.time 1311693406324658000L
+
     Assert.True((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
-    let probed = Adapter.payloadControl(1000L, true)
+
+    let probed =
+      Adapter.payloadControl (1000L, true)
+
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Adapter.asNull() |> Adapter.untime |> Seq.isEmpty)
-    let [ probe ] = Adapter.untime probed |> Seq.toList
+    Assert.True(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
+
+    let [ probe ] =
+      Adapter.untime probed |> Seq.toList
+
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
     Assert.True(probe >= (1000L * (v1 / 1000L)))
@@ -254,24 +302,32 @@ module AltCoverTests =
     Instance.Pop()
     Assert.True(Instance.I.callerId () |> Option.isNone)
 
-    Assert.That(
-      Instance.I.visits.Keys,
-      Is.EquivalentTo [ Track.Entry
-                        Track.Exit ]
-    )
+    Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [ Track.Entry; Track.Exit ])
 
     Assert.That(Instance.I.visits.[Track.Entry].Keys, Is.EquivalentTo [ 4321; 6789 ])
     Assert.That(Instance.I.visits.[Track.Exit].Keys, Is.EquivalentTo [ 4321; 6789 ])
-    let a = Instance.I.visits.[Track.Entry].[4321]
+
+    let a =
+      Instance.I.visits.[Track.Entry].[4321]
+
     Assert.That(a.Count, Is.EqualTo 0L)
     Assert.That(a.Tracks |> Seq.length, Is.EqualTo 1)
-    let b = Instance.I.visits.[Track.Entry].[6789]
+
+    let b =
+      Instance.I.visits.[Track.Entry].[6789]
+
     Assert.That(b.Count, Is.EqualTo 0L)
     Assert.That(b.Tracks |> Seq.length, Is.EqualTo 1)
-    let c = Instance.I.visits.[Track.Exit].[6789]
+
+    let c =
+      Instance.I.visits.[Track.Exit].[6789]
+
     Assert.That(c.Count, Is.EqualTo 0L)
     Assert.That(c.Tracks |> Seq.length, Is.EqualTo 1)
-    let d = Instance.I.visits.[Track.Exit].[4321]
+
+    let d =
+      Instance.I.visits.[Track.Exit].[4321]
+
     Assert.That(d.Count, Is.EqualTo 0L)
     Assert.That(d.Tracks |> Seq.length, Is.EqualTo 1)
 
@@ -293,52 +349,47 @@ module AltCoverTests =
 
     Assert.That(d2 >= c2, sprintf "%A >= %A" d2 c2)
 
-    Adapter.VisitsClear()
+    Adapter.HardReset()
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        let save = Instance.I.trace
-        Adapter.Reset()
+    lock Instance.I.visits (fun () ->
+      let save = Instance.I.trace
+      let key = " "
+      Adapter.ModuleReset [| key |]
 
-        try
-          Instance.I.visits.Clear()
-          Instance.I.trace <- Adapter.makeNullTrace null
+      try
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-          let key = " "
-          Instance.I.visitSelection (Adapter.asNull()) key 23
+        Instance.I.visitSelection (Adapter.asNull ()) key 23
 
-          Assert.That(
-            Instance.I.visits.Count,
-            Is.EqualTo 1,
-            "A visit that should have happened, didn't"
-          )
+        Assert.That(
+          Instance.I.visits.Keys,
+          Is.EquivalentTo [ key; Track.Entry; Track.Exit ]
+        )
 
-          Assert.That(
-            Instance.I.visits.[key].Count,
-            Is.EqualTo 1,
-            "keys = "
-            + String.Join("; ", Instance.I.visits.Keys |> Seq.toArray)
-          )
+        Assert.That(
+          Instance.I.visits.[key].Count,
+          Is.EqualTo 1,
+          "keys = "
+          + String.Join("; ", Instance.I.visits.Keys |> Seq.toArray)
+        )
 
-          Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
-          Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
-        finally
-          Instance.I.visits.Clear()
-          Instance.I.trace <- save)
+        Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
+        Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
+      finally
+        Adapter.HardReset()
+        Instance.I.trace <- save)
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let strip before (all: HashSet<String>) =
     before
-    |> Seq.iter
-         (fun x ->
-           Assert.That(all.Contains x)
-           all.Remove x |> ignore)
+    |> Seq.iter (fun x ->
+      Assert.That(all.Contains x)
+      all.Remove x |> ignore)
 
   [<Test>]
   let StripWorks () =
@@ -354,11 +405,19 @@ module AltCoverTests =
 
   [<Test>]
   let ExceptionLoggedToFile () =
-    let path = Instance.ReportFile |> Path.GetFullPath
+    let path =
+      Instance.ReportFile |> Path.GetFullPath
+
     let where = path |> Path.GetDirectoryName
-    let before = Directory.GetFiles(where, "*.exn")
+
+    let before =
+      Directory.GetFiles(where, "*.exn")
+
     Instance.I.logException "a" "b" "c" "ex"
-    let after = Directory.GetFiles(where, "*.exn")
+
+    let after =
+      Directory.GetFiles(where, "*.exn")
+
     Assert.That(after.Length, Is.GreaterThan before.Length)
     let all = HashSet<String>(after)
     strip before all
@@ -370,711 +429,734 @@ module AltCoverTests =
 
     lines
     |> Seq.take 4
-    |> Seq.zip [ "ModuleId = \"a\""
-                 "hitPointId = \"b\""
-                 "context = \"c\""
-                 "exception = ex" ]
+    |> Seq.zip
+      [ "ModuleId = \"a\""
+        "hitPointId = \"b\""
+        "context = \"c\""
+        "exception = ex" ]
     |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo b))
 
-    let third = Directory.GetFiles(where, "*.exn")
+    let third =
+      Directory.GetFiles(where, "*.exn")
+
+    Assert.That(third.Length, Is.EqualTo before.Length)
+
+  [<Test>]
+  let WrappedExceptionLoggedToFile () =
+    let path =
+      Instance.ReportFile |> Path.GetFullPath
+
+    let where = path |> Path.GetDirectoryName
+
+    let before =
+      Directory.GetFiles(where, "*.exn")
+
+    let unique =
+      System.Guid.NewGuid().ToString()
+
+    Adapter.invokeCurriedIssue71Wrapper<NullReferenceException> unique
+
+    let after =
+      Directory.GetFiles(where, "*.exn")
+
+    Assert.That(after.Length, Is.GreaterThan before.Length)
+    let all = HashSet<String>(after)
+    strip before all
+    Assert.That(all.Count, Is.EqualTo 1)
+    let file = all |> Seq.head
+    let lines = file |> File.ReadAllLines
+    File.Delete file
+    Assert.That(lines.Length, Is.GreaterThan 4)
+
+    lines
+    |> Seq.take 4
+    |> Seq.zip
+      [ "ModuleId = \"b\""
+        "hitPointId = \"c\""
+        "context = \"d\""
+        "exception = System.NullReferenceException: "
+        + unique ]
+    |> Seq.iter (fun (a, b) -> Assert.That(b, Is.EqualTo a))
+
+    let third =
+      Directory.GetFiles(where, "*.exn")
+
     Assert.That(third.Length, Is.EqualTo before.Length)
 
   [<Test>]
   let Issue71WrapperHandlesKeyNotFoundException () =
     let pair = [| false; false |]
-    let unique = System.Guid.NewGuid().ToString()
-    Adapter.invokeIssue71Wrapper<KeyNotFoundException>(unique, pair)
+
+    let unique =
+      System.Guid.NewGuid().ToString()
+
+    Adapter.invokeIssue71Wrapper<KeyNotFoundException> (unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
   [<Test>]
   let Issue71WrapperHandlesNullReferenceException () =
     let pair = [| false; false |]
-    let unique = System.Guid.NewGuid().ToString()
-    Adapter.invokeIssue71Wrapper<NullReferenceException>(unique, pair)
+
+    let unique =
+      System.Guid.NewGuid().ToString()
+
+    Adapter.invokeIssue71Wrapper<NullReferenceException> (unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
   [<Test>]
   let Issue71WrapperHandlesArgumentNullException () =
     let pair = [| false; false |]
-    let unique = System.Guid.NewGuid().ToString()
-    Adapter.invokeIssue71Wrapper<ArgumentNullException>(unique, pair)
+
+    let unique =
+      System.Guid.NewGuid().ToString()
+
+    Adapter.invokeIssue71Wrapper<ArgumentNullException> (unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
   [<Test>]
   let Issue71WrapperDoesntHandleOtherException () =
     let pair = [| false; false |]
-    let unique = System.Guid.NewGuid().ToString()
+
+    let unique =
+      System.Guid.NewGuid().ToString()
 
     let exn =
-      Assert.Throws<InvalidOperationException>
-        (fun () -> Adapter.invokeIssue71Wrapper<InvalidOperationException>(unique, pair))
+      Assert.Throws<InvalidOperationException>(fun () ->
+        Adapter.invokeIssue71Wrapper<InvalidOperationException> (unique, pair))
 
     Assert.That(pair |> Seq.head, Is.False)
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
-#if NET5_0
+#if !NET472 && !NET20
   [<Test>]
   let NullRefShouldBeHandled () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
     let handle = Instance.I.visits
 
-    lock
-      handle
-      (fun () ->
-        try
-          Instance.I.visits <- null
-          let key = " "
-          let path = Instance.ReportFile |> Path.GetFullPath
-          let where = path |> Path.GetDirectoryName
-          let before = Directory.GetFiles(where, "*.exn")
-          Instance.I.visitImpl key 23 (Adapter.asNull())
-          let after = Directory.GetFiles(where, "*.exn")
-          Assert.That(after.Length, Is.GreaterThan before.Length)
-          let all = HashSet<String>(after)
-          strip before all
+    lock handle (fun () ->
+      try
+        Instance.I.visits <- null
+        let key = " "
 
-          Assert.That(all.Count, Is.EqualTo 1)
-          let file = all |> Seq.head
-          let lines = file |> File.ReadAllLines
-          File.Delete file
-          Assert.That(lines.Length, Is.GreaterThan 4)
+        let path =
+          Instance.ReportFile |> Path.GetFullPath
 
-          lines
-          |> Seq.take 4
-          |> Seq.zip [ "ModuleId = \" \""
-                       "hitPointId = 23"
-                       "context = Null"
-                       "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
-          |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
+        let where = path |> Path.GetDirectoryName
 
-          let third = Directory.GetFiles(where, "*.exn")
-          Assert.That(third.Length, Is.EqualTo before.Length)
-        finally
-          Instance.I.visits <- handle
-          Instance.I.visits.Clear())
+        let before =
+          Directory.GetFiles(where, "*.exn")
 
-    GetMyMethodName "<="
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+
+        let after =
+          Directory.GetFiles(where, "*.exn")
+
+        Assert.That(after.Length, Is.GreaterThan before.Length)
+        let all = HashSet<String>(after)
+        strip before all
+
+        Assert.That(all.Count, Is.EqualTo 1)
+        let file = all |> Seq.head
+        let lines = file |> File.ReadAllLines
+        File.Delete file
+        Assert.That(lines.Length, Is.GreaterThan 4)
+
+        lines
+        |> Seq.take 4
+        |> Seq.zip
+          [ "ModuleId = \" \""
+            "hitPointId = 23"
+            "context = Null"
+            "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
+        |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
+
+        let third =
+          Directory.GetFiles(where, "*.exn")
+
+        Assert.That(third.Length, Is.EqualTo before.Length)
+      finally
+        Instance.I.visits <- handle
+        Instance.I.visits.Clear())
+
+    getMyMethodName "<="
 #endif
 
   [<Test>]
   let DistinctIdShouldBeDistinct () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        try
-          Instance.I.visits.Clear()
-          let key = " "
-          Instance.I.visitImpl key 23 (Adapter.asNull())
-          Instance.I.visitImpl "key" 42 (Adapter.asNull())
-          Assert.That(Instance.I.visits.Count, Is.EqualTo 2)
-        finally
-          Instance.I.visits.Clear())
+    lock Instance.I.visits (fun () ->
+      try
+        let key = " "
+        Adapter.ModuleReset [| key; "key" |]
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl "key" 42 (Adapter.asNull ())
 
-    GetMyMethodName "<="
+        Assert.That(
+          Instance.I.visits.Keys,
+          Is.EquivalentTo [ key; "key"; Track.Entry; Track.Exit ]
+        )
+      finally
+        Adapter.HardReset())
+
+    getMyMethodName "<="
 
   [<Test>]
   let DistinctLineShouldBeDistinct () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        try
-          Instance.I.visits.Clear()
-          let key = " "
-          Instance.I.visitImpl key 23 (Adapter.asNull())
-          Instance.I.visitImpl key 42 (Adapter.asNull())
-          Assert.That(Instance.I.visits.Count, Is.EqualTo 1)
-          Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
-        finally
-          Adapter.VisitsClear())
+    lock Instance.I.visits (fun () ->
+      try
+        let key = " "
+        Adapter.ModuleReset [| key |]
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl key 42 (Adapter.asNull ())
 
-    GetMyMethodName "<="
+        Assert.That(
+          Instance.I.visits.Keys,
+          Is.EquivalentTo [ key; Track.Entry; Track.Exit ]
+        )
+
+        Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
+      finally
+        Adapter.HardReset())
+
+    getMyMethodName "<="
 
   [<Test>]
   let RepeatVisitsShouldIncrementCount () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Adapter.Reset()
+    lock Instance.I.visits (fun () ->
+      let key = " "
+      Adapter.ModuleReset [| key |]
 
-        try
-          Instance.I.visits.Clear()
-          let key = " "
-          Instance.I.visitImpl key 23 (Adapter.asNull())
-          Instance.I.visitImpl key 23 (Adapter.asNull())
-          Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
-          Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
-        finally
-          Instance.I.visits.Clear())
+      try
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
+        Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
+      finally
+        Adapter.HardReset())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let RepeatVisitsShouldIncrementTotal () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Adapter.Reset()
+    lock Instance.I.visits (fun () ->
+      let key = " "
+      Adapter.ModuleReset [| key |]
 
-        try
-          Instance.I.visits.Clear()
-          let key = " "
-          let payload = Adapter.time DateTime.UtcNow.Ticks
-          Instance.I.visitImpl key 23 (Adapter.asNull())
-          Instance.I.visitImpl key 23 payload
-          Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
-          Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
-        finally
-          Instance.I.visits.Clear())
+      try
+        let payload =
+          Adapter.time DateTime.UtcNow.Ticks
 
-    GetMyMethodName "<="
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl key 23 payload
+        Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
+        Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
+      finally
+        Adapter.HardReset())
 
-  //[<Test>]
-  //let TabledVisitsShouldIncrementCount() =
-  //  GetMyMethodName "=>"
-  //  lock Instance.I.visits (fun () ->
-  //    Adapter.Reset()
-  //    try
-  //      Instance.I.visits.Clear()
-  //      let key = " "
-  //      Instance.I.visitImpl(key, 23, (Adapter.Null()))
-  //      let table = Dictionary<string, Dictionary<int, PointVisit>>()
-  //      table.Add(key, Dictionary<int, PointVisit>())
-  //      let payloads =
-  //        [ Adapter.Call 17
-  //          Adapter.Time 23L
-  //          Adapter.NewBoth(5L, 42) ]
-
-  //      let pv = PointVisitInit 42L payloads
-  //      table.[key].Add(23, pv)
-  //      let n = Counter.AddTable(Instance.I.visits, table)
-  //      Assert.That(n, Is.EqualTo 45)
-  //      Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 43)
-  //      Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo payloads)
-  //    finally
-  //      Instance.I.visits.Clear())
-  //  GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let OldDocumentStartIsNotUpdated () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        let epoch = DateTime.UtcNow
-        Counter.startTime <- epoch
+    lock Instance.I.visits (fun () ->
+      let epoch = DateTime.UtcNow
+      Counter.startTime <- epoch
 
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
-        let before = XmlDocument()
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let before = XmlDocument()
 
-        before.Load(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
-        )
+      before.Load(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+      )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
-        worker.Position <- 0L
-        let after = XmlDocument()
-        after.Load worker
+      updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
 
-        let startTimeAttr =
-          after.DocumentElement.GetAttribute("startTime")
+      let startTimeAttr =
+        after.DocumentElement.GetAttribute("startTime")
 
-        let startTime =
-          DateTime.ParseExact(startTimeAttr, "o", null)
+      let startTime =
+        DateTime.ParseExact(startTimeAttr, "o", null)
 
-        Assert.That(startTime.ToUniversalTime(), Is.LessThan epoch)
+      Assert.That(startTime.ToUniversalTime(), Is.LessThan epoch)
 
-        Assert.That(
-          startTime.ToUniversalTime(),
-          Is.EqualTo(Counter.startTime.ToUniversalTime())
-        ))
+      Assert.That(
+        startTime.ToUniversalTime(),
+        Is.EqualTo(Counter.startTime.ToUniversalTime())
+      ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let NewDocumentStartIsMadeEarlier () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        let epoch =
-          DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+    lock Instance.I.visits (fun () ->
+      let epoch =
+        DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
 
-        Counter.startTime <- epoch
+      Counter.startTime <- epoch
 
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
-        let before = XmlDocument()
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let before = XmlDocument()
 
-        before.Load(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
-        )
+      before.Load(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+      )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
-        worker.Position <- 0L
-        let after = XmlDocument()
-        after.Load worker
+      updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
 
-        let startTimeAttr =
-          after.DocumentElement.GetAttribute("startTime")
+      let startTimeAttr =
+        after.DocumentElement.GetAttribute("startTime")
 
-        let startTime =
-          DateTime.ParseExact(startTimeAttr, "o", null)
+      let startTime =
+        DateTime.ParseExact(startTimeAttr, "o", null)
 
-        Assert.That(startTime.ToUniversalTime(), Is.EqualTo epoch)
+      Assert.That(startTime.ToUniversalTime(), Is.EqualTo epoch)
 
-        Assert.That(
-          startTime.ToUniversalTime(),
-          Is.EqualTo(Counter.startTime.ToUniversalTime())
-        ))
+      Assert.That(
+        startTime.ToUniversalTime(),
+        Is.EqualTo(Counter.startTime.ToUniversalTime())
+      ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let NewDocumentMeasureIsNotMadeEarlier () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        let epoch =
-          DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+    lock Instance.I.visits (fun () ->
+      let epoch =
+        DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
 
-        Counter.measureTime <- epoch
+      Counter.measureTime <- epoch
 
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
-        let before = XmlDocument()
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let before = XmlDocument()
 
-        before.Load(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
-        )
+      before.Load(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+      )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
-        worker.Position <- 0L
-        let after = XmlDocument()
-        after.Load worker
+      updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
 
-        let startTimeAttr =
-          after.DocumentElement.GetAttribute("measureTime")
+      let startTimeAttr =
+        after.DocumentElement.GetAttribute("measureTime")
 
-        let startTime =
-          DateTime.ParseExact(startTimeAttr, "o", null)
+      let startTime =
+        DateTime.ParseExact(startTimeAttr, "o", null)
 
-        Assert.That(startTime.ToUniversalTime(), Is.GreaterThan epoch)
+      Assert.That(startTime.ToUniversalTime(), Is.GreaterThan epoch)
 
-        Assert.That(
-          startTime.ToUniversalTime(),
-          Is.EqualTo(Counter.measureTime.ToUniversalTime())
-        ))
+      Assert.That(
+        startTime.ToUniversalTime(),
+        Is.EqualTo(Counter.measureTime.ToUniversalTime())
+      ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let OldDocumentMeasureIsUpdated () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        let epoch = DateTime.UtcNow
-        Counter.measureTime <- epoch
+    lock Instance.I.visits (fun () ->
+      let epoch = DateTime.UtcNow
+      Counter.measureTime <- epoch
 
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
-        let before = XmlDocument()
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let before = XmlDocument()
 
-        before.Load(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
-        )
+      before.Load(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+      )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
-        worker.Position <- 0L
-        let after = XmlDocument()
-        after.Load worker
+      updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
 
-        let startTimeAttr =
-          after.DocumentElement.GetAttribute("measureTime")
+      let startTimeAttr =
+        after.DocumentElement.GetAttribute("measureTime")
 
-        let startTime =
-          DateTime.ParseExact(startTimeAttr, "o", null)
+      let startTime =
+        DateTime.ParseExact(startTimeAttr, "o", null)
 
-        Assert.That(startTime.ToUniversalTime(), Is.EqualTo epoch)
+      Assert.That(startTime.ToUniversalTime(), Is.EqualTo epoch)
 
-        Assert.That(
-          startTime.ToUniversalTime(),
-          Is.EqualTo(Counter.measureTime.ToUniversalTime())
-        ))
+      Assert.That(
+        startTime.ToUniversalTime(),
+        Is.EqualTo(Counter.measureTime.ToUniversalTime())
+      ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let UnknownModuleMakesNoChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Counter.measureTime <-
-          DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    lock Instance.I.visits (fun () ->
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-        use stream =
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+
+      use before =
+        new StreamReader(
           Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream(resource)
+        )
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
+      let item =
+        Dictionary<string, Dictionary<int, PointVisit>>()
 
-        use before =
-          new StreamReader(
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
-          )
+      item.Add("not a guid", null)
+      updateReport item worker
+      worker.Position <- 0L
+      let after = new StreamReader(worker)
 
-        let item =
-          Dictionary<string, Dictionary<int, PointVisit>>()
+      let result =
+        after
+          .ReadToEnd()
+          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.skip 3
 
-        item.Add("not a guid", null)
-        UpdateReport item worker
-        worker.Position <- 0L
-        let after = new StreamReader(worker)
+      let expected =
+        before
+          .ReadToEnd()
+          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.skip 3
 
-        let result =
-          after
-            .ReadToEnd()
-            .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-          |> Seq.skip 3
+      Assert.That(result, Is.EquivalentTo expected))
 
-        let expected =
-          before
-            .ReadToEnd()
-            .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-          |> Seq.skip 3
-
-        Assert.That(result, Is.EquivalentTo expected))
-
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithNothingMakesNoChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Counter.measureTime <-
-          DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    lock Instance.I.visits (fun () ->
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-        use stream =
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+
+      use before =
+        new StreamReader(
           Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream(resource)
+        )
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
+      let item =
+        Dictionary<string, Dictionary<int, PointVisit>>()
 
-        use before =
-          new StreamReader(
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
-          )
+      item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int, PointVisit>())
+      updateReport item worker
+      worker.Position <- 0L
+      let after = new StreamReader(worker)
 
-        let item =
-          Dictionary<string, Dictionary<int, PointVisit>>()
+      let result =
+        after
+          .ReadToEnd()
+          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.skip 3
 
-        item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int, PointVisit>())
-        UpdateReport item worker
-        worker.Position <- 0L
-        let after = new StreamReader(worker)
+      let expected =
+        before
+          .ReadToEnd()
+          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.skip 3
 
-        let result =
-          after
-            .ReadToEnd()
-            .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-          |> Seq.skip 3
+      Assert.That(result, Is.EquivalentTo expected))
 
-        let expected =
-          before
-            .ReadToEnd()
-            .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-          |> Seq.skip 3
-
-        Assert.That(result, Is.EquivalentTo expected))
-
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithNothingInRangeMakesNoChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Counter.measureTime <-
-          DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    lock Instance.I.visits (fun () ->
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-        use stream =
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+
+      use before =
+        new StreamReader(
           Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream(resource)
+        )
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
+      let payload = Dictionary<int, PointVisit>()
+      payload.[-1] <- pointVisitInit 10L []
+      payload.[100] <- pointVisitInit 10L []
 
-        use before =
-          new StreamReader(
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
-          )
+      let item =
+        Dictionary<string, Dictionary<int, PointVisit>>()
 
-        let payload = Dictionary<int, PointVisit>()
-        payload.[-1] <- PointVisitInit 10L []
-        payload.[100] <- PointVisitInit 10L []
+      item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+      updateReport item worker
+      worker.Position <- 0L
+      let after = new StreamReader(worker)
 
-        let item =
-          Dictionary<string, Dictionary<int, PointVisit>>()
+      let result =
+        after
+          .ReadToEnd()
+          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.skip 3
 
-        item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
-        UpdateReport item worker
-        worker.Position <- 0L
-        let after = new StreamReader(worker)
+      let expected =
+        before
+          .ReadToEnd()
+          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.skip 3
 
-        let result =
-          after
-            .ReadToEnd()
-            .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-          |> Seq.skip 3
+      Assert.That(result, Is.EquivalentTo expected))
 
-        let expected =
-          before
-            .ReadToEnd()
-            .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-          |> Seq.skip 3
-
-        Assert.That(result, Is.EquivalentTo expected))
-
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithPayloadMakesExpectedChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Counter.measureTime <-
-          DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    lock Instance.I.visits (fun () ->
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
-        let payload = Dictionary<int, PointVisit>()
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let payload = Dictionary<int, PointVisit>()
 
-        [ 0 .. 9 ]
-        |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit (int64 (i + 1)) [])
 
-        let item =
-          Dictionary<string, Dictionary<int, PointVisit>>()
+      let item =
+        Dictionary<string, Dictionary<int, PointVisit>>()
 
-        item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
-        UpdateReport item worker
-        worker.Position <- 0L
-        let after = XmlDocument()
-        after.Load worker
+      item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+      updateReport item worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
 
-        Assert.That(
-          after.SelectNodes("//seqpnt")
-          |> Seq.cast<XmlElement>
-          |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-          Is.EquivalentTo [ "11"
-                            "10"
-                            "9"
-                            "8"
-                            "7"
-                            "6"
-                            "4"
-                            "3"
-                            "2"
-                            "1" ]
-        ))
+      Assert.That(
+        after.SelectNodes("//seqpnt")
+        |> Seq.cast<XmlElement>
+        |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
+      ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithPayloadMakesExpectedChangeInOpenCover () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Instance.I.visits
-      (fun () ->
-        Counter.measureTime <-
-          DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    lock Instance.I.visits (fun () ->
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource2)
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
 
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
-        use worker = new MemoryStream()
-        worker.Write(buffer, 0, size)
-        worker.Position <- 0L
-        let payload = Dictionary<int, PointVisit>()
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let payload = Dictionary<int, PointVisit>()
 
-        [ 0 .. 9 ]
-        |> Seq.iter (fun i -> payload.[10 - i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[10 - i] <- pointVisitInit (int64 (i + 1)) [])
 
-        [ 11 .. 12 ]
-        |> Seq.iter
-             (fun i ->
-               payload.[i ||| Counter.branchFlag] <- PointVisitInit(int64 (i - 10)) [])
+      [ 11..12 ]
+      |> Seq.iter (fun i ->
+        payload.[i ||| Counter.branchFlag] <- pointVisitInit (int64 (i - 10)) [])
 
-        let item =
-          Dictionary<string, Dictionary<int, PointVisit>>()
+      let item =
+        Dictionary<string, Dictionary<int, PointVisit>>()
 
-        item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
+      item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
-        Adapter.updateReport(item, ReportFormat.OpenCover, worker, worker)
-        |> ignore
+      Adapter.updateReport (item, ReportFormat.OpenCover, worker, worker)
+      |> ignore
 
-        worker.Position <- 0L
-        let after = XmlDocument()
-        after.Load worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
 
-        Assert.That(
-          after.SelectNodes("//SequencePoint")
-          |> Seq.cast<XmlElement>
-          |> Seq.map (fun x -> x.GetAttribute("vc")),
-          Is.EquivalentTo [ "11"
-                            "10"
-                            "9"
-                            "8"
-                            "7"
-                            "6"
-                            "4"
-                            "3"
-                            "2"
-                            "1" ]
-        )
+      Assert.That(
+        after.SelectNodes("//SequencePoint")
+        |> Seq.cast<XmlElement>
+        |> Seq.map (fun x -> x.GetAttribute("vc")),
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
+      )
 
-        Assert.That(
-          after.SelectNodes("//BranchPoint")
-          |> Seq.cast<XmlElement>
-          |> Seq.map (fun x -> x.GetAttribute("vc")),
-          Is.EquivalentTo [ "2"; "2" ]
-        ))
+      Assert.That(
+        after.SelectNodes("//BranchPoint")
+        |> Seq.cast<XmlElement>
+        |> Seq.map (fun x -> x.GetAttribute("vc")),
+        Is.EquivalentTo [ "2"; "2" ]
+      ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let EmptyFlushLeavesNoTrace () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        let saved = Console.Out
+    lock Adapter.Lock (fun () ->
+      let saved = Console.Out
 
-        try
-          Adapter.VisitsClear()
-          use stdout = new StringWriter()
-          Console.SetOut stdout
-          Instance.FlushFinish()
-          Assert.That(stdout.ToString(), Is.Empty)
-        finally
-          Adapter.VisitsClear()
-          Console.SetOut saved)
+      try
+        Adapter.VisitsClear()
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Instance.FlushFinish()
+        Assert.That(stdout.ToString(), Is.Empty)
+      finally
+        Adapter.VisitsClear()
+        Console.SetOut saved)
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let trywith<'a when 'a :> exn> f g =
     try
       f ()
-    with :? 'a -> g ()
+    with :? 'a ->
+      g ()
 
   let trywithrelease<'a when 'a :> exn> f = trywith f Instance.I.mutex.ReleaseMutex
 
@@ -1093,415 +1175,421 @@ module AltCoverTests =
 
     Instance.I.mutex.WaitOne(1000) |> ignore
 
-    trywithrelease<InvalidOperationException>
-      (fun () -> InvalidOperationException() |> raise)
+    trywithrelease<InvalidOperationException> (fun () ->
+      InvalidOperationException() |> raise)
 
   let PauseLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        trywithrelease
-          (fun () ->
-            let saved = Console.Out
-            let here = Directory.GetCurrentDirectory()
+    lock Adapter.Lock (fun () ->
+      trywithrelease (fun () ->
+        let saved = Console.Out
+        let here = Directory.GetCurrentDirectory()
 
-            let where =
-              Assembly.GetExecutingAssembly().Location
-              |> Path.GetDirectoryName
+        let where =
+          Assembly.GetExecutingAssembly().Location
+          |> Path.GetDirectoryName
 
-            let unique =
-              Path.Combine(where, Guid.NewGuid().ToString())
+        let unique =
+          Path.Combine(where, Guid.NewGuid().ToString())
 
-            let save = Instance.I.trace
-            use s = new MemoryStream()
+        let save = Instance.I.trace
+        use s = new MemoryStream()
 
-            let s1 =
-              new Compression.DeflateStream(s, CompressionMode.Compress)
+        let s1 =
+          new Compression.DeflateStream(s, CompressionMode.Compress)
 
-            Instance.I.trace <- Adapter.makeStreamTrace s1
+        Instance.I.trace <- Adapter.makeStreamTrace s1
 
-            try
-              Instance.I.isRunner <- true
-              Adapter.VisitsClear()
+        try
+          Instance.I.isRunner <- true
+          Adapter.VisitsClear()
 
-              use stdout = new StringWriter()
-              Console.SetOut stdout
-              Directory.CreateDirectory(unique) |> ignore
-              Directory.SetCurrentDirectory(unique)
+          use stdout = new StringWriter()
+          Console.SetOut stdout
+          Directory.CreateDirectory(unique) |> ignore
+          Directory.SetCurrentDirectory(unique)
 
-              Counter.measureTime <-
-                DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+          Counter.measureTime <-
+            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-              use stream =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream(resource)
+          use stream =
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceStream(resource)
 
-              let size = int stream.Length
-              let buffer = Array.create size 0uy
-              Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+          let size = int stream.Length
+          let buffer = Array.create size 0uy
+          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
-              do
-                use worker =
-                  new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          do
+            use worker =
+              new FileStream(Instance.ReportFile, FileMode.CreateNew)
 
-                worker.Write(buffer, 0, size)
-                ()
+            worker.Write(buffer, 0, size)
+            ()
 
-              [ 0 .. 9 ]
-              |> Seq.iter
-                   (fun i ->
-                     Adapter.VisitsAdd(
-                       "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-                       i,
-                       (int64 (i + 1))
-                     ))
+          [ 0..9 ]
+          |> Seq.iter (fun i ->
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
-              Adapter.DoPause().Invoke(null, null)
-              Assert.That(Adapter.VisitsSeq(), Is.Empty)
-              let recorded = stdout.ToString().Trim()
-              Assert.That(recorded, Is.EqualTo "Pausing...")
+          Adapter.DoPause().Invoke(null, null)
 
-              use worker' =
-                new FileStream(Instance.ReportFile, FileMode.Open)
+          Adapter.VisitsSeq()
+          |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+          |> Seq.iter (fun v ->
+            Assert.That(v.Value, Is.Empty, sprintf "Unexpected write %A" v))
 
-              let after = XmlDocument()
-              after.Load worker'
+          let recorded = stdout.ToString().Trim()
+          Assert.That(recorded, Is.EqualTo "Pausing...")
 
-              Assert.That(
-                after.SelectNodes("//seqpnt")
-                |> Seq.cast<XmlElement>
-                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                Is.EquivalentTo [ "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "0"
-                                  String.Empty
-                                  "X"
-                                  "-1" ]
-              )
-            finally
-              Instance.I.trace <- save
-              AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
-              Instance.I.isRunner <- false
-              Console.SetOut saved
-              Directory.SetCurrentDirectory(here)
-              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+          use worker' =
+            new FileStream(Instance.ReportFile, FileMode.Open)
 
-    GetMyMethodName "<="
+          let after = XmlDocument()
+          after.Load worker'
+
+          Assert.That(
+            after.SelectNodes("//seqpnt")
+            |> Seq.cast<XmlElement>
+            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+            Is.EquivalentTo
+              [ "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "0"
+                String.Empty
+                "X"
+                "-1" ]
+          )
+        finally
+          Instance.I.trace <- save
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          Adapter.VisitsClear()
+          Instance.I.isRunner <- false
+          Console.SetOut saved
+          Directory.SetCurrentDirectory(here)
+          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+
+    getMyMethodName "<="
 
   let ResumeLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        trywithrelease
-          (fun () ->
-            let saved = Console.Out
-            let here = Directory.GetCurrentDirectory()
+    lock Adapter.Lock (fun () ->
+      trywithrelease (fun () ->
+        let saved = Console.Out
+        let here = Directory.GetCurrentDirectory()
 
-            let where =
-              Assembly.GetExecutingAssembly().Location
-              |> Path.GetDirectoryName
+        let where =
+          Assembly.GetExecutingAssembly().Location
+          |> Path.GetDirectoryName
 
-            let unique =
-              Path.Combine(where, Guid.NewGuid().ToString())
+        let unique =
+          Path.Combine(where, Guid.NewGuid().ToString())
 
-            let save = Instance.I.trace
-            let tag = unique + ".xml.acv"
+        let save = Instance.I.trace
+        let tag = unique + ".xml.acv"
 
-            do
-              use stream = File.Create tag
-              ()
+        do
+          use stream = File.Create tag
+          ()
 
-            try
-              Adapter.Reset()
-              Instance.I.trace <- Tracer.Create(tag)
+        try
+          let key =
+            "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"
 
-              use stdout = new StringWriter()
-              Console.SetOut stdout
-              Directory.CreateDirectory(unique) |> ignore
-              Directory.SetCurrentDirectory(unique)
+          Adapter.ModuleReset [| key |]
+          Instance.I.trace <- Tracer.Create(tag)
 
-              Counter.measureTime <-
-                DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+          use stdout = new StringWriter()
+          Console.SetOut stdout
+          Directory.CreateDirectory(unique) |> ignore
+          Directory.SetCurrentDirectory(unique)
 
-              use stream =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream(resource)
+          Counter.measureTime <-
+            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-              let size = int stream.Length
-              let buffer = Array.create size 0uy
-              Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+          use stream =
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceStream(resource)
 
-              do
-                use worker =
-                  new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          let size = int stream.Length
+          let buffer = Array.create size 0uy
+          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
-                worker.Write(buffer, 0, size)
-                ()
+          do
+            use worker =
+              new FileStream(Instance.ReportFile, FileMode.CreateNew)
 
-              [ 0 .. 9 ]
-              |> Seq.iter
-                   (fun i ->
-                     Adapter.VisitsAdd(
-                       "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-                       i,
-                       (int64 (i + 1))
-                     ))
+            worker.Write(buffer, 0, size)
+            ()
 
-              Adapter.DoResume().Invoke(null, null)
-              Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
+          [ 0..9 ]
+          |> Seq.iter (fun i -> Adapter.VisitsAdd(key, i, (int64 (i + 1))))
 
-              Assert.That(
-                Object.ReferenceEquals(Instance.I.trace, save),
-                Is.False,
-                "trace should be replaced"
-              )
+          Adapter.DoResume().Invoke(null, null)
 
-              let recorded = stdout.ToString().Trim()
-              Assert.That(recorded, Is.EqualTo "Resuming...", recorded)
+          Adapter.VisitsSeq()
+          |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+          |> Seq.iter (fun v ->
+            Assert.That(v.Value, Is.Empty, sprintf "Visits should be cleared %A" v))
 
-              use worker' =
-                new FileStream(Instance.ReportFile, FileMode.Open)
+          Assert.That(
+            Object.ReferenceEquals(Instance.I.trace, save),
+            Is.False,
+            "trace should be replaced"
+          )
 
-              let after = XmlDocument()
-              after.Load worker'
+          let recorded = stdout.ToString().Trim()
+          Assert.That(recorded, Is.EqualTo "Resuming...", recorded)
 
-              Assert.That(
-                after.SelectNodes("//seqpnt")
-                |> Seq.cast<XmlElement>
-                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                Is.EquivalentTo [ "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "0"
-                                  String.Empty
-                                  "X"
-                                  "-1" ]
-              )
-            finally
-              Adapter.Reset()
-              Instance.I.trace <- save
-              AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
-              Console.SetOut saved
-              Directory.SetCurrentDirectory(here)
-              File.Delete tag
-              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+          use worker' =
+            new FileStream(Instance.ReportFile, FileMode.Open)
 
-    GetMyMethodName "<="
+          let after = XmlDocument()
+          after.Load worker'
+
+          Assert.That(
+            after.SelectNodes("//seqpnt")
+            |> Seq.cast<XmlElement>
+            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+            Is.EquivalentTo
+              [ "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "0"
+                String.Empty
+                "X"
+                "-1" ]
+          )
+        finally
+          Adapter.HardReset()
+          Instance.I.trace <- save
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          Adapter.VisitsClear()
+          Console.SetOut saved
+          Directory.SetCurrentDirectory(here)
+          File.Delete tag
+          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+
+    getMyMethodName "<="
 
   let FlushLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        Instance.I.isRunner <- false
+    lock Adapter.Lock (fun () ->
+      Instance.I.isRunner <- false
 
-        trywithrelease
-          (fun () ->
-            let saved = Console.Out
-            let here = Directory.GetCurrentDirectory()
+      trywithrelease (fun () ->
+        let saved = Console.Out
+        let here = Directory.GetCurrentDirectory()
 
-            let where =
-              Assembly.GetExecutingAssembly().Location
-              |> Path.GetDirectoryName
+        let where =
+          Assembly.GetExecutingAssembly().Location
+          |> Path.GetDirectoryName
 
-            let unique =
-              Path.Combine(where, Guid.NewGuid().ToString())
+        let unique =
+          Path.Combine(where, Guid.NewGuid().ToString())
 
-            let save = Instance.I.trace
-            Instance.I.trace <- Adapter.makeNullTrace null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-            try
-              Adapter.VisitsClear()
-              use stdout = new StringWriter()
-              Console.SetOut stdout
-              Directory.CreateDirectory(unique) |> ignore
-              Directory.SetCurrentDirectory(unique)
+        try
+          Adapter.VisitsClear()
+          use stdout = new StringWriter()
+          Console.SetOut stdout
+          Directory.CreateDirectory(unique) |> ignore
+          Directory.SetCurrentDirectory(unique)
 
-              Counter.measureTime <-
-                DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+          Counter.measureTime <-
+            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-              use stream =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream(resource)
+          use stream =
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceStream(resource)
 
-              let size = int stream.Length
-              let buffer = Array.create size 0uy
-              Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+          let size = int stream.Length
+          let buffer = Array.create size 0uy
+          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
-              do
-                use worker =
-                  new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          do
+            use worker =
+              new FileStream(Instance.ReportFile, FileMode.CreateNew)
 
-                worker.Write(buffer, 0, size)
-                ()
+            worker.Write(buffer, 0, size)
+            ()
 
-              [ 0 .. 9 ]
-              |> Seq.iter
-                   (fun i ->
-                     Adapter.VisitsAdd(
-                       "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-                       i,
-                       (int64 (i + 1))
-                     ))
+          [ 0..9 ]
+          |> Seq.iter (fun i ->
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
-              Adapter.DoExit().Invoke(null, null)
-              let head = "Coverage statistics flushing took "
-              let tail = " seconds\n"
-              let recorded = stdout.ToString().Replace("\r\n", "\n")
+          Adapter.DoExit().Invoke(null, null)
 
-              let index1 =
-                recorded.IndexOf(head, StringComparison.Ordinal)
+          let head =
+            "Coverage statistics flushing took "
 
-              let index2 =
-                recorded.IndexOf(tail, StringComparison.Ordinal)
+          let tail = " seconds\n"
 
-              Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
-              Assert.That(index2, Is.GreaterThan index1, recorded)
+          let recorded =
+            stdout.ToString().Replace("\r\n", "\n")
 
-              use worker' =
-                new FileStream(Instance.ReportFile, FileMode.Open)
+          let index1 =
+            recorded.IndexOf(head, StringComparison.Ordinal)
 
-              let after = XmlDocument()
-              after.Load worker'
+          let index2 =
+            recorded.IndexOf(tail, StringComparison.Ordinal)
 
-              Assert.That(
-                after.SelectNodes("//seqpnt")
-                |> Seq.cast<XmlElement>
-                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                Is.EquivalentTo [ "11"
-                                  "10"
-                                  "9"
-                                  "8"
-                                  "7"
-                                  "6"
-                                  "4"
-                                  "3"
-                                  "2"
-                                  "1" ]
-              )
-            finally
-              Instance.I.trace <- save
-              AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
-              Console.SetOut saved
-              Directory.SetCurrentDirectory(here)
-              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+          Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
+          Assert.That(index2, Is.GreaterThan index1, recorded)
 
-    GetMyMethodName "<="
+          use worker' =
+            new FileStream(Instance.ReportFile, FileMode.Open)
+
+          let after = XmlDocument()
+          after.Load worker'
+
+          Assert.That(
+            after.SelectNodes("//seqpnt")
+            |> Seq.cast<XmlElement>
+            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+            Is.EquivalentTo
+              [ "11"
+                "10"
+                "9"
+                "8"
+                "7"
+                "6"
+                "4"
+                "3"
+                "2"
+                "1" ]
+          )
+        finally
+          Instance.I.trace <- save
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          Adapter.VisitsClear()
+          Console.SetOut saved
+          Directory.SetCurrentDirectory(here)
+          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+
+    getMyMethodName "<="
 
   [<Test>]
   let SupervisedFlushLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        trywithrelease
-          (fun () ->
-            let saved = Console.Out
-            let here = Directory.GetCurrentDirectory()
+    lock Adapter.Lock (fun () ->
+      trywithrelease (fun () ->
+        let saved = Console.Out
+        let here = Directory.GetCurrentDirectory()
 
-            let where =
-              Assembly.GetExecutingAssembly().Location
-              |> Path.GetDirectoryName
+        let where =
+          Assembly.GetExecutingAssembly().Location
+          |> Path.GetDirectoryName
 
-            let unique =
-              Path.Combine(where, Guid.NewGuid().ToString())
+        let unique =
+          Path.Combine(where, Guid.NewGuid().ToString())
 
-            let save = Instance.I.trace
-            Instance.I.trace <- Adapter.makeNullTrace null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-            Instance.supervision <- true
+        Instance.supervision <- true
 
-            try
-              Adapter.VisitsClear()
-              use stdout = new StringWriter()
-              Console.SetOut stdout
-              Directory.CreateDirectory(unique) |> ignore
-              Directory.SetCurrentDirectory(unique)
+        try
+          Adapter.VisitsClear()
+          use stdout = new StringWriter()
+          Console.SetOut stdout
+          Directory.CreateDirectory(unique) |> ignore
+          Directory.SetCurrentDirectory(unique)
 
-              Counter.measureTime <-
-                DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+          Counter.measureTime <-
+            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-              use stream =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream(resource)
+          use stream =
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceStream(resource)
 
-              let size = int stream.Length
-              let buffer = Array.create size 0uy
-              Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+          let size = int stream.Length
+          let buffer = Array.create size 0uy
+          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
-              do
-                use worker =
-                  new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          do
+            use worker =
+              new FileStream(Instance.ReportFile, FileMode.CreateNew)
 
-                worker.Write(buffer, 0, size)
-                ()
+            worker.Write(buffer, 0, size)
+            ()
 
-              [ 0 .. 9 ]
-              |> Seq.iter
-                   (fun i ->
-                     Adapter.VisitsAdd(
-                       "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-                       i,
-                       (int64 (i + 1))
-                     ))
+          [ 0..9 ]
+          |> Seq.iter (fun i ->
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
-              Adapter.DoUnload().Invoke(null, null)
-              let head = "Coverage statistics flushing took "
-              let tail = " seconds\n"
-              let recorded = stdout.ToString().Replace("\r\n", "\n")
-              Assert.That(recorded, Is.Empty, recorded)
+          Adapter.DoUnload().Invoke(null, null)
 
-              use worker' =
-                new FileStream(Instance.ReportFile, FileMode.Open)
+          let head =
+            "Coverage statistics flushing took "
 
-              let after = XmlDocument()
-              after.Load worker'
+          let tail = " seconds\n"
 
-              Assert.That(
-                after.SelectNodes("//seqpnt")
-                |> Seq.cast<XmlElement>
-                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                Is.EquivalentTo [ "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "1"
-                                  "0"
-                                  String.Empty
-                                  "X"
-                                  "-1" ]
-              )
-            finally
-              Instance.I.trace <- save
-              Instance.supervision <- false
-              AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
-              Console.SetOut saved
-              Directory.SetCurrentDirectory(here)
-              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+          let recorded =
+            stdout.ToString().Replace("\r\n", "\n")
 
-    GetMyMethodName "<="
+          Assert.That(recorded, Is.Empty, recorded)
+
+          use worker' =
+            new FileStream(Instance.ReportFile, FileMode.Open)
+
+          let after = XmlDocument()
+          after.Load worker'
+
+          Assert.That(
+            after.SelectNodes("//seqpnt")
+            |> Seq.cast<XmlElement>
+            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+            Is.EquivalentTo
+              [ "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "1"
+                "0"
+                String.Empty
+                "X"
+                "-1" ]
+          )
+        finally
+          Instance.I.trace <- save
+          Instance.supervision <- false
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          Adapter.VisitsClear()
+          Console.SetOut saved
+          Directory.SetCurrentDirectory(here)
+          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+
+    getMyMethodName "<="
 
   [<Test>]
   let FlushLeavesExpectedTracesWhenDiverted () =
@@ -1551,12 +1639,12 @@ module AltCoverTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush(
+      Adapter.doFlush (
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1574,16 +1662,17 @@ module AltCoverTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       AltCoverCoreTests.maybeDeleteFile reportFile
@@ -1639,12 +1728,12 @@ module AltCoverTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush(
+      Adapter.doFlush (
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1719,12 +1808,12 @@ module AltCoverTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush(
+      Adapter.doFlush (
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1742,16 +1831,17 @@ module AltCoverTests =
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-        Is.EquivalentTo [ "11"
-                          "10"
-                          "9"
-                          "8"
-                          "7"
-                          "6"
-                          "4"
-                          "3"
-                          "2"
-                          "1" ]
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
       )
     finally
       AltCoverCoreTests.maybeDeleteFile reportFile
@@ -1808,12 +1898,12 @@ module AltCoverTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush(
+      Adapter.doFlush (
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1881,12 +1971,12 @@ module AltCoverTests =
 
       let payload = Dictionary<int, PointVisit>()
 
-      [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      [ 0..9 ]
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit (int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush(visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null)
+      Adapter.doFlush (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null)
       |> ignore
 
       Assert.That(reportFile |> File.Exists |> not)
@@ -1899,119 +1989,121 @@ module AltCoverTests =
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
   let ZipFlushLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
-    lock
-      Adapter.Lock
-      (fun () ->
-        Instance.I.isRunner <- false
+    lock Adapter.Lock (fun () ->
+      Instance.I.isRunner <- false
 
-        trywithrelease
-          (fun () ->
-            let saved = Console.Out
-            let here = Directory.GetCurrentDirectory()
+      trywithrelease (fun () ->
+        let saved = Console.Out
+        let here = Directory.GetCurrentDirectory()
 
-            let where =
-              Assembly.GetExecutingAssembly().Location
-              |> Path.GetDirectoryName
+        let where =
+          Assembly.GetExecutingAssembly().Location
+          |> Path.GetDirectoryName
 
-            let unique =
-              Path.Combine(where, Guid.NewGuid().ToString())
+        let unique =
+          Path.Combine(where, Guid.NewGuid().ToString())
 
-            let save = Instance.I.trace
-            Instance.I.trace <- Adapter.makeNullTrace null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-            try
-              Adapter.VisitsClear()
-              use stdout = new StringWriter()
-              Console.SetOut stdout
-              Directory.CreateDirectory(unique) |> ignore
-              Directory.SetCurrentDirectory(unique)
+        try
+          Adapter.VisitsClear()
+          use stdout = new StringWriter()
+          Console.SetOut stdout
+          Directory.CreateDirectory(unique) |> ignore
+          Directory.SetCurrentDirectory(unique)
 
-              Counter.measureTime <-
-                DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+          Counter.measureTime <-
+            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-              use stream =
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream(resource)
+          use stream =
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceStream(resource)
 
-              let size = int stream.Length
-              let buffer = Array.create size 0uy
-              Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+          let size = int stream.Length
+          let buffer = Array.create size 0uy
+          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
-              do
-                use archive =
-                  ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Create)
+          do
+            use archive =
+              ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Create)
 
-                let entry =
-                  Instance.ReportFile
-                  |> Path.GetFileName
-                  |> archive.CreateEntry
+            let entry =
+              Instance.ReportFile
+              |> Path.GetFileName
+              |> archive.CreateEntry
 
-                use sink = entry.Open()
-                sink.Write(buffer, 0, size)
-                ()
+            use sink = entry.Open()
+            sink.Write(buffer, 0, size)
+            ()
 
-              [ 0 .. 9 ]
-              |> Seq.iter
-                   (fun i ->
-                     Adapter.VisitsAdd(
-                       "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-                       i,
-                       (int64 (i + 1))
-                     ))
+          [ 0..9 ]
+          |> Seq.iter (fun i ->
+            Adapter.VisitsAdd(
+              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+              i,
+              (int64 (i + 1))
+            ))
 
-              Adapter.DoExit().Invoke(null, null)
-              let head = "Coverage statistics flushing took "
-              let tail = " seconds\n"
-              let recorded = stdout.ToString().Replace("\r\n", "\n")
+          Adapter.DoExit().Invoke(null, null)
 
-              let index1 =
-                recorded.IndexOf(head, StringComparison.Ordinal)
+          let head =
+            "Coverage statistics flushing took "
 
-              let index2 =
-                recorded.IndexOf(tail, StringComparison.Ordinal)
+          let tail = " seconds\n"
 
-              Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
-              Assert.That(index2, Is.GreaterThan index1, recorded)
+          let recorded =
+            stdout.ToString().Replace("\r\n", "\n")
 
-              use zip =
-                ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Update)
+          let index1 =
+            recorded.IndexOf(head, StringComparison.Ordinal)
 
-              let entry =
-                Instance.ReportFile
-                |> Path.GetFileName
-                |> zip.GetEntry
+          let index2 =
+            recorded.IndexOf(tail, StringComparison.Ordinal)
 
-              use worker' = entry.Open()
-              let after = XmlDocument()
-              after.Load worker'
+          Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
+          Assert.That(index2, Is.GreaterThan index1, recorded)
 
-              Assert.That(
-                after.SelectNodes("//seqpnt")
-                |> Seq.cast<XmlElement>
-                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                Is.EquivalentTo [ "11"
-                                  "10"
-                                  "9"
-                                  "8"
-                                  "7"
-                                  "6"
-                                  "4"
-                                  "3"
-                                  "2"
-                                  "1" ]
-              )
-            finally
-              Instance.I.trace <- save
-              AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
-              Console.SetOut saved
-              Directory.SetCurrentDirectory(here)
-              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+          use zip =
+            ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Update)
 
-    GetMyMethodName "<="
+          let entry =
+            Instance.ReportFile
+            |> Path.GetFileName
+            |> zip.GetEntry
+
+          use worker' = entry.Open()
+          let after = XmlDocument()
+          after.Load worker'
+
+          Assert.That(
+            after.SelectNodes("//seqpnt")
+            |> Seq.cast<XmlElement>
+            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+            Is.EquivalentTo
+              [ "11"
+                "10"
+                "9"
+                "8"
+                "7"
+                "6"
+                "4"
+                "3"
+                "2"
+                "1" ]
+          )
+        finally
+          Instance.I.trace <- save
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          Adapter.VisitsClear()
+          Console.SetOut saved
+          Directory.SetCurrentDirectory(here)
+          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+
+    getMyMethodName "<="
 #endif
 
   // Dead simple sequential operation

@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics
@@ -15,6 +15,7 @@ open System.Text.RegularExpressions
 open BlackFox.CommandLine
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
+open AltCover.Shared
 
 [<ExcludeFromCodeCoverage>]
 module internal Process =
@@ -63,7 +64,8 @@ module internal Zip =
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
-                    Justification = "This rule does not check to see whether this method opens the stream for a consumer to use and dispose")>]
+                    Justification =
+                      "This rule does not check to see whether this method opens the stream for a consumer to use and dispose")>]
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:Dispose objects before losing scope",
                     Justification = "ditto, ditto.")>]
@@ -99,61 +101,16 @@ module internal Zip =
 
 type internal StringSink = Action<String>
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage;
-  NoComparison;
-  AutoSerializable(false)>]
-type internal UsageInfo =
-  { Intro: String
-    Options: OptionSet
-    Options2: OptionSet }
-
-module internal Output =
-  let mutable internal info : String -> unit = ignore
-  let mutable internal warn : String -> unit = ignore
-  let mutable internal echo : String -> unit = ignore
-  let mutable internal error : String -> unit = ignore
-  let mutable internal usage : UsageInfo -> unit = ignore
-
-  let internal warnOn x = if x then warn else info
-
-  let internal logExceptionToFile path e =
-    Directory.CreateDirectory(path |> Path.GetDirectoryName)
-    |> ignore
-
-    use stream =
-      File.Open(path, FileMode.Append, FileAccess.Write)
-
-    use writer = new StreamWriter(stream)
-
-    let rec logException padding ex =
-      ex.ToString() |> writer.WriteLine
-
-      ex.GetType().GetProperties()
-      |> Seq.filter
-           (fun p ->
-             [ "Message"; "StackTrace" ]
-             |> Seq.exists (fun n -> n = p.Name)
-             |> not)
-      |> Seq.iter
-           (fun p ->
-             (padding + p.Name + " = ") |> writer.WriteLine
-
-             match p.GetValue(ex) with
-             | :? Exception as exx -> logException ("  " + padding) exx
-             | v -> v |> sprintf "%A" |> writer.WriteLine)
-
-    logException String.Empty e
-
 module internal CommandLine =
 
   let mutable internal verbosity = 0
   let mutable internal help = false
-  let mutable internal error : string list = []
-  let mutable internal exceptions : Exception list = []
-  let internal dropReturnCode = ref false // ddFlag
+  let mutable internal error: string list = []
 
-  let internal resources =
-    ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
+  let mutable internal exceptions: Exception list =
+    []
+
+  let internal dropReturnCode = ref false // ddFlag
 
   [<SuppressMessage("Gendarme.Rules.Design",
                     "AbstractTypesShouldNotHavePublicConstructorsRule",
@@ -162,10 +119,12 @@ module internal CommandLine =
   [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
   type internal Format private () =
     static member Local(resource, [<ParamArray>] args) =
-      String.Format(CultureInfo.CurrentCulture, resources.GetString resource, args)
+      String.Format(CultureInfo.CurrentCulture, Output.resources.GetString resource, args)
 
   module internal I =
-    let internal conditionalOutput condition output = if condition () then output ()
+    let internal conditionalOutput condition output =
+      if condition () then
+        output ()
 
     let internal writeColoured (writer: TextWriter) colour operation =
       let original = Console.ForegroundColor
@@ -176,7 +135,8 @@ module internal CommandLine =
       finally
         Console.ForegroundColor <- original
 
-    let internal enquotes = Map.empty |> Map.add "Windows_NT" "\""
+    let internal enquotes =
+      Map.empty |> Map.add "Windows_NT" "\""
 
     let internal write (writer: TextWriter) colour data =
       if not (String.IsNullOrEmpty(data)) then
@@ -199,7 +159,8 @@ module internal CommandLine =
         |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
         |> Option.defaultValue String.Empty
 
-      let enquoted = quote + cmd.Trim([| '"'; ''' |]) + quote
+      let enquoted =
+        quote + cmd.Trim([| '"'; ''' |]) + quote
 
       Format.Local("CommandLine", enquoted, args)
       |> Output.info
@@ -218,7 +179,9 @@ module internal CommandLine =
       proc.BeginErrorReadLine()
       proc.BeginOutputReadLine()
       proc.WaitForExitCustom()
-      proc.ExitCode * (dropReturnCode.Value |> not).ToInt32
+
+      proc.ExitCode
+      * (dropReturnCode.Value |> not).ToInt32
 
     let logException store (e: Exception) =
       error <- e.Message :: error
@@ -227,19 +190,14 @@ module internal CommandLine =
         exceptions <- e :: exceptions
 
     let internal doPathOperation (f: unit -> 'a) (defaultValue: 'a) store =
-      let mutable result = defaultValue
+      PathOperation.DoPathOperation f (fun x ->
+        x |> (logException store)
+        defaultValue)
 
-      try
-        result <- f ()
-      with
-      | :? ArgumentException as a -> a :> Exception |> (logException store)
-      | :? NotSupportedException as n -> n :> Exception |> (logException store)
-      | :? IOException as i -> i :> Exception |> (logException store)
-      | :? System.Security.SecurityException as s ->
-          s :> Exception |> (logException store)
-      | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
-
-      result
+    let private handledRetryFault (x: exn) =
+      (x :? IOException)
+      || (x :? System.Security.SecurityException)
+      || (x :? UnauthorizedAccessException)
 
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
@@ -247,18 +205,12 @@ module internal CommandLine =
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
-      with x ->
-        match x with
-        | :? IOException
-        | :? System.Security.SecurityException
-        | :? UnauthorizedAccessException ->
-            if depth < limit then
-              Threading.Thread.Sleep(rest)
-              doRetry action log limit rest (depth + 1) f
-            else
-              x.ToString() |> log
-
-        | _ -> reraise ()
+      with x when handledRetryFault x ->
+        if depth < limit then
+          Threading.Thread.Sleep(rest)
+          doRetry action log limit rest (depth + 1) f
+        else
+          x.ToString() |> log
 
     let logExceptionsToFile name extend =
       let path =
@@ -287,8 +239,10 @@ module internal CommandLine =
     let internal validateFileSystemEntity exists message key x =
       doPathOperation
         (fun () ->
-          if (not (String.IsNullOrWhiteSpace x))
-             && x |> Path.GetFullPath |> exists then
+          if
+            (not (String.IsNullOrWhiteSpace x))
+            && x |> canonicalPath |> exists
+          then
             true
           else
             error <- Format.Local(message, key, x) :: error
@@ -303,20 +257,18 @@ module internal CommandLine =
     let internal validateFile file x =
       validateFileSystemEntity File.Exists fnf file x
 
-    let internal findAssemblyName f =
-      try
-        (AssemblyName.GetAssemblyName f).ToString()
-      with
-      | :? ArgumentException
-      | :? FileNotFoundException
-      | :? System.Security.SecurityException
-      | :? BadImageFormatException
-      | :? FileLoadException -> String.Empty
+    type SecurityException with
+      [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                        "AvoidMethodWithUnusedGenericTypeRule",
+                        Justification = "Matches clause type")>]
+      static member Throw<'T>(e: exn) : 'T =
+        (e.Message, e) |> SecurityException |> raise
 
     let internal transformCryptographicException f =
       try
         f ()
-      with :? CryptographicException as c -> (c.Message, c) |> SecurityException |> raise
+      with :? CryptographicException as c ->
+        c |> SecurityException.Throw
 
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
@@ -325,7 +277,7 @@ module internal CommandLine =
       let descape (s: string) = s.Replace(char 0, ';')
 
       let qRegex (s: String) =
-        if s.Substring(0, 1) = "?" then
+        if s.Substring(0, 1) == "?" then
           { Regex = Regex <| s.Substring(1)
             Sense = Include }
         else
@@ -345,12 +297,12 @@ module internal CommandLine =
 
     try
       let before =
-        arguments |> Array.takeWhile (fun x -> x <> "--")
+        arguments |> Array.takeWhile (fun x -> x != "--")
 
       let after =
         arguments
-        |> Seq.skipWhile (fun x -> x <> "--")
-        |> Seq.skipWhile (fun x -> x = "--")
+        |> Seq.skipWhile (fun x -> x != "--")
+        |> Seq.skipWhile (fun x -> x == "--")
         |> Seq.toList
 
       let parse = options.Parse(before)
@@ -359,20 +311,24 @@ module internal CommandLine =
         Left("UsageError", options)
       else
         Right(after, options)
-    with :? OptionException -> Left("UsageError", options)
+    with :? OptionException ->
+      Left("UsageError", options)
 
   let internal processHelpOption
     (parse: Either<string * OptionSet, string list * OptionSet>)
     =
     match parse with
-    | Right (_, options) ->
-        if help then
-          Left("HelpText", options)
-        else
-          parse
+    | Right(_, options) ->
+      if help then
+        Left("HelpText", options)
+      else
+        parse
     | fail -> fail
 
   let internal applyVerbosity () =
+    if verbosity >= 0 then
+      Output.verbose <- ignore
+
     if verbosity >= 1 then
       Output.info <- ignore
       Output.echo <- ignore
@@ -389,7 +345,7 @@ module internal CommandLine =
       (fun () ->
         tag |> String.IsNullOrWhiteSpace |> not
         && error |> List.isEmpty |> not)
-      (fun () -> tag |> resources.GetString |> Output.error)
+      (fun () -> tag |> Output.resources.GetString |> Output.error)
 
     error |> List.iter Output.error
 
@@ -408,7 +364,7 @@ module internal CommandLine =
     reportErrors String.Empty extend
     Output.usage info
 
-  let internal ddFlag (name: string) (flag:bool ref) =
+  let internal ddFlag (name: string) (flag: bool ref) =
     (name,
      (fun (_: string) ->
        if flag.Value then
@@ -416,26 +372,29 @@ module internal CommandLine =
            Format.Local("MultiplesNotAllowed", "--" + (name.Split('|') |> Seq.last))
            :: error
        else
-         flag := true))
+         flag.Value <- true))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
-                                                    Justification = "AvoidSpeculativeGenerality too")>]
+                                                    Justification =
+                                                      "AvoidSpeculativeGenerality too")>]
   let internal processTrailingArguments (rest: string list) (toInfo: DirectoryInfo) =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
     | [] -> 0
     | cmd :: t ->
-        let args = t |> CmdLine.fromSeq |> CmdLine.toString
+      let args =
+        t |> CmdLine.fromSeq |> CmdLine.toString
 
-        let cmd' =
-          [ cmd ] |> CmdLine.fromSeq |> CmdLine.toString
+      let cmd' =
+        [ cmd ] |> CmdLine.fromSeq |> CmdLine.toString
 
-        I.launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
+      I.launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let internal validateAssembly assembly x =
     if I.validateFile assembly x then
-      let name = I.findAssemblyName x
+      let name =
+        AssemblyConstants.findAssemblyName x
 
       if String.IsNullOrWhiteSpace name then
         error <-
@@ -457,8 +416,8 @@ module internal CommandLine =
         (fun () ->
           let blob = File.ReadAllBytes x
 
-          I.transformCryptographicException
-            (fun () -> (blob |> StrongNameKeyData.Make, true)))
+          I.transformCryptographicException (fun () ->
+            (blob |> StrongNameKeyData.Make, true)))
         (StrongNameKeyData.Empty(), false)
         false
     else
@@ -466,24 +425,23 @@ module internal CommandLine =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
                                                     "AvoidMethodWithUnusedGenericTypeRule",
-                                                    Justification = "Delegation = first class functions")>]
-  let internal doPathOperation = I.doPathOperation
-
-  let internal findAssemblyName = I.findAssemblyName
+                                                    Justification =
+                                                      "Delegation = first class functions")>]
+  let internal doPathOperation =
+    I.doPathOperation
 
   let internal validateDirectory dir x =
     I.validateFileSystemEntity Directory.Exists I.dnf dir x
 
   let internal ensureDirectory directory =
-    I.conditionalOutput
-      (fun () -> directory |> Directory.Exists |> not)
-      (fun () ->
-        if verbosity < 1 // implement it early here
-        then
-          Output.info
-          <| Format.Local("CreateFolder", directory)
+    I.conditionalOutput (fun () -> directory |> Directory.Exists |> not) (fun () ->
+      if
+        verbosity < 1 // implement it early here
+      then
+        Output.info
+        <| Format.Local("CreateFolder", directory)
 
-        Directory.CreateDirectory(directory) |> ignore)
+      Directory.CreateDirectory(directory) |> ignore)
 
   let internal validatePath path x =
     I.validateFileSystemEntity (fun _ -> true) I.iv path x
@@ -495,28 +453,26 @@ module internal CommandLine =
     I.write Console.Out Console.ForegroundColor line
 
   let internal usageBase u =
-    I.writeColoured
-      Console.Error
-      ConsoleColor.Yellow
-      (fun w ->
-        w.WriteLine(resources.GetString u.Intro)
-        u.Options.WriteOptionDescriptions(w)
+    I.writeColoured Console.Error ConsoleColor.Yellow (fun w ->
+      w.WriteLine(Output.resources.GetString u.Intro)
+      u.Options.WriteOptionDescriptions(w)
 
-        if u.Options.Any() && u.Options2.Any() then
-          w.WriteLine(resources.GetString "orbinder")
+      if u.Options.Any() && u.Options2.Any() then
+        w.WriteLine(Output.resources.GetString "orbinder")
 
-        if u.Options2.Any() then
-          w.WriteLine("  Runner")
-          u.Options2.WriteOptionDescriptions(w)
+      if u.Options2.Any() then
+        w.WriteLine("  Runner")
+        u.Options2.WriteOptionDescriptions(w)
 
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "ImportModule")
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "Version")
-        w.WriteLine(resources.GetString "orglobal")
-        w.WriteLine(resources.GetString "TargetsPath"))
+      w.WriteLine(Output.resources.GetString "orbinder")
+      w.WriteLine(Output.resources.GetString "ImportModule")
+      w.WriteLine(Output.resources.GetString "orbinder")
+      w.WriteLine(Output.resources.GetString "Version")
+      w.WriteLine(Output.resources.GetString "orglobal")
+      w.WriteLine(Output.resources.GetString "TargetsPath"))
 
-  let internal writeResource = resources.GetString >> Output.info
+  let internal writeResource =
+    Output.resources.GetString >> Output.info
 
   let internal writeResourceWithFormatItems s x warn =
     Format.Local(s, x) |> (Output.warnOn warn)
@@ -531,4 +487,13 @@ module internal CommandLine =
     Output.usage <- usageBase
     Output.echo <- writeErr
     Output.info <- writeOut
+    Output.verbose <- writeOut
     Output.warn <- writeOut
+
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.CommandLine/I/transform@286::Invoke(System.String[])",
+                            Justification = "Inlined library code")>]
+()

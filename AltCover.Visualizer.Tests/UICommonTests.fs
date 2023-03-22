@@ -1,4 +1,4 @@
-namespace Tests
+﻿namespace Tests
 
 open System
 open System.IO
@@ -13,7 +13,8 @@ module VisualizerTests =
 
   [<Test>]
   let AugmentNullableDetectNulls () =
-    let input = [ "string"; null; "another string" ]
+    let input =
+      [ "string"; null; "another string" ]
 
     let nulls =
       input |> List.map (fun x -> x.IsNotNull |> not)
@@ -37,7 +38,7 @@ module VisualizerTests =
       Path.Combine(SolutionRoot.location, "Sample20")
       |> Path.GetFullPath
 
-    use sr1 =
+    use sr1 = // fsharplint:disable-next-line  RedundantNewKeyword
       new StreamReader(
         Assembly
           .GetExecutingAssembly()
@@ -54,7 +55,7 @@ module VisualizerTests =
     let after =
       Transformer.transformFromCobertura before
 
-    use sr2 =
+    use sr2 = // fsharplint:disable-next-line  RedundantNewKeyword
       new StreamReader(
         Assembly
           .GetExecutingAssembly()
@@ -66,9 +67,10 @@ module VisualizerTests =
     let expect = XDocument.Load sr2
 
     //printfn "%A" after
-    //Assert.That(after.ToString().Replace("\r", String.Empty),
-    //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
-    test
-      <@ after.ToString().Replace("\r", String.Empty) = expect
-        .ToString()
-        .Replace("\r", String.Empty) @>
+    let result1 =
+      after.ToString().Replace("\r", String.Empty)
+
+    let expected1 =
+      expect.ToString().Replace("\r", String.Empty)
+
+    testEqualValue result1 expected1

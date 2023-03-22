@@ -3,23 +3,27 @@
 using System.Reflection;
 
 [assembly: AssemblyProduct("AltCover")]
+#if NET20 || DEBUG
 [assembly: AssemblyVersion("{0}.0.0")]
 [assembly: AssemblyFileVersion("{1}")]
+[assembly: AssemblyInformationalVersion("{2} {3}")]
+#endif
 [assembly: AssemblyCompany("Steve Gilham")]
 [assembly: AssemblyTrademark("")]
-[assembly: AssemblyInformationalVersion("{2} {3}")]
 [assembly: AssemblyCopyright("© 2010-{4} by Steve Gilham <SteveGilham@users.noreply.github.com>")]
 #if !NET20
 [assembly: AssemblyMetadata("RepositoryUrl","https://github.com/SteveGilham/altcover")]
 [assembly: AssemblyMetadata("CommitHash","{2}")]
 [assembly: AssemblyMetadata("Branch","{3}")]
+[assembly: AssemblyMetadata("Build Time","{5}")]
 #endif
 
 #if !LITEVERSION
-namespace System {{
+namespace AltCover {{
     internal static class AssemblyVersionInformation {{
         internal const System.String AssemblyProduct = "AltCover";
         internal const System.String AssemblyVersion = "{0}.0.0";
+        internal const System.String AssemblyPackageVersion = "{6}";
         internal const System.String AssemblyFileVersion = "{1}";
         internal const System.String AssemblyCompany = "Steve Gilham";
         internal const System.String AssemblyTrademark = "";
@@ -28,6 +32,7 @@ namespace System {{
         internal const System.String AssemblyMetadata_RepositoryUrl = "https://github.com/SteveGilham/altcover";
         internal const System.String AssemblyMetadata_CommitHash = "{2}";
         internal const System.String AssemblyMetadata_Branch = "{3}";
+        internal const System.String AssemblyMetadata_BuildTime = "{5}";
     }}
 }}
 #endif

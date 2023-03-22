@@ -1,19 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net7.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Api.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="'$(TargetFramework)' != 'net472'">Exe</OutputType>
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
-    <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +21,16 @@
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.json" Link="HandRolledToNCover.json" />
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartials.json" Link="JsonWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\JsonFromNCoverWithPartials.json" Link="JsonFromNCoverWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToXml.xml" Link="JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.cob.xml" Link="NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.xml" Link="NCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverFromNCoverWithPartials.xml" Link="OpenCoverFromNCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.lcov" Link="OpenCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.xml" Link="OpenCoverWithPartials.xml" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>
     </EmbeddedResource>
@@ -36,6 +40,8 @@
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample4.Prepare.xml" Link="Sample4.Prepare.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.coverlet.json" Link="Sample4.coverlet.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.fromcoverletjson.xml" Link="Sample4.fromcoverletjson.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
@@ -48,27 +54,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="Unquote" Version="6.1.0" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
+    <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.8" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
@@ -79,10 +79,4 @@
     <ProjectReference Include="..\Samples\Sample18\Sample18.fsproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.2">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
 </Project>

@@ -96,10 +96,11 @@ The members correspond to the like-named command line options for `AltCover`, ex
         ShowStatic: string
         ShowGenerated: bool
         Verbosity : System.Diagnostics.TraceLevel
-}
-      with
+        Trivia: bool
+      }
+    with
         static member Create : unit -> PrepareOptions
-      end
+    end
 ```
 `Create()` returns an instance that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
 

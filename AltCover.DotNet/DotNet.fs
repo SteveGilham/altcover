@@ -12,9 +12,9 @@ open System.Linq
 module DotNet =
   type ICLIOptions =
     interface
-      abstract member ForceDelete : bool
-      abstract member FailFast : bool
-      abstract member ShowSummary : String
+      abstract member ForceDelete: bool
+      abstract member FailFast: bool
+      abstract member ShowSummary: String
     end
 
   [<NoComparison;
@@ -47,18 +47,21 @@ module DotNet =
       | Abstract a -> a.FailFast
 
     member self.ShowSummary =
+      let select (s: CLIOptions seq) =
+        s
+        |> Seq.map (fun f -> f.ShowSummary)
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.tryHead
+
       match self with
       | Summary b -> b
       | Fail _
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
       | Many s ->
-          match s
-                |> Seq.map (fun f -> f.ShowSummary)
-                |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-                |> Seq.tryHead with
-          | Some x -> x
-          | _ -> String.Empty
+        match select s with
+        | Some x -> x
+        | _ -> String.Empty
 
     interface ICLIOptions with
       member self.FailFast = self.FailFast
@@ -66,27 +69,36 @@ module DotNet =
       member self.ShowSummary = self.ShowSummary
 
   module internal I =
-    let private arg name s =
-      (sprintf """/p:AltCover%s="%s" """ name s).Trim()
+    let private arg name (s: string) = (sprintf """AltCover%s""" name, s)
 
     let private listArg name (s: String seq) =
-      (sprintf """/p:AltCover%s="%s" """ name
-       <| String.Join("|", s))
-        .Trim()
+      (sprintf """AltCover%s""" name, String.Join("|", s))
 
     let private isSet s = s |> String.IsNullOrWhiteSpace |> not
 
     let private fromList name (s: String seq) = (listArg name s, s.Any())
     let internal fromArg name s = (arg name s, isSet s)
     let internal fromValue name (s: obj) (b: bool) = (arg name <| s.ToString(), b)
-    let internal join (l: string seq) = String.Join(" ", l)
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic",
                       "AvoidMethodWithUnusedGenericTypeRule",
                       Justification = "Compiler Generated")>]
     let internal toPrepareListArgumentList (prepare: Abstract.IPrepareOptions) =
+      let dependencies = prepare.Dependencies
+
+      let extra =
+        if dependencies |> Seq.isEmpty then
+          0
+        else
+          1
+
+      let suffix =
+        String.Empty |> Seq.replicate extra
+
+      let d2 = suffix |> Seq.append dependencies
+
       [ fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe `'|'` separated list of paths"
-        fromList, "DependencyList", prepare.Dependencies //=`"pipe `'|'` separated list of paths"
+        fromList, "DependencyList", d2 //=`"pipe `'|'` separated *AND TERMINATED* list of paths"
         fromList, "Keys", prepare.Keys //=`"pipe `'|'` separated list of paths to strong-name keys for re-signing assemblies"
         fromList, "FileFilter", prepare.FileFilter //=`"pipe `'|'` separated list of file name regexes"
         fromList, "AssemblyFilter", prepare.AssemblyFilter //=`"pipe `'|'` separated list of names"
@@ -107,15 +119,16 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic ] //=-|+|++` to mark simple code like auto-properties in the coverage file
 
     let internal toPrepareArgArgumentList (prepare: Abstract.IPrepareOptions) =
-      [ (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
-        (arg, "MethodPoint", "false", prepare.MethodPoint) //="true|false"` - set "true" to record only the first point of each method
-        (arg, "Single", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
+      [ (arg, "ZipFile", "true", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
+        (arg, "MethodPoint", "true", prepare.MethodPoint) //="true|false"` - set "true" to record only the first point of each method
+        (arg, "Single", "true", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
         (arg, "BranchCover", "true", prepare.BranchCover) //="true|false"` - set "true" to record only branch coverage in OpenCover format
-        (arg, "SourceLink", "false", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
+        (arg, "SourceLink", "true", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
         (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
         (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
+        (arg, "Trivia", "true", prepare.Trivia) //=true|false` to omit trivial sequence points
         (arg, "InPlace", "true", prepare.InPlace) ] //=true|false` to test in-place (meaning extra file copies)
 
     let internal toCollectFromArgArgumentList (collect: Abstract.ICollectOptions) =
@@ -126,11 +139,11 @@ module DotNet =
 
     let internal toSharedFromValueArgumentList
       (verbosity: System.Diagnostics.TraceLevel)
-      : ((string -> obj -> bool -> string * bool) * string * obj * bool) list =
+      : ((string -> obj -> bool -> (string * string) * bool) * string * obj * bool) list =
       [
         // poss s <> Info
         fromValue,
-        "Verbosity", //=`"Levels of output -- Info (default), Warning, Error, or Off"
+        "Verbosity", //=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
         verbosity :> obj,
         verbosity <> System.Diagnostics.TraceLevel.Info ]
 
@@ -147,14 +160,10 @@ module DotNet =
       [ arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
         arg, "FailFast", "true", options.FailFast ] //=true|false` to skip coverage collection if the unit tests fail
 
-// "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
-// "GetVersion" //=true|false` to emit the current AltCover version
+  // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
+  // "GetVersion" //=true|false` to emit the current AltCover version
 
-#if RUNNER
-  let ToTestArgumentList
-#else
-  let internal toTestArgumentList
-#endif
+  let ToTestPropertiesList
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
     (options: ICLIOptions)
@@ -191,20 +200,41 @@ module DotNet =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments
-#else
-  let internal toTestArguments
-#endif
+  let ToTestArgumentList
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)
     (options: ICLIOptions)
     =
-#if RUNNER
-    ToTestArgumentList
-#else
-    toTestArgumentList
+    ToTestPropertiesList prepare collect options
+    |> List.map (fun (name, value) -> sprintf """/p:%s="%s%c""" name value '"')
+
+  let ToTestArguments
+    (prepare: Abstract.IPrepareOptions)
+    (collect: Abstract.ICollectOptions)
+    (options: ICLIOptions)
+    =
+    let join (l: string seq) = String.Join(" ", l)
+    ToTestArgumentList prepare collect options |> join
 #endif
-      prepare
-      collect
-      options
-    |> I.join
+
+  let ImportModuleProperties =
+    [ ("AltCoverImportModule", "true") ]
+
+  let GetVersionProperties =
+    [ ("AltCoverGetVersion", "true") ]
+
+#if RUNNER
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target = "<StartupCode$AltCover-DotNet>.$DotNet.#.cctor()",
+                            Justification = "Compiler generated")>]
+#else
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target =
+                              "<StartupCode$AltCover-Fake-DotNet-Testing-AltCover>.$DotNet.#.cctor()",
+                            Justification = "Compiler generated")>]
+#endif
+()

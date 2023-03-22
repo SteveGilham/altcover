@@ -1,4 +1,4 @@
-namespace AltCover.Recorder
+﻿namespace AltCover.Recorder
 
 open System.Collections.Generic
 
@@ -15,12 +15,21 @@ module Adapter =
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
-  let SamplesClear () = Instance.I.samples.Clear()
+  let SamplesClear () =
+    Instance.I.samples <- Instance.I.makeSamples ()
 
-  let Reset () =
+  let private reset () =
     Instance.I.isRunner <- false
     VisitsClear()
     SamplesClear()
+
+  let ModuleReset (m: string array) =
+    Instance.modules <- m
+    reset ()
+
+  let HardReset () =
+    Instance.modules <- [| System.String.Empty |]
+    reset ()
 
   let internal prepareName name =
     if name |> Instance.I.visits.ContainsKey |> not then
@@ -28,22 +37,24 @@ module Adapter =
       Instance.I.visits.Add(name, entry)
 
   let internal init (n, l) =
-    let tmp = { PointVisit.Create() with Count = n }
+    let tmp =
+      { PointVisit.Create() with Count = n }
+
     tmp.Tracks.AddRange l
     tmp
 
   let VisitsAdd (name, line, number) =
     prepareName name
-    let v = init(number, [])
+    let v = init (number, [])
     Instance.I.visits.[name].Add(line, v)
 
   let VisitsAddTrack (name, line, number) =
     prepareName name
-    let v1 = init(number, [ Call 17; Call 42 ])
+    let v1 = init (number, [ Call 17; Call 42 ])
     Instance.I.visits.[name].Add(line, v1)
 
     let v2 =
-      init(
+      init (
         (number + 1L),
         [ Time 17L
           Both { Time = 42L; Call = 23 } ]
@@ -95,9 +106,9 @@ module Adapter =
 
     match t with
     | (n, p, Table d) ->
-        r.Add(n)
-        r.Add(p)
-        r.Add(d)
+      r.Add(n)
+      r.Add(p)
+      r.Add(d)
     | _ -> ()
 
     r
@@ -149,7 +160,8 @@ module Adapter =
       (called: bool array)
     ) =
     let constructor =
-      typeof<'T>.GetConstructor ([| typeof<System.String> |])
+      typeof<'T>
+        .GetConstructor([| typeof<System.String> |])
 
     let pitcher =
       fun _ _ _ _ ->
@@ -166,6 +178,20 @@ module Adapter =
           | _ -> x.Message = unique
 
     Instance.I.issue71Wrapper () () () () catcher pitcher
+
+  let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
+    (unique: string)
+    =
+    let constructor =
+      typeof<'T>
+        .GetConstructor([| typeof<System.String> |])
+
+    let pitcher =
+      fun _ _ _ _ ->
+        constructor.Invoke([| unique |]) :?> System.Exception
+        |> raise
+
+    Instance.I.curriedIssue71Wrapper "a" "b" "c" "d" pitcher
 
   let internal tracePush (a, b, c) = Instance.I.trace.Push a b c
 //let LogException (a, b, c, d) = Instance.I.logException a b c d

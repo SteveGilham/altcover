@@ -6,6 +6,7 @@ namespace AltCoverFake.DotNet.Testing
 
 open System
 open System.Diagnostics.CodeAnalysis
+open AltCover.Shared
 
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -18,8 +19,10 @@ module internal Args =
       [ a; x ]
 
   let private optionalItem a x l =
-    if x |> String.IsNullOrWhiteSpace
-       || l |> List.exists (fun i -> i = x) then
+    if
+      x |> String.IsNullOrWhiteSpace
+      || l |> List.exists (fun i -> i == x)
+    then
       []
     else
       [ a + ":" + x ]
@@ -87,7 +90,8 @@ module internal Args =
       ("--defer", args.Defer)
       ("--localSource", args.LocalSource)
       ("--visibleBranches", args.VisibleBranches)
-      ("--showGenerated", args.ShowGenerated) ]
+      ("--showGenerated", args.ShowGenerated)
+      ("--trivia", args.Trivia) ]
 
   let internal flags (args: Abstract.IPrepareOptions) =
     args
@@ -95,15 +99,17 @@ module internal Args =
     |> List.collect (fun (a, b) -> flag a b)
 
   let internal countItems (args: Abstract.IPrepareOptions) =
-    [ ("-q", 2 - (int args.Verbosity)) ]
+    let v = int args.Verbosity
+    [ ("-q", 2 - v); ("--verbose", v - 4) ]
 
   let internal counts (args: Abstract.IPrepareOptions) =
     args
     |> countItems
-    |> List.collect (fun (a, b) -> { 0 .. b } |> Seq.map (fun _ -> a) |> Seq.toList)
+    |> List.collect (fun (a, b) -> { 0..b } |> Seq.map (fun _ -> a) |> Seq.toList)
 
   let prepare (args: Abstract.IPrepareOptions) =
-    let argsList = args.CommandLine |> Seq.toList
+    let argsList =
+      args.CommandLine |> Seq.toList
 
     let trailing =
       if List.isEmpty argsList then
@@ -122,7 +128,8 @@ module internal Args =
     [ parameters; trailing ] |> List.concat
 
   let internal buildCollect (args: Abstract.ICollectOptions) =
-    let argsList = args.CommandLine |> Seq.toList
+    let argsList =
+      args.CommandLine |> Seq.toList
 
     let trailing =
       if List.isEmpty argsList then
@@ -132,12 +139,14 @@ module internal Args =
 
     let exe = args.Executable
 
-    let countItems (args: Abstract.ICollectOptions) = [ ("-q", 2 - (int args.Verbosity)) ]
+    let countItems (args: Abstract.ICollectOptions) =
+      let v = int args.Verbosity
+      [ ("-q", 2 - v); ("--verbose", v - 4) ]
 
     let counts (args: Abstract.ICollectOptions) =
       args
       |> countItems
-      |> List.collect (fun (a, b) -> { 0 .. b } |> Seq.map (fun _ -> a) |> Seq.toList)
+      |> List.collect (fun (a, b) -> { 0..b } |> Seq.map (fun _ -> a) |> Seq.toList)
 
     [ [ "Runner" ]
       item "-r" args.RecorderDirectory

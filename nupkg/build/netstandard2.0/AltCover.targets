@@ -54,7 +54,7 @@
 
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
-      <AltCoverXmlOutput Include="$(AltCoverReport)" />
+      <AltCoverXmlOutput Include="$([MSBuild]::Unescape($(AltCoverReport)))" />
       <AltCoverInputDirectory Include="$(TargetDir)" />
       <AltCoverOutputDirectory Condition="'$(AltCoverInPlace)' == 'false'" Include="$(AltCoverInstrumentedDirectory)_$(ProjectName)" />
       <AltCoverOutputDirectory Condition="'$(AltCoverInPlace)' != 'false'" Include="$(AltCoverSavedDirectory)_$(ProjectName)" />
@@ -85,7 +85,7 @@
       OutputDirectories="@(AltCoverOutputDirectory)"
       InPlace="$(AltCoverInPlace)"
       SymbolDirectories="$(AltCoverSymbolDirectories.Split('|'))"
-      Dependencies="$(AltCoverDependencyList.Split('|'))"
+      Dependencies="$(AltCoverDependencyList.Trim('|').Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"
       StrongNameKey="$(AltCoverStrongNameKey)"
       Report="$(AltCoverReport2)"
@@ -111,7 +111,8 @@
       VisibleBranches="$(AltCoverVisibleBranches)"
       ShowStatic="$(AltCoverShowStatic)"
       ShowGenerated="$(AltCoverShowGenerated)"
-      Verbosity="$(AltCoverVerbosity)" />
+      Verbosity="$(AltCoverVerbosity)"
+      Trivia="$(AltCoverTrivia)" />
   </Target>
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->

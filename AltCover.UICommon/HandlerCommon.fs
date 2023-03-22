@@ -8,6 +8,7 @@ open System.IO
 open System.Linq
 open System.Xml.XPath
 open GuiCommon
+open AltCover.Shared
 
 module HandlerCommon =
   let DoRowActivation
@@ -18,10 +19,9 @@ module HandlerCommon =
     =
     let points =
       [ "seqpnt"; "branch" ]
-      |> List.map
-           (fun tag ->
-             methodPath.SelectChildren(tag, String.Empty)
-             |> Seq.cast<XPathNavigator>)
+      |> List.map (fun tag ->
+        methodPath.SelectChildren(tag, String.Empty)
+        |> Seq.cast<XPathNavigator>)
       |> Seq.concat
 
     let allpoints =
@@ -43,9 +43,15 @@ module HandlerCommon =
     else
       let filename = Option.get document
       window.Title <- "AltCover.Visualizer - " + filename
-      let info = GetSource(filename)
+      // get embed if any & fold it in here
+      let embed =
+        GuiCommon.Embed methodPath filename
+
+      let info =
+        GetSource(filename).MakeEmbedded filename embed
+
       let lineNumber =
-          Int32.TryParse(line |> Option.get) |> snd
+        Int32.TryParse(line |> Option.get) |> snd
 
       showSource info lineNumber
 
@@ -58,11 +64,7 @@ module HandlerCommon =
   let private (|Select|_|) (pattern: String) offered =
     if
       (fst offered) |> String.IsNullOrWhiteSpace |> not
-      && pattern.StartsWith
-        (
-          fst offered,
-          StringComparison.Ordinal
-        )
+      && pattern.StartsWith(fst offered, StringComparison.Ordinal)
     then
       Some offered
     else
@@ -85,9 +87,14 @@ module HandlerCommon =
       Int32.TryParse(n.GetAttribute("visitcount", String.Empty))
       |> snd
 
-    let line = n.GetAttribute("line", String.Empty)
-    let column = n.GetAttribute("column", String.Empty)
-    let endline = n.GetAttribute("endline", String.Empty)
+    let line =
+      n.GetAttribute("line", String.Empty)
+
+    let column =
+      n.GetAttribute("column", String.Empty)
+
+    let endline =
+      n.GetAttribute("endline", String.Empty)
 
     let endcolumn =
       n.GetAttribute("endcolumn", String.Empty)
@@ -115,17 +122,14 @@ module HandlerCommon =
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "InstantiateArgumentExceptionCorrectlyRule",
                     Justification = "Inlined library code")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
-                    Justification = "Ditto, ditto")>]
-  let TagCoverage (methodPath: XPathNavigator) (fileName: string) (sourceLines: int) =
+  let TagCoverage (methodPath: XPathNavigator) (file: Source) (sourceLines: int) =
     let lineOnly =
       methodPath.Select("//coverage[@lineonly]")
       |> Seq.cast<XPathNavigator>
       |> Seq.isEmpty
       |> not
 
-    methodPath.Select("//seqpnt[@document='" + fileName + "']")
+    methodPath.Select("//seqpnt[@document='" + file.FullName + "']") // TODO encapsulate more
     |> Seq.cast<XPathNavigator>
     |> Seq.map (coverageToTag lineOnly)
     |> Seq.filter (filterCoverage sourceLines)
@@ -138,22 +142,20 @@ module HandlerCommon =
   let TagLines (visited: 'Tag) (notVisited: 'Tag) (tags: CodeTag list) =
     tags
     |> List.groupBy (fun t -> t.Line)
-    |> List.map
-         (fun (l, t) ->
-           let total =
-             t
-             |> Seq.sumBy
-                  (fun tag ->
-                    if tag.VisitCount <= 0 then
-                      0
-                    else
-                      tag.VisitCount)
+    |> List.map (fun (l, t) ->
+      let total =
+        t
+        |> Seq.sumBy (fun tag ->
+          if tag.VisitCount <= 0 then
+            0
+          else
+            tag.VisitCount)
 
-           (l,
-            if total > 0 then
-              visited
-            else
-              notVisited))
+      (l,
+       if total > 0 then
+         visited
+       else
+         notVisited))
 
   let private parseIntegerAttribute (element: XPathNavigator) (attribute: string) =
     let text =
@@ -175,27 +177,28 @@ module HandlerCommon =
 
       0
 
-  let TagBranches (methodPath: XPathNavigator) (fileName: string) =
-    (methodPath.Select("//method[@document='" + fileName + "']")
+  let TagBranches (methodPath: XPathNavigator) (file: Source) =
+    (methodPath.Select("//branch[@document='" + file.FullName + "']") // TODO
      |> Seq.cast<XPathNavigator>
-     |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
      |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
      |> Seq.toList
-     |> Seq.map
-          (fun n ->
-            let line =
-              parseIntegerAttribute ((snd n) |> Seq.head) "line"
+     |> Seq.map (fun n ->
+       let line =
+         parseIntegerAttribute ((snd n) |> Seq.head) "line"
 
-            let num = (snd n) |> Seq.length
+       let num = (snd n) |> Seq.length
 
-            let v =
-              (snd n)
-              |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
-              |> Seq.length
+       let v =
+         (snd n)
+         |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) != "0")
+         |> Seq.length
 
-            line, (v, num)))
+       line, (v, num)))
       .ToDictionary(fst, snd)
 
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Compiler generated")>]
   let UpdateCoverageFiles (window: IVisualizerWindow) path add =
     let casematch =
       match System.Environment.GetEnvironmentVariable("OS") with
@@ -210,11 +213,10 @@ module HandlerCommon =
 
     window.CoverageFiles <-
       (if add then (path :: files) else files)
-      |> Seq.distinctBy
-           (fun n ->
-             match casematch with
-             | StringComparison.Ordinal -> n
-             | _ -> n.ToUpperInvariant())
+      |> Seq.distinctBy (fun n ->
+        match casematch with
+        | StringComparison.Ordinal -> n
+        | _ -> n.ToUpperInvariant())
       |> Seq.toList
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",

@@ -12,11 +12,18 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 [assembly: System.Resources.NeutralResourcesLanguageAttribute("en-GB")]
+[assembly: SuppressMessage("AltCode.Rules.General",
+                           "JustifySuppressionRule",
+                           Scope = "member", // MethodDefinition
+                           Target = "AltCover.Resources.Resources::.ctor()",
+                           Justification = "Compiler generated")]
 
 namespace AltCover
 {
   public class DataCollector : InProcDataCollection
   {
+    private bool supervising;
+
     // Use the Null Object pattern here
     private static IEnumerable<Type> RecorderInstance
     {
@@ -55,7 +62,7 @@ namespace AltCover
       }
     }
 
-    private static void Supervise()
+    private void Supervise()
     {
       RecorderInstance.ToList().ForEach(
         i =>
@@ -72,6 +79,7 @@ namespace AltCover
           else
           {
             supervision.SetValue(null, true);
+            supervising = true;
           }
         }
       );
@@ -79,6 +87,7 @@ namespace AltCover
 
     public void Initialize(IDataCollectionSink dataCollectionSink)
     {
+      supervising = false;
       Debug.WriteLine("Initialize {0}", dataCollectionSink);
       Supervise();
     }
@@ -102,6 +111,7 @@ namespace AltCover
 
     public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
     {
+      if (!supervising) Supervise();
       Debug.WriteLine("TestCaseStart {0}", testCaseStartArgs);
     }
 

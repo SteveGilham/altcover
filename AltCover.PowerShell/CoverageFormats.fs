@@ -1,4 +1,4 @@
-namespace AltCover.Commands
+﻿namespace AltCover.Commands
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -6,6 +6,8 @@ open System.IO
 open System.Management.Automation
 open System.Xml
 open System.Xml.Linq
+
+open AltCover.Shared
 
 /// <summary>
 /// <para type="synopsis">Converts `XDocument` to `[xml]`.</para>
@@ -132,7 +134,7 @@ type ConvertToLcovCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       use stream =
@@ -188,7 +190,7 @@ type ConvertToCoverageJsonCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       AltCover.CoverageFormats.ConvertToJson self.XDocument
@@ -258,15 +260,17 @@ type ConvertToCoberturaCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       let rewrite =
         AltCover.CoverageFormats.ConvertToCobertura self.XDocument
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -333,15 +337,17 @@ type ConvertToNCoverCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       let rewrite =
         AltCover.CoverageFormats.ConvertToNCover self.XDocument
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -396,7 +402,8 @@ type ConvertFromNCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val Assembly: string array = [||] with get, set
 
@@ -427,15 +434,17 @@ type ConvertFromNCoverCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       let converted =
         AltCover.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         converted.Save(self.OutputFile)
 
       self.WriteObject converted
@@ -534,7 +543,8 @@ type WriteOpenCoverDerivedStateCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
-                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
   member val Assembly: string array = [||] with get, set
 
@@ -586,9 +596,11 @@ type WriteOpenCoverDerivedStateCommand() =
           AltCover.OpenCover.PostProcess temp self.BranchOrdinal
           temp
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -657,14 +669,17 @@ type ConvertFromCoverageJsonCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.Json <- File.ReadAllText self.InputFile
 
-      let rewrite = AltCover.OpenCover.JsonToXml self.Json
+      let rewrite =
+        AltCover.OpenCover.JsonToXml self.Json
 
-      if self.OutputFile
-         |> String.IsNullOrWhiteSpace
-         |> not then
+      if
+        self.OutputFile
+        |> String.IsNullOrWhiteSpace
+        |> not
+      then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite

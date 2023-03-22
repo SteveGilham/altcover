@@ -1,4 +1,13 @@
-﻿using Cake.Common.Tools.DotNetCore;
+﻿#if !NETSTANDARD2_0
+using Cake.Common.Tools.DotNet;
+using Cake.Common.Tools.DotNet.Test;
+#else
+
+using DotNetTestSettings = Cake.Common.Tools.DotNetCore.Test.DotNetCoreTestSettings;
+
+#endif
+
+using Cake.Common.Tools.DotNetCore;
 using Cake.Common.Tools.DotNetCore.Test;
 using Cake.Core;
 using Cake.Core.Annotations;
@@ -12,126 +21,148 @@ using FSDotNet = AltCover.DotNet;
 
 namespace AltCover.Cake
 {
-  /// <summary>
-  /// Combines the coverage process arguments into one object for use with `dotnet test`
-  /// </summary>
-  public class CoverageSettings
-  {
     /// <summary>
-    /// Gets or sets the parameters for the preparation phase
+    /// Combines the coverage process arguments into one object for use with `dotnet test`
     /// </summary>
-    public Abstract.IPrepareOptions PreparationPhase { get; set; }
-
-    /// <summary>
-    /// Gets or sets the parameters for the collection phase
-    /// </summary>
-    public Abstract.ICollectOptions CollectionPhase { get; set; }
-
-    /// <summary>
-    ///  Gets or sets the other command line options for the operation
-    /// </summary>
-    public FSDotNet.ICLIOptions Options { get; set; }
-
-    /// <summary>
-    /// Provides simple validation support for the options; of necessity, it runs in the "before preparation" state.
-    /// </summary>
-    /// <returns>A validated command line containing any errors, or an empty one if all is ok</returns>
-    public AltCover.ValidatedCommandLine WhatIf()
+    public class CoverageSettings
     {
-      var prep = PreparationPhase.WhatIf();
-      if (prep.Errors.Any())
-        return prep;
-      else
-      {
-        var collect = CollectionPhase.WhatIf(false);
-        if (collect.Errors.Any())
-          return collect;
-      }
+        /// <summary>
+        /// Gets or sets the parameters for the preparation phase
+        /// </summary>
+        public Abstract.IPrepareOptions PreparationPhase { get; set; }
 
-      return new AltCover.ValidatedCommandLine(FSharpList<string>.Empty, Enumerable.Empty<string>());
-    }
+        /// <summary>
+        /// Gets or sets the parameters for the collection phase
+        /// </summary>
+        public Abstract.ICollectOptions CollectionPhase { get; set; }
 
-    /// <summary>
-    /// <para>For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings</para>
-    /// </summary>
-    /// <returns>`ProcessArgumentBuilder` to `ProcessArgumentBuilder` transform</returns>
-    public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
-    {
-      return pabIn =>
-      {
-        var pabOut = new ProcessArgumentBuilder();
-        if (pabIn != null)
+        /// <summary>
+        ///  Gets or sets the other command line options for the operation
+        /// </summary>
+        public FSDotNet.ICLIOptions Options { get; set; }
+
+        /// <summary>
+        /// Provides simple validation support for the options; of necessity, it runs in the "before preparation" state.
+        /// </summary>
+        /// <returns>A validated command line containing any errors, or an empty one if all is ok</returns>
+        public AltCover.ValidatedCommandLine WhatIf()
         {
-          pabIn.CopyTo(pabOut);
+            var prep = PreparationPhase.WhatIf();
+            if (prep.Errors.Any())
+                return prep;
+            else
+            {
+                var collect = CollectionPhase.WhatIf(false);
+                if (collect.Errors.Any())
+                    return collect;
+            }
+
+            return new AltCover.ValidatedCommandLine(FSharpList<string>.Empty, Enumerable.Empty<string>());
         }
-        var args = FSDotNet.ToTestArgumentList(
-                    this.PreparationPhase,
-                    this.CollectionPhase,
-                    this.Options).ToArray();
-        Array.Reverse(args);
-        Array.ForEach(
-            args,
-            t => pabOut.Prepend(t));
-        return pabOut;
-      };
+
+        /// <summary>
+        /// <para>For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings</para>
+        /// </summary>
+        /// <returns>`ProcessArgumentBuilder` to `ProcessArgumentBuilder` transform</returns>
+        public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
+        {
+            return pabIn =>
+            {
+                var pabOut = new ProcessArgumentBuilder();
+                if (pabIn != null)
+                {
+                    // take while??
+                    foreach (var arg in pabIn.Take(2))
+                        pabOut.Append(arg);
+                }
+
+                var args = FSDotNet.ToTestArgumentList(
+                      this.PreparationPhase,
+                      this.CollectionPhase,
+                      this.Options).ToArray();
+                Array.ForEach(
+              args,
+              t => pabOut.Append(t));
+
+                if (pabIn != null)
+                {
+                    // skip while??
+                    foreach (var arg in pabIn.Skip(2))
+                        pabOut.Append(arg);
+                }
+
+                return pabOut;
+            };
+        }
+
+        /// <summary>
+        /// <para>For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings,
+        /// combined with the input value</para>
+        /// </summary>
+        /// <param name="customIn">Another `ProcessArgumentBuilder` to `ProcessArgumentBuilder` transform to apply before the `AltCover` one.</param>
+        /// <returns>A concatenated `ProcessArgumentBuilder` to `ProcessArgumentBuilder` transform</returns>
+        public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Concatenate(Func<ProcessArgumentBuilder, ProcessArgumentBuilder> customIn)
+        {
+            var altcover = Customize();
+            if (customIn == null)
+            {
+                return altcover;
+            }
+            else
+            {
+                return args => altcover(customIn(args));
+            }
+        }
     }
 
     /// <summary>
-    /// <para>For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings,
-    /// combined with the input value</para>
+    /// Extensions for `dotnet`.  This class is a `[CakeAliasCategory("DotNet")]`
     /// </summary>
-    /// <param name="customIn">Another `ProcessArgumentBuilder` to `ProcessArgumentBuilder` transform to apply before the `AltCover` one.</param>
-    /// <returns>A concatenated `ProcessArgumentBuilder` to `ProcessArgumentBuilder` transform</returns>
-    public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Concatenate(Func<ProcessArgumentBuilder, ProcessArgumentBuilder> customIn)
+#if NETSTANDARD2_0
+    [CakeAliasCategory("DotNetCore")]
+#else
+    [CakeAliasCategory("DotNet")]
+#endif    
+    public static class DotNet
     {
-      var altcover = Customize();
-      if (customIn == null)
-      {
-        return altcover;
-      }
-      else
-      {
-        return args => altcover(customIn(args));
-      }
-    }
-  }
+        /// <summary>
+        /// <para>Hooks into the Cake wrapper for `dotnet test` and injects the AltCover command line arguments as specified.</para>
+        /// <para>Equivalent to</para>
+        /// <code>
+        /// settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
+        /// context.DotNetTest(project.FullPath, settings);
+        /// </code>
+        /// <para>This method is a `[CakeMethodAlias]` extension method on `ICakeContext`, and `[CakeAliasCategory("Test")]`.</para>
+        /// </summary>
+        /// <param name="context">The Cake build script `ICakeContext`; a `this` parameter</param>
+        /// <param name="project">The project to test as a `FilePath`</param>
+        /// <param name="testSettings">The `DotNetTestSettings` for the test</param>
+        /// <param name="coverageSettings">The `CoverageSettings` for the test instrumentation</param>
+        [CakeMethodAlias]
+        [CakeAliasCategory("Test")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+        [SuppressMessage(
+          "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+          Justification = "AvoidSpeculativeGenerality too")]
+        [SuppressMessage("Microsoft.Design",
+          "CA1011:ConsiderPassingBaseTypesAsParameters",
+          Justification = "The Cake.Core.IO.FilePath won't be any other Cake.Core.IO.Path subclass")]
+        public static void DotNetTest(
+                    this ICakeContext context,
+                    FilePath project,
+                    DotNetTestSettings testSettings,
+                    CoverageSettings coverageSettings)
+        {
+            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (testSettings == null) throw new ArgumentNullException(nameof(testSettings));
+            if (coverageSettings == null) throw new ArgumentNullException(nameof(coverageSettings));
 
-  /// <summary>
-  /// Extensions for `dotnet`.  This class is a `[CakeAliasCategory("DotNetCore")]`
-  /// </summary>
-  [CakeAliasCategory("DotNetCore")]
-  public static class DotNet
-  {
-    /// <summary>
-    /// <para>Hooks into the Cake wrapper for `dotnet test` and injects the AltCover command line arguments as specified.</para>
-    /// <para>Equivalent to</para>
-    /// <code>
-    /// settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
-    /// context.DotNetCoreTest(project.FullPath, settings);
-    /// </code>
-    /// <para>This method is a `[CakeMethodAlias]` extension method on `ICakeContext`, and `[CakeAliasCategory("Test")]`.</para>
-    /// </summary>
-    /// <param name="context">The Cake build script `ICakeContext`; a `this` parameter</param>
-    /// <param name="project">The project to test as a `FilePath`</param>
-    /// <param name="testSettings">The `DotNetCoreTestSettings` for the test</param>
-    /// <param name="coverageSettings">The `CoverageSettings` for the test instrumentation</param>
-    [CakeMethodAlias]
-    [CakeAliasCategory("Test")]
-    [SuppressMessage(
-      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-      Justification = "AvoidSpeculativeGenerality too")]
-    public static void DotNetCoreTest(
-                this ICakeContext context,
-                FilePath project,
-                DotNetCoreTestSettings testSettings,
-                CoverageSettings coverageSettings)
-    {
-      if (project == null) throw new ArgumentNullException(nameof(project));
-      if (testSettings == null) throw new ArgumentNullException(nameof(testSettings));
-      if (coverageSettings == null) throw new ArgumentNullException(nameof(coverageSettings));
-
-      testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
-      context.DotNetCoreTest(project.GetFilename().FullPath, testSettings);
+            testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
+#if NETSTANDARD2_0
+            context.DotNetCoreTest(project.FullPath, testSettings);
+#else
+      DotNetAliases.DotNetTest(context, project.GetFilename().FullPath, testSettings);
+#endif
+        }
     }
-  }
 }

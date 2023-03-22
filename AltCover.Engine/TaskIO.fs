@@ -9,6 +9,7 @@ module internal TaskIO =
       Output.warn <- self.Warn
       Output.info <- self.Info
       Output.echo <- self.Echo
+      Output.verbose <- self.Verbose
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
@@ -25,7 +26,8 @@ module internal TaskIO =
     store
 
   let internal colourize name =
-    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
+    let ok, colour =
+      Enum.TryParse<ConsoleColor>(name, true)
 
     if ok then
       Console.ForegroundColor <- colour

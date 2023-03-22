@@ -1,15 +1,15 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
-open System.Linq
 open System.Reflection
 open System.Xml
 open System.Xml.Xsl
 open System.Xml.Linq
 open System.Xml.Schema
-open System.Xml.XPath
+
+open AltCover.Shared
 
 // LCov : TN:  // line-based; branches
 // JSON : {
@@ -32,6 +32,9 @@ type InvalidFile = { File: FileInfo; Fault: Exception }
 
 module Transformer =
   // now, what was this for??
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
   let internal defaultHelper (_: XDocument) (document: XDocument) = document
 
   let internal loadTransform (path: string) =
@@ -69,74 +72,141 @@ module Transformer =
       |> Seq.toList
 
     document.Descendants(XName.Get "class")
-    |> Seq.iter
-         (fun x ->
-           let name = x.Attribute(XName.Get "filename")
-           let value = name.Value
+    |> Seq.iter (fun x ->
+      let name = x.Attribute(XName.Get "filename")
+      let value = name.Value
 
-           let fixup =
-             sources
-             |> Seq.map
-                  (fun s ->
-                    let p1 = Path.Combine(s, value)
-                    Path.GetFullPath p1)
-             |> Seq.tryFind File.Exists
+      let fixup =
+        sources
+        |> Seq.map (fun s ->
+          let p1 = Path.Combine(s, value)
+          Path.GetFullPath p1)
+        |> Seq.tryFind File.Exists
 
-           fixup |> Option.iter (fun f -> name.Value <- f))
+      fixup |> Option.iter (fun f -> name.Value <- f))
 
     // interpret branches
     document.Descendants(XName.Get "line")
-    |> Seq.filter
-         (fun x ->
-           x
-             .Attribute(
-               XName.Get "condition-coverage"
-             )
-             .IsNotNull)
-    |> Seq.iter
-         (fun x ->
-           let line = x.Attribute(XName.Get "number").Value
+    |> Seq.filter (fun x ->
+      x
+        .Attribute(XName.Get "condition-coverage")
+        .IsNotNull)
+    |> Seq.iter (fun x ->
+      let line =
+        x.Attribute(XName.Get "number").Value
 
-           let coverage =
-             x.Attribute(XName.Get "condition-coverage").Value
+      let coverage =
+        x.Attribute(XName.Get "condition-coverage").Value
 
-           let start = Math.Max(0, coverage.IndexOf('(')) + 1
+      let start =
+        Math.Max(0, coverage.IndexOf('(')) + 1
 
-           let mid =
-             Math.Max(0, coverage.IndexOf('/', start)) + 1
+      let mid =
+        Math.Max(0, coverage.IndexOf('/', start)) + 1
 
-           let finish = Math.Max(0, coverage.IndexOf(')', mid))
+      let finish =
+        Math.Max(0, coverage.IndexOf(')', mid))
 
-           let first =
-             coverage.Substring(start, (mid - start) - 1)
-             |> Int32.TryParse
-             |> snd
+      let first =
+        coverage.Substring(start, (mid - start) - 1)
+        |> Int32.TryParse
+        |> snd
 
-           let second =
-             coverage.Substring(mid, finish - mid)
-             |> Int32.TryParse
-             |> snd
+      let second =
+        coverage.Substring(mid, finish - mid)
+        |> Int32.TryParse
+        |> snd
 
-           { 1 .. second }
-           |> Seq.iteri
-                (fun i _ ->
-                  let vc = if i < first then "1" else "0"
+      { 1..second }
+      |> Seq.iteri (fun i _ ->
+        let vc = if i < first then "1" else "0"
 
-                  let branch =
-                    XElement(
-                      XName.Get "branch",
-                      XAttribute(XName.Get "number", line),
-                      XAttribute(XName.Get "visitcount", vc)
-                    )
+        let branch =
+          XElement(
+            XName.Get "branch",
+            XAttribute(XName.Get "number", line),
+            XAttribute(XName.Get "visitcount", vc)
+          )
 
-                  x.AddAfterSelf(branch)))
+        x.AddAfterSelf(branch)))
 
     let report =
       transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl"
 
     report
 
-  // PartCover to NCover style sheet
+  let private resourceStream n =
+    new StreamReader(
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(n)
+    )
+
+  let private processOpenCover
+    (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
+    (schemas: XmlSchemaSet)
+    (document: XDocument)
+    (ocreader: XmlReader)
+    (ncreader: XmlReader)
+    : Either<Exception, XDocument> =
+    schemas.Add(String.Empty, ocreader) |> ignore
+    document.Validate(schemas, null)
+
+    let report = transformFromOpenCover document
+
+    let fixedup =
+      helper XmlCoverageType.OpenCover document report
+    // Consistency check our XSLT
+    let schemas2 = XmlSchemaSet()
+    schemas2.Add(String.Empty, ncreader) |> ignore
+    fixedup.Validate(schemas2, null)
+
+    // Fix for column-defective OpenCover
+    let lineOnly =
+      fixedup.Descendants(XName.Get "seqpnt")
+      |> Seq.forall (fun s ->
+        let columns =
+          (s.Attribute(XName.Get "column").Value,
+           s.Attribute(XName.Get "endcolumn").Value)
+
+        s.Attribute(XName.Get "line").Value
+        == s.Attribute(XName.Get "endline").Value
+        && (columns = ("1", "2")
+            || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+            columns = ("0", "0"))) // For OpenCover on C++/CLI
+
+    if lineOnly then
+      fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
+
+    Right fixedup
+
+  let private processCobertura
+    (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
+    (schemas: XmlSchemaSet)
+    (document: XDocument)
+    (ncreader: XmlReader)
+    : Either<Exception, XDocument> =
+    use cr =
+      new StreamReader(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.UICommon.Cobertura.xsd")
+      )
+
+    use creader = XmlReader.Create(cr)
+    schemas.Add(String.Empty, creader) |> ignore
+    document.Validate(schemas, null)
+    let report = transformFromCobertura document
+
+    let fixedup =
+      helper XmlCoverageType.Cobertura document report
+    // Consistency check our XSLT
+    let schemas2 = XmlSchemaSet()
+    schemas2.Add(String.Empty, ncreader) |> ignore
+    fixedup.Validate(schemas2, null)
+    Right fixedup
+
+  // OpenCover to NCover style sheet
   let internal convertFile
     (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
     (document: XDocument)
@@ -144,96 +214,42 @@ module Transformer =
     let schemas = XmlSchemaSet()
 
     use sr1 =
-      new StreamReader(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.UICommon.OpenCover.xsd")
-      )
+      resourceStream "AltCover.UICommon.OpenCover.xsd"
 
     use ocreader = XmlReader.Create(sr1)
 
     use sr2 =
-      new StreamReader(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.UICommon.NCover.xsd")
-      )
+      resourceStream "AltCover.UICommon.NCoverEmbedded.xsd"
 
     use ncreader = XmlReader.Create(sr2)
 
     try
       // identify coverage type
       match document.Root.Name.LocalName with
-      | x when x = "CoverageSession" ->
-          // Assume OpenCover
-          schemas.Add(String.Empty, ocreader) |> ignore
-          document.Validate(schemas, null)
-
-          let report = transformFromOpenCover document
-
-          let fixedup =
-            helper XmlCoverageType.OpenCover document report
-          // Consistency check our XSLT
-          let schemas2 = XmlSchemaSet()
-          schemas2.Add(String.Empty, ncreader) |> ignore
-          fixedup.Validate(schemas2, null)
-
-          // Fix for column-defective OpenCover
-          let lineOnly =
-            fixedup.Descendants(XName.Get "seqpnt")
-            |> Seq.forall
-                 (fun s ->
-                   let columns = (s.Attribute(XName.Get "column").Value,
-                                  s.Attribute(XName.Get "endcolumn").Value)
-                   s.Attribute(XName.Get "line").Value = s
-                     .Attribute(
-                       XName.Get "endline"
-                     )
-                     .Value
-                   && (columns = ("1", "2") || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
-                       columns = ("0", "0")))  // For OpenCover on C++/CLI
-
-          if lineOnly then
-            fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
-
-          Right fixedup
+      | x when x == "CoverageSession" ->
+        // Assume OpenCover
+        processOpenCover helper schemas document ocreader ncreader
       | _ ->
-          let root = document.Root
+        let root = document.Root
 
-          if root.Name.LocalName = "coverage"
-             && root.Attribute(XName.Get "line-rate").IsNotNull then
-            // Cobertura
-            use cr =
-              new StreamReader(
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream("AltCover.UICommon.Cobertura.xsd")
-              )
-
-            use creader = XmlReader.Create(cr)
-            schemas.Add(String.Empty, creader) |> ignore
-            document.Validate(schemas, null)
-            let report = transformFromCobertura document
-
-            let fixedup =
-              helper XmlCoverageType.Cobertura document report
-            // Consistency check our XSLT
-            let schemas2 = XmlSchemaSet()
-            schemas2.Add(String.Empty, ncreader) |> ignore
-            fixedup.Validate(schemas2, null)
-            Right fixedup
-          else
-            // Assume NCover
-            schemas.Add(String.Empty, ncreader) |> ignore
-            document.Validate(schemas, null)
-            Right document
+        if
+          root.Name.LocalName == "coverage"
+          && root.Attribute(XName.Get "line-rate").IsNotNull
+        then
+          // Cobertura
+          processCobertura helper schemas document ocreader
+        else
+          // Assume NCover
+          schemas.Add(String.Empty, ncreader) |> ignore
+          document.Validate(schemas, null)
+          Right document
     with
-    | :? ArgumentNullException as x -> Left(x :> Exception)
-    | :? NullReferenceException as x -> Left(x :> Exception)
-    | :? IOException as x -> Left(x :> Exception)
-    | :? XsltException as x -> Left(x :> Exception)
-    | :? XmlSchemaValidationException as x -> Left(x :> Exception)
-    | :? ArgumentException as x -> Left(x :> Exception)
+    | :? ArgumentNullException as x -> Left(x)
+    | :? NullReferenceException as x -> Left(x)
+    | :? IOException as x -> Left(x)
+    | :? XsltException as x -> Left(x)
+    | :? XmlSchemaValidationException as x -> Left(x)
+    | :? ArgumentException as x -> Left(x)
 
   let internal firstChar file =
     use stream = File.OpenRead file
@@ -275,9 +291,9 @@ type CoverageFile =
       let rawDocument =
         match filetype with
         | Json ->
-            name
-            |> NativeJson.fileToJson
-            |> NativeJson.jsonToXml
+          name
+          |> NativeJson.fileToJson
+          |> NativeJson.jsonToXml
         | LCov -> Lcov.toXml name
         | _ -> XDocument.Load name // let invalid files throw XML parse errors
 
@@ -289,12 +305,12 @@ type CoverageFile =
     | :? XmlException as e -> Left { Fault = e; File = file }
     | :? Manatee.Json.JsonSyntaxException as e -> Left { Fault = e; File = file }
     | :? Manatee.Json.JsonValueIncorrectTypeException as e ->
-        Left { Fault = e; File = file }
+      Left { Fault = e; File = file }
     | :? Lcov.LcovParseException as e -> Left { Fault = e; File = file }
     | :? IOException as e -> Left { Fault = e; File = file }
 
   static member LoadCoverageFile(file: FileInfo) =
-    CoverageFile.ToCoverageFile(fun x -> Transformer.defaultHelper) file
+    CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 
@@ -308,7 +324,8 @@ module Extensions =
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+                            Target =
+                              "AltCover.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
                             MessageId = "x",
                             Justification = "Trivial usage")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
@@ -323,4 +340,16 @@ module Extensions =
                             Target = "AltCover.XmlCoverageType+Tags.#Cobertura",
                             MessageId = "Cobertura",
                             Justification = "It is jargon")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Transformer/transformFromCobertura@94-2::Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Override not in netstandard2.0")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Transformer/lineOnly@167::Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Compiler generated tuple equality")>]
 ()

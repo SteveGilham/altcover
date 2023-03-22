@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -10,8 +10,18 @@ open System.Text
 open System.Xml
 open System.Xml.Linq
 
+open AltCover.Shared
+
 open Mono.Cecil
 open Mono.Options
+
+[<AutoOpen>]
+module internal ThrowHelper =
+  type FormatException with
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(message: string) : 'T = message |> FormatException |> raise
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SummaryFormat =
@@ -37,6 +47,9 @@ type internal SummaryFormat =
     | Many l -> l
     | f -> [ f ]
 
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Compiler generated")>]
   static member Factory(s: string) =
     let expanded =
       match s with
@@ -48,17 +61,18 @@ type internal SummaryFormat =
       expanded
       |> Seq.distinct
       |> Seq.fold
-           (fun state c ->
-             match (c, state) with
-             | ('N', _)
-             | (_, N) -> N
-             | ('B', _) -> Many(B :: (SummaryFormat.ToList state))
-             | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
-             | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
-             | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
-             | _ -> s |> FormatException |> raise)
-           (Many [])
-    with :? FormatException -> Default
+        (fun state c ->
+          match (c, state) with
+          | ('N', _)
+          | (_, N) -> N
+          | ('B', _) -> Many(B :: (SummaryFormat.ToList state))
+          | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
+          | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
+          | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
+          | _ -> s |> FormatException.Throw)
+        (Many [])
+    with :? FormatException ->
+      Default
 
 type internal Threshold =
   { Statements: uint8
@@ -76,25 +90,26 @@ type internal Threshold =
       AltCrap = 0uy }
 
   static member Create(x: string) =
-    let chars = x.ToUpperInvariant() |> Seq.toList
+    let chars =
+      x.ToUpperInvariant() |> Seq.toList
 
     let rec partition data result =
       match data with
       | [] -> result
       | _ ->
-          let h =
-            data
-            |> List.takeWhile (Char.IsDigit >> not)
-            |> List.toArray
+        let h =
+          data
+          |> List.takeWhile (Char.IsDigit >> not)
+          |> List.toArray
 
-          let t =
-            data |> List.skipWhile (Char.IsDigit >> not)
+        let t =
+          data |> List.skipWhile (Char.IsDigit >> not)
 
-          let h2 =
-            t |> List.takeWhile Char.IsDigit |> List.toArray
+        let h2 =
+          t |> List.takeWhile Char.IsDigit |> List.toArray
 
-          let t2 = t |> List.skipWhile Char.IsDigit
-          partition t2 ((String(h), String(h2)) :: result)
+        let t2 = t |> List.skipWhile Char.IsDigit
+        partition t2 ((String(h), String(h2)) :: result)
 
     let parse top f t x =
       let part, v =
@@ -113,25 +128,25 @@ type internal Threshold =
     let parts =
       partition chars []
       |> List.fold
-           (fun (ok, t) (h, h2) ->
-             let fail t _ = (false, t)
+        (fun (ok, t) (h, h2) ->
+          let fail t _ = (false, t)
 
-             let defaultMapper =
-               parse 100uy (fun t v -> { t with Statements = v })
+          let defaultMapper =
+            parse 100uy (fun t v -> { t with Statements = v })
 
-             let mapper =
-               match (ok, h) with // can't say String.Empty
-               | (true, x) when x.Length = 0 -> defaultMapper
-               | (true, "S") -> defaultMapper
-               | (true, "B") -> parse 100uy (fun t v -> { t with Branches = v })
-               | (true, "M") -> parse 100uy (fun t v -> { t with Methods = v })
-               | (true, "C") -> parse 255uy (fun t v -> { t with Crap = v })
-               | (true, "AM") -> parse 100uy (fun t v -> { t with AltMethods = v })
-               | (true, "AC") -> parse 255uy (fun t v -> { t with AltCrap = v })
-               | _ -> fail
+          let mapper =
+            match (ok, h) with // can't say String.Empty
+            | (true, x) when x.Length = 0 -> defaultMapper
+            | (true, "S") -> defaultMapper
+            | (true, "B") -> parse 100uy (fun t v -> { t with Branches = v })
+            | (true, "M") -> parse 100uy (fun t v -> { t with Methods = v })
+            | (true, "C") -> parse 255uy (fun t v -> { t with Crap = v })
+            | (true, "AM") -> parse 100uy (fun t v -> { t with AltMethods = v })
+            | (true, "AC") -> parse 255uy (fun t v -> { t with AltCrap = v })
+            | _ -> fail
 
-             mapper t h2)
-           (true, Threshold.Default())
+          mapper t h2)
+        (true, Threshold.Default())
 
     parts
     |> (fun (a, b) -> (a, (if a then Some b else None)))
@@ -148,31 +163,47 @@ type internal Threshold =
 
 module internal Runner =
 
-  let mutable internal recordingDirectory : Option<string> = None
-  let mutable internal workingDirectory : Option<string> = None
-  let internal executable : Option<string> ref = ref None
+  let mutable internal recordingDirectory: Option<string> =
+    None
+
+  let mutable internal workingDirectory: Option<string> =
+    None
+
+  let internal executable: Option<string> ref =
+    ref None
+
   let internal collect = ref false // ddFlag
-  let mutable internal threshold : Threshold option = None
-  let mutable internal output : Option<string> = None
+
+  let mutable internal threshold: Threshold option =
+    None
+
+  let mutable internal output: Option<string> =
+    None
+
   let internal summary = StringBuilder()
-  let mutable internal summaryFormat = SummaryFormat.Default
+
+  let mutable internal summaryFormat =
+    SummaryFormat.Default
 
   let internal init () =
     CommandLine.verbosity <- 0
     CommandLine.error <- []
-    CommandLine.dropReturnCode := false
+    CommandLine.dropReturnCode.Value <- false
     recordingDirectory <- None
     workingDirectory <- None
-    executable := None
-    LCov.path := None
-    Cobertura.path := None
-    Json.path := None
-    collect := false
+    executable.Value <- None
+    LCov.path.Value <- None
+    Cobertura.path.Value <- None
+    Json.path.Value <- None
+    collect.Value <- false
     threshold <- None
     output <- None
     summaryFormat <- Default
     summary.Clear() |> ignore
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                    Justification = "TODO -- fix this trivial match on write/return")>]
   module internal I =
 
     let internal write line =
@@ -201,14 +232,11 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined")>]
     let internal contains o l = l |> Seq.contains o
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let internal nCoverSummary (report: XDocument) =
       let makepc v n =
         if n = 0 then
@@ -224,7 +252,7 @@ module internal Runner =
 
       let methods =
         report.Descendants("method".X)
-        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value = "false")
+        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value == "false")
         |> Seq.toList
 
       let classes =
@@ -234,14 +262,13 @@ module internal Runner =
 
       let isVisited (x: XElement) =
         let v = x.Attribute("visitcount".X)
-        (v |> isNull |> not) && (v.Value <> "0")
+        (v |> isNull |> not) && (v.Value != "0")
 
       let vclasses =
         classes
-        |> Seq.filter
-             (fun (_, ms) ->
-               ms
-               |> Seq.exists (fun m -> m.Descendants("seqpnt".X) |> Seq.exists isVisited))
+        |> Seq.filter (fun (_, ms) ->
+          ms
+          |> Seq.exists (fun m -> m.Descendants("seqpnt".X) |> Seq.exists isVisited))
         |> Seq.length
 
       let vmethods =
@@ -251,7 +278,7 @@ module internal Runner =
 
       let points =
         report.Descendants("seqpnt".X)
-        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value = "false")
+        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value == "false")
         |> Seq.toList
 
       let vpoints =
@@ -288,9 +315,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidRepetitiveCallsToPropertiesRule",
                       Justification = "In inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "In inlined library code")>]
     let internal emitAltCrapScore go (methods: XElement seq) =
       let value =
         (methods
@@ -305,12 +329,12 @@ module internal Runner =
 
       value.ToString(CultureInfo.InvariantCulture)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let internal altSummary go extra (report: XDocument) =
       "Alternative"
-      |> CommandLine.resources.GetString
+      |> Output.resources.GetString
       |> if go || extra then write else ignore
 
       let classes =
@@ -321,10 +345,9 @@ module internal Runner =
 
       let vclasses =
         classes
-        |> Seq.filter
-             (fun c ->
-               c.Descendants("Method".X)
-               |> Seq.exists (fun m -> m.Attribute("visited".X).Value = "true"))
+        |> Seq.filter (fun c ->
+          c.Descendants("Method".X)
+          |> Seq.exists (fun m -> m.Attribute("visited".X).Value == "true"))
         |> Seq.length
 
       let nc = classes.Length
@@ -348,7 +371,7 @@ module internal Runner =
 
       let vm =
         methods
-        |> Seq.filter (fun m -> m.Attribute("visited".X).Value = "true")
+        |> Seq.filter (fun m -> m.Attribute("visited".X).Value == "true")
         |> Seq.length
 
       let nm = methods.Length
@@ -362,7 +385,9 @@ module internal Runner =
             .ToString(CultureInfo.InvariantCulture)
 
       let pm = if nm = 0 then "n/a" else amv
-      if go then writeSummary "AltVM" vm nm pm
+
+      if go then
+        writeSummary "AltVM" vm nm pm
 
       let acv =
         if nm > 0 then
@@ -372,53 +397,93 @@ module internal Runner =
 
       (amv, acv)
 
+    type Category =
+      { Number: string
+        Visited: string
+        Coverage: string }
+
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Local use after refactoring out")>]
+    let private summariseBase
+      (summary: XElement)
+      go
+      (visit: string)
+      (number: string)
+      (precalc: string option)
+      key
+      =
+      let vc = summary.Attribute(visit.X).Value
+      let nc = summary.Attribute(number.X).Value
+
+      let pc =
+        match precalc with
+        | None ->
+          if nc == "0" then
+            "n/a"
+          else
+            let vc1 =
+              vc |> Int32.TryParse |> snd |> float
+
+            let nc1 =
+              nc |> Int32.TryParse |> snd |> float
+
+            Math
+              .Round(vc1 * 100.0 / nc1, 2)
+              .ToString(CultureInfo.InvariantCulture)
+        | Some x -> summary.Attribute(x.X).Value
+
+      if go then
+        writeSummary key vc nc pc
+
+      { Number = nc
+        Visited = vc
+        Coverage = pc }
+
+    let private allTC l classes methods statements branches =
+      writeTC totalTC "C" classes.Number
+      writeTC coverTC "C" classes.Visited
+      writeTC totalTC "M" methods.Number
+      writeTC coverTC "M" methods.Visited
+      writeTC totalTC "S" statements.Number
+      writeTC coverTC "S" statements.Visited
+
+      l
+      |> Seq.iter (fun f ->
+        let tag =
+          match f with
+          | R -> "R"
+          | B -> "B"
+          | _ -> String.Empty
+
+        if tag |> String.IsNullOrEmpty |> not then
+          writeTC totalTC tag branches.Number
+          writeTC coverTC tag branches.Visited)
+
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "Library method inlined")>]
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidComplexMethodsRule",
                       Justification = "TODO: refactor even more")>]
     let private makeOpenCoverSummary (report: XDocument) (summary: XElement) =
 
-      let summarise go (visit: string) (number: string) (precalc: string option) key =
-        let vc = summary.Attribute(visit.X).Value
-        let nc = summary.Attribute(number.X).Value
-
-        let pc =
-          match precalc with
-          | None ->
-              if nc = "0" then
-                "n/a"
-              else
-                let vc1 = vc |> Int32.TryParse |> snd |> float
-
-                let nc1 = nc |> Int32.TryParse |> snd |> float
-
-                Math
-                  .Round(vc1 * 100.0 / nc1, 2)
-                  .ToString(CultureInfo.InvariantCulture)
-          | Some x -> summary.Attribute(x.X).Value
-
-        if go then writeSummary key vc nc pc
-        (vc, nc, pc)
-
       let l =
         (SummaryFormat.ToList summaryFormat)
         |> Seq.distinct
 
+      let summarise = summariseBase summary
+
       let go =
         summaryFormat = Default || l |> Seq.contains O
 
-      let (vc, nc, _) =
+      let classes =
         summarise go "visitedClasses" "numClasses" None "VisitedClasses"
 
-      let (vm, nm, mcovered) =
+      let methods =
         summarise go "visitedMethods" "numMethods" None "VisitedMethods"
 
-      let (vs, ns, covered) =
+      let statements =
         summarise
           go
           "visitedSequencePoints"
@@ -426,7 +491,7 @@ module internal Runner =
           (Some "sequenceCoverage")
           "VisitedPoints"
 
-      let (vb, nb, bcovered) =
+      let branches =
         summarise
           go
           "visitedBranchPoints"
@@ -434,7 +499,8 @@ module internal Runner =
           (Some "branchCoverage")
           "VisitedBranches"
 
-      let crap = summary.Attribute("maxCrapScore".X)
+      let crap =
+        summary.Attribute("maxCrapScore".X)
 
       let crapvalue =
         crap
@@ -450,34 +516,18 @@ module internal Runner =
           CommandLine.Format.Local("maxCrap", crapvalue)
           |> write
 
-      if go || extra then write String.Empty
+      if go || extra then
+        write String.Empty
 
-      let (altmcovered, altcrapvalue) = altSummary go extra report
+      let (altmcovered, altcrapvalue) =
+        altSummary go extra report
 
       if l |> Seq.contains B || l |> Seq.contains R then
-        writeTC totalTC "C" nc
-        writeTC coverTC "C" vc
-        writeTC totalTC "M" nm
-        writeTC coverTC "M" vm
-        writeTC totalTC "S" ns
-        writeTC coverTC "S" vs
+        allTC l classes methods statements branches
 
-        l
-        |> Seq.iter
-             (fun f ->
-               let tag =
-                 match f with
-                 | R -> "R"
-                 | B -> "B"
-                 | _ -> String.Empty
-
-               if tag |> String.IsNullOrEmpty |> not then
-                 writeTC totalTC tag nb
-                 writeTC coverTC tag vb)
-
-      [ covered
-        bcovered
-        mcovered
+      [ statements.Coverage
+        branches.Coverage
+        methods.Coverage
         altmcovered
         crapvalue
         altcrapvalue ]
@@ -490,9 +540,6 @@ module internal Runner =
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "Library method inlined")>]
     let internal jsonSummary (json: NativeJson.Modules) =
       let summarise go (vc: int) (nc: int) key =
@@ -509,7 +556,9 @@ module internal Runner =
               .Round(vc1 * 100.0 / nc1, 2)
               .ToString(CultureInfo.InvariantCulture)
 
-        if go then writeSummary key vc nc pc
+        if go then
+          writeSummary key vc nc pc
+
         pc
 
       let l =
@@ -529,62 +578,66 @@ module internal Runner =
       let mutable nb = 0
 
       json.Values
-      |> Seq.iter
-           (fun modul ->
-             let mutable cn = []
-             let mutable cv = []
+      |> Seq.iter (fun modul ->
+        let mutable cn = []
+        let mutable cv = []
 
-             modul.Values
-             |> Seq.iter
-                  (fun doc ->
-                    doc
-                    |> Seq.iter
-                         (fun cnv ->
-                           let mutable visited = false
-                           cn <- cnv.Key :: cn
+        modul.Values
+        |> Seq.iter (fun doc ->
+          doc
+          |> Seq.iter (fun cnv ->
+            let mutable visited = false
+            cn <- cnv.Key :: cn
 
-                           cnv.Value.Values
-                           |> Seq.iter
-                                (fun m ->
-                                  nb <- nb + m.Branches.Count
+            cnv.Value.Values
+            |> Seq.iter (fun m ->
+              nb <- nb + m.Branches.Count
 
-                                  let b =
-                                    m.Branches
-                                    |> Seq.filter (fun branch -> branch.Hits > 0)
-                                    |> Seq.length
+              let b =
+                m.Branches
+                |> Seq.filter (fun branch -> branch.Hits > 0)
+                |> Seq.length
 
-                                  vb <- vb + b
-                                  visited <- visited || b > 0
+              vb <- vb + b
+              visited <- visited || b > 0
 
-                                  ns <- ns + m.Lines.Count
+              ns <- ns + m.Lines.Count
 
-                                  let s =
-                                    m.Lines
-                                    |> Seq.filter (fun line -> line.Value > 0)
-                                    |> Seq.length
+              let s =
+                m.Lines
+                |> Seq.filter (fun line -> line.Value > 0)
+                |> Seq.length
 
-                                  vs <- vs + s
-                                  visited <- visited || s > 0
+              vs <- vs + s
+              visited <- visited || s > 0
 
-                                  nm <- nm + 1
-                                  vm <- vm.Increment(s > 0 || b > 0))
+              nm <- nm + 1
+              vm <- vm.Increment(s > 0 || b > 0))
 
-                           if visited then cv <- cnv.Key :: cv)
+            if visited then
+              cv <- cnv.Key :: cv)
 
-                    )
+        )
 
-             vc <- vc + (cv |> Seq.distinct |> Seq.length)
-             nc <- nc + (cn |> Seq.distinct |> Seq.length))
+        vc <- vc + (cv |> Seq.distinct |> Seq.length)
+        nc <- nc + (cn |> Seq.distinct |> Seq.length))
 
       summarise go vc nc "VisitedClasses" |> ignore
-      let mcovered = summarise go vm nm "VisitedMethods"
-      let covered = summarise go vs ns "VisitedPoints"
-      let bcovered = summarise go vb nb "VisitedBranches"
+
+      let mcovered =
+        summarise go vm nm "VisitedMethods"
+
+      let covered =
+        summarise go vs ns "VisitedPoints"
+
+      let bcovered =
+        summarise go vb nb "VisitedBranches"
 
       let extra =
         summaryFormat = Default || l |> Seq.contains C
 
-      if go || extra then write String.Empty
+      if go || extra then
+        write String.Empty
 
       if l |> Seq.contains B || l |> Seq.contains R then
         writeTC totalTC "C" nc
@@ -595,17 +648,16 @@ module internal Runner =
         writeTC coverTC "S" vs
 
         l
-        |> Seq.iter
-             (fun f ->
-               let tag =
-                 match f with
-                 | R -> "R"
-                 | B -> "B"
-                 | _ -> String.Empty
+        |> Seq.iter (fun f ->
+          let tag =
+            match f with
+            | R -> "R"
+            | B -> "B"
+            | _ -> String.Empty
 
-               if tag |> String.IsNullOrEmpty |> not then
-                 writeTC totalTC tag nb
-                 writeTC coverTC tag vb)
+          if tag |> String.IsNullOrEmpty |> not then
+            writeTC totalTC tag nb
+            writeTC coverTC tag vb)
 
       [ covered
         bcovered
@@ -617,9 +669,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Inlined library code")>]
     let internal standardSummary
       (reportDocument: DocumentType)
       (format: ReportFormat)
@@ -629,10 +678,10 @@ module internal Runner =
         match reportDocument with
         | Unknown -> [] //(result, 0uy, String.Empty)
         | XML report ->
-            report
-            |> match format with
-               | ReportFormat.NCover -> nCoverSummary
-               | _ -> openCoverSummary
+          report
+          |> match format with
+             | ReportFormat.NCover -> nCoverSummary
+             | _ -> openCoverSummary
         | JSON jtext -> jsonSummary jtext // (result, 0uy, String.Empty) // TODO
 
       let best = (result, 0uy, String.Empty)
@@ -641,62 +690,62 @@ module internal Runner =
         match threshold with
         | None -> [ best ]
         | Some t ->
-            let found =
-              covered
-              |> List.map (fun d -> d.InvariantParseDouble())
+          let found =
+            covered
+            |> List.map (fun d -> d.InvariantParseDouble())
 
-            let ceil (f: float) (value: float) =
-              if f <= value && value > 0.0 && f > 0.0 then
-                None
-              else
-                Math.Ceiling(f - value) |> int |> Some
+          let ceil (f: float) (value: float) =
+            if f <= value && value > 0.0 && f > 0.0 then
+              None
+            else
+              Math.Ceiling(f - value) |> int |> Some
 
-            let sink _ : int option = None
+          let sink _ : int option = None
 
-            let funs =
-              [ (ceil (float t.Statements), t.Statements, "Statements")
-                (if format = ReportFormat.NCover then
-                   sink
-                 else
-                   ceil (float t.Branches)),
-                t.Branches,
-                "Branches"
-                (ceil (float t.Methods), t.Methods, "Methods")
-                (if format = ReportFormat.NCover then
-                   sink
-                 else
-                   ceil (float t.AltMethods)),
-                t.AltMethods,
-                "AltMethods"
-                (if format = ReportFormat.NCover || t.Crap = 0uy then
-                   sink
-                 else
-                   (fun c -> ceil c (float t.Crap))),
-                t.Crap,
-                "Crap"
-                (if format = ReportFormat.NCover || t.AltCrap = 0uy then
-                   sink
-                 else
-                   (fun c -> ceil c (float t.AltCrap))),
-                t.AltCrap,
-                "AltCrap" ]
+          let funs =
+            [ (ceil (float t.Statements), t.Statements, "Statements")
+              (if format = ReportFormat.NCover then
+                 sink
+               else
+                 ceil (float t.Branches)),
+              t.Branches,
+              "Branches"
+              (ceil (float t.Methods), t.Methods, "Methods")
+              (if format = ReportFormat.NCover then
+                 sink
+               else
+                 ceil (float t.AltMethods)),
+              t.AltMethods,
+              "AltMethods"
+              (if format = ReportFormat.NCover || t.Crap = 0uy then
+                 sink
+               else
+                 (fun c -> ceil c (float t.Crap))),
+              t.Crap,
+              "Crap"
+              (if format = ReportFormat.NCover || t.AltCrap = 0uy then
+                 sink
+               else
+                 (fun c -> ceil c (float t.AltCrap))),
+              t.AltCrap,
+              "AltCrap" ]
 
-            List.zip found funs
-            |> List.filter (fst >> fst)
-            |> List.map
-                 (fun (c, (f, x, y)) ->
-                   match c |> snd |> f with
-                   | Some q -> Some(q, x, y)
-                   | None -> None)
-            |> List.filter Option.isSome
-            |> List.map Option.get
-            |> List.filter (fun (a, _, _) -> a >= 0)
+          List.zip found funs
+          |> List.filter (fst >> fst)
+          |> List.map (fun (c, (f, x, y)) ->
+            match c |> snd |> f with
+            | Some q -> Some(q, x, y)
+            | None -> None)
+          |> List.filter Option.isSome
+          |> List.map Option.get
+          |> List.filter (fun (a, _, _) -> a >= 0)
 
       match possibles with
       | [] -> best
       | _ -> possibles |> List.maxBy (fun (a, _, _) -> a)
 
-    let mutable internal summaries : (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
+    let mutable internal summaries
+      : (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary () = summaries <- LCov.summary :: summaries
@@ -718,7 +767,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--recorderDirectory")
                :: CommandLine.error
            else
-             recordingDirectory <- Some(Path.GetFullPath x)))
+             recordingDirectory <- Some(canonicalDirectory x)))
       ("w|workingDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--workingDirectory" x then
@@ -727,7 +776,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--workingDirectory")
                :: CommandLine.error
            else
-             workingDirectory <- Some(Path.GetFullPath x)))
+             workingDirectory <- Some(canonicalDirectory x)))
       ("x|executable=",
        (fun x ->
          if CommandLine.validatePath "--executable" x then
@@ -736,7 +785,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--executable")
                :: CommandLine.error
            else
-             executable := Some x))
+             executable.Value <- Some x))
       (CommandLine.ddFlag "collect" collect)
       ("l|lcovReport=",
        (fun x ->
@@ -746,7 +795,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
            else
-             LCov.path := x |> Path.GetFullPath |> Some
+             LCov.path.Value <- x |> canonicalPath |> Some
              I.addLCovSummary ()))
       ("t|threshold=",
        (fun x ->
@@ -767,7 +816,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
            else
-             Cobertura.path := x |> Path.GetFullPath |> Some
+             Cobertura.path.Value <- x |> canonicalPath |> Some
              I.addCoberturaSummary ()))
       ("o|outputFile=",
        (fun x ->
@@ -777,7 +826,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--outputFile")
                :: CommandLine.error
            else
-             output <- x |> Path.GetFullPath |> Some))
+             output <- x |> canonicalPath |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       ("summary|teamcity:",
        (fun x ->
@@ -797,6 +846,7 @@ module internal Runner =
              CommandLine.Format.Local("MultiplesNotAllowed", "--summary")
              :: CommandLine.error))
       ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
+      ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -805,30 +855,30 @@ module internal Runner =
            CommandLine.Format.Local("InvalidValue", "AltCover", x)
            :: CommandLine.error)) ] // default end stop
     |> List.fold
-         (fun (o: OptionSet) (p, a) ->
-           o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
-         (OptionSet())
+      (fun (o: OptionSet) (p, a) ->
+        o.Add(p, Output.resources.GetString(p), System.Action<string>(a)))
+      (OptionSet())
 
   let internal requireRecorderTest recordingDirectory success fail =
     match recordingDirectory with
     | None ->
+      CommandLine.error <-
+        (Output.resources.GetString "recorderRequired")
+        :: CommandLine.error
+
+      fail
+    | Some path ->
+      let dll =
+        Path.Combine(path, "AltCover.Recorder.g.dll")
+
+      if File.Exists dll then
+        success
+      else
         CommandLine.error <-
-          (CommandLine.resources.GetString "recorderRequired")
+          CommandLine.Format.Local("recorderNotFound", dll)
           :: CommandLine.error
 
         fail
-    | Some path ->
-        let dll =
-          Path.Combine(path, "AltCover.Recorder.g.dll")
-
-        if File.Exists dll then
-          success
-        else
-          CommandLine.error <-
-            CommandLine.Format.Local("recorderNotFound", dll)
-            :: CommandLine.error
-
-          fail
 
   let internal setRecordToFile report =
     doWithStream
@@ -840,25 +890,25 @@ module internal Runner =
   module internal J =
     let internal requireExe (parse: Either<string * OptionSet, string list * OptionSet>) =
       match parse with
-      | Right (l, options) ->
-          match (executable.Value, collect.Value) with
-          | (None, false)
-          | (Some _, true) ->
-              CommandLine.error <-
-                (CommandLine.resources.GetString "executableRequired")
-                :: CommandLine.error
+      | Right(l, options) ->
+        match (executable.Value, collect.Value) with
+        | (None, false)
+        | (Some _, true) ->
+          CommandLine.error <-
+            (Output.resources.GetString "executableRequired")
+            :: CommandLine.error
 
-              Left("UsageError", options)
-          | (None, _) -> Right([], options)
-          | (Some exe, _) -> Right(exe :: l, options)
+          Left("UsageError", options)
+        | (None, _) -> Right([], options)
+        | (Some exe, _) -> Right(exe :: l, options)
       | fail -> fail
 
     let internal requireRecorder
       (parse: Either<string * OptionSet, string list * OptionSet>)
       =
       match parse with
-      | Right (_, options) ->
-          requireRecorderTest recordingDirectory parse (Left("UsageError", options))
+      | Right(_, options) ->
+        requireRecorderTest recordingDirectory parse (Left("UsageError", options))
       | fail -> fail
 
     let internal requireWorker
@@ -866,34 +916,35 @@ module internal Runner =
       =
       match parse with
       | Right _ ->
-          match workingDirectory with
-          | None -> workingDirectory <- Directory.GetCurrentDirectory() |> Some
-          | _ -> ()
+        match workingDirectory with
+        | None -> workingDirectory <- Directory.GetCurrentDirectory() |> Some
+        | _ -> ()
 
-          parse
+        parse
       | fail -> fail
 
     // mocking point
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
-    let mutable internal recorderName = "AltCover.Recorder.g.dll"
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
+    let mutable internal recorderName =
+      "AltCover.Recorder.g.dll"
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-                                                      "EnsureLocalDisposalRule",
-                                                      Justification = "Tuple return confusing Gendarme -- TODO")>]
+    [<SuppressMessage("Gendarme.Rules.Correctness",
+                      "EnsureLocalDisposalRule",
+                      Justification = "Tuple return confusing Gendarme -- TODO")>]
     let internal recorderInstance () =
       let recorderPath =
         Path.Combine(Option.get recordingDirectory, recorderName)
 
       let definition =
-        AssemblyDefinition.ReadAssembly recorderPath
+        AssemblyResolver.ReadAssembly recorderPath
 
       (definition, definition.MainModule.GetType("AltCover.Recorder.Instance"))
 
     let internal getMethod (t: TypeDefinition) (name: string) =
       t.Methods
-      |> Seq.filter (fun m -> m.Name = name)
+      |> Seq.filter (fun m -> m.Name == name)
       |> Seq.head
 
     let internal getFirstOperandAsString (m: MethodDefinition) =
@@ -938,128 +989,141 @@ module internal Runner =
           Path.GetFileName(report) + ".*.acv"
         )
         |> Seq.fold
-             (fun before f ->
-               timer.Restart()
+          (fun before f ->
+            timer.Restart()
 
-               let length =
-                 FileInfo(f)
-                   .Length.ToString("#,#", CultureInfo.CurrentCulture)
+            let length =
+              FileInfo(f)
+                .Length.ToString("#,#", CultureInfo.CurrentCulture)
 
-               sprintf "... %s (%sb)" f length |> Output.info
-               use fileStream = File.OpenRead f
+            sprintf "... %s (%sb)" f length |> Output.info
+            use fileStream = File.OpenRead f
 
-               use results =
-                 new DeflateStream(fileStream, CompressionMode.Decompress)
+            use results =
+              new DeflateStream(fileStream, CompressionMode.Decompress)
 
-               use formatter = new System.IO.BinaryReader(results)
+            use formatter =
+              new System.IO.BinaryReader(results)
 
-               let rec sink hitcount =
-                 let hit =
-                   try
-                     let id = formatter.ReadString()
-                     let strike = formatter.ReadInt32()
-                     let tag = formatter.ReadByte() |> int
+            let rec sink hitcount =
+              let hit =
+                try
+                  let id = formatter.ReadString()
+                  let strike = formatter.ReadInt32()
+                  let tag = formatter.ReadByte() |> int
 
-                     Some(
-                       id,
-                       strike,
-                       match enum tag with
-                       | Tag.Time -> Time <| formatter.ReadInt64()
-                       | Tag.Call -> Call <| formatter.ReadInt32()
-                       | Tag.Both ->
-                           let time = formatter.ReadInt64()
-                           let call = formatter.ReadInt32()
-                           Both { Time = time; Call = call }
-                       | Tag.Table ->
-                           let t =
-                             Dictionary<string, Dictionary<int, PointVisit>>()
+                  Some(
+                    id,
+                    strike,
+                    match enum tag with
+                    | Tag.Time -> Time <| formatter.ReadInt64()
+                    | Tag.Call -> Call <| formatter.ReadInt32()
+                    | Tag.Both ->
+                      let time = formatter.ReadInt64()
+                      let call = formatter.ReadInt32()
+                      Both { Time = time; Call = call }
+                    | Tag.Table ->
+                      let t =
+                        Dictionary<string, Dictionary<int, PointVisit>>()
 
-                           let rec ``module`` () =
-                             let m = formatter.ReadString()
+                      let rec ``module`` () =
+                        let m = formatter.ReadString()
 
-                             if String.IsNullOrEmpty m then
-                               ()
-                             else
-                               if m |> t.ContainsKey |> not then
-                                 t.Add(m, Dictionary<int, PointVisit>())
+                        if String.IsNullOrEmpty m then
+                          ()
+                        else
+                          if m |> t.ContainsKey |> not then
+                            t.Add(m, Dictionary<int, PointVisit>())
 
-                               let points = formatter.ReadInt32()
+                          let points = formatter.ReadInt32()
 
-                               let rec sequencePoint pts =
-                                 if pts > 0 then
-                                   let p = formatter.ReadInt32()
-                                   let n = formatter.ReadInt64()
+                          let rec sequencePoint pts =
+                            if pts > 0 then
+                              let p = formatter.ReadInt32()
+                              let n = formatter.ReadInt64()
 
-                                   if p |> t.[m].ContainsKey |> not then
-                                     t.[m].Add(p, PointVisit.Create())
+                              if p |> t.[m].ContainsKey |> not then
+                                t.[m].Add(p, PointVisit.Create())
 
-                                   let pv = t.[m].[p]
-                                   pv.Count <- pv.Count + n
+                              let pv = t.[m].[p]
+                              pv.Count <- pv.Count + n
 
-                                   let rec tracking () =
-                                     let track = formatter.ReadByte() |> int
+                              let rec tracking () =
+                                let track = formatter.ReadByte() |> int
 
-                                     match enum track with
-                                     | Tag.Time ->
-                                         pv.Tracks.Add(Time <| formatter.ReadInt64())
-                                         tracking ()
-                                     | Tag.Call ->
-                                         pv.Tracks.Add(Call <| formatter.ReadInt32())
-                                         tracking ()
-                                     | Tag.Both ->
-                                         pv.Tracks.Add(
-                                           let time = formatter.ReadInt64()
-                                           let call = formatter.ReadInt32()
-                                           Both { Time = time; Call = call }
-                                         )
+                                match enum track with
+                                | Tag.Time ->
+                                  pv.Tracks.Add(Time <| formatter.ReadInt64())
+                                  tracking ()
+                                | Tag.Call ->
+                                  pv.Tracks.Add(Call <| formatter.ReadInt32())
+                                  tracking ()
+                                | Tag.Both ->
+                                  pv.Tracks.Add(
+                                    let time = formatter.ReadInt64()
+                                    let call = formatter.ReadInt32()
+                                    Both { Time = time; Call = call }
+                                  )
 
-                                         tracking ()
-                                     // Expect never to happen                                    | Tag.Table -> ``module``()
-                                     | _ -> sequencePoint (pts - 1)
+                                  tracking ()
+                                // Expect never to happen                                    | Tag.Table -> ``module``()
+                                | _ -> sequencePoint (pts - 1)
 
-                                   tracking ()
-                                 else
-                                   ``module`` ()
+                              tracking ()
+                            else
+                              ``module`` ()
 
-                               sequencePoint points
+                          sequencePoint points
 
-                           ``module`` ()
-                           Table t
-                       | _ -> Null
-                     )
-                   with :? EndOfStreamException -> None
+                      ``module`` ()
+                      Table t
+                    | _ -> Null
+                  )
+                with :? EndOfStreamException ->
+                  None
 
-                 match hit with
-                 | Some tuple ->
-                     let (key, hitPointId, visit) = tuple
+              match hit with
+              | Some tuple ->
+                let (key, hitPointId, visit) = tuple
 
-                     let increment =
-                       if key |> String.IsNullOrWhiteSpace |> not
-                          || ((String.IsNullOrEmpty key)
-                              && hitPointId = 0
-                              && visit.GetType().ToString() = "AltCover.Track+Table") then
-                         Counter.addVisit hits key hitPointId visit
-                       else
-                         0L
+                let increment =
+                  if
+                    key |> String.IsNullOrWhiteSpace |> not
+                    || ((String.IsNullOrEmpty key)
+                        && hitPointId = 0
+                        && visit.GetType().ToString()
+                           == "AltCover.Track+Table")
+                  then
+                    if
+                      hits.ContainsKey key |> not
+                      && key |> String.IsNullOrWhiteSpace |> not // terminator
+                    then
+                      hits.Add(key, Dictionary<int, PointVisit>())
 
-                     sink (hitcount + increment)
-                 | None -> hitcount
+                    Counter.addVisit hits key hitPointId visit
+                  else
+                    0L
 
-               let after = sink before
-               timer.Stop()
+                sink (hitcount + increment)
+              | None -> hitcount
 
-               if after > before then
-                 let delta = after - before
-                 let interval = timer.Elapsed
-                 let rate = (float delta) / interval.TotalSeconds
+            let after = sink before
+            timer.Stop()
 
-                 CommandLine.writeResourceWithFormatItems
-                   "%d visits recorded in %A (%A visits/sec)"
-                   [| delta :> obj; interval; rate |]
-                   false
+            if after > before then
+              let delta = after - before
+              let interval = timer.Elapsed
 
-               after)
-             0L
+              let rate =
+                (float delta) / interval.TotalSeconds
+
+              CommandLine.writeResourceWithFormatItems
+                "%d visits recorded in %A (%A visits/sec)"
+                [| delta :> obj; interval; rate |]
+                false
+
+            after)
+          0L
 
       timer.Stop()
 
@@ -1094,33 +1158,31 @@ module internal Runner =
       match items with
       | [] -> ()
       | _ ->
-          let outer =
-            pt.OwnerDocument.CreateElement(outername)
+        let outer =
+          pt.OwnerDocument.CreateElement(outername)
 
-          outer |> pt.AppendChild |> ignore
+        outer |> pt.AppendChild |> ignore
 
-          items
-          |> Seq.choose id
-          |> Seq.countBy id
-          |> Seq.sortBy fst
-          |> Seq.iter
-               (fun (t, n) ->
-                 let inner =
-                   pt.OwnerDocument.CreateElement(innername)
+        items
+        |> Seq.choose id
+        |> Seq.countBy id
+        |> Seq.sortBy fst
+        |> Seq.iter (fun (t, n) ->
+          let inner =
+            pt.OwnerDocument.CreateElement(innername)
 
-                 inner |> outer.AppendChild |> ignore
-                 inner.SetAttribute(attribute, t.ToString())
-                 inner.SetAttribute("vc", sprintf "%d" n))
+          inner |> outer.AppendChild |> ignore
+          inner.SetAttribute(attribute, t.ToString())
+          inner.SetAttribute("vc", sprintf "%d" n))
 
     let internal extractTracks tracks =
       tracks
-      |> Seq.map
-           (fun t ->
-             match t with
-             | Time x -> (Some x, None)
-             | Both b -> (Some b.Time, Some b.Call)
-             | Call y -> (None, Some y)
-             | _ -> (None, None))
+      |> Seq.map (fun t ->
+        match t with
+        | Time x -> (Some x, None)
+        | Both b -> (Some b.Time, Some b.Call)
+        | Call y -> (None, Some y)
+        | _ -> (None, None))
       |> Seq.toList
       |> List.unzip
 
@@ -1129,9 +1191,9 @@ module internal Runner =
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let updateNativeJsonMethod
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       (visits: Dictionary<int, PointVisit>)
@@ -1139,31 +1201,33 @@ module internal Runner =
       =
       if m.TId.IsNotNull then
         let tidValue = m.TId.Value
-        let e1, entries = hits.TryGetValue Track.Entry
+
+        let e1, entries =
+          hits.TryGetValue Track.Entry
 
         if e1 then
-          let e2, entrypoint = entries.TryGetValue tidValue
+          let e2, entrypoint =
+            entries.TryGetValue tidValue
 
           if e2 then
             entrypoint.Tracks
-            |> Seq.iter
-                 (fun t ->
-                   match t with
-                   | Time tx -> tx |> NativeJson.fromTracking |> m.Entry.Add
-                   | _ -> ())
+            |> Seq.iter (fun t ->
+              match t with
+              | Time tx -> tx |> NativeJson.fromTracking |> m.Entry.Add
+              | _ -> ())
 
         let e3, exits = hits.TryGetValue Track.Exit
 
         if e3 then
-          let e4, exitpoint = exits.TryGetValue tidValue
+          let e4, exitpoint =
+            exits.TryGetValue tidValue
 
           if e4 then
             exitpoint.Tracks
-            |> Seq.iter
-                 (fun t ->
-                   match t with
-                   | Time tx -> tx |> NativeJson.fromTracking |> m.Exit.Add
-                   | _ -> ())
+            |> Seq.iter (fun t ->
+              match t with
+              | Time tx -> tx |> NativeJson.fromTracking |> m.Exit.Add
+              | _ -> ())
 
       let fillTracks tracks calls =
         let ntrack =
@@ -1191,21 +1255,22 @@ module internal Runner =
 
       let sps =
         m.SeqPnts
-        |> Seq.map
-             (fun sp ->
-               let b, count = visits.TryGetValue sp.Id
+        |> Seq.map (fun sp ->
+          let b, count = visits.TryGetValue sp.Id
 
-               if b then
-                 let (times', calls') = extractTracks count.Tracks
-                 let times = times' |> Seq.choose id
-                 let calls = calls' |> Seq.choose id
+          if b then
+            let (times', calls') =
+              extractTracks count.Tracks
 
-                 { sp with
-                     VC = (int <| count.Total()) + Math.Max(0, sp.VC)
-                     Tracks = fillTracks sp.Tracks calls
-                     Times = fillTimes sp.Times times }
-               else
-                 sp)
+            let times = times' |> Seq.choose id
+            let calls = calls' |> Seq.choose id
+
+            { sp with
+                VC = (int <| count.Total()) + Math.Max(0, sp.VC)
+                Tracks = fillTracks sp.Tracks calls
+                Times = fillTimes sp.Times times }
+          else
+            sp)
         |> Seq.toList
 
       m.SeqPnts.Clear()
@@ -1213,22 +1278,23 @@ module internal Runner =
 
       let bps =
         m.Branches
-        |> Seq.map
-             (fun bp ->
-               let b, count =
-                 visits.TryGetValue(bp.Id ||| Counter.branchFlag)
+        |> Seq.map (fun bp ->
+          let b, count =
+            visits.TryGetValue(bp.Id ||| Counter.branchFlag)
 
-               if b then
-                 let (times', calls') = extractTracks count.Tracks
-                 let times = times' |> Seq.choose id
-                 let calls = calls' |> Seq.choose id
+          if b then
+            let (times', calls') =
+              extractTracks count.Tracks
 
-                 { bp with
-                     Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
-                     Tracks = fillTracks bp.Tracks calls
-                     Times = fillTimes bp.Times times }
-               else
-                 bp)
+            let times = times' |> Seq.choose id
+            let calls = calls' |> Seq.choose id
+
+            { bp with
+                Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
+                Tracks = fillTracks bp.Tracks calls
+                Times = fillTimes bp.Times times }
+          else
+            bp)
         |> Seq.toList
 
       m.Branches.Clear()
@@ -1244,6 +1310,9 @@ module internal Runner =
     [<SuppressMessage("Microsoft.Reliability",
                       "CA2000:DisposeObjectsBeforeLosingScope",
                       Justification = "The reader must not close the stream")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       _
@@ -1260,18 +1329,18 @@ module internal Runner =
 
       // do magic here
       json
-      |> Seq.iter
-           (fun kvp ->
-             let key = kvp.Key
-             let b, visits = hits.TryGetValue key
+      |> Seq.iter (fun kvp ->
+        let key = kvp.Key
+        let b, visits = hits.TryGetValue key
 
-             if b then
-               kvp.Value.Values
-               |> Seq.collect (fun doc -> doc.Values)
-               |> Seq.collect (fun c -> c.Values)
-               |> Seq.iter (updateNativeJsonMethod hits visits))
+        if b then
+          kvp.Value.Values
+          |> Seq.collect (fun doc -> doc.Values)
+          |> Seq.collect (fun c -> c.Values)
+          |> Seq.iter (updateNativeJsonMethod hits visits))
 
-      let encoded = NativeJson.serializeToUtf8Bytes json
+      let encoded =
+        NativeJson.serializeToUtf8Bytes json
 
       if Option.isSome output then
         use outputFile =
@@ -1298,11 +1367,14 @@ module internal Runner =
       report
       =
       let reporter (arg: string option) =
-        let (container, file) = Zip.openUpdate report
+        let (container, file) =
+          Zip.openUpdate report
 
         try
-          if format = ReportFormat.NativeJson
-             || format = ReportFormat.NativeJsonWithTracking then
+          if
+            format = ReportFormat.NativeJson
+            || format = ReportFormat.NativeJsonWithTracking
+          then
             writeNativeJsonReport hits format file arg
           else
             AltCover.Counter.doFlushStream
@@ -1322,33 +1394,36 @@ module internal Runner =
       reporter
 
     // mocking points
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
-    let mutable internal getPayload = payloadBase
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
+    let mutable internal getPayload =
+      payloadBase
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
-    let mutable internal getMonitor = monitorBase
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
+    let mutable internal getMonitor =
+      monitorBase
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
-    let mutable internal doReport = writeReportBase
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
+    let mutable internal doReport =
+      writeReportBase
 
     let internal doSummaries (document: DocumentType) (format: ReportFormat) result =
       let (code, t, f) =
         I.summaries
         |> List.fold
-             (fun (r, t, f) summary ->
-               let rx, t2, f2 = summary document format r
+          (fun (r, t, f) summary ->
+            let rx, t2, f2 = summary document format r
 
-               if rx > r then
-                 (rx, t2, f2)
-               else
-                 (r, t, f))
-             (result, 0uy, String.Empty)
+            if rx > r then
+              (rx, t2, f2)
+            else
+              (r, t, f))
+          (result, 0uy, String.Empty)
 
       if (code > 0 && result = 0 && code <> result) then
         CommandLine.writeErrorResourceWithFormatItems f [| code :> obj; t :> obj |]
@@ -1366,62 +1441,68 @@ module internal Runner =
       |> J.requireWorker
 
     match check1 with
-    | Left (intro, options) ->
-        CommandLine.handleBadArguments
-          false
-          arguments
-          { Intro = intro
-            Options = options1
-            Options2 = options }
+    | Left(intro, options) ->
+      CommandLine.handleBadArguments
+        false
+        arguments
+        { Intro = intro
+          Options = options1
+          Options2 = options }
 
-        255
-    | Right (rest, _) ->
-        CommandLine.applyVerbosity ()
+      255
+    | Right(rest, _) ->
+      CommandLine.applyVerbosity ()
 
-        let value =
-          CommandLine.doPathOperation
-            (fun () ->
-              let pair = J.recorderInstance ()
-              let instance = snd pair
+      let value =
+        CommandLine.doPathOperation
+          (fun () ->
+            let pair = J.recorderInstance ()
+            let instance = snd pair
 
-              let report =
-                (J.getMethod instance "get_ReportFile")
-                |> J.getFirstOperandAsString
-                |> Path.GetFullPath
+            let report =
+              (J.getMethod instance "get_ReportFile")
+              |> J.getFirstOperandAsString
+              |> canonicalPath
 
-              let format =
-                (J.getMethod instance "get_CoverageFormat")
-                |> J.getFirstOperandAsNumber
-                |> enum
+            let format =
+              (J.getMethod instance "get_CoverageFormat")
+              |> J.getFirstOperandAsNumber
+              |> enum
 
-              let hits =
-                Dictionary<string, Dictionary<int, PointVisit>>()
+            let hits =
+              Dictionary<string, Dictionary<int, PointVisit>>()
 
-              let payload = J.getPayload
-              let result = J.getMonitor hits report payload rest
-              let delta = J.doReport hits format report output
+            let payload = J.getPayload
 
-              CommandLine.writeResourceWithFormatItems
-                "Coverage statistics flushing took {0:N} seconds"
-                [| delta.TotalSeconds |]
-                false
+            let result =
+              J.getMonitor hits report payload rest
 
-              // And tidy up after everything's done
-              File.Delete(report + ".acv")
+            let delta =
+              J.doReport hits format report output
 
-              Directory.GetFiles(
-                Path.GetDirectoryName(report),
-                Path.GetFileName(report) + ".*.acv"
-              )
-              |> Seq.iter File.Delete
+            CommandLine.writeResourceWithFormatItems
+              "Coverage statistics flushing took {0:N} seconds"
+              [| delta.TotalSeconds |]
+              false
 
-              let document = DocumentType.LoadReport format report
-              J.doSummaries document format result)
-            255
-            true
+            // And tidy up after everything's done
+            File.Delete(report + ".acv")
 
-        CommandLine.reportErrors "Collection" false
-        value
+            Directory.GetFiles(
+              Path.GetDirectoryName(report),
+              Path.GetFileName(report) + ".*.acv"
+            )
+            |> Seq.iter File.Delete
+
+            let document =
+              DocumentType.LoadReport format report
+
+            J.doSummaries document format result)
+          255
+          true
+
+      CommandLine.reportErrors "Collection" false
+      value
 
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",

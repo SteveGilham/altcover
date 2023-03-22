@@ -14,13 +14,26 @@ module internal Persistence =
 
 #if !NET472
 
-  let internal saveSchemaDir = Configuration.SaveSchemaDir
-  let internal saveFont = Configuration.SaveFont
-  let internal readFont = Configuration.ReadFont
-  let internal readSchemaDir = Configuration.ReadSchemaDir
-  let internal readFolder = Configuration.ReadFolder
-  let internal saveFolder = Configuration.SaveFolder
-  let internal saveCoverageFiles = Configuration.SaveCoverageFiles
+  let internal saveSchemaDir =
+    Configuration.SaveSchemaDir
+
+  let internal saveFont =
+    Configuration.SaveFont
+
+  let internal readFont =
+    Configuration.ReadFont
+
+  let internal readSchemaDir =
+    Configuration.ReadSchemaDir
+
+  let internal readFolder =
+    Configuration.ReadFolder
+
+  let internal saveFolder =
+    Configuration.SaveFolder
+
+  let internal saveCoverageFiles =
+    Configuration.SaveCoverageFiles
 
   let internal readCoverageFiles (handler: IVisualizerWindow) =
     Configuration.ReadCoverageFiles(fun files -> handler.CoverageFiles <- files)
@@ -29,39 +42,38 @@ module internal Persistence =
     Configuration.SaveGeometry w.GetPosition w.GetSize
 
   let readGeometry (w: Window) =
-    Configuration.ReadGeometry
-      (fun (width, height) (x, y) ->
-        w.DefaultHeight <- height
-        w.DefaultWidth <- width
+    Configuration.ReadGeometry(fun (width, height) (x, y) ->
+      w.DefaultHeight <- height
+      w.DefaultWidth <- width
 
-        let display = w.Display
+      let display = w.Display
 
-        let monitor =
-          { 0 .. display.NMonitors }
-          |> Seq.filter
-               (fun i ->
-                 use monitor = display.GetMonitor(i)
-                 let bounds = monitor.Geometry
+      let monitor =
+        { 0 .. display.NMonitors }
+        |> Seq.filter (fun i ->
+          use monitor = display.GetMonitor(i)
+          let bounds = monitor.Geometry
 
-                 x >= bounds.Left
-                 && x <= bounds.Right
-                 && y >= bounds.Top
-                 && y <= bounds.Bottom)
-          |> Seq.tryHead
-          |> Option.defaultValue 0
+          x >= bounds.Left
+          && x <= bounds.Right
+          && y >= bounds.Top
+          && y <= bounds.Bottom)
+        |> Seq.tryHead
+        |> Option.defaultValue 0
 
-        use m = display.GetMonitor(monitor)
-        let bounds = m.Geometry
+      use m = display.GetMonitor(monitor)
+      let bounds = m.Geometry
 
-        let x' =
-          Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
+      let x' =
+        Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
 
-        let y' =
-          Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
+      let y' =
+        Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
 
-        w.Move(x', y'))
+      w.Move(x', y'))
 
-  let clearGeometry = Configuration.ClearGeometry
+  let clearGeometry =
+    Configuration.ClearGeometry
 
 #else
   let internal geometry =
@@ -70,7 +82,8 @@ module internal Persistence =
   let internal recent =
     "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
 
-  let internal coveragepath = "SOFTWARE\\AltCover\\Visualizer"
+  let internal coveragepath =
+    "SOFTWARE\\AltCover\\Visualizer"
 
   let internal saveFolder (path: string) =
     use key =
@@ -129,18 +142,18 @@ module internal Persistence =
 
     let monitor =
       { 0 .. screen.NMonitors }
-      |> Seq.filter
-           (fun i ->
-             let bounds = screen.GetMonitorGeometry(i)
+      |> Seq.filter (fun i ->
+        let bounds = screen.GetMonitorGeometry(i)
 
-             x >= bounds.Left
-             && x <= bounds.Right
-             && y >= bounds.Top
-             && y <= bounds.Bottom)
+        x >= bounds.Left
+        && x <= bounds.Right
+        && y >= bounds.Top
+        && y <= bounds.Bottom)
       |> Seq.tryHead
       |> Option.defaultValue 0
 
-    let bounds = screen.GetMonitorGeometry(monitor)
+    let bounds =
+      screen.GetMonitorGeometry(monitor)
 
     let x' =
       Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
@@ -155,9 +168,6 @@ module internal Persistence =
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "InstantiateArgumentExceptionCorrectlyRule",
                     Justification = "Inlined library code")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA2208:InstantiateArgumentExceptionsCorrectly",
-                    Justification = "Ditto, ditto")>]
   let internal readCoverageFiles (handler: IVisualizerWindow) =
     use fileKey =
       Registry.CurrentUser.CreateSubKey(recent)
@@ -167,14 +177,14 @@ module internal Persistence =
     let names =
       fileKey.GetValueNames()
       |> Array.filter (fun (s: string) -> s.Length = 1 && Char.IsDigit(s.Chars(0)))
-      |> Array.sortBy (fun s -> Int32.TryParse(s) |> snd)
+      |> Array.sortBy (Int32.TryParse >> snd)
 
     let files =
       names
       |> Array.map (keyToValue fileKey)
       |> Seq.cast<string>
-      |> Seq.filter (fun n -> not (String.IsNullOrWhiteSpace(n)))
-      |> Seq.filter (fun n -> File.Exists(n))
+      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+      |> Seq.filter File.Exists
       |> Seq.toList
 
     handler.CoverageFiles <- files
@@ -208,6 +218,7 @@ module internal Persistence =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$Persistence.#.cctor()",
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$Persistence.#.cctor()",
                             Justification = "Compiler generated")>]
 ()

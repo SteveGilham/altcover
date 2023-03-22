@@ -80,3 +80,11 @@ coverage.xml
 **/Backup/
 LastCoverageResults.log
 CoverageReport-*
+Samples/Sample29/Debug/
+Samples/Sample29/SimpleMix/Debug/
+ThirdParty/*.nupkg
+ThirdParty/gtk-sharp2/atk/
+InternalTrace.*.log
+nunit-agent_*.log
+$*/
+*.orig

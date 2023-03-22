@@ -151,4 +151,125 @@ namespace Sample5
 
     bool IReadOnlyDictionary<T, K>.TryGetValue(T key, out K value) => throw new NotImplementedException();
   }
+
+  [ExcludeFromCodeCoverage]
+  public class Issue135
+  {
+    private object field;
+
+    public Issue135(object o)
+    { // whole span is "Sample5.Issue135"::".ctor"
+      field = o;
+    }
+
+#pragma warning disable CS1998
+#pragma warning disable CS4014
+
+    internal async Task OuterAsync2<T>(T data)
+    { // span less inner function is "Sample5.Issue135/<OuterAsync2>d__2"::"MoveNext"
+      [ExcludeFromCodeCoverage]
+      async Task InnerAsync3(T aux)
+      { // whole span is "Sample5.Issue135/<>c__DisplayClass2_0/<<OuterAsync2>g__InnerAsync3|0>d"::"MoveNext
+        Console.WriteLine("{0} | {1} || {2}", field, data, aux);
+        InnerAsync3((T)field);
+        InnerAsync3(data);
+        OuterAsync2(data);
+      }
+
+      InnerAsync3((T)field);
+    } // Unless stated, all other methods have no sequence points
+
+  internal void OuterSynch4<T>(T data)
+  {
+      async Task InnerAsync5(T aux)
+      {
+          Console.WriteLine("{0} |{1} || {2}", field, data, aux);
+          InnerAsync5((T)field);
+          InnerAsync5(data);
+          OuterSynch4(data);
+      }
+
+      InnerAsync5((T)field);
+  }
+}
+
+#pragma warning restore CS4014
+#pragma warning restore CS1998
+
+
+  [ExcludeFromCodeCoverage]
+  public class Issue135Complex
+  {
+    private object field;
+
+    public Issue135Complex(object o)
+    { // whole span is "Sample5.Issue135"::".ctor"
+      field = o;
+    }
+
+#pragma warning disable CS1998
+#pragma warning disable CS4014
+    public void OuterAsync2()
+    {
+      Console.WriteLine("Simple async");
+    }
+
+    public string OuterAsync2(object o)
+    {
+      return o.ToString();
+    }
+
+    public string OuterAsync2<T,U>(T a, U b)
+    {
+      return a.ToString() + b.ToString();
+    }
+
+
+    internal async Task OuterAsync2<T>(T data)
+    { // span less inner function is "Sample5.Issue135/<OuterAsync2>d__2"::"MoveNext"
+      [ExcludeFromCodeCoverage]
+      async Task InnerAsync3(T aux)
+      { // whole span is "Sample5.Issue135/<>c__DisplayClass2_0/<<OuterAsync2>g__InnerAsync3|0>d"::"MoveNext
+        Console.WriteLine("{0} | {1} || {2}", field, data, aux);
+        InnerAsync3((T)field);
+        InnerAsync3(data);
+        OuterAsync2(data);
+      }
+
+      InnerAsync3((T)field);
+    } // Unless stated, all other methods have no sequence points
+
+  internal void OuterSynch4<T>(T data)
+  {
+      async Task InnerAsync5(T aux)
+      {
+          Console.WriteLine("{0} |{1} || {2}", field, data, aux);
+          InnerAsync5((T)field);
+          InnerAsync5(data);
+          OuterSynch4(data);
+      }
+
+      InnerAsync5((T)field);
+  }
+
+    public void OuterSynch4()
+    {
+      Console.WriteLine("Simple synch");
+    }
+
+    public string OuterSynch4(object o)
+    {
+      return o.ToString();
+    }
+
+    public string OuterSynch4<T,U>(T a, U b)
+    {
+      return a.ToString() + b.ToString();
+    }
+
+}
+
+#pragma warning restore CS4014
+#pragma warning restore CS1998
+
 }

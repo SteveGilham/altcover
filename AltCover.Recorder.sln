@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29318.209
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}"
 EndProject
@@ -20,14 +20,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		nupkg\build\netstandard2.0\AltCover.props = nupkg\build\netstandard2.0\AltCover.props
 		nupkg\build\netstandard2.0\AltCover.targets = nupkg\build\netstandard2.0\AltCover.targets
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
-		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
 		Build\common-rules.xml = Build\common-rules.xml
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
 		.config\dotnet-tools.json = .config\dotnet-tools.json
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk
 		Build\msbuildtest.proj = Build\msbuildtest.proj
+		OutputBuildProps.props = OutputBuildProps.props
+		OutputBuildTargets.props = OutputBuildTargets.props
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\powershell.ps1 = Build\powershell.ps1
@@ -37,6 +41,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\setup.fsx = Build\setup.fsx
 		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample25", "Samples\Sample25\Sample25.fsproj", "{54E57C76-339C-496E-B6EF-832534C7D545}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Async", "AltCover.Async\AltCover.Async.fsproj", "{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +62,13 @@ Global
 		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E57C76-339C-496E-B6EF-832534C7D545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E57C76-339C-496E-B6EF-832534C7D545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E57C76-339C-496E-B6EF-832534C7D545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E8E72B3-FA30-4B09-8577-B9A1BB4F3126}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

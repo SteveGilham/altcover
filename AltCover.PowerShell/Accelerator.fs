@@ -27,6 +27,9 @@ open AltCover
          SupportsShouldProcess = true,
          ConfirmImpact = ConfirmImpact.Medium)>]
 [<OutputType([| "System.Void" |]); AutoSerializable(false)>]
+[<SuppressMessage("Gendarme.Rules.Maintainability",
+                  "AvoidLackOfCohesionOfMethodsRule",
+                  Justification = "Unchanged code threw this at dotnet 7")>]
 type AddAcceleratorCommand() =
   inherit PSCmdlet()
 
@@ -58,7 +61,7 @@ type AddAcceleratorCommand() =
               ValueFromPipelineByPropertyName = false)>]
   member val XDocument = SwitchParameter(false) with get, set
 
-  member val private TypeMap = new Dictionary<string, Type>()
+  member val private TypeMap = Dictionary<string, Type>()
 
   /// <summary>
   /// <para type="description">Initialise the map of accelerator to type</para>
@@ -72,12 +75,11 @@ type AddAcceleratorCommand() =
     if self.Mapping |> isNull |> not then
       self.Mapping
       |> Seq.cast<DictionaryEntry>
-      |> Seq.map
-           (fun x ->
-             (x.Key.ToString(),
-              match x.Value with
-              | :? Type as t -> t
-              | other -> other.GetType()))
+      |> Seq.map (fun x ->
+        (x.Key.ToString(),
+         match x.Value with
+         | :? Type as t -> t
+         | other -> other.GetType()))
       |> Seq.distinctBy snd
       |> Seq.iter (fun (k, v) -> self.TypeMap.Add(k, v))
 
@@ -95,7 +97,8 @@ type AddAcceleratorCommand() =
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")
 
-    let adder = acceleratorsType.GetMethod("Add")
+    let adder =
+      acceleratorsType.GetMethod("Add")
 
     if self.Accelerator.IsPresent then
       self.TypeMap.Add("accelerators", acceleratorsType)
@@ -114,41 +117,38 @@ type AddAcceleratorCommand() =
       String.Join(
         "; ",
         finalmap
-        |> Seq.filter
-             (fun kv ->
-               (((self.Accelerator.IsPresent
-                  && kv.Key = "accelerators"
-                  && kv.Value = acceleratorsType)
-                 || (self.XDocument.IsPresent
-                     && kv.Key = "xdoc"
-                     && kv.Value = typeof<System.Xml.Linq.XDocument>))
-                |> not))
+        |> Seq.filter (fun kv ->
+          (((self.Accelerator.IsPresent
+             && kv.Key = "accelerators"
+             && kv.Value = acceleratorsType)
+            || (self.XDocument.IsPresent
+                && kv.Key = "xdoc"
+                && kv.Value = typeof<System.Xml.Linq.XDocument>))
+           |> not))
         |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key kv.Value.FullName)
       )
 
     if
-      self.ShouldProcess
-        (
-          "Command Line : "
-          + (if List.isEmpty finalmap then
-               String.Empty
-             else
-               (" -Mapping @{" + display + "}"))
-          + (if self.XDocument.IsPresent then
-               " -XDocument"
-             else
-               String.Empty)
-          + (if self.Accelerator.IsPresent then
-               " -Accelerator"
-             else
-               String.Empty)
-        )
+      self.ShouldProcess(
+        "Command Line : "
+        + (if List.isEmpty finalmap then
+             String.Empty
+           else
+             (" -Mapping @{" + display + "}"))
+        + (if self.XDocument.IsPresent then
+             " -XDocument"
+           else
+             String.Empty)
+        + (if self.Accelerator.IsPresent then
+             " -Accelerator"
+           else
+             String.Empty)
+      )
     then
       finalmap
-      |> Seq.iter
-           (fun kv ->
-             adder.Invoke(null, [| kv.Key :> obj; kv.Value :> obj |])
-             |> ignore)
+      |> Seq.iter (fun kv ->
+        adder.Invoke(null, [| kv.Key :> obj; kv.Value :> obj |])
+        |> ignore)
 
 /// <summary>
 /// <para type="synopsis">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
@@ -164,6 +164,7 @@ type AddAcceleratorCommand() =
                   Justification = "No valid input to accept")>]
 type GetAcceleratorCommand() =
   inherit PSCmdlet()
+
   /// <summary>
   /// <para type="description">List current accelerator to type mappings</para>
   /// </summary>
@@ -178,7 +179,8 @@ type GetAcceleratorCommand() =
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")
 
-    let finder = acceleratorsType.GetProperty("Get")
+    let finder =
+      acceleratorsType.GetProperty("Get")
 
     let result = Hashtable()
 

@@ -1,10 +1,11 @@
 ﻿namespace AltCover
 
-open System.Diagnostics.CodeAnalysis
-
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
+
+open CommunityToolkit.Diagnostics
 
 module internal Lcov =
 
@@ -27,6 +28,11 @@ module internal Lcov =
   type LcovParseException(e: exn) =
     inherit exn(e.Message, e)
 
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(e: exn) : 'T = raise <| LcovParseException(e)
+
   type LRecord =
     //SF:<absolute path to the source file>
     | SF of string
@@ -43,102 +49,111 @@ module internal Lcov =
 
     m
     |> Seq.map snd
-    |> Seq.filter
-         (fun r ->
-           match r with
-           | SF name ->
-               let fn = Path.GetFileNameWithoutExtension name
+    |> Seq.filter (fun r ->
+      match r with
+      | SF name ->
+        let fn =
+          Path.GetFileNameWithoutExtension name
 
-               [| XAttribute(XName.Get "moduleId", fn)
-                  XAttribute(XName.Get "name", fn)
-                  XAttribute(XName.Get "assembly", name)
-                  XAttribute(XName.Get "assemblyIdentity", name) |]
-               |> result.Add
+        [| XAttribute(XName.Get "moduleId", fn)
+           XAttribute(XName.Get "name", fn)
+           XAttribute(XName.Get "assembly", name)
+           XAttribute(XName.Get "assemblyIdentity", name) |]
+        |> result.Add
 
-               false
-           | FN _
-           | DA _
-           | BRDA _ -> true
-           | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
-    |> Seq.sortBy
-         (fun r ->
-           match r with
-           | FN (a, _) -> 4 * a
-           | DA (a, _) -> (4 * a) + 1
-           | BRDA (a, _, _, _) -> (4 * a) + 2
-           | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
+        false
+      | FN _
+      | DA _
+      | BRDA _ -> true
+      | _ ->
+        r
+        |> sprintf "%A"
+        |> ThrowHelper.ThrowInvalidDataException<bool>)
+    |> Seq.sortBy (fun r ->
+      match r with
+      | FN(a, _) -> 4 * a
+      | DA(a, _) -> (4 * a) + 1
+      | BRDA(a, _, _, _) -> (4 * a) + 2
+      | _ ->
+        r
+        |> sprintf "%A"
+        |> ThrowHelper.ThrowInvalidDataException<int>)
     |> Seq.fold
-         (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
-           match r with
-           | FN (_, n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
-               let endclass =
-                 n.IndexOf("::", StringComparison.Ordinal)
+      (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
+        match r with
+        | FN(_, n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
+          let endclass =
+            n.IndexOf("::", StringComparison.Ordinal)
 
-               let startclass = n.LastIndexOf(' ', endclass) + 1
+          let startclass =
+            n.LastIndexOf(' ', endclass) + 1
 
-               let c =
-                 n.Substring(startclass, endclass - startclass)
+          let c =
+            n.Substring(startclass, endclass - startclass)
 
-               let endname = n.IndexOf('(', endclass)
+          let endname = n.IndexOf('(', endclass)
 
-               let name =
-                 n.Substring(endclass + 2, endname - endclass - 2)
+          let name =
+            n.Substring(endclass + 2, endname - endclass - 2)
 
-               let mt =
-                 XElement(
-                   XName.Get "method",
-                   XAttribute(XName.Get "excluded", "false"),
-                   XAttribute(XName.Get "instrumented", "true"),
-                   XAttribute(XName.Get "name", name),
-                   XAttribute(XName.Get "class", c),
-                   XAttribute(XName.Get "fullname", n),
-                   XAttribute(
-                     XName.Get "document",
-                     result.Attribute(XName.Get "assembly").Value
-                   )
-                 )
+          let mt =
+            XElement(
+              XName.Get "method",
+              XAttribute(XName.Get "excluded", "false"),
+              XAttribute(XName.Get "instrumented", "true"),
+              XAttribute(XName.Get "name", name),
+              XAttribute(XName.Get "class", c),
+              XAttribute(XName.Get "fullname", n),
+              XAttribute(
+                XName.Get "document",
+                result.Attribute(XName.Get "assembly").Value
+              )
+            )
 
-               result.Add mt
-               mt
-           | DA (l, n) ->
-               let sp =
-                 XElement(
-                   XName.Get "seqpnt",
-                   XAttribute(XName.Get "visitcount", n),
-                   XAttribute(XName.Get "line", l),
-                   XAttribute(XName.Get "column", 1),
-                   XAttribute(XName.Get "endline", l),
-                   XAttribute(XName.Get "endcolumn", 2),
-                   XAttribute(XName.Get "offset", l),
-                   XAttribute(XName.Get "excluded", "false"),
-                   XAttribute(
-                     XName.Get "document",
-                     result.Attribute(XName.Get "assembly").Value
-                   )
-                 )
+          result.Add mt
+          mt
+        | DA(l, n) ->
+          let sp =
+            XElement(
+              XName.Get "seqpnt",
+              XAttribute(XName.Get "visitcount", n),
+              XAttribute(XName.Get "line", l),
+              XAttribute(XName.Get "column", 1),
+              XAttribute(XName.Get "endline", l),
+              XAttribute(XName.Get "endcolumn", 2),
+              XAttribute(XName.Get "offset", l),
+              XAttribute(XName.Get "excluded", "false"),
+              XAttribute(
+                XName.Get "document",
+                result.Attribute(XName.Get "assembly").Value
+              )
+            )
 
-               x.Add sp
-               x
-           // BRDA:<line number>,<block number>,<branch number>,<taken>
-           | BRDA (l, _, n, v) ->
-               let br =
-                 XElement(
-                   XName.Get "branch",
-                   XAttribute(XName.Get "visitcount", v),
-                   XAttribute(XName.Get "line", l),
-                   XAttribute(XName.Get "path", n),
-                   XAttribute(XName.Get "offset", l),
-                   XAttribute(XName.Get "offsetend", l),
-                   XAttribute(
-                     XName.Get "document",
-                     result.Attribute(XName.Get "assembly").Value
-                   )
-                 )
+          x.Add sp
+          x
+        // BRDA:<line number>,<block number>,<branch number>,<taken>
+        | BRDA(l, _, n, v) ->
+          let br =
+            XElement(
+              XName.Get "branch",
+              XAttribute(XName.Get "visitcount", v),
+              XAttribute(XName.Get "line", l),
+              XAttribute(XName.Get "path", n),
+              XAttribute(XName.Get "offset", l),
+              XAttribute(XName.Get "offsetend", l),
+              XAttribute(
+                XName.Get "document",
+                result.Attribute(XName.Get "assembly").Value
+              )
+            )
 
-               x.Add br
-               x
-           | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
-         null
+          x.Add br
+          x
+        | _ ->
+          r
+          |> sprintf "%A"
+          |> ThrowHelper.ThrowInvalidDataException<XElement>)
+      null
     |> ignore
 
     result
@@ -149,54 +164,51 @@ module internal Lcov =
   let ofLines (lines: string array) =
     try
       lines
-      |> Seq.map
-           (fun line ->
-             match line with
-             | l when l.StartsWith("SF:", StringComparison.Ordinal) -> SF(l.Substring 3)
-             | l when l.StartsWith("FN:", StringComparison.Ordinal) ->
-                 let trim = l.Substring 3
-                 let comma = trim.IndexOf ','
-                 let n = trim.Substring(0, comma)
-                 let name = trim.Substring(comma + 1)
-                 FN(n |> Int32.TryParse |> snd, name)
-             | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
-                 match (l.Substring 3).Split(',') |> Array.toList with
-                 | n :: v :: _ ->
-                     DA(n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
-                 | _ ->
-                     line
-                     |> sprintf "%A"
-                     |> InvalidDataException
-                     |> raise
-             | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
-                 match (l.Substring 5).Split(',') |> Array.toList with
-                 | n :: v :: x :: y :: _ ->
-                     BRDA(
-                       n |> Int32.TryParse |> snd,
-                       v |> Int32.TryParse |> snd,
-                       x |> Int32.TryParse |> snd,
-                       y |> Int32.TryParse |> snd
-                     )
-                 | _ ->
-                     line
-                     |> sprintf "%A"
-                     |> InvalidDataException
-                     |> raise
-             | _ -> Other)
+      |> Seq.map (fun line -> // <-- here
+        match line with
+        | l when l.StartsWith("SF:", StringComparison.Ordinal) -> SF(l.Substring 3)
+        | l when l.StartsWith("FN:", StringComparison.Ordinal) ->
+          let trim = l.Substring 3
+          let comma = trim.IndexOf ','
+          let n = trim.Substring(0, comma)
+          let name = trim.Substring(comma + 1)
+          FN(n |> Int32.TryParse |> snd, name)
+        | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
+          match (l.Substring 3).Split(',') |> Array.toList with
+          | n :: v :: _ -> DA(n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
+          | _ ->
+            line
+            |> sprintf "%A"
+            |> ThrowHelper.ThrowInvalidDataException<LRecord>
+        | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
+          match (l.Substring 5).Split(',') |> Array.toList with
+          | n :: v :: x :: y :: _ ->
+            BRDA(
+              n |> Int32.TryParse |> snd,
+              v |> Int32.TryParse |> snd,
+              x |> Int32.TryParse |> snd,
+              y |> Int32.TryParse |> snd
+            )
+          | _ ->
+            line
+            |> sprintf "%A"
+            |> ThrowHelper.ThrowInvalidDataException<LRecord>
+        | _ -> Other)
       |> Seq.fold
-           (fun (i, l) r ->
-             match r with
-             | SF _ -> (i + 1, ((i + 1), r) :: l)
-             | DA _
-             | BRDA _
-             | FN _ -> (i, (i, r) :: l)
-             | _ -> (i, l))
-           (0, [])
+        (fun (i, l) r ->
+          match r with
+          | SF _ -> (i + 1, ((i + 1), r) :: l)
+          | DA _
+          | BRDA _
+          | FN _ -> (i, (i, r) :: l)
+          | _ -> (i, l))
+        (0, [])
       |> snd
       |> Seq.groupBy fst
       |> Seq.map (fun (_, l) -> buildModule l)
       |> Seq.toArray
-    with x -> raise <| LcovParseException(x)
+    with x ->
+      x |> LcovParseException.Throw
 
   let toXml file =
     let root =
@@ -212,3 +224,11 @@ module internal Lcov =
     root.Add(file |> File.ReadAllLines |> ofLines)
 
     XDocument([| root |])
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Lcov/Pipe #1 stage #1 at line 167@167::Invoke(System.String)",
+                            Justification = "Compiler generated")>]
+()

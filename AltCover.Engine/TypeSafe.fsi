@@ -1,4 +1,4 @@
-#if RUNNER
+﻿#if RUNNER
 // # namespace `AltCover`
 // ```
 namespace AltCover
@@ -23,10 +23,10 @@ namespace AltCoverFake.DotNet.Testing
 //
 // ### Individual files and directories
 // ```
-    [<NoComparison>]
     ///<summary>
     /// Corresponds to a file or executable tool
     ///</summary>
+    [<NoComparison>]
     type FilePath =
       ///<summary>
       /// A named `dotnet` tool, carried unaltered
@@ -177,10 +177,10 @@ namespace AltCoverFake.DotNet.Testing
 // ```
 // ### Yes/No choices
 // ```
-    [<NoComparison>]
     ///<summary>
     /// Corresponds to a yes/no choice
     ///</summary>
+    [<NoComparison>]
     type Flag =
       ///<summary>
       /// A type-safe boolean
@@ -502,7 +502,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SummaryFormat: SummaryFormat
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
       }
@@ -669,9 +669,13 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         ShowGenerated: Flag
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
+        ///<summary>
+        /// Corresponds to command line option ` --trivia`
+        ///</summary>
+        Trivia: Flag
  }
       with
         ///<summary>

@@ -127,6 +127,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         member ShowStatic : string
         member ShowGenerated : bool
         member Verbosity : System.Diagnostics.TraceLevel
+        member Trivia: bool with get
 ```
 
 ```
@@ -158,6 +159,7 @@ command line and usage warninings only.
         member Info : (System.String -> unit)
         member Warn : (System.String -> unit)
         member Error : (System.String -> unit)
+        member Verbose : (System.String -> unit)
         member Echo : (System.String -> unit)
         static member Create : unit -> LoggingOptions
         static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions

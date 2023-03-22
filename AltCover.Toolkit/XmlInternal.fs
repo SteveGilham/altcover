@@ -31,10 +31,12 @@ module internal XmlUtilities =
     let resource =
       here.GetName().Name
       + match format with
-        | AltCover.ReportFormat.NCover -> ".xsd.NCover.xsd"
+        | AltCover.ReportFormat.NCover -> ".xsd.NCoverEmbedded.xsd"
         | _ -> ".xsd.OpenCover.xsd"
 
-    use stream = here.GetManifestResourceStream(resource)
+    use stream =
+      here.GetManifestResourceStream(resource)
+
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     schemas.Add(String.Empty, xreader) |> ignore
@@ -55,9 +57,11 @@ module internal XmlUtilities =
 
   let internal discoverFormat (xmlDocument: XDocument) =
     let format =
-      if xmlDocument
-        .Descendants(XName.Get "CoverageSession")
-        .Any() then
+      if
+        xmlDocument
+          .Descendants(XName.Get "CoverageSession")
+          .Any()
+      then
         AltCover.ReportFormat.OpenCover
       else
         AltCover.ReportFormat.NCover
@@ -71,6 +75,7 @@ module internal XmlUtilities =
       AssemblyName.GetAssemblyName(path).FullName
     with
     | :? ArgumentException
+    | :? DirectoryNotFoundException
     | :? FileNotFoundException
     | :? System.Security.SecurityException
     | :? BadImageFormatException

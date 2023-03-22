@@ -244,7 +244,7 @@ $header | Out-File -Encoding UTF8 $mdfile
 
 $lines = (Get-Content  ".\AltCover.DotNet\DotNet.fs") | ? { $_.Contains("//=") }
 $lines | % {
-  $line = $_
+  $line = $_.TrimStart()
   if ($line.StartsWith("//")) { $line = $line.Substring(2) }
   
   $strike = $line.IndexOf("//")

@@ -7,7 +7,7 @@
   <packages>
     <package name="Sample4" line-rate="0.39" branch-rate="0.4" complexity="2">
       <classes>
-        <class name="Tests.DU" filename="altcover/Sample4/Tests.fs" line-rate="0.63" branch-rate="0.5" complexity="2.33">
+        <class name="Tests.DU" filename="altcover/Sample4/Tests.fs" line-rate="0.63" branch-rate="0.71" complexity="2.33">
           <methods>
             <method name="returnBar" signature="Tests.DU/MyUnion (System.String)" line-rate="1" branch-rate="0" complexity="1">
               <lines>
@@ -65,7 +65,7 @@
             <line number="47" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Tests.DU/MyUnion" filename="altcover/Sample4/Tests.fs" line-rate="0.18" branch-rate="0.25" complexity="3">
+        <class name="Tests.DU/MyUnion" filename="altcover/Sample4/Tests.fs" line-rate="0.18" branch-rate="0.33" complexity="3">
           <methods>
             <method name="as_bar" signature="Tests.DU/MyUnion ()" line-rate="0.22" branch-rate="0.25" complexity="5">
               <lines>
@@ -101,7 +101,7 @@
             <line number="44" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Tests.M" filename="altcover/Sample4/Tests.fs" line-rate="0.6" branch-rate="0.5" complexity="2">
+        <class name="Tests.M" filename="altcover/Sample4/Tests.fs" line-rate="0.6" branch-rate="0.75" complexity="2">
           <methods>
             <method name="makeThing" signature="Tests.M/Thing (System.String)" line-rate="1" branch-rate="0" complexity="1">
               <lines>
@@ -129,7 +129,7 @@
             <line number="25" hits="1" branch="false" />
           </lines>
         </class>
-        <class name="Tests.M/Thing" filename="altcover/Sample4/Tests.fs" line-rate="1" branch-rate="0" complexity="1">
+        <class name="Tests.M/Thing" filename="altcover/Sample4/Tests.fs" line-rate="1" branch-rate="1" complexity="1">
           <methods>
             <method name="bytes" signature="System.Byte[] ()" line-rate="1" branch-rate="0" complexity="1">
               <lines>

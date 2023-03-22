@@ -1,4 +1,4 @@
-#if RUNNER
+﻿#if RUNNER
 namespace AltCover
 #else
 namespace AltCover.Recorder
@@ -78,17 +78,26 @@ and [<NoComparison; ExcludeFromCodeCoverage>] internal PointVisit =
 
 [<RequireQualifiedAccess>]
 module internal Counter =
+  type System.NotSupportedException with
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "Matches clause type")>]
+    static member Throw<'T>(message: string) : 'T =
+      message |> NotSupportedException |> raise
+
   // "Public" "fields"
 
   // // <summary>
   // // The time at which coverage run began
   // // </summary>
-  let mutable internal startTime = DateTime.UtcNow
+  let mutable internal startTime =
+    DateTime.UtcNow
 
   // // <summary>
   // // The finishing time taken of the coverage run
   // // </summary>
-  let mutable internal measureTime = DateTime.UtcNow
+  let mutable internal measureTime =
+    DateTime.UtcNow
 
   // // <summary>
   // // The offset flag for branch counts
@@ -129,7 +138,8 @@ module internal Counter =
 
       try
         doc.Load(stream)
-      with :? XmlException -> doc.LoadXml "<null/>"
+      with :? XmlException ->
+        doc.LoadXml "<null/>"
 
       doc
 
@@ -169,10 +179,9 @@ module internal Counter =
       | ReportFormat.OpenCover -> openCoverXml
       | ReportFormat.NCover -> nCoverXml
       | _ ->
-          format
-          |> (sprintf "%A")
-          |> NotSupportedException
-          |> raise
+        format
+        |> (sprintf "%A")
+        |> NotSupportedException.Throw
 
     let internal minTime (t1: DateTime) (t2: DateTime) = if t1 < t2 then t1 else t2
 
@@ -183,9 +192,12 @@ module internal Counter =
                       Justification = "Not an IDisposeable at net2.0")>]
     let
 #if !DEBUG
-         inline
+      inline
 #endif
-                  internal selectNodes (node:XmlNode) name =
+      internal selectNodes
+        (node: XmlNode)
+        name
+        =
       node.SelectNodes(name) |> Seq.cast<XmlNode>
 
     // // <summary>
@@ -207,14 +219,23 @@ module internal Counter =
       =
       let flushStart = DateTime.UtcNow
       let (m, i, m', s, v) = xmlByFormat format // throw early on unsupported
-      let coverageDocument = readXDocument coverageFile
-      let root = coverageDocument.DocumentElement
-      let startTimeNode = root.GetAttributeNode("startTime")
 
-      if format = ReportFormat.NCover
-         && Object.ReferenceEquals(startTimeNode, null) |> not then
+      let coverageDocument =
+        readXDocument coverageFile
+
+      let root = coverageDocument.DocumentElement
+
+      let startTimeNode =
+        root.GetAttributeNode("startTime")
+
+      if
+        format = ReportFormat.NCover
+        && Object.ReferenceEquals(startTimeNode, null) |> not
+      then
         let startTimeAttr = startTimeNode.Value
-        let measureTimeAttr = root.GetAttribute("measureTime")
+
+        let measureTimeAttr =
+          root.GetAttribute("measureTime")
 
         let oldStartTime =
           DateTime.ParseExact(startTimeAttr, "o", null)
@@ -240,76 +261,68 @@ module internal Counter =
         root.SetAttribute(
           "driverVersion",
           "AltCover.Recorder "
-          + System
-            .Diagnostics
-            .FileVersionInfo
+          + System.Diagnostics.FileVersionInfo
             .GetVersionInfo(
-              System
-                .Reflection
-                .Assembly
+              System.Reflection.Assembly
                 .GetExecutingAssembly()
                 .Location
             )
             .FileVersion
         )
 
-      let moduleNodes = selectNodes coverageDocument m
+      let moduleNodes =
+        selectNodes coverageDocument m
 
       moduleNodes
       |> Seq.cast<XmlElement>
       |> Seq.map (fun el -> el.GetAttribute(i), el)
       |> Seq.filter (fun (k, _) -> counts.ContainsKey k)
-      |> Seq.iter
-           (fun (k, affectedModule) ->
-             let moduleHits = counts.[k]
-             // Don't do this in one leap like --
-             // affectedModule.Descendants(XName.Get("seqpnt"))
-             // Get the methods, then flip their
-             // contents before concatenating
-             let nn = selectNodes affectedModule m'
+      |> Seq.iter (fun (k, affectedModule) ->
+        let moduleHits = counts.[k]
+        // Don't do this in one leap like --
+        // affectedModule.Descendants(XName.Get("seqpnt"))
+        // Get the methods, then flip their
+        // contents before concatenating
+        let nn = selectNodes affectedModule m'
 
-             nn
-             |> Seq.cast<XmlElement>
-             |> Seq.collect
-                  (fun (method: XmlElement) ->
-                    s
-                    |> Seq.collect
-                         (fun (name, flag) ->
-                           let nodes = selectNodes method name
+        nn
+        |> Seq.cast<XmlElement>
+        |> Seq.collect (fun (method: XmlElement) ->
+          s
+          |> Seq.collect (fun (name, flag) ->
+            let nodes = selectNodes method name
 
-                           nodes
-                           |> Seq.cast<XmlElement>
-                           |> Seq.map (fun x -> (x, flag))
-                           |> Seq.toList
-                           |> List.rev))
-             |> Seq.mapi
-                  (fun counter (pt, flag) ->
-                    ((match format with
-                      | ReportFormat.OpenCoverWithTracking
-                      | ReportFormat.OpenCover ->
-                          "uspid"
-                          |> pt.GetAttribute
-                          |> (findIndexFromUspid flag)
-                      | _ -> counter),
-                     pt))
-             |> Seq.filter (fst >> moduleHits.ContainsKey)
-             |> Seq.iter
-                  (fun x ->
-                    let pt = snd x
-                    let counter = fst x
+            nodes
+            |> Seq.cast<XmlElement>
+            |> Seq.map (fun x -> (x, flag))
+            |> Seq.toList
+            |> List.rev))
+        |> Seq.mapi (fun counter (pt, flag) ->
+          ((match format with
+            | ReportFormat.OpenCoverWithTracking
+            | ReportFormat.OpenCover ->
+              "uspid"
+              |> pt.GetAttribute
+              |> (findIndexFromUspid flag)
+            | _ -> counter),
+           pt))
+        |> Seq.filter (fst >> moduleHits.ContainsKey)
+        |> Seq.iter (fun x ->
+          let pt = snd x
+          let counter = fst x
 
-                    let vc =
-                      Int64.TryParse(
-                        pt.GetAttribute(v),
-                        System.Globalization.NumberStyles.Integer,
-                        System.Globalization.CultureInfo.InvariantCulture
-                      )
-                      |> snd
-                    // Treat -ve visit counts (an exemption added in analysis) as zero
-                    let count = moduleHits.[counter]
-                    let visits = (max 0L vc) + count.Total()
-                    pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
-                    pointProcess pt count.Tracks))
+          let vc =
+            Int64.TryParse(
+              pt.GetAttribute(v),
+              System.Globalization.NumberStyles.Integer,
+              System.Globalization.CultureInfo.InvariantCulture
+            )
+            |> snd
+          // Treat -ve visit counts (an exemption added in analysis) as zero
+          let count = moduleHits.[counter]
+          let visits = (max 0L vc) + count.Total()
+          pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
+          pointProcess pt count.Tracks))
 
       postProcess coverageDocument
 
@@ -322,31 +335,18 @@ module internal Counter =
 
       flushStart
 
-    let internal ensureModule
-      (counts: Dictionary<string, Dictionary<int, PointVisit>>)
-      moduleId
-      =
-      if not (counts.ContainsKey moduleId) then
-        lock
-          counts
-          (fun () ->
-            if not (counts.ContainsKey moduleId) then
-              counts.Add(moduleId, Dictionary<int, PointVisit>()))
-
     let internal ensurePoint (counts: Dictionary<int, PointVisit>) hitPointId =
       if not (counts.ContainsKey hitPointId) then
-        lock
-          counts
-          (fun () ->
-            if not (counts.ContainsKey hitPointId) then
-              System.Threading.Interlocked.Increment(&totalVisits)
+        lock counts (fun () ->
+          if not (counts.ContainsKey hitPointId) then
+            System.Threading.Interlocked.Increment(&totalVisits)
+            |> ignore
+
+            if hitPointId < 0 then
+              System.Threading.Interlocked.Increment(&branchVisits)
               |> ignore
 
-              if hitPointId < 0 then
-                System.Threading.Interlocked.Increment(&branchVisits)
-                |> ignore
-
-              counts.Add(hitPointId, PointVisit.Create()))
+            counts.Add(hitPointId, PointVisit.Create()))
 
 #if RUNNER
     let internal addTable
@@ -356,25 +356,23 @@ module internal Counter =
       let mutable hitcount = 0L
 
       t.Keys
-      |> Seq.iter
-           (fun m ->
-             ensureModule counts m
-             let next = counts.[m]
-             let here = t.[m]
+      |> Seq.iter (fun m ->
+        if counts.ContainsKey m |> not then
+          counts.Add(m, Dictionary<int, PointVisit>())
 
-             here.Keys
-             |> Seq.iter
-                  (fun p ->
-                    ensurePoint next p
-                    let v = next.[p]
-                    let add = here.[p]
-                    hitcount <- hitcount + add.Total()
+        let next = counts.[m]
+        let here = t.[m]
 
-                    lock
-                      v
-                      (fun () ->
-                        v.Count <- v.Count + add.Count
-                        v.Tracks.AddRange(add.Tracks))))
+        here.Keys
+        |> Seq.iter (fun p ->
+          ensurePoint next p
+          let v = next.[p]
+          let add = here.[p]
+          hitcount <- hitcount + add.Total()
+
+          lock v (fun () ->
+            v.Count <- v.Count + add.Count
+            v.Tracks.AddRange(add.Tracks))))
 
       hitcount
 #endif
@@ -394,15 +392,15 @@ module internal Counter =
     hitPointId
     context
     =
-    I.ensureModule counts moduleId
-    let next = counts.[moduleId]
-    I.ensurePoint next hitPointId
+    if counts.ContainsKey moduleId then
+      let next = counts.[moduleId]
+      I.ensurePoint next hitPointId
 
-    let v = next.[hitPointId]
+      let v = next.[hitPointId]
 
-    match context with
-    | Null -> v.Step()
-    | something -> v.Track something
+      match context with
+      | Null -> v.Step()
+      | something -> v.Track something
 
 #if RUNNER
   let internal addVisit
@@ -414,8 +412,8 @@ module internal Counter =
     match context with
     | Table t -> I.addTable counts t
     | _ ->
-        addSingleVisit counts moduleId hitPointId context
-        1L
+      addSingleVisit counts moduleId hitPointId context
+      1L
 #endif
 
   [<SuppressMessage("Gendarme.Rules.Smells",
@@ -437,15 +435,15 @@ module internal Counter =
       match output with
       | None -> new MemoryStream() :> Stream
       | Some f ->
-          new FileStream(
-            f,
-            FileMode.OpenOrCreate,
-            FileAccess.Write,
-            FileShare.None,
-            4096,
-            FileOptions.SequentialScan
-          )
-          :> Stream
+        new FileStream(
+          f,
+          FileMode.OpenOrCreate,
+          FileAccess.Write,
+          FileShare.None,
+          4096,
+          FileOptions.SequentialScan
+        )
+        :> Stream
 
     let outputFile =
       if Option.isSome output then
@@ -493,15 +491,15 @@ module internal Counter =
         match output with
         | None -> new MemoryStream() :> Stream
         | Some f ->
-            new FileStream(
-              f,
-              FileMode.OpenOrCreate,
-              FileAccess.Write,
-              FileShare.None,
-              4096,
-              FileOptions.SequentialScan
-            )
-            :> Stream
+          new FileStream(
+            f,
+            FileMode.OpenOrCreate,
+            FileAccess.Write,
+            FileShare.None,
+            4096,
+            FileOptions.SequentialScan
+          )
+          :> Stream
 
       try
         ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally

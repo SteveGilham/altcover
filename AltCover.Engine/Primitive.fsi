@@ -76,7 +76,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SummaryFormat: System.String
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
       }
@@ -243,17 +243,21 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         ShowGenerated: bool
         ///<summary>
-        /// Corresponds to command line option ` -q`
+        /// Corresponds to command line options `-q` and `--verbose`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
-}
-      with
+        ///<summary>
+        /// Corresponds to command line option ` --trivia`
+        ///</summary>
+        Trivia: bool
+      }
+    with
         ///<summary>
         /// Returns an instance with all fields empty that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
         ///</summary>
         ///<returns>a default instance</returns>
         static member Create : unit -> PrepareOptions
-      end
+    end
 // ```
 // `Create()` returns an instance that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
 //
@@ -271,7 +275,7 @@ namespace AltCoverFake.DotNet.Testing
   ///</summary>
     [<NoComparison; NoEquality>]
     type LoggingOptions =
-      {
+        {
         ///<summary>
         /// Sink for informational messages
         ///</summary>
@@ -287,14 +291,18 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Sink for command line/usage messages
         ///</summary>
-        Echo : System.String -> unit }
-      with
+        Echo : System.String -> unit
+        ///<summary>
+        /// Sink for detailed messages
+        ///</summary>
+        Verbose : System.String -> unit }
+    with
         ///<summary>
         /// Returns an instance that just discards all strings input.
         ///</summary>
         ///<returns>a default instance</returns>
         static member Create : unit -> LoggingOptions
-      end
+    end
 // ```
 // `Create()` returns an instance that just discards all strings input.  For your particular use, direct message severities appropriately.  `Echo` is used to echo the synthetic command line in case of inconsistent inputs.
 #endif

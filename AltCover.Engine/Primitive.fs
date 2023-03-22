@@ -1,4 +1,4 @@
-#if RUNNER
+﻿#if RUNNER
 namespace AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
@@ -91,7 +91,8 @@ module Primitive =
       VisibleBranches: bool
       ShowStatic: string
       ShowGenerated: bool
-      Verbosity: System.Diagnostics.TraceLevel }
+      Verbosity: System.Diagnostics.TraceLevel
+      Trivia: bool }
     static member Create() =
       { InputDirectories = Seq.empty
         OutputDirectories = Seq.empty
@@ -127,7 +128,8 @@ module Primitive =
         VisibleBranches = false
         ShowStatic = "-"
         ShowGenerated = false
-        Verbosity = System.Diagnostics.TraceLevel.Info }
+        Verbosity = System.Diagnostics.TraceLevel.Info
+        Trivia = false }
 
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false)>]
@@ -135,39 +137,45 @@ module Primitive =
     { Info: String -> unit
       Warn: String -> unit
       Failure: String -> unit
-      Echo: String -> unit }
+      Echo: String -> unit
+      Verbose: String -> unit }
 
     static member Create() : LoggingOptions =
       { Info = ignore
         Warn = ignore
         Failure = ignore
-        Echo = ignore }
+        Echo = ignore
+        Verbose = ignore }
 #endif
 
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            Target =
+                              "AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
                             MessageId = "cobertura",
                             Justification = "Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            Target =
+                              "AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
                             MessageId = "lcov",
                             Justification = "LCov is a name")>]
 #else
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            Target =
+                              "AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
                             MessageId = "cobertura",
                             Justification = "Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            Target =
+                              "AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
                             MessageId = "lcov",
                             Justification = "LCov is a name")>]
 #endif

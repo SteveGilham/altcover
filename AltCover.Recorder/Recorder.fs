@@ -1,4 +1,4 @@
-// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
+﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage.Counter/Coverage.Counter.csproj
 
 namespace AltCover.Recorder
@@ -12,6 +12,9 @@ open System.Reflection
 
 open System.Resources
 open System.Runtime.CompilerServices
+open System.Threading
+
+open AltCover.Shared
 
 module Instance =
   // Public "fields"
@@ -45,7 +48,8 @@ module Instance =
 #if DEBUG
       mutable
 #endif
-              internal CoverageFormat = ReportFormat.NCover // fsharplint:disable-line NonPublicValuesNames
+      internal CoverageFormat = // fsharplint:disable-line NonPublicValuesNames
+    ReportFormat.NCover
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -68,6 +72,20 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Token = "AltCover"
 
+  /// <summary>
+  /// Gets the indexed module tokens
+  /// This property's IL code is modified to store instrumentation results
+  /// </summary>
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Code more easily rewritten thus")>]
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let mutable internal modules =
+    [| String.Empty |]
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
@@ -75,13 +93,9 @@ module Instance =
     //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
-    |> Seq.exists
-         (fun n ->
-           n.Name = "AltCover.DataCollector"
-           && n.FullName.EndsWith(
-             "PublicKeyToken=c02b1a9f5b7cade8",
-             StringComparison.Ordinal
-           ))
+    |> Seq.exists (fun n ->
+      n.Name == "AltCover.DataCollector"
+      && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
     && Token <> "AltCover"
 
   type internal Sampled =
@@ -107,88 +121,81 @@ module Instance =
       |> Seq.map (fun l -> resources.GetString(s + "." + l))
       |> Seq.tryFind (String.IsNullOrEmpty >> not)
 
+    let private makeVisits () =
+      [ modules
+        [| Track.Entry; Track.Exit |] ]
+      |> Seq.concat
+      |> Seq.fold
+        (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
+          d.Add(k, Dictionary<int, PointVisit>())
+          d)
+        (Dictionary<string, Dictionary<int, PointVisit>>())
+
     /// <summary>
     /// Accumulation of visit records
     /// </summary>
-    let mutable internal visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+    let mutable internal visits = makeVisits ()
+
+    let internal makeSamples () =
+      modules
+      |> Seq.fold
+        (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
+          d.Add(k, Dictionary<Sampled, bool>())
+          d)
+        (Dictionary<string, Dictionary<Sampled, bool>>())
 
     let mutable internal samples =
-      new Dictionary<string, Dictionary<Sampled, bool>>()
+      makeSamples ()
 
     let mutable internal isRunner = false
 
     let internal synchronize = Object()
 
-#if NET46
-    /// <summary>
-    /// Gets or sets the current test method
-    /// </summary>
-    // [<Sealed; AbstractClass>] = static class not required
-    module CallTrack =
-      // Option chosen for the default value
-      // [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
-      let instance =
-        System.Threading.AsyncLocal<Option<int list>>()
+#if NET20
+    // class needed for "[ThreadStatic] static val mutable"
+    [<Sealed>]
+    type private AsyncLocal<'a>() =
+      [<ThreadStatic; DefaultValue>]
+      static val mutable private item: 'a
 
-      let private Update l = // fsharplint:disable-line NonPublicValuesNames
-        instance.Value <- Some l //.Value
-
-      // no race conditions here
-      let Instance () =
-        match instance.Value with //.Value
-        | None -> Update []
-        | _ -> ()
-
-        instance.Value.Value //.Value
-
-      let Peek () =
-        match Instance() with
-        | [] -> ([], None)
-        | h :: xs -> (xs, Some h)
-
-      let Push x = Update(x :: Instance())
-
-      let Pop () =
-        let (stack, head) = Peek()
-        Update stack
-        head
-#else
-    /// <summary>
-    /// Gets or sets the current test method
-    /// </summary>
-    [<Sealed; AbstractClass>] // = static class
-    type private CallTrack =
-      // Option chosen for the default value
-      [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
-      static val mutable private instance: Option<int list>
-
-      static member private Update l = CallTrack.instance <- Some l
-
-      static member Instance =
-        match CallTrack.instance with
-        | None -> CallTrack.Update []
-        | _ -> ()
-
-        CallTrack.instance.Value
-
-      static member Peek() =
-        match CallTrack.Instance with
-        | [] -> ([], None)
-        | h :: xs -> (xs, Some h)
-
-      static member Push x =
-        CallTrack.Update(x :: CallTrack.Instance)
-
-      static member Pop() =
-        let (stack, head) = CallTrack.Peek()
-        CallTrack.Update stack
-        head
+      [<SuppressMessage("Gendarme.Rules.Correctness",
+                        "MethodCanBeMadeStaticRule",
+                        Justification = "It's a compatibility hack")>]
+      member this.Value
+        with get () = AsyncLocal<'a>.item
+        and set (value) = AsyncLocal<'a>.item <- value
 #endif
 
-    let internal callerId () = CallTrack.Peek() |> snd
-    let internal push x = CallTrack.Push x
-    let internal pop () = CallTrack.Pop()
+    /// <summary>
+    /// Gets or sets the current test method
+    /// </summary>
+    module private CallTrack =
+      let value = AsyncLocal<Stack<int>>()
+
+      // no race conditions here
+      let instance () =
+        match value.Value with
+        | null -> value.Value <- Stack<int>()
+        | _ -> ()
+
+        value.Value
+
+      let private look op =
+        let i = instance ()
+
+        match i.Count with
+        | 0 -> None
+        | _ -> Some(op i)
+
+      let peek () = look (fun i -> i.Peek())
+
+      let push x = instance().Push x
+
+      let pop () = look (fun i -> i.Pop())
+
+    let internal callerId () = CallTrack.peek ()
+    let internal push x = CallTrack.push x
+    let internal pop () = CallTrack.pop ()
 
     /// <summary>
     /// Serialize access to the report file across AppDomains for the classic mode
@@ -201,7 +208,8 @@ module Instance =
     /// <summary>
     /// Reporting back to the mother-ship
     /// </summary>
-    let mutable internal trace = Tracer.Create(signalFile ())
+    let mutable internal trace =
+      Tracer.Create(signalFile ())
 
     let internal withMutex (f: bool -> 'a) =
       let own = mutex.WaitOne(1000)
@@ -209,19 +217,21 @@ module Instance =
       try
         f (own)
       finally
-        if own then mutex.ReleaseMutex()
+        if own then
+          mutex.ReleaseMutex()
 
     let internal initialiseTrace (t: Tracer) =
-      withMutex
-        (fun _ ->
-          trace <- t.OnStart()
-          isRunner <- isRunner || trace.IsConnected)
+      withMutex (fun _ ->
+        trace <- t.OnStart()
+        isRunner <- isRunner || trace.IsConnected)
 
-    let internal watcher = new FileSystemWatcher()
+    let internal watcher =
+      new FileSystemWatcher()
+
     let mutable internal recording = true
 
     let internal clear () =
-      visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+      visits <- makeVisits ()
       Counter.branchVisits <- 0L
       Counter.totalVisits <- 0L
 
@@ -232,26 +242,23 @@ module Instance =
       let counts = visits
       clear ()
 
-      trace.OnConnected
-        (fun () -> trace.OnFinish counts)
-        (fun () ->
-          match counts.Count with
-          | 0 -> ()
-          | _ ->
-              withMutex
-                (fun own ->
-                  let delta =
-                    Counter.doFlushFile
-                      ignore
-                      (fun _ _ -> ())
-                      own
-                      counts
-                      CoverageFormat
-                      ReportFile
-                      None
+      trace.OnConnected (fun () -> trace.OnFinish counts) (fun () ->
+        match counts.Values |> Seq.sumBy (fun x -> x.Count) with
+        | 0 -> ()
+        | _ ->
+          withMutex (fun own ->
+            let delta =
+              Counter.doFlushFile
+                ignore
+                (fun _ _ -> ())
+                own
+                counts
+                CoverageFormat
+                ReportFile
+                None
 
-                  getResource "Coverage statistics flushing took {0:N} seconds"
-                  |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+            getResource "Coverage statistics flushing took {0:N} seconds"
+            |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
 
     let internal flushPause () =
       ("PauseHandler")
@@ -271,18 +278,19 @@ module Instance =
       initialiseTrace trace
 
       if (wasConnected <> isRunner) then
-        samples <- Dictionary<string, Dictionary<Sampled, bool>>()
+        samples <- makeSamples ()
         clear ()
 
       recording <- true
 
     let internal traceVisit moduleId hitPointId context =
-      lock
-        synchronize
-        (fun () ->
-          let counts = visits
-          if counts.Count > 0 then clear ()
-          trace.OnVisit counts moduleId hitPointId context)
+      lock synchronize (fun () ->
+        let counts = visits
+
+        if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
+          clear ()
+
+        trace.OnVisit counts moduleId hitPointId context)
 
     [<SuppressMessage("Microsoft.Usage",
                       "CA2202:DisposeObjectsBeforeLosingScope",
@@ -295,8 +303,11 @@ module Instance =
            sprintf "exception = %s" (x.ToString())
            StackTrace().ToString() |]
 
-      let stamp = sprintf "%A" DateTime.UtcNow.Ticks
-      let filename = ReportFile + "." + stamp + ".exn"
+      let stamp =
+        sprintf "%A" DateTime.UtcNow.Ticks
+
+      let filename =
+        ReportFile + "." + stamp + ".exn"
 
       use file =
         File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write)
@@ -306,15 +317,22 @@ module Instance =
       text
       |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-                                                      "AvoidLongParameterListsRule",
-                                                      Justification = "Self-contained internal decorator")>]
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Self-contained internal decorator")>]
 
     let
 #if !DEBUG
-        inline
+      inline
 #endif
-               internal issue71Wrapper visits moduleId hitPointId context handler add =
+      internal issue71Wrapper
+        visits
+        moduleId
+        hitPointId
+        context
+        handler
+        add
+        =
       try
         add visits moduleId hitPointId context
       with x ->
@@ -324,63 +342,66 @@ module Instance =
         | :? ArgumentNullException -> handler moduleId hitPointId context x
         | _ -> reraise ()
 
-    let internal addVisit moduleId hitPointId context =
-      issue71Wrapper
+    let
+#if !DEBUG
+      inline
+#endif
+      internal curriedIssue71Wrapper
         visits
         moduleId
         hitPointId
         context
-        logException
-        Counter.addSingleVisit
+        add
+        =
+      issue71Wrapper visits moduleId hitPointId context logException add
+
+    let internal addVisit moduleId hitPointId context =
+      curriedIssue71Wrapper visits moduleId hitPointId context Counter.addSingleVisit
+
+    type InvalidDataException with
+      [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                        "AvoidMethodWithUnusedGenericTypeRule",
+                        Justification = "Matches clause type")>]
+      static member Throw<'T>(message: obj) : 'T =
+        message.ToString()
+        |> InvalidDataException
+        |> raise
 
     let internal takeSample strategy moduleId hitPointId (context: Track) =
       match strategy with
       | Sampling.All -> true
       | _ ->
-          match context with
-          | Null -> [ Visit hitPointId ]
-          | Time t ->
-              [ Visit hitPointId
-                TimeVisit(hitPointId, t) ]
-          | Call c ->
-              [ Visit hitPointId
-                CallVisit(hitPointId, c) ]
-          | Both b ->
-              [ Visit hitPointId
-                TimeVisit(hitPointId, b.Time)
-                CallVisit(hitPointId, b.Call) ]
-          | _ ->
-              context.ToString()
-              |> InvalidDataException
-              |> raise
-          |> Seq.map
-               (fun hit ->
-                 let mutable hasModuleKey = samples.ContainsKey(moduleId)
+        (match context with
+         | Null -> [ Visit hitPointId ]
+         | Time t ->
+           [ Visit hitPointId
+             TimeVisit(hitPointId, t) ]
+         | Call c ->
+           [ Visit hitPointId
+             CallVisit(hitPointId, c) ]
+         | Both b ->
+           [ Visit hitPointId
+             TimeVisit(hitPointId, b.Time)
+             CallVisit(hitPointId, b.Call) ]
+         | _ -> context |> InvalidDataException.Throw)
+        |> Seq.map (fun hit ->
+          if samples.ContainsKey(moduleId) then
+            let next = samples.[moduleId]
 
-                 if hasModuleKey |> not then
-                   lock
-                     samples
-                     (fun () ->
-                       hasModuleKey <- samples.ContainsKey(moduleId)
+            let mutable hasPointKey =
+              next.ContainsKey(hit)
 
-                       if hasModuleKey |> not then
-                         samples.Add(moduleId, Dictionary<Sampled, bool>()))
+            if hasPointKey |> not then
+              lock next (fun () ->
+                hasPointKey <- next.ContainsKey(hit)
 
-                 let next = samples.[moduleId]
+                if hasPointKey |> not then
+                  next.Add(hit, true))
 
-                 let mutable hasPointKey = next.ContainsKey(hit)
-
-                 if hasPointKey |> not then
-                   lock
-                     next
-                     (fun () ->
-                       hasPointKey <- next.ContainsKey(hit)
-
-                       if hasPointKey |> not then
-                         next.Add(hit, true))
-
-                 (hasPointKey && hasModuleKey) |> not)
-          |> Seq.fold (||) false // true if any are novel -- all must be evaluated
+            not hasPointKey
+          else
+            false)
+        |> Seq.fold (||) false // true if any are novel -- all must be evaluated
 
     /// <summary>
     /// This method is executed from instrumented assemblies.
@@ -388,8 +409,10 @@ module Instance =
     /// <param name="moduleId">Assembly being visited</param>
     /// <param name="hitPointId">Sequence Point identifier</param>
     let internal visitImpl moduleId hitPointId context =
-      if (Sample = Sampling.All
-          || takeSample Sample moduleId hitPointId context) then
+      if
+        (Sample = Sampling.All
+         || takeSample Sample moduleId hitPointId context)
+      then
         let adder =
           if Defer || supervision || (trace.IsConnected |> not) then
             addVisit
@@ -413,13 +436,15 @@ module Instance =
         | (t, None) -> Time(t * (clock () / t))
         | (0L, n) -> Call n.Value
         | (t, n) ->
-            Both
-              { Time = t * (clock () / t)
-                Call = n.Value }
+          Both
+            { Time = t * (clock () / t)
+              Call = n.Value }
       else
         Null
 
-    let internal payloadControl = payloadSelection clock
+    let internal payloadControl =
+      payloadSelection clock
+
     let internal payloadSelector enable = payloadControl granularity enable
 
     let internal visitSelection track moduleId hitPointId =
@@ -430,10 +455,10 @@ module Instance =
       | Resume -> flushResume ()
       | Pause -> flushPause ()
       | _ ->
-          recording <- false
+        recording <- false
 
-          if supervision |> not then
-            flushAll finish
+        if supervision |> not then
+          flushAll finish
 
     // Register event handling
     let internal doPause =
@@ -465,8 +490,10 @@ module Instance =
   let Visit moduleId hitPointId =
     if I.recording then
       I.visitSelection
-        (if (CoverageFormat = ReportFormat.OpenCoverWithTracking
-             || CoverageFormat = ReportFormat.NativeJsonWithTracking) then
+        (if
+           (CoverageFormat = ReportFormat.OpenCoverWithTracking
+            || CoverageFormat = ReportFormat.NativeJsonWithTracking)
+         then
            I.payloadSelector I.isTrackingRunner
          else
            Null)
@@ -499,4 +526,10 @@ module Instance =
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "DeclareEventsExplicitlyRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "<StartupCode$AltCover-Recorder>.$Recorder",
+                            Justification =
+                              "Compiler generated doExit@453 and :doUnload@450")>]
 ()

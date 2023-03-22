@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 
@@ -21,12 +21,14 @@ module internal Naming =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+                                                      Justification =
+                                                        "AvoidSpeculativeGenerality too")>]
     let internal typeName (def: TypeDefinition) = emptyIfIsNullOrWhiteSpace def.Name
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+                                                      Justification =
+                                                        "AvoidSpeculativeGenerality too")>]
     let internal typeRefName (def: TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
 
     let rec internal fullTypeRefName (def: TypeReference) =
@@ -78,7 +80,8 @@ module internal Naming =
       else
         String.Empty
 
-    let return' = I.fullTypeRefName def.ReturnType
+    let return' =
+      I.fullTypeRefName def.ReturnType
 
     String.Join(
       String.Empty,

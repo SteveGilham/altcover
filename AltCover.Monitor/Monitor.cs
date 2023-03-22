@@ -6,10 +6,15 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 
+#if !DEBUG
 namespace AltCover
+#else
+
+namespace AltCover.Local
+#endif
 {
   /// <summary>
-  /// A simple data type tp hold sequence and branch point counts.
+  /// A simple data type to hold sequence and branch point counts.
   /// </summary>
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 
@@ -19,7 +24,6 @@ namespace AltCover
   [SuppressMessage("Microsoft.Performance",
                    "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes",
                    Justification = "There is no use case")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
   public struct PointCount
   {
     /// <summary>
@@ -33,7 +37,6 @@ namespace AltCover
     [SuppressMessage("Microsoft.Design",
                      "CA1051:DoNotDeclareVisibleInstanceFields",
                      Justification = "It's a struct, dude")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     public int Code;
 
     /// <summary>
@@ -42,12 +45,11 @@ namespace AltCover
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 
     [SuppressMessage("Gendarme.Rules.Design",
-                     "AvoidVisibleFieldsRule",
-                     Justification = "It's a struct, dude")]
+                 "AvoidVisibleFieldsRule",
+                 Justification = "It's a struct, dude")]
     [SuppressMessage("Microsoft.Design",
-                     "CA1051:DoNotDeclareVisibleInstanceFields",
-                     Justification = "It's a struct, dude")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
+                 "CA1051:DoNotDeclareVisibleInstanceFields",
+                 Justification = "It's a struct, dude")]
     public int Branch;
   }
 
@@ -61,7 +63,6 @@ namespace AltCover
     [SuppressMessage("Gendarme.Rules.Exceptions",
                      "UseObjectDisposedExceptionRule",
                      Justification = "There is no use case")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     public T Add<T>(T item)
     {
       data.Add(item);
@@ -73,7 +74,6 @@ namespace AltCover
     [SuppressMessage("Gendarme.Rules.Interoperability",
                      "DelegatesPassedToNativeCodeMustIncludeExceptionHandlingRule",
                      Justification = "Gendarme bug here")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     private void Dispose(bool disposing)
     {
       if (!disposedValue)
@@ -151,6 +151,31 @@ namespace AltCover
     /// </summary>
     /// <param name="totals">The total point counts if running under AltCover coverage</param>
     /// <returns>True if running under AltCover coverage</returns>
+    public static bool TryGetPointTotals(out PointCount totals)
+    {
+      var instance = TypeInstance("Instance");
+      totals = new PointCount();
+      var found = false;
+      foreach (var i in instance) // only 0 or 1 expected
+      {
+        var xml = i.GetProperty("ReportFile").GetValue(null, Type.EmptyTypes).ToString();
+        using (var file = File.OpenRead(xml))
+        {
+          var doc = new XmlDocument();
+          doc.Load(file);
+          totals = CountVisitPoints(doc);
+          found = true;
+        }
+      }
+
+      return found;
+    }
+
+    /// <summary>
+    /// Counts the visitable points in an XmlDocument
+    /// </summary>
+    /// <param name="doc">The XML document to scan</param>
+    /// <returns>The value from the document</returns>
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 
     [SuppressMessage("Gendarme.Rules.Correctness",
@@ -159,38 +184,29 @@ namespace AltCover
     [SuppressMessage("Gendarme.Rules.Performance",
                      "AvoidRepetitiveCallsToPropertiesRule",
                      Justification = "Once per instance")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
-    public static bool TryGetPointTotals(out PointCount totals)
+    [SuppressMessage("Gendarme.Rules.Design",
+                     "PreferXmlAbstractionsRule",
+                     Justification = "There is no use case")]
+    internal static PointCount CountVisitPoints(XmlDocument doc)
     {
-      var instance = TypeInstance("Instance");
-      totals = new PointCount();
-      var found = false;
-      foreach (var i in instance)
+      var totals = new PointCount();
+      using (var scans = new Carrier())
       {
-        var xml = i.GetProperty("ReportFile").GetValue(null, Type.EmptyTypes).ToString();
-        using (var file = File.OpenRead(xml))
-        using (var scans = new Carrier())
+        var seqpnt = scans.Add(doc.DocumentElement.SelectNodes("//seqpnt")).Count;
+        var sp2 = scans.Add(doc.DocumentElement.SelectNodes("//SequencePoint")).Count;
+
+        foreach (XmlElement m in scans.Add(doc.DocumentElement.SelectNodes("//Method")))
         {
-          var doc = new XmlDocument();
-          doc.Load(file);
-          var seqpnt = scans.Add(doc.DocumentElement.SelectNodes("//seqpnt")).Count;
-          var sp2 = scans.Add(doc.DocumentElement.SelectNodes("//SequencePoint")).Count;
-
-          foreach (XmlElement m in scans.Add(doc.DocumentElement.SelectNodes("//Method")))
+          if (scans.Add(m.SelectNodes(".//SequencePoint")).Count == 0)
           {
-            if (scans.Add(m.SelectNodes(".//SequencePoint")).Count == 0)
-            {
-              sp2++;
-            }
+            sp2++;
           }
-
-          totals.Branch = scans.Add(doc.DocumentElement).SelectNodes("//BranchPoint").Count;
-          totals.Code = Math.Max(seqpnt, sp2);
-          found = true;
         }
-      }
 
-      return found;
+        totals.Branch = scans.Add(doc.DocumentElement).SelectNodes("//BranchPoint").Count;
+        totals.Code = Math.Max(seqpnt, sp2);
+        return totals;
+      }
     }
 
     /// <summary>

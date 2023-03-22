@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 open System.Linq
@@ -15,9 +15,11 @@ module Xhtml =
                     Justification = "AvoidSpeculativeGenerality too")>]
   let ConvertToBarChart (document: XDocument) =
     let format =
-      if document
-        .Descendants(XName.Get "CoverageSession")
-        .Any() then
+      if
+        document
+          .Descendants(XName.Get "CoverageSession")
+          .Any()
+      then
         AltCover.ReportFormat.OpenCover
       else
         AltCover.ReportFormat.NCover
@@ -49,11 +51,10 @@ module Xhtml =
       transform.Transform(source, output)
 
     rewrite.XPathSelectElements("//script[@language='JavaScript']")
-    |> Seq.iter
-         (fun n ->
-           let text = n.Value
-           n.Value <- "//"
-           n.Add(XCData(text)))
+    |> Seq.iter (fun n ->
+      let text = n.Value
+      n.Value <- "//"
+      n.Add(XCData(text)))
 
     rewrite.AddFirst(XDocumentType("html", null, null, null))
     rewrite

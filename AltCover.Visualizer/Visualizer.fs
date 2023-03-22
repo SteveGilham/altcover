@@ -1,4 +1,4 @@
-namespace AltCover
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -31,26 +31,22 @@ module private Gui =
       "fileOpenMenu"
       "aboutVisualizer" ]
 #if !NET472
-    |> List.iter
-         (fun name ->
-           use b =
-             new Builder(
-               System
-                 .Reflection
-                 .Assembly
-                 .GetExecutingAssembly()
-                 .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
-               name
-             )
+    |> List.iter (fun name ->
+      use b =
+        new Builder(
+          System.Reflection.Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
+          name
+        )
 
-           b.Autoconnect handler)
+      b.Autoconnect handler)
 #else
-    |> List.iter
-         (fun name ->
-           use xml =
-             new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
+    |> List.iter (fun name ->
+      use xml =
+        new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
 
-           xml.Autoconnect(handler))
+      xml.Autoconnect(handler))
 #endif
 
     handler.coverageFiles <- []
@@ -60,10 +56,9 @@ module private Gui =
   let private setDefaultText (h: Handler) =
     [ (h.codeView.Buffer, 100)
       (h.lineView.Buffer, 7) ]
-    |> Seq.iter
-         (fun (b, n) ->
-           b.Text <- String(' ', n)
-           b.ApplyTag("baseline", b.StartIter, b.EndIter))
+    |> Seq.iter (fun (b, n) ->
+      b.Text <- String(' ', n)
+      b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
   // Fill in the menu from the memory cache
   let private populateMenu (handler: Handler) =
@@ -90,23 +85,27 @@ module private Gui =
 
     active
 
+#if NET472
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  let private urlHook _ link = Browser.ShowUrl(Uri link)
+#endif
+
   let private prepareAboutDialog (handler: Handler) =
 #if !NET472
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl(Uri link))
-    |> ignore
+    AboutDialog.SetUrlHook(urlHook) |> ignore
 
-    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl(Uri link))
-    |> ignore
+    LinkButton.SetUriHook(urlHook) |> ignore
 
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
-    |> Seq.iter
-         (fun w ->
-           let t = Resource.GetResourceString w.Label
+    |> Seq.iter (fun w ->
+      let t = Resource.GetResourceString w.Label
 
-           if t |> String.IsNullOrWhiteSpace |> not then
-             w.Label <- t)
+      if t |> String.IsNullOrWhiteSpace |> not then
+        w.Label <- t)
 #endif
 
     handler.aboutVisualizer.Title <- Resource.GetResourceString("aboutVisualizer.Title")
@@ -115,59 +114,103 @@ module private Gui =
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
 
     handler.aboutVisualizer.Version <-
-      System.AssemblyVersionInformation.AssemblyFileVersion
+      AltCover.AssemblyVersionInformation.AssemblyPackageVersion
 
     handler.aboutVisualizer.Copyright <-
-      Resource.Format(
-        "aboutVisualizer.Copyright",
-        [ System.AssemblyVersionInformation.AssemblyCopyright ]
+      String.Join(
+        Environment.NewLine,
+        [ AltCover.AssemblyVersionInformation.AssemblyCopyright
+          Resource.Format("aboutVisualizer.Copyright", [])
+          "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022" ]
       )
 
     handler.aboutVisualizer.License <-
-      Resource.Format("License", [ System.AssemblyVersionInformation.AssemblyCopyright ])
+      Resource.Format(
+        "License",
+        [ AltCover.AssemblyVersionInformation.AssemblyCopyright ]
+      )
 
     handler.aboutVisualizer.Comments <-
-      Resource.GetResourceString("aboutVisualizer.Comments")
+      String.Format(
+        Globalization.CultureInfo.CurrentCulture,
+        Resource.GetResourceString("aboutVisualizer.Comments"),
+#if NET472
+        "GTK#2"
+#else
+        "GTK#3"
+#endif
+      )
 
     handler.aboutVisualizer.WebsiteLabel <-
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")
 
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "Added to classStructureTree'")>]
+  let private prepareTreeLine (handler: Handler) i =
+    let column = new Gtk.TreeViewColumn()
+    let icon = new Gtk.CellRendererPixbuf()
+    column.PackStart(icon, true)
+    let cell = new Gtk.CellRendererText()
+    column.PackEnd(cell, true)
+    let note = new Gtk.CellRendererText()
+    note.Alignment <- Pango.Alignment.Right
+
+    let font =
+      Persistence.readFont ()
+      |> Pango.FontDescription.FromString
+
+    let copy = note.FontDesc.Copy()
+    copy.Family <- font.Family
+    note.FontDesc <- copy
+    column.PackEnd(note, true)
+
+    handler.classStructureTree.AppendColumn(column)
+    |> ignore
+
+    column.AddAttribute(icon, "pixbuf", (3 * i))
+    column.AddAttribute(note, "text", (3 * i) + 1)
+    column.AddAttribute(cell, "text", (3 * i) + 2)
+
   let private prepareTreeView (handler: Handler) =
     handler.classStructureTree.HasTooltip <- true
-    [| icons.Assembly
-       icons.Namespace
-       icons.Class
-       icons.Method |]
-    |> Seq.iteri
-         (fun i x -> // this line number
-           let column = new Gtk.TreeViewColumn()
-           let cell = new Gtk.CellRendererText()
-           let icon = new Gtk.CellRendererPixbuf()
-           column.PackStart(icon, true)
-           column.PackEnd(cell, true)
 
-           handler.classStructureTree.AppendColumn(column)
-           |> ignore
+    // logical columns
+    let types =
+      [| icons.Assembly
+         icons.Namespace
+         icons.Class
+         icons.Method |]
 
-           column.AddAttribute(cell, "text", 2 * i)
-           column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+    seq { 0 .. (types.Length - 1) }
+    |> Seq.iter (prepareTreeLine handler)
 
     handler.classStructureTree.Model <-
       new TreeStore(
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+        typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<string>
       )
 
     handler.auxModel <-
       new TreeStore(
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
+        typeof<string>,
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
@@ -175,9 +218,10 @@ module private Gui =
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+        typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>
+        typeof<string>
       )
 
 #if !NET472
@@ -212,9 +256,22 @@ module private Gui =
                         Justification = "Compiler generated virtual")>]
       member self.Dispose() = ()
 
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "Added to 'openFileDialog'")>]
+  let private addFilter (openFileDialog: Gtk.IFileChooser) (t: string) =
+    let filter = new FileFilter()
+    let data = t.Split([| '%' |])
+    filter.Name <- data.[0]
+    filter.AddPattern("*." + data.[1])
+    openFileDialog.AddFilter filter
+
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
                     Justification = "Value is returned")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "'openFileDialog' is returned")>]
   let private prepareOpenFileDialog (handler: Handler) =
     let openFileDialog =
       new FileChooserDialog(
@@ -233,14 +290,7 @@ module private Gui =
         .GetResourceString("SelectXml")
         .Split([| '|' |])
 
-    data
-    |> Seq.iter
-         (fun t ->
-           let filter = new FileFilter()
-           let data = t.Split([| '%' |])
-           filter.Name <- data.[0]
-           filter.AddPattern("*." + data.[1])
-           openFileDialog.AddFilter filter)
+    data |> Seq.iter (addFilter openFileDialog)
 
     new FileOpenDialog(openFileDialog)
 #else
@@ -252,6 +302,9 @@ module private Gui =
   [<SuppressMessage("Microsoft.Globalization",
                     "CA1303:Do not pass literals as localized parameters",
                     Justification = "It's furniture, not user visible text")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
   let private prepareOpenFileDialog _ =
     let openFileDialog =
       new System.Windows.Forms.OpenFileDialog()
@@ -269,7 +322,7 @@ module private Gui =
 #endif
   // -------------------------- Tree View ---------------------------
   let mappings =
-    new Dictionary<TreePath, XPathNavigator>()
+    Dictionary<TreePath, XPathNavigator>()
   // -------------------------- Event handling  ---------------------------
 #if !NET472
   type TheTreeModel = ITreeModel
@@ -278,6 +331,35 @@ module private Gui =
 #endif
 
   let private doSelected (handler: Handler) doUpdateMRU index =
+    let addNode =
+      fun
+          (expands: bool)
+          (context: CoverageTreeContext<TreeStore, TreeIter>)
+          (icon: Lazy<Gdk.Pixbuf>)
+          pc
+          name
+          (tip: string option) ->
+        let newrow =
+          context.Model.AppendValues(
+            context.Row,
+            [| icon.Force() :> obj
+               pc :> obj
+               name :> obj |]
+          )
+
+        if expands then
+          context.Model.Data.Add(newrow, New)
+
+          context.Model.AppendValues(newrow, [| icons.Progress.Force() :> obj |])
+          |> ignore
+
+        tip
+        |> Option.iter (fun text ->
+          let path = context.Model.GetPath(newrow)
+          handler.classStructureTree.Data.Add(path, text))
+
+        { context with Row = newrow }
+
     let environment =
       { Icons = icons
         GetFileInfo =
@@ -293,22 +375,30 @@ module private Gui =
             .ShowMessageOnGuiThread
         UpdateMRUFailure =
           fun info ->
-            Handler.InvokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
+            Handler.InvokeOnGuiThread(fun () ->
+              handler.classStructureTree.Data.Clear()
+              let model = handler.auxModel
+              model.Clear()
+              mappings.Clear()
+              handler.classStructureTree.Model <- model
+              doUpdateMRU handler info.FullName false)
         UpdateUISuccess =
           fun info ->
             let updateUI (theModel: TheTreeModel) (info: FileInfo) () =
-              // File is good so enable the refresh button
-              handler.refreshButton.Sensitive <- true
+              // If file is good, enable the refresh button
+              handler.refreshButton.Sensitive <- info.IsNotNull
               // Do real UI work here
               handler.auxModel <- handler.classStructureTree.Model :?> TreeStore
               handler.classStructureTree.Model <- theModel
               setDefaultText handler
               handler.mainWindow.Title <- "AltCover.Visualizer"
-              doUpdateMRU handler info.FullName true
+
+              if info.IsNotNull then
+                doUpdateMRU handler info.FullName true
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name icon tip ->
+          fun pc name icon tip ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
@@ -316,27 +406,24 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name, icon.Force())
+              model.AppendValues(icon.Force(), pc, name)
 
-            if tip |> String.IsNullOrWhiteSpace |> not
-            then
+            model.AppendValues(topRow, [| icon.Force() :> obj |])
+            |> ignore
+
+            model.Data.Add(topRow, New)
+
+            if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)
               table.Add(path, tip)
 
             { Model = model; Row = topRow }
-        AddNode =
-          fun context icon name (tip : string option) ->
-            let newrow =
-              context.Model.AppendValues(
-                    context.Row,
-                    [| name :> obj; icon.Force() :> obj |])
-
-            tip
-            |> Option.iter
-                           (fun text -> let path = context.Model.GetPath(newrow)
-                                        handler.classStructureTree.Data.Add(path, text))
-            { context with
-                Row = newrow }
+        TreeUIDispatch = (fun f -> f ())
+        AddNode = addNode true
+        AddLeafNode = addNode false
+        OnRowExpanded =
+          (fun (row: TreeIter) (action: unit -> unit) ->
+            handler.classStructureTree.Data.Add(row, Unexpanded action))
         Map = fun context xpath -> mappings.Add(context.Model.GetPath context.Row, xpath) }
 
     async { CoverageFileTree.DoSelected environment index }
@@ -348,12 +435,15 @@ module private Gui =
     (handler: Handler)
     (openFileDialogFactory: OpenFileDialogFactory)
     =
-    use openFileDialog = openFileDialogFactory handler
+    use openFileDialog =
+      openFileDialogFactory handler
 
     let makeSelection (ofd: FileOpenDialog) x =
 
 #if !NET472
-      if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
+      if
+        Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok
+      then
 #else
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
 #endif
@@ -371,10 +461,9 @@ module private Gui =
     handler.openButton.Clicked
     |> Event.map (makeSelection openFileDialog)
     |> Event.choose id
-    |> Event.map
-         (fun info ->
-           handler.justOpened <- info.FullName
-           -1)
+    |> Event.map (fun info ->
+      handler.justOpened <- info.FullName
+      -1)
 
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
@@ -408,25 +497,22 @@ module private Gui =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "IDisposables are added to the TextView")>]
-  let private markBranches
-    (root: XPathNavigator)
-    (lineView: TextView)
-    (filename: string)
-    =
+  let private markBranches (root: XPathNavigator) (lineView: TextView) (file: Source) =
     let buff = lineView.Buffer
-    let branches = HandlerCommon.TagBranches root filename
+
+    let branches =
+      HandlerCommon.TagBranches root file
 
     for l in 1 .. buff.LineCount do
       let image = new Image()
 
       let pix =
-        HandlerCommon.IconForBranches
-          icons
-          branches
-          l
-          (fun text -> image.TooltipText <- text)
+        HandlerCommon.IconForBranches icons branches l (fun text ->
+          image.TooltipText <- text)
 
-      let mutable i = buff.GetIterAtLineOffset(l - 1, 7)
+      let mutable i =
+        buff.GetIterAtLineOffset(l - 1, 7)
+
       let a = new TextChildAnchor()
       buff.InsertChildAnchor(&i, a)
       image.Pixbuf <- pix
@@ -444,21 +530,23 @@ module private Gui =
       else
         buff.GetIterAtLineOffset(n.Line - 1, Math.Max(Math.Min(n.Column, chars) - 1, 0))
 
-    let endline = buff.GetIterAtLine(n.EndLine - 1)
+    let endline =
+      buff.GetIterAtLine(n.EndLine - 1)
+
     let endchars = endline.CharsInLine
 
     // coverlet-like case w/o column data
     let ec =
       if n.LineOnly then
-        endchars
+        endchars - 1
       else
-        n.EndColumn
+        n.EndColumn - 1
 
     let until =
       if endchars = 0 then
         endline
       else
-        buff.GetIterAtLineOffset(n.EndLine - 1, Math.Min(ec, endchars) - 1)
+        buff.GetIterAtLineOffset(n.EndLine - 1, Math.Min(ec, endchars))
 
     let tag =
       match n.Style with
@@ -484,11 +572,13 @@ module private Gui =
 
     tags
     |> HandlerCommon.TagLines "visited" "notVisited"
-    |> List.iter
-         (fun (l, tag) ->
-           let start = buff2.GetIterAtLine(l - 1)
-           let finish = buff2.GetIterAtLineOffset(l - 1, 7)
-           buff2.ApplyTag(tag, start, finish))
+    |> List.iter (fun (l, tag) ->
+      let start = buff2.GetIterAtLine(l - 1)
+
+      let finish =
+        buff2.GetIterAtLineOffset(l - 1, 7)
+
+      buff2.ApplyTag(tag, start, finish))
 
   let internal lineHeights (h: Handler) =
     let v = h.codeView
@@ -516,7 +606,9 @@ module private Gui =
     let lines = v.Buffer.LineCount
 
     let pages = va.Upper / va.PageSize // total document size
-    let ``lines per page`` = (float lines) / pages
+
+    let ``lines per page`` =
+      (float lines) / pages
 
     let pagedepth =
       float (h.activeRow - 1) / ``lines per page``
@@ -528,15 +620,47 @@ module private Gui =
       else
         0.0
 
-    Handler.InvokeOnGuiThread
-      (fun () ->
-        balanceLines h
-        va.Value <- adjust)
+    Handler.InvokeOnGuiThread(fun () ->
+      balanceLines h
+      va.Value <- adjust)
 
 #if !NET472
   // fsharplint:disable-next-line RedundantNewKeyword
-  let latch = new Threading.ManualResetEvent false
+  let latch =
+    new Threading.ManualResetEvent false
 #endif
+
+  let private onRowExpanded (handler: Handler) (activation: RowExpandedArgs) =
+    let row = activation.Iter
+
+    let clearRow () =
+      let dummy = ref TreeIter.Zero
+
+      let model =
+        handler.classStructureTree.Model :?> TreeStore
+
+      if model.IterNthChild(dummy, row, 0) then
+        model.Remove dummy |> ignore
+
+      handler.classStructureTree.Data.[row] <- Expanded
+
+    let data = handler.classStructureTree.Data
+
+    if data.ContainsKey row then
+      match data.[row] :?> CoverageRowState with
+      | New -> clearRow ()
+      | Unexpanded a ->
+        clearRow ()
+        a ()
+        // annoying, but the altrnative (a() then clearRow ()) messes up paths
+        handler.classStructureTree.ExpandRow(
+          handler.classStructureTree.Model.GetPath row,
+          false
+        )
+        |> ignore
+      | _ -> ()
+    else
+      clearRow ()
 
   let private onRowActivated (handler: Handler) (activation: RowActivatedArgs) =
     let hitFilter (activated: RowActivatedArgs) (path: TreePath) =
@@ -553,8 +677,9 @@ module private Gui =
           Resource.Format(
             "No source location",
             [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
-                .Text.Replace("<", "&lt;")
-                .Replace(">", "&gt;") ]
+                .Text
+              |> replace ("<", "&lt;")
+              |> replace (">", "&gt;") ]
           )
 
         (handler :> IVisualizerWindow)
@@ -565,7 +690,6 @@ module private Gui =
       let showSource (info: Source) (line: int) =
         let buff = handler.codeView.Buffer
         let buff2 = handler.lineView.Buffer
-        let pathname = info.FullName
 
         buff.Text <- info.ReadAllText()
 
@@ -577,19 +701,18 @@ module private Gui =
           )
 
         [ handler.codeView; handler.lineView ]
-        |> Seq.iter
-             (fun v ->
-               v.PixelsAboveLines <- 0
-               v.PixelsInsideWrap <- 0
-               v.PixelsBelowLines <- 0)
+        |> Seq.iter (fun v ->
+          v.PixelsAboveLines <- 0
+          v.PixelsInsideWrap <- 0
+          v.PixelsBelowLines <- 0)
 
         [ buff; buff2 ]
         |> List.iter (fun b -> b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
         let root = m.Clone()
         root.MoveToRoot()
-        markBranches root handler.lineView pathname
-        markCoverage root buff buff2 pathname
+        markBranches root handler.lineView info
+        markCoverage root buff buff2 info
         handler.activeRow <- line
         handler.codeView.CursorVisible <- false
         handler.viewport1.QueueDraw()
@@ -633,8 +756,8 @@ module private Gui =
     tag.Underline <- Pango.Underline.Single
     tt.Add tag |> ignore
 
-    let start = keytext.[1].IndexOf('_')
-    buffer.Text <- keytext.[1].Replace("_", String.Empty)
+    let start = keytext.[1] |> indexOf ('_')
+    buffer.Text <- keytext.[1] |> replace ("_", String.Empty)
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
 
     buffer.ApplyTag(
@@ -681,21 +804,23 @@ module private Gui =
 
     h.fileOpenMenu.AllChildren
     |> Seq.cast<MenuItem>
-    |> Seq.iteri
-         (fun n (i: MenuItem) ->
-           let c = ((n + 1) % 10) |> char
+    |> Seq.iteri (fun n (i: MenuItem) ->
+      let c = ((n + 1) % 10) |> char
 
-           let key =
-             Keyval.FromName(String [| '0' + c |])
-             |> int
-             |> enum<Gdk.Key>
+      let key =
+        Keyval.FromName(String [| '0' + c |])
+        |> int
+        |> enum<Gdk.Key>
 
-           i.AddAccelerator(
-             "activate",
-             g,
-             AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
-           ))
+      i.AddAccelerator(
+        "activate",
+        g,
+        AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
+      ))
 
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "IDisposables are added to other widgets")>]
   let private prepareGui () =
     let handler = initializeHandler ()
     setToolButtons handler
@@ -710,13 +835,12 @@ module private Gui =
 #if NET472
     let whiteSmoke = Color(245uy, 245uy, 245uy)
 
-    seq { 0 .. 4 }
-    |> Seq.iter
-         (fun i ->
-           let state = i |> enum
-           handler.viewport1.ModifyBg(state, whiteSmoke)
-           handler.codeView.ModifyBase(state, whiteSmoke)
-           handler.codeView.ModifyBg(state, whiteSmoke))
+    seq { 0..4 }
+    |> Seq.iter (fun i ->
+      let state = i |> enum
+      handler.viewport1.ModifyBg(state, whiteSmoke)
+      handler.codeView.ModifyBase(state, whiteSmoke)
+      handler.codeView.ModifyBg(state, whiteSmoke))
 #else
     let prov = new CssProvider()
 
@@ -742,12 +866,11 @@ module private Gui =
     handler.refreshButton.Sensitive <- false
 
     handler.exitButton.Clicked
-    |> Event.add
-         (fun _ ->
-           if Persistence.save then
-             Persistence.saveGeometry handler.mainWindow
+    |> Event.add (fun _ ->
+      if Persistence.save then
+        Persistence.saveGeometry handler.mainWindow
 
-           Application.Quit())
+      Application.Quit())
     // Initialize graphics and begin
     let vicon = icons.VIcon
     handler.mainWindow.Icon <- vicon
@@ -767,9 +890,9 @@ module private Gui =
 #endif
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
-           (fun (o: OptionSet) (p, a) ->
-             o.Add(p, Resource.GetResourceString p, new System.Action<string>(a)))
-           (OptionSet())
+        (fun (o: OptionSet) (p, a) ->
+          o.Add(p, Resource.GetResourceString p, System.Action<string>(a)))
+        (OptionSet())
 
     options.Parse(arguments) |> ignore
 
@@ -779,18 +902,20 @@ module private Gui =
     Application.Init()
 
     let handler = prepareGui ()
+
     handler.classStructureTree.QueryTooltip
-    |> Event.add (fun (x:QueryTooltipArgs) ->
+    |> Event.add (fun (x: QueryTooltipArgs) ->
       let tip = x.Tooltip
       x.RetVal <- null
-      let mutable path:TreePath = null
-      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path)
-      then
+      let mutable path: TreePath = null
+
+      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path) then
         let table = handler.classStructureTree.Data
-        if table.ContainsKey path
-        then let text = table.[path] :?> string
-             tip.Text <- text
-             x.RetVal <- true) // <== magic happens here
+
+        if table.ContainsKey path then
+          let text = table.[path] :?> string
+          tip.Text <- text
+          x.RetVal <- true) // <== magic happens here
 
 #if !NET472
     handler.codeView.Drawn
@@ -803,19 +928,17 @@ module private Gui =
 #endif
 
     handler.mainWindow.DeleteEvent
-    |> Event.add
-         (fun args ->
-           if Persistence.save then
-             Persistence.saveGeometry handler.mainWindow
+    |> Event.add (fun args ->
+      if Persistence.save then
+        Persistence.saveGeometry handler.mainWindow
 
-           Application.Quit()
-           args.RetVal <- true)
+      Application.Quit()
+      args.RetVal <- true)
 
     handler.showAboutButton.Clicked
-    |> Event.add
-         (fun args ->
-           ignore <| handler.aboutVisualizer.Run()
-           handler.aboutVisualizer.Hide())
+    |> Event.add (fun args ->
+      ignore <| handler.aboutVisualizer.Run()
+      handler.aboutVisualizer.Hide())
     // The Open event
     let click =
       handleOpenClicked handler prepareOpenFileDialog
@@ -827,7 +950,8 @@ module private Gui =
       |> Seq.mapi (fun n (i: MenuItem) -> i.Activated |> Event.map (fun _ -> n))
 
     // The sum of all these events -- we have explicitly selected a file
-    let fileSelection = select |> Seq.fold Event.merge click
+    let fileSelection =
+      select |> Seq.fold Event.merge click
 
     let updateMRU (h: Handler) path add =
       HandlerCommon.UpdateCoverageFiles h path add
@@ -844,71 +968,74 @@ module private Gui =
     |> Event.add (doSelected handler updateMRU)
 
     handler.fontButton.Clicked
-    |> Event.add
-         (fun x ->
-           let format = Resource.GetResourceString "SelectFont"
+    |> Event.add (fun x ->
+      let format =
+        Resource.GetResourceString "SelectFont"
 #if !NET472
-           use selector =
-             new FontChooserDialog(format, handler.mainWindow)
+      use selector =
+        new FontChooserDialog(format, handler.mainWindow)
 
-           selector.Font <- Persistence.readFont ()
+      selector.Font <- Persistence.readFont ()
 
-           if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
-             let font = selector.Font
+      if
+        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok
+      then
+        let font = selector.Font
 #else
-           use selector = new FontSelectionDialog(format)
+      use selector =
+        new FontSelectionDialog(format)
 
-           selector.SetFontName(Persistence.readFont ())
-           |> ignore
+      selector.SetFontName(Persistence.readFont ())
+      |> ignore
 
-           if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
-             let font = selector.FontName
+      if
+        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok
+      then
+        let font = selector.FontName
 #endif
 
-             Persistence.saveFont (font)
+        Persistence.saveFont (font)
 
-             [ handler.codeView; handler.lineView ]
-             |> Seq.iter
-                  (fun v ->
-                    v.Buffer.TagTable.Foreach(fun tag -> tag.Font <- font)
-                    v.PixelsAboveLines <- 0
-                    v.PixelsBelowLines <- 0)
+        [ handler.codeView; handler.lineView ]
+        |> Seq.iter (fun v ->
+          v.Buffer.TagTable.Foreach(fun tag -> tag.Font <- font)
+          v.PixelsAboveLines <- 0
+          v.PixelsBelowLines <- 0)
 
-             handler.viewport1.QueueDraw()
+        handler.viewport1.QueueDraw()
 
-             async {
-               Threading.Thread.Sleep(300)
-               Handler.InvokeOnGuiThread(fun () -> balanceLines handler)
-             }
-             |> Async.Start
+        async {
+          Threading.Thread.Sleep(300)
+          Handler.InvokeOnGuiThread(fun () -> balanceLines handler)
+        }
+        |> Async.Start
 
 #if !NET472
-           ) // implicit Dispose()
+    ) // implicit Dispose()
 #else
-           selector.Destroy())
+      selector.Destroy())
 #endif
     // Tree selection events and such
     handler.classStructureTree.RowActivated
     |> Event.add (onRowActivated handler)
 
+    handler.classStructureTree.RowExpanded
+    |> Event.add (onRowExpanded handler)
+
     Application.Run()
     0 // needs an int return
 
-#if NET472
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
                             Justification = "Compiler generated")>]
-[<assembly: SuppressMessage("Microsoft.Reliability",
-                            "CA2000:Dispose objects before losing scope",
+#if NET472
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@142.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
-                            Justification = "Added to GUI widget tree")>]
-[<assembly: SuppressMessage("Microsoft.Usage",
-                            "CA2208:InstantiateArgumentExceptionsCorrectly",
-                            Scope = "member",
-                            Target = "AltCover.Persistence.#readCoverageFiles(AltCover.Visualizer.Handler)",
-                            Justification = "Inlined library code")>]
-()
+                            Target = "AltCover.Gui::prepareOpenFileDialog(a)",
+                            Justification = "Replace overload not available this platform")>]
 #endif
+()

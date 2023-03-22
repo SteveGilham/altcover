@@ -1,10 +1,12 @@
-namespace AltCover.Recorder
+﻿namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
+
+open AltCover.Shared
 
 [<ExcludeFromCodeCoverage>]
 type internal Close =
@@ -14,7 +16,7 @@ type internal Close =
   | Resume
 
 [<NoComparison; AutoSerializable(false)>]
-type Tracer =
+type internal Tracer =
   { Tracer: string
     Runner: bool
     Definitive: bool
@@ -72,34 +74,33 @@ type Tracer =
     match context with
     | Null -> this.Formatter.Write(Tag.Null |> byte)
     | Time t ->
-        this.Formatter.Write(Tag.Time |> byte)
-        this.Formatter.Write(t)
+      this.Formatter.Write(Tag.Time |> byte)
+      this.Formatter.Write(t)
     | Call t ->
-        this.Formatter.Write(Tag.Call |> byte)
-        this.Formatter.Write(t)
+      this.Formatter.Write(Tag.Call |> byte)
+      this.Formatter.Write(t)
     | Both b ->
-        this.Formatter.Write(Tag.Both |> byte)
-        this.Formatter.Write(b.Time)
-        this.Formatter.Write(b.Call)
+      this.Formatter.Write(Tag.Both |> byte)
+      this.Formatter.Write(b.Time)
+      this.Formatter.Write(b.Call)
     | Table t ->
-        this.Formatter.Write(Tag.Table |> byte)
+      this.Formatter.Write(Tag.Table |> byte)
 
-        t.Keys
-        |> Seq.iter
-             (fun m ->
-               this.Formatter.Write m
-               this.Formatter.Write t.[m].Keys.Count
+      t.Keys
+      |> Seq.filter (fun k -> t.[k].Count > 0)
+      |> Seq.iter (fun m ->
+        this.Formatter.Write m
+        this.Formatter.Write t.[m].Count
 
-               t.[m].Keys
-               |> Seq.iter
-                    (fun p ->
-                      this.Formatter.Write p
-                      let v = t.[m].[p]
-                      this.Formatter.Write v.Count
-                      v.Tracks |> Seq.iter this.PushContext
-                      this.PushContext Null))
+        t.[m].Keys
+        |> Seq.iter (fun p ->
+          this.Formatter.Write p
+          let v = t.[m].[p]
+          this.Formatter.Write v.Count
+          v.Tracks |> Seq.iter this.PushContext
+          this.PushContext Null))
 
-        this.Formatter.Write String.Empty
+      this.Formatter.Write String.Empty
 
   member internal this.Push (moduleId: string) (hitPointId: int) context =
     this.Formatter.Write moduleId
@@ -107,12 +108,12 @@ type Tracer =
     this.PushContext context
 
   member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
-    if visits.Count > 0 then
+    if visits.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
       visits |> Table |> this.Push String.Empty 0
 
   member internal this.OnStart() =
     let running =
-      if this.Tracer <> "Coverage.Default.xml.acv" then
+      if this.Tracer != "Coverage.Default.xml.acv" then
         this.Connect()
       else
         this
