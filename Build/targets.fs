@@ -8053,7 +8053,7 @@ module Targets =
            |> String.IsNullOrWhiteSpace
            |> not
       then
-        (!! "./_Packagin*/*.nupkg")
+        (!! "./_Packaging.visualizer/*.nupkg")
         |> Seq.iter (fun f ->
           printfn "Publishing %A from %A" f currentBranch
 
