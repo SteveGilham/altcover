@@ -4058,10 +4058,10 @@ module Targets =
         |> Seq.toList
 
       let auxVFiles =
-        [ (!! "./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml") ]
+        [ (!! "./AltCover.Visualizer/DotnetToolSettings.xml") ]
         |> Seq.concat
-        |> Seq.map (fun x ->
-          (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
+        |> Seq.map (fun x -> // Avalonia
+          (x, Some("tools/net5.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       let auxFiles =
@@ -4134,7 +4134,7 @@ module Targets =
          "altcover.global")
 
         (List.concat
-          [ vizFiles "tools/netcoreapp2.1/any"
+          [ vizFiles "tools/net5.0/any" // Avalonia
             [ (Path.getFullName "Build/README.visualizer.md", Some "", None)
               (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None) ]
             auxVFiles
