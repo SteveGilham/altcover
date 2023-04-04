@@ -163,6 +163,9 @@ type internal Threshold =
 
 module internal Runner =
 
+  let internal defaultSummary =
+    [ "?"; "?"; "?"; "?"; "?"; "?" ]
+
   let mutable internal recordingDirectory: Option<string> =
     None
 
@@ -536,7 +539,7 @@ module internal Runner =
       report.Root.Elements("Summary".X)
       |> Seq.tryHead
       |> Option.map (makeOpenCoverSummary report)
-      |> Option.defaultValue []
+      |> Option.defaultValue defaultSummary
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
@@ -676,13 +679,13 @@ module internal Runner =
       =
       let covered =
         match reportDocument with
-        | Unknown -> [] //(result, 0uy, String.Empty)
+        | Unknown -> defaultSummary
         | XML report ->
           report
           |> match format with
              | ReportFormat.NCover -> nCoverSummary
              | _ -> openCoverSummary
-        | JSON jtext -> jsonSummary jtext // (result, 0uy, String.Empty) // TODO
+        | JSON jtext -> jsonSummary jtext
 
       let best = (result, 0uy, String.Empty)
 
