@@ -5813,7 +5813,8 @@ module Targets =
                   "MSBuildTest", "true"
                   "AltCoverTag", "MSBuildTest_"
                   "AltCoverPath", unpack.Replace('\\', '/')
-                  "DebugSymbols", "True" ] })
+                  "DebugSymbols", "True"
+                  "Fake2738Workround", "True" ] })
         "./Samples/Sample4/Sample4LongForm.fsproj")
 
   let Cake2Test =
