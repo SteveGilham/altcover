@@ -4,6 +4,9 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 22)
+* [BUGFIX] prevent possible "The lists had different lengths." exception in the collect phase
+* Drop support for Fake 5.23.x
+* Supports net8.0 preview 3
 
 # 8.6.48 (Habu series release 21a)
 * [BUGFIX] Correctly package the visualizer for net5.0, as well as building it against the later platform
