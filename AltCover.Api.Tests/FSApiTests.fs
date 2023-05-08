@@ -1283,9 +1283,9 @@ module FSApiTests =
     let combined2 =
       DotNet.CLIOptions.Many [ a2; force; fail; summary ]
 
-    test <@ combined.ForceDelete @>
-    test <@ combined.FailFast @>
-    test <@ combined.ShowSummary = "R" @>
+    test <@ combined2.ForceDelete @>
+    test <@ combined2.FailFast @>
+    test <@ combined2.ShowSummary = "R" @>
 
     test
       <@
