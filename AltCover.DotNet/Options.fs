@@ -18,11 +18,13 @@ module Options =
     member val ForceDelete = false with get, set
     member val FailFast = false with get, set
     member val ShowSummary = String.Empty with get, set
+    member val OutDirBase = String.Empty with get, set
 
     interface DotNet.ICLIOptions with
       member self.ForceDelete = self.ForceDelete
       member self.FailFast = self.FailFast
       member self.ShowSummary = self.ShowSummary
+      member self.OutDirBase = self.OutDirBase
 
   [<AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Maintainability",

@@ -5,8 +5,11 @@
     <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
-    <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Instrumented'))</AltCoverInstrumentedDirectory>
-    <AltCoverSavedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Saved'))</AltCoverSavedDirectory>
+    <AltCoverNormalOutDir Condition="'$(AltCoverOutDirBase)' != ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName($([MSBuild]::Unescape($(AltCoverOutDirBase))))), $([System.IO.Path]::GetFileName($([MSBuild]::Unescape($(AltCoverOutDirBase)))))))</AltCoverNormalOutDir>
+    <AltCoverInstrumentedDirectory Condition="'$(AltCoverOutDirBase)' == ''">$([System.IO.Path]::Combine($(TargetDir), '__Instrumented'))</AltCoverInstrumentedDirectory>
+    <AltCoverSavedDirectory Condition="'$(AltCoverOutDirBase)' == ''">$([System.IO.Path]::Combine($(TargetDir), '__Saved'))</AltCoverSavedDirectory>
+    <AltCoverInstrumentedDirectory Condition="'$(AltCoverOutDirBase)' != ''">$(AltCoverNormalOutDir)__Instrumented</AltCoverInstrumentedDirectory>
+    <AltCoverSavedDirectory Condition="'$(AltCoverOutDirBase)' != ''">$(AltCoverNormalOutDir__Saved'</AltCoverSavedDirectory>
     <AltCoverFileExtension Condition="'$(AltCoverReportFormat).Substring(0,1).ToUpperInvariant()' != 'J'">.xml</AltCoverFileExtension>
     <AltCoverFileExtension Condition="'$(AltCoverReportFormat).Substring(0,1).ToUpperInvariant()' == 'J'">.json</AltCoverFileExtension>
   </PropertyGroup>

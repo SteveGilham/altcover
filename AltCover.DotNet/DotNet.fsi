@@ -33,6 +33,10 @@ module DotNet = begin
     /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
     /// </summary>
     abstract member ShowSummary : System.String with get
+    /// <summary>
+    /// <para type="description">The `/AltCoverOutDirBase` value (the undecorated name of the folder to use for instrumented or saved files instead of $(TargetDir)/__Instrumented or $(TargetDir)/__Saved) this represents</para>
+    /// </summary>
+    abstract member OutDirBase : System.String with get
     end
 
   /// <summary>
@@ -45,6 +49,7 @@ module DotNet = begin
     | Force of bool
     | Fail of bool
     | Summary of System.String
+    | OutDir of System.String
     | Many of seq<CLIOptions>
     | Abstract of ICLIOptions
     with
@@ -61,6 +66,10 @@ module DotNet = begin
       /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
       /// </summary>
       member ShowSummary : System.String
+      /// <summary>
+      /// <para type="description">The `/AltCoverOutDirBase` value (the undecorated name of the folder to use for instrumented or saved files instead of $(TargetDir)/__Instrumented or $(TargetDir)/__Saved) this represents</para>
+      /// </summary>
+      member OutDirBase : System.String with get
     end
 
 // ```
@@ -68,6 +77,7 @@ module DotNet = begin
 // * case `Force` indicates a `/AltCoverForce` value
 // * case `Fail` indicates a `/AltCoverFailFast` value
 // * case `Summary` indicates a `/AltCoverShowSummary` value
+// * case `OutDir` indicates a `/AltCoverOutDirBase` value
 // * case `Many` indicates a collection of cases
 // * case `Abstract` indicates a collection of cases expressed as an interface
 //
@@ -76,6 +86,7 @@ module DotNet = begin
 // * value `Fast` gives the `/AltCoverFailFast` value this represents
 // * value `ForceDelete` gives the `/AltCoverForce` value this represents
 // * value `Summary` gives the `/AltCoverShowSummary` value this represents
+// * value `OutDirBase` gives the `/AltCoverOutDirBase` value this represents
 #if TRACE // cheat mode here
     module internal I = begin
       val private arg : name:string -> s:string -> (string*string)

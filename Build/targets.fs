@@ -391,6 +391,9 @@ module Targets =
   let GreenSummary =
     DotNet.CLIOptions.Summary "Green"
 
+  let OutDirBase =
+    DotNet.CLIOptions.OutDir (Path.GetFullPath ".\\_OutBase")
+
   let ForceTrue =
     DotNet.CLIOptions.Many [ ForceTrueOnly; GreenSummary ]
 
@@ -398,7 +401,8 @@ module Targets =
     DotNet.CLIOptions.Many
       [ FailTrue
         ForceTrueOnly
-        GreenSummary ]
+        GreenSummary
+        OutDirBase ]
 
   let dotnetAltcover =
     Fake.DotNet.ToolType.CreateFrameworkDependentDeployment dotnetOptions

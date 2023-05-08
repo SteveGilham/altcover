@@ -1259,37 +1259,46 @@ module FSApiTests =
     let force = DotNet.CLIOptions.Force true
     let fail = DotNet.CLIOptions.Fail true
     let summary = DotNet.CLIOptions.Summary "R"
+    let outbase = DotNet.CLIOptions.OutDir "."
 
     let a =
       { new DotNet.ICLIOptions with
           member self.ForceDelete = false
           member self.FailFast = false
-          member self.ShowSummary = String.Empty }
+          member self.ShowSummary = String.Empty
+          member self.OutDirBase = String.Empty }
       |> DotNet.CLIOptions.Abstract
 
     let combined =
-      DotNet.CLIOptions.Many [ a; force; fail; summary ]
+      DotNet.CLIOptions.Many [ a; force; fail; summary; outbase ]
 
     test <@ fail.ForceDelete |> not @>
     test <@ force.FailFast |> not @>
     test <@ combined.ForceDelete @>
     test <@ combined.FailFast @>
     test <@ combined.ShowSummary = "R" @>
+    test <@ combined.OutDirBase = "." @>
+
+    let combined1 =
+      DotNet.CLIOptions.Many [ a; force; fail; summary ]
+
+    test <@ combined1.OutDirBase = String.Empty @>
 
     let a2 =
       (Options.CLI() :> DotNet.ICLIOptions)
       |> DotNet.CLIOptions.Abstract
 
     let combined2 =
-      DotNet.CLIOptions.Many [ a2; force; fail; summary ]
+      DotNet.CLIOptions.Many [ a2; force; fail; summary; outbase ]
 
     test <@ combined2.ForceDelete @>
     test <@ combined2.FailFast @>
     test <@ combined2.ShowSummary = "R" @>
+    test <@ combined2.OutDirBase = "." @>
 
     test
       <@
-        (DotNet.CLIOptions.Many [ a; force; fail ])
+        (DotNet.CLIOptions.Many [ a; force; fail; outbase ])
           .ShowSummary
         |> String.IsNullOrEmpty
       @>
@@ -1308,7 +1317,7 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverOutBase=\".\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let pprep2 = Options.Prepare()
@@ -1325,7 +1334,7 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep2 coll2 combined2 = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep2 coll2 combined2 = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverOutBase=\".\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let coll1 =
@@ -1335,7 +1344,7 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep coll1 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep coll1 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverOutBase=\".\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let coll2 =
@@ -1351,7 +1360,7 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverOutBase=\".\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
   [<Test>]

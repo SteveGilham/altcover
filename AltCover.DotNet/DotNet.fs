@@ -15,6 +15,7 @@ module DotNet =
       abstract member ForceDelete: bool
       abstract member FailFast: bool
       abstract member ShowSummary: String
+      abstract member OutDirBase: String
     end
 
   [<NoComparison;
@@ -27,6 +28,7 @@ module DotNet =
     | Force of bool
     | Fail of bool
     | Summary of String
+    | OutDir of String
     | Many of CLIOptions seq
     | Abstract of ICLIOptions
 
@@ -34,6 +36,7 @@ module DotNet =
       match self with
       | Force b -> b
       | Summary _
+      | OutDir _
       | Fail _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
       | Abstract a -> a.ForceDelete
@@ -42,6 +45,7 @@ module DotNet =
       match self with
       | Fail b -> b
       | Summary _
+      | OutDir _
       | Force _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.FailFast)
       | Abstract a -> a.FailFast
@@ -56,8 +60,27 @@ module DotNet =
       match self with
       | Summary b -> b
       | Fail _
+      | OutDir _
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
+      | Many s ->
+        match select s with
+        | Some x -> x
+        | _ -> String.Empty
+
+    member self.OutDirBase =
+      let select (s: CLIOptions seq) =
+        s
+        |> Seq.map (fun f -> f.OutDirBase)
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.tryHead
+
+      match self with
+      | OutDir b -> b
+      | Summary _
+      | Fail _
+      | Force _ -> String.Empty
+      | Abstract a -> a.OutDirBase
       | Many s ->
         match select s with
         | Some x -> x
@@ -67,6 +90,7 @@ module DotNet =
       member self.FailFast = self.FailFast
       member self.ForceDelete = self.ForceDelete
       member self.ShowSummary = self.ShowSummary
+      member self.OutDirBase = self.OutDirBase
 
   module internal I =
     let private arg name (s: string) = (sprintf """AltCover%s""" name, s)
@@ -151,7 +175,8 @@ module DotNet =
                       "AvoidRedundancyInMethodNameRule",
                       Justification = "Internal implementation detail")>]
     let internal toCLIOptionsFromArgArgumentList (options: ICLIOptions) =
-      [ fromArg, "ShowSummary", options.ShowSummary ] //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
+      [ fromArg, "ShowSummary", options.ShowSummary //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
+        fromArg, "OutDirBase", options.OutDirBase ] //=the undecorated name of the folder to use for instrumented or saved files (instead of $(TargetDir)/__Instrumented or $(TargetDir)/__Saved)
 
     [<SuppressMessage("Gendarme.Rules.Naming",
                       "AvoidRedundancyInMethodNameRule",
