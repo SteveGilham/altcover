@@ -974,13 +974,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     rescope.Scopes.Add rescope
 
-    Assert.True(
-      InstructionOffset().IsEndOfMethod,
-      "End should go to none"
-    )
+    Assert.True(InstructionOffset().IsEndOfMethod, "End should go to none")
 
     // prune 1 recursion and 2 at end => 3
-    Assert.That(rescope.Scopes |> Seq.length, Is.EqualTo (4+3))
+    Assert.That(rescope.Scopes |> Seq.length, Is.EqualTo(4 + 3))
 
     test <@ start.Offset = 0 @>
     test <@ start.Next.Offset = 1 @>
