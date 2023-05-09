@@ -2328,6 +2328,7 @@ module Targets =
                   StrongNameKey = TypeSafe.FilePath signingKey
                   SingleVisit = TypeSafe.Set
                   InPlace = TypeSafe.Clear
+                  //CallContext = TypeSafe.Context [ TypeSafe.TimeItem 3uy ]
                   Save = TypeSafe.Clear }
               |> filter
             )
