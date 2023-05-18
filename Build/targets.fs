@@ -1232,6 +1232,8 @@ module Targets =
 
       let standardRules =
         [ "-Microsoft.Design#CA1020" // small namespaces
+          "-Microsoft.Naming#CA1702" // compound naming pedantry
+          "-Microsoft.Naming#CA1704" // spelling pedantry
           "-Microsoft.Usage#CA2243" ] // :AttributeStringLiteralsShouldParseCorrectly"
 
       let minimalRules =
