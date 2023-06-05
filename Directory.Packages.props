@@ -18,7 +18,7 @@
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.0" />
-    <PackageVersion Include="coverlet.collector" Version="3.2.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageVersion Include="Expecto" Version="9.0.4" />
@@ -40,19 +40,19 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="5.23.0" />
     <PackageVersion Include="Fake.Tools.git" Version="5.23.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="7.0.200" />
+    <PackageVersion Include="FSharp.Core" Version="7.0.300" />
     <PackageVersion Include="FsUnit" Version="5.3.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
-    <PackageVersion Include="GtkSharp" Version="3.24.24.38" />
+    <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="Markdig" Version="0.31.0" />
     <PackageVersion Include="MessageBox.Avalonia" Version="2.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="16.0.0" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
@@ -60,11 +60,11 @@
     <PackageVersion Include="Mono.Options" Version="6.12.0.148" />
     <PackageVersion Include="MSTest.TestFramework" Version="2.2.10" />
     <PackageVersion Include="MSTest.TestAdapter" Version="2.2.10" />
-    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.6.128" />
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.6.133" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="NuGet.CommandLine" Version="6.5.0" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="4.4.2" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" Version="3.12.0" />
     <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->

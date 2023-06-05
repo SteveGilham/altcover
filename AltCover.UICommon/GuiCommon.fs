@@ -204,8 +204,8 @@ module GuiCommon =
                             Justification = "Compound of two words")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1703:ResourceStringsShouldBeSpelledCorrectly",
-                            Scope="resource",
-                            Target="AltCover.UICommon.Resource.resources",
-                            MessageId="json",
-                            Justification="Standard file type")>]                            
+                            Scope = "resource",
+                            Target = "AltCover.UICommon.Resource.resources",
+                            MessageId = "json",
+                            Justification = "Standard file type")>]
 ()

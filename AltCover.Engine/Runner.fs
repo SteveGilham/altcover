@@ -469,6 +469,9 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidComplexMethodsRule",
                       Justification = "TODO: refactor even more")>]
+    [<SuppressMessage("Microsoft.Maintainability",
+                      "CA1502:AvoidExcessiveComplexity",
+                      Justification = "TODO: refactor even more")>]
     let private makeOpenCoverSummary (report: XDocument) (summary: XElement) =
 
       let l =

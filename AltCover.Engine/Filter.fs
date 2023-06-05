@@ -283,8 +283,13 @@ module internal Filter =
                    || fullName
                       == typeof<CompilationMappingAttribute>.FullName)))
 
+    [<SuppressMessage("Gendarme.Rules.Globalization",
+                      "PreferStringComparisonOverrideRule",
+                      Justification = "not available in netstandard2.0")>]
     let internal isFSharpAutoProperty (m: MethodDefinition) =
       let body = m.Body.Instructions
+      let fullName = m.DeclaringType.FullName
+      let name = m.Name
 
       if m.IsSetter then
         body
@@ -292,10 +297,8 @@ module internal Filter =
         |> Option.map (fun i ->
           let f = i.Operand :?> FieldReference
 
-          (f.DeclaringType.FullName
-           == m.DeclaringType.FullName)
-          && m.Name.Replace("set_", String.Empty) + "@"
-             == f.Name)
+          (f.DeclaringType.FullName == fullName)
+          && name.Replace("set_", String.Empty) + "@" == f.Name)
         |> Option.defaultValue false
       else if m.IsGetter then
         body
@@ -303,10 +306,8 @@ module internal Filter =
         |> Option.map (fun i ->
           let f = i.Operand :?> FieldReference
 
-          (f.DeclaringType.FullName
-           == m.DeclaringType.FullName)
-          && m.Name.Replace("get_", String.Empty) + "@"
-             == f.Name)
+          (f.DeclaringType.FullName == fullName)
+          && name.Replace("get_", String.Empty) + "@" == f.Name)
         |> Option.defaultValue false
       else
         false
