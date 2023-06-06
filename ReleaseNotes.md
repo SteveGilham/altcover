@@ -3,7 +3,18 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 21)
+# (Habu series release 22)
+* [BUGFIX] prevent possible "The lists had different lengths." exception in the collect phase (Issue 181)
+* Removes some obsolete code from the `dotnet test` integration
+* Drop support for Fake 5.23.x
+* Supports net8.0 preview 4
+* Updated to Cecil 11.5, removing the need for workrounds for issues noted at 11.4
+* Other dependency updates.
+
+# 8.6.48 (Habu series release 21a)
+* [BUGFIX] Correctly package the visualizer for net5.0, as well as building it against the later platform
+
+# 8.6.45 (Habu series release 21)
 * [BUGFIX] Issue #179 - Improve and strengthen the heuristic for locating dependent assemblies, prossibly slightly speeding the look-up in the process by eliminating potentially duplicated effort.
 
 # 8.6.40 (Habu series release 20)

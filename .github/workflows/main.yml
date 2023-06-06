@@ -20,7 +20,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '7.0.202'
+        dotnet-version: '7.0.302'
     - name: Tools
       run: dotnet tool restore
     - name: Setup
@@ -51,7 +51,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '7.0.202'
+        dotnet-version: '7.0.302'
     - name: Tools
       run: dotnet tool restore
     - name: Setup

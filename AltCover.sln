@@ -70,6 +70,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\SelfTest.snk = Build\SelfTest.snk
 		Build\setup.fs = Build\setup.fs
 		Build\targets.fs = Build\targets.fs
+		version.json = version.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{EE49FA56-4B6F-4C55-8D24-7E834274D7FE}"

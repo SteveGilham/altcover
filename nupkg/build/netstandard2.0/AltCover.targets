@@ -198,7 +198,6 @@
       <AltCoverColour Condition="'$(AltCoverShowSummary)' == ''">Foreground</AltCoverColour>
       <AltCoverRecorderDirectory Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetDir)</AltCoverRecorderDirectory>
       <AltCoverRecorderDirectory Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$(AltCoverInstrumentedDirectory)_$(ProjectName)</AltCoverRecorderDirectory>
-      <AltCoverIsFSharp Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)/FSharp.Core.dll')">true</AltCoverIsFSharp>
     </PropertyGroup>
 
     <AltCover.Collect
@@ -215,12 +214,10 @@
                    Verbosity="$(AltCoverVerbosity)" />
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
-      <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
       <AltCoverSavedFiles Include="$(AltCoverSavedDirectory))_$(ProjectName)/*.*" />
       <AltCoverRunSettings Include="$(TEMP)/*.altcover.runsettings" />
     </ItemGroup>
     <Delete Files="@(AltCoverRunSettings)" />
-    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCoverInPlace)' != 'false' AND '$(AltCoverIsFSharp)' != 'true'" />
     <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCoverInPlace)' != 'false'" />
     <RemoveDir Directories="$(AltCoverSavedDirectory)_$(ProjectName)" Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)') AND '$(AltCoverInPlace)' != 'false'" />
     <AltCover.RetryDelete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCoverInPlace)' != 'false'" />

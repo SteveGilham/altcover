@@ -1232,6 +1232,8 @@ module Targets =
 
       let standardRules =
         [ "-Microsoft.Design#CA1020" // small namespaces
+          "-Microsoft.Naming#CA1702" // compound naming pedantry
+          "-Microsoft.Naming#CA1704" // spelling pedantry
           "-Microsoft.Usage#CA2243" ] // :AttributeStringLiteralsShouldParseCorrectly"
 
       let minimalRules =
@@ -2328,6 +2330,7 @@ module Targets =
                   StrongNameKey = TypeSafe.FilePath signingKey
                   SingleVisit = TypeSafe.Set
                   InPlace = TypeSafe.Clear
+                  //CallContext = TypeSafe.Context [ TypeSafe.TimeItem 3uy ]
                   Save = TypeSafe.Clear }
               |> filter
             )
@@ -4058,10 +4061,10 @@ module Targets =
         |> Seq.toList
 
       let auxVFiles =
-        [ (!! "./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml") ]
+        [ (!! "./AltCover.Visualizer/DotnetToolSettings.xml") ]
         |> Seq.concat
-        |> Seq.map (fun x ->
-          (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
+        |> Seq.map (fun x -> // Avalonia
+          (x, Some("tools/net5.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       let auxFiles =
@@ -4134,7 +4137,7 @@ module Targets =
          "altcover.global")
 
         (List.concat
-          [ vizFiles "tools/netcoreapp2.1/any"
+          [ vizFiles "tools/net5.0/any" // Avalonia
             [ (Path.getFullName "Build/README.visualizer.md", Some "", None)
               (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None) ]
             auxVFiles
@@ -5813,7 +5816,8 @@ module Targets =
                   "MSBuildTest", "true"
                   "AltCoverTag", "MSBuildTest_"
                   "AltCoverPath", unpack.Replace('\\', '/')
-                  "DebugSymbols", "True" ] })
+                  "DebugSymbols", "True"
+                  "Fake2738Workround", "True" ] })
         "./Samples/Sample4/Sample4LongForm.fsproj")
 
   let Cake2Test =

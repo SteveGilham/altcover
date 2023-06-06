@@ -851,28 +851,15 @@ module AltCoverTests2 =
     writer.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider()
     writer.WriteSymbols <- true
 
-    let save = Output.verbose
-    let b = System.Text.StringBuilder()
-
-    Output.verbose <- b.AppendLine >> ignore
-
     let def =
       ``module``.MainModule.GetTypes()
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.find (fun m -> m.Name.Equals("MakeConst"))
 
-    prepareLocalScopes def
-    Output.verbose <- save
-
-    test
-      <@
-        b.ToString() = "Null Constant thing elided in method System.Void NullConst.Program::MakeConst()"
-                       + Environment.NewLine
-      @>
-
     use sink =
       File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
 
+    // should not throw
     ``module``.Write(sink, writer)
 
   [<Test>]
@@ -907,11 +894,12 @@ module AltCoverTests2 =
       "Scope.Start.IsEndOfMethod"
     )
 
-    Assert.True(
+    Assert.That(
       pathGetterDef.DebugInformation.Scope.Scopes
       |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
+      Is.False,
       "subscope.Start.IsEndOfMethod"
-    ) // this one needs the home-built Sample31
+    )
 
     // big test -- if we can write w/o crashing when the previous asserts are removed
     let output = Path.GetTempFileName()
@@ -925,10 +913,7 @@ module AltCoverTests2 =
     use sink =
       File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
 
-    Assert.Throws<NotSupportedException>(fun () -> ``module``.Write(sink, writer))
-    |> ignore
-
-    pruneLocalScopes pathGetterDef
+    // should not throw
     ``module``.Write(sink, writer)
 
     Assert.That(
@@ -937,11 +922,6 @@ module AltCoverTests2 =
       "pruned Scope.Start.IsEndOfMethod"
     )
 
-    Assert.True(
-      pathGetterDef.DebugInformation.Scope.Scopes
-      |> Seq.isEmpty,
-      "pruned subscope.Start.IsEndOfMethod"
-    )
     (* was
     IL_0000: ldarg.0
     IL_0001: ldfld bool Sample31.Class3/Class4::'<Defer>k__BackingField'
@@ -994,41 +974,15 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     rescope.Scopes.Add rescope
 
-    let save = Output.verbose
-    let b = System.Text.StringBuilder()
+    Assert.True(InstructionOffset().IsEndOfMethod, "End should go to none")
 
-    Output.verbose <- b.AppendLine >> ignore
-
-    prepareLocalScopes pathGetterDef
-
-    Assert.True(
-      InstructionOffset() |> safeOffset |> Option.isNone,
-      "End should go to none"
-    )
-
-    // prune 1 recursion and 2 at end
-    Assert.That(rescope.Scopes |> Seq.length, Is.EqualTo 4)
+    // prune 1 recursion and 2 at end => 3
+    Assert.That(rescope.Scopes |> Seq.length, Is.EqualTo(4 + 3))
 
     test <@ start.Offset = 0 @>
     test <@ start.Next.Offset = 1 @>
     test <@ start.Next.Next.Offset = 2 @>
     test <@ start.Next.Next.Next.Offset = 7 @>
-
-    let expected =
-      [ Some start.Offset
-        Some start.Next.Next.Offset
-        Some finish.Offset
-        Some finish.Offset ]
-
-    let result =
-      rescope.Scopes
-      |> Seq.map (fun s -> safeOffset s.Start)
-      |> Seq.toList
-
-    test <@ result = expected @>
-    test <@ b.ToString() = String.Empty @>
-
-    Output.verbose <- save
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =

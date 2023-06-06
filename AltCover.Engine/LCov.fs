@@ -427,7 +427,7 @@ FN:4,(anonymous_0)
                       vc.ToString(CultureInfo.InvariantCulture)
 
                     writer.WriteLine("DA:" + sl + "," + vcs)
-                    (f + 1, h + if vcs == "0" then 0 else 1))
+                    (f + 1, h + (if vcs == "0" then 0 else 1)))
                   (0, 0)
               // At  the  end of a section, there is a summary about how many lines were
               // found and how many were actually instrumented:

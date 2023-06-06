@@ -209,6 +209,8 @@ module ExpectoTestManifest =
        "Runner.SimpleJsonShouldGeneratePlausibleSummary"
        Tests.AltCoverRunnerTests.ComplexJsonShouldGeneratePlausibleSummary,
        "Runner.ComplexJsonShouldGeneratePlausibleSummary"
+       Tests.AltCoverRunnerTests.UnknownGeneratesExpectedSummary,
+       "Runner.UnknownGeneratesExpectedSummary"
        Tests.AltCoverRunnerTests.EmptyNCoverGeneratesExpectedSummary,
        "Runner.EmptyNCoverGeneratesExpectedSummary"
        Tests.AltCoverRunnerTests.EmptyNCoverGeneratesExpectedTCSummary,

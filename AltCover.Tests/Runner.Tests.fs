@@ -4167,6 +4167,49 @@ module AltCoverRunnerTests =
   //      | _ -> Assert.Fail(sprintf "%A" result)
 
   [<Test>]
+  let UnknownGeneratesExpectedSummary () =
+    let resetInfo () = Output.info <- ignore
+    resetInfo ()
+    Output.info "info"
+    Runner.init ()
+    let report = XDocument()
+    let builder = System.Text.StringBuilder()
+    Runner.summary.Clear() |> ignore
+
+    try
+      lock Runner.summaryFormat (fun () ->
+        Runner.summaryFormat <- Default
+
+        Runner.threshold <-
+          Some
+            { Statements = 25uy
+              Branches = 0uy
+              Methods = 0uy
+              Crap = 0uy
+              AltMethods = 0uy
+              AltCrap = 0uy }
+
+        let task = Collect()
+        Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+
+        let r =
+          Runner.I.standardSummary DocumentType.Unknown ReportFormat.NCover 0
+
+        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+        Assert.That(builder.ToString(), Is.EqualTo String.Empty)
+
+        let collected =
+          task.Summary
+            .Replace("\r", String.Empty)
+            .Replace("\n", "|")
+
+        Assert.That(collected, Is.EqualTo String.Empty))
+    finally
+      resetInfo ()
+
+
+  [<Test>]
   let EmptyNCoverGeneratesExpectedSummary () =
     let resetInfo () = Output.info <- ignore
     resetInfo ()
