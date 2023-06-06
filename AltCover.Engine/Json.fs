@@ -97,6 +97,9 @@ module internal Json =
     else
       m0
 
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "it's a wrapper")>]
   let internal maybeAssembly path =
     Some path
     |> Option.filter File.Exists

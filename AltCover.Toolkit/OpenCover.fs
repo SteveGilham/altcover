@@ -165,6 +165,15 @@ module OpenCover =
       XAttribute(XName.Get "maxCrapScore", 0)
     )
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification = "TODO refactor")>]
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidLongMethodsRule",
+                    Justification = "TODO refactor")>]
+  [<SuppressMessage("Microsoft.Performance",
+                    "CA1809:AvoidExcessiveLocals",
+                    Justification = "TODO refactor")>]
   let internal fixFormatMethod (m: XElement) (file: AssemblyDefinition) =
     // visited attribute <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
     let a = m.Attributes() |> Seq.toList
@@ -1252,6 +1261,6 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/Pipe #4 stage #1 at line 746@747::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/Pipe #4 stage #1 at line 755@756::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

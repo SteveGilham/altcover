@@ -20,9 +20,9 @@ open Manatee.Json
 
 module
 #if GUI || RUNNER
-       internal
+  internal
 #endif
-                NativeJson =
+  NativeJson =
 
   type internal TimeStamp = string
 
