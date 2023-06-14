@@ -176,7 +176,7 @@ module AltCoverTests =
 
       match pdb with
       // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
-      //| None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
+      | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
       | Some name ->
         printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
 
