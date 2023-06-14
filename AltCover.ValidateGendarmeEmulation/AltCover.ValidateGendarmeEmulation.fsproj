@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net472</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GendarmeVersion>2023.1.22.12221</GendarmeVersion>
     <GendarmeToolDir>..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>

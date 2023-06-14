@@ -72,7 +72,7 @@ module AltCoverTests =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net7.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net8.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
@@ -86,7 +86,7 @@ module AltCoverTests =
 
 #if !NET472
   let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net8.0/Sample4.dll")
 
   let sample8path =
     Path.Combine(
@@ -3674,7 +3674,7 @@ module AltCoverTests =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net7.0/Sample4.dll")
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net8.0/Sample4.dll")
 
       "Main"
       |> (Regex
@@ -3931,7 +3931,7 @@ module AltCoverTests =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("net7.0", "netstandard2.0")
+        .Replace("net8.0", "netstandard2.0")
 
     let path6 =
       sample4path
@@ -5657,9 +5657,9 @@ module AltCoverTests =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net7.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net8.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net7.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net8.0 not built")
 
     try
       "Program"
