@@ -518,6 +518,8 @@ module ExpectoTestManifest =
        "Tests2.ShouldBeAbleToTellAnAssembly"
        Tests.AltCoverTests2.ShouldBeAbleToValidateAnAssembly,
        "Tests2.ShouldBeAbleToValidateAnAssembly"
+       Tests.AltCoverTests2.ShouldbeAbleToHandleWinmd,
+       "Tests2.ShouldbeAbleToHandleWinmd"
        Tests.AltCoverTests2.ShouldBeAbleToLocateAReference,
        "Tests2.ShouldBeAbleToLocateAReference"
        Tests.AltCoverTests2.ShouldBeAbleToPrepareTheAssembly,

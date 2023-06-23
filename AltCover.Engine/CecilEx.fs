@@ -15,6 +15,9 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 
 module AssemblyConstants =
+  let internal extensions =
+    [ ".dll"; ".exe"; ".winmd" ]
+
   let internal nugetCache =
     Path.Combine(
       Path.Combine(
@@ -86,6 +89,40 @@ type internal AssemblyResolver() as self =
     else
       base.Resolve name
 
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "UseObjectDisposedExceptionRule",
+                    Justification = "Not important")>]
+  override self.SearchDirectory
+    (
+      (name: AssemblyNameReference),
+      (directories: IEnumerable<string>),
+      (parameters: ReaderParameters)
+    ) : AssemblyDefinition =
+    directories
+    |> Seq.choose (fun directory ->
+      AssemblyConstants.extensions
+      |> List.choose (fun extension -> // this line
+        let file =
+          Path.Combine(directory, name.Name + extension)
+
+        if File.Exists(file) then
+          try
+            if isNull parameters.AssemblyResolver then
+              parameters.AssemblyResolver <- self
+
+            Some(
+              ModuleDefinition
+                .ReadModule(file, parameters)
+                .Assembly
+            )
+          with :? System.BadImageFormatException ->
+            None
+        else
+          None)
+      |> List.tryHead)
+    |> Seq.tryHead
+    |> Option.defaultValue null
+
   static member private AssemblyRegister (name: string) (path: string) =
     let def = AssemblyResolver.ReadAssembly path // recursive
     AssemblyConstants.resolutionTable.[name] <- def
@@ -156,8 +193,9 @@ type internal AssemblyResolver() as self =
         |> Seq.filter (fun f ->
           let x = Path.GetExtension f
 
-          x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
-          || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+          AssemblyConstants.extensions
+          |> List.tryFind (fun ext -> x.Equals(ext, StringComparison.OrdinalIgnoreCase))
+          |> Option.isSome)
         |> Seq.filter (fun f ->
           y
             .ToString()
@@ -364,3 +402,12 @@ module internal CecilExtension =
     |> Seq.iter (fun i ->
       i.OpCode <- OpCodes.Nop
       i.Operand <- null)
+
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "<StartupCode$AltCover-Engine>.$CecilEx/Pipe #1 stage #1 at line 104@104::Invoke(System.String)",
+                            Justification =
+                              "The whole point is to return the value, transferring ownership")>]
+()

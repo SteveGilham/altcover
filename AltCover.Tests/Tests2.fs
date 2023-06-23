@@ -419,6 +419,20 @@ module AltCoverTests2 =
     Assert.That(x, Is.EqualTo(String.Empty, false))
 
   [<Test>]
+  let ShouldbeAbleToHandleWinmd () =
+    use r = new AssemblyResolver()
+    let p = ReaderParameters()
+    let name = AssemblyNameReference("platform", Version("255.255.255.255"))
+    let path = Path.Combine(SolutionRoot.location, "ThirdParty")
+
+    // Force this call
+    let methodinfo = r.GetType().GetMethod("SearchDirectory")
+    let o = methodinfo.Invoke(r, [| name; [path]; p |])
+
+    use platform = o :?> AssemblyDefinition
+    test <@ platform.MainModule.FileName = Path.Combine(path, "platform.winmd") @>
+
+  [<Test>]
   let ShouldBeAbleToLocateAReference () =
     let where =
       Assembly.GetExecutingAssembly().Location
