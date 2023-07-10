@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 23)
+# (Habu series release 24)
+
+# 8.6.68 (Habu series release 23)
 * Omit anonymous types from coverage, in the same way as other compiler generated code (auto-properties, equality and related operations on F# distributed unions, etc.)
 * Supports net8.0 preview 5
 
