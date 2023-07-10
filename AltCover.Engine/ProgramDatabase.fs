@@ -272,8 +272,7 @@ module internal ProgramDatabase =
 
       let folder =
         foldername :: (Seq.toList symbolFolders)
-        |> Seq.map (I.getSymbolsByFolder filename)
-        |> Seq.choose id
+        |> Seq.choose (I.getSymbolsByFolder filename)
         |> Seq.tryFind (I.symbolMatch tokens)
 
       sprintf

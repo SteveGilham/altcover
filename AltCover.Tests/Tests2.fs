@@ -2109,11 +2109,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Instrument
             Track = None
             DefaultVisitCount = Exemption.None }
-        |> Seq.map (fun n ->
+        |> Seq.choose (fun n ->
           match n with
           | BranchPoint b -> Some b
           | _ -> None)
-        |> Seq.choose id
         |> Seq.take 2 // start of a switch
         |> Seq.toList
 
@@ -2207,11 +2206,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Instrument
             Track = None
             DefaultVisitCount = Exemption.None }
-        |> Seq.map (fun n ->
+        |> Seq.choose (fun n ->
           match n with
           | BranchPoint b -> Some b
           | _ -> None)
-        |> Seq.choose id
         |> Seq.skip 2
         |> Seq.take 2 // first of "switch"
         |> Seq.toList
@@ -2298,11 +2296,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
             Inspection = Inspections.Instrument
             Track = None
             DefaultVisitCount = Exemption.None }
-        |> Seq.map (fun n ->
+        |> Seq.choose (fun n ->
           match n with
           | BranchPoint b -> Some b
           | _ -> None)
-        |> Seq.choose id
         |> Seq.take 2 // start of a switch
         |> Seq.toList
 
