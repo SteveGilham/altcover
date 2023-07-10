@@ -2,6 +2,22 @@ using NUnit.Framework;
 
 namespace Sample21
 {
+  public class Product
+  {
+    public Product(string name)
+    { Name = name; }
+
+    public string Name { get; set; }
+
+    public static string Junk(string name)
+    {
+      var product = new Product(name);
+      var bonus = new { note = "You won!" };
+      var shipmentWithBonus = new { address = "Somewhere St.", product, bonus };
+      return shipmentWithBonus.ToString();
+    }
+  }
+
   public class Tests
   {
     [SetUp]

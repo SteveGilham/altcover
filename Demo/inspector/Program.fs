@@ -91,10 +91,8 @@ let inspect (def: AssemblyDefinition) =
 [<EntryPoint>]
 let main argv =
   argv
-  |> Seq.map getFileExists
-  |> Seq.choose id
-  |> Seq.map loadInCecil
-  |> Seq.choose id
+  |> Seq.choose getFileExists
+  |> Seq.choose loadInCecil
   |> Seq.iter inspect
 
   0 // return an integer exit code

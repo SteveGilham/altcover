@@ -11,6 +11,18 @@ on:
     branches:
     - master
 
+# per https://www.meziantou.net/how-to-cancel-github-workflows-when-pushing-new-commits-on-a-branch.htm
+# https://docs.github.com/en/actions/learn-github-actions/expressions
+# https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+concurrency:
+  # github.workflow: name of the workflow
+  # github.event.pull_request.number || github.ref: pull request number or branch name if not a pull request
+  group: ${{ github.workflow }}
+  #-${{ github.event.pull_request.number || github.ref }}
+
+  # Cancel in-progress runs when a new workflow with the same group name is triggered
+  cancel-in-progress: true
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -20,7 +32,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '7.0.302'
+        dotnet-version: '7.0.304'
     - name: Tools
       run: dotnet tool restore
     - name: Setup
@@ -51,7 +63,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '7.0.302'
+        dotnet-version: '7.0.304'
     - name: Tools
       run: dotnet tool restore
     - name: Setup

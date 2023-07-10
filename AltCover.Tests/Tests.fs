@@ -1845,8 +1845,7 @@ module AltCoverTests =
 
     Assert.That(
       methods
-      |> Seq.map Visitor.I.containingMethod
-      |> Seq.choose id
+      |> Seq.choose Visitor.I.containingMethod
       |> Seq.filter (fun m -> m.Name = "G3"),
       Is.EquivalentTo [ g3; g3; g3 ]
     )
@@ -1855,8 +1854,7 @@ module AltCoverTests =
 
     Assert.That(
       methods
-      |> Seq.map Visitor.I.containingMethod
-      |> Seq.choose id
+      |> Seq.choose Visitor.I.containingMethod
       |> Seq.filter (fun m -> m.Name = "G1"),
       Is.EquivalentTo [ g1; g1 ]
     )
@@ -2970,8 +2968,7 @@ module AltCoverTests =
       let tracks =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
-        |> Seq.map (Visitor.I.track)
-        |> Seq.choose id
+        |> Seq.choose (Visitor.I.track)
         |> Seq.toList
 
       Assert.That(tracks, Is.EquivalentTo [ (1, "[Test"); (2, "[Test") ])
@@ -3029,8 +3026,7 @@ module AltCoverTests =
       let tracks =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
-        |> Seq.map (Visitor.I.track)
-        |> Seq.choose id
+        |> Seq.choose (Visitor.I.track)
         |> Seq.toList
 
       Assert.That(
@@ -3069,8 +3065,7 @@ module AltCoverTests =
       let tracks =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
-        |> Seq.map (Visitor.I.track)
-        |> Seq.choose id
+        |> Seq.choose (Visitor.I.track)
         |> Seq.toList
 
       Assert.That(
@@ -4661,11 +4656,10 @@ module AltCoverTests =
             Inspection = Inspections.Instrument
             Track = None
             DefaultVisitCount = Exemption.None }
-        |> Seq.map (fun n ->
+        |> Seq.choose (fun n ->
           match n with
           | BranchPoint b -> Some b
           | _ -> None)
-        |> Seq.choose id
         |> Seq.toList
       // The only overt branching in this function are the 4 match cases
       // Internal IL conditional branching is a compiler thing from inlining "string"
@@ -5642,12 +5636,15 @@ module AltCoverTests =
 
       test
         <@
-          classes = [ "Sample21.Tests"
+          classes = [ "Sample21.Product"
+                      "Sample21.Tests"
                       "Sample21.Traditional" ]
         @>
 
       let expectedMethods =
-        [ "System.String Sample21.Traditional::DoSomething()"
+        [ "System.String Sample21.Product::Junk(System.String)"
+          "System.String Sample21.Traditional::DoSomething()"
+          "System.Void Sample21.Product::.ctor(System.String)"
           "System.Void Sample21.Tests::.ctor()"
           "System.Void Sample21.Tests::Setup()"
           "System.Void Sample21.Tests::Test1()"
@@ -5709,6 +5706,7 @@ module AltCoverTests =
         [ "Sample21.IModern"
           "Sample21.Modern1"
           "Sample21.Modern2"
+          "Sample21.Product"
           "Sample21.Tests"
           "Sample21.Traditional" ]
 
@@ -5717,9 +5715,11 @@ module AltCoverTests =
       let expectedMethods =
         [ "System.String Sample21.IModern::DoSomething()"
           "System.String Sample21.Modern2::DoSomething()"
+          "System.String Sample21.Product::Junk(System.String)"
           "System.String Sample21.Traditional::DoSomething()"
           "System.Void Sample21.Modern1::.ctor()"
           "System.Void Sample21.Modern2::.ctor()"
+          "System.Void Sample21.Product::.ctor(System.String)"
           "System.Void Sample21.Tests::.ctor()"
           "System.Void Sample21.Tests::Setup()"
           "System.Void Sample21.Tests::Test1()"
