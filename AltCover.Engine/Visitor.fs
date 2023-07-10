@@ -284,6 +284,10 @@ module internal CoverageParameters =
   let mutable internal staticFilter: StaticFilter option =
     None
 
+  let effectiveStaticFilter () =
+    staticFilter
+    |> Option.defaultValue StaticFilter.Hidden
+
   let internal showGenerated = ref false
 
   let generationFilter =
@@ -747,6 +751,15 @@ module internal Visitor =
       t.Methods
       |> Seq.exists (fun m -> m.IsAbstract |> not)
 
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "Avoid spurious generality")>]
+    let internal stripAnonymous (t: TypeDefinition) =
+      t.Name.StartsWith("<>f__AnonymousType", StringComparison.Ordinal)
+      |> not
+      || CoverageParameters.effectiveStaticFilter ()
+         <> StaticFilter.Hidden
+
     let private visitModule (x: ModuleEntry) (buildSequence: Node -> seq<Node>) =
       zeroPoints ()
 
@@ -772,7 +785,8 @@ module internal Visitor =
       |> Seq.collect (fun x ->
         x.Module.GetAllTypes()
         |> Seq.cast<TypeDefinition>
-        |> Seq.filter stripInterfaces)
+        |> Seq.filter stripInterfaces
+        |> Seq.filter stripAnonymous)
       |> Seq.collect (
         (fun t ->
           let types =
@@ -1108,9 +1122,7 @@ module internal Visitor =
           if significant m then
             StaticFilter.NoFilter
           else
-            match CoverageParameters.staticFilter with
-            | None -> StaticFilter.Hidden
-            | Some f -> f
+            CoverageParameters.effectiveStaticFilter ()
 
         (m, key))
       |> Seq.filter (fun (m, k) -> k <> StaticFilter.Hidden)
@@ -1226,10 +1238,10 @@ module internal Visitor =
       let places = List.concat [ toNext; toJump ]
 
       let start =
-        places |> (boundaryOfList List.minBy)
+        places |> (boundaryOfList List.minBy) // This line to suppress
 
       let finish =
-        places |> (boundaryOfList List.maxBy)
+        places |> (boundaryOfList List.maxBy) // This line to suppress
 
       let range =
         Seq.unfold
@@ -1376,7 +1388,7 @@ module internal Visitor =
 
       // possibly add MoveNext filtering
       let generated (i: Instruction) =
-        let before = firstOfSequencePoint dbg i // This line in suppress
+        let before = firstOfSequencePoint dbg i // This line to suppress
         let sp = dbg.GetSequencePoint before
 
         before.OpCode = OpCodes.Ldloc_0
@@ -1648,18 +1660,18 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1379::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1391::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1229::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1241::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1232::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/finish@1244::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 ()

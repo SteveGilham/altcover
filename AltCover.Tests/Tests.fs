@@ -5636,12 +5636,15 @@ module AltCoverTests =
 
       test
         <@
-          classes = [ "Sample21.Tests"
+          classes = [ "Sample21.Product"
+                      "Sample21.Tests"
                       "Sample21.Traditional" ]
         @>
 
       let expectedMethods =
-        [ "System.String Sample21.Traditional::DoSomething()"
+        [ "System.String Sample21.Product::Junk(System.String)"
+          "System.String Sample21.Traditional::DoSomething()"
+          "System.Void Sample21.Product::.ctor(System.String)"
           "System.Void Sample21.Tests::.ctor()"
           "System.Void Sample21.Tests::Setup()"
           "System.Void Sample21.Tests::Test1()"
@@ -5703,6 +5706,7 @@ module AltCoverTests =
         [ "Sample21.IModern"
           "Sample21.Modern1"
           "Sample21.Modern2"
+          "Sample21.Product"
           "Sample21.Tests"
           "Sample21.Traditional" ]
 
@@ -5711,9 +5715,11 @@ module AltCoverTests =
       let expectedMethods =
         [ "System.String Sample21.IModern::DoSomething()"
           "System.String Sample21.Modern2::DoSomething()"
+          "System.String Sample21.Product::Junk(System.String)"
           "System.String Sample21.Traditional::DoSomething()"
           "System.Void Sample21.Modern1::.ctor()"
           "System.Void Sample21.Modern2::.ctor()"
+          "System.Void Sample21.Product::.ctor(System.String)"
           "System.Void Sample21.Tests::.ctor()"
           "System.Void Sample21.Tests::Setup()"
           "System.Void Sample21.Tests::Test1()"
