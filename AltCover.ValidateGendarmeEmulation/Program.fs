@@ -38,14 +38,6 @@ module ExpectoMain =
 module UnitTestStub =
   [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
   let unitTestStub argv =
-    let writeResults =
-      TestResults.writeNUnitSummary (
-        "AltCover.ValidateGendarmeEmulation.TestResults.xml",
-        "AltCover.ValidateGendarmeEmulation"
-      )
 
-    let config =
-      defaultConfig.appendSummaryHandler writeResults
-
-    runTestsWithArgs config argv ExpectoMain.tests
+    runTestsWithCLIArgs Seq.empty<CLIArguments> argv ExpectoMain.tests
 #endif

@@ -45,11 +45,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" VersionOverride="11.0.0-preview4" />
-    <PackageReference Include="Avalonia.Desktop" VersionOverride="11.0.0-preview4" />
-    <PackageReference Include="Avalonia.Themes.Fluent" VersionOverride="11.0.0-preview4" />
-    <PackageReference Include="Avalonia.Themes.Simple" VersionOverride="11.0.0-preview4" />
-    <PackageReference Include="MessageBox.Avalonia" VersionOverride="2.3.1-prev2" />
+    <PackageReference Include="Avalonia" VersionOverride="11.0.0" />
+    <PackageReference Include="Avalonia.Desktop" VersionOverride="11.0.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" VersionOverride="11.0.0" />
+    <PackageReference Include="Avalonia.Themes.Simple" VersionOverride="11.0.0" />
+    <PackageReference Include="MessageBox.Avalonia" VersionOverride="3.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

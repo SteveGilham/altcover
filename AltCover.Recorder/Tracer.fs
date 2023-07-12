@@ -30,11 +30,10 @@ type internal Tracer =
       Stream = null
       Formatter = null }
 
-  member this.IsConnected
-    with internal get () =
-      match this.Stream with
-      | null -> false
-      | _ -> this.Runner
+  member internal this.IsConnected =
+    match this.Stream with
+    | null -> false
+    | _ -> this.Runner
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",

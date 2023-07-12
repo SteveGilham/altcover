@@ -950,7 +950,6 @@ module Targets =
            "-debug"
            "-D:MONO"
            "-out:./_Mono/Sample3/Sample3.dll"
-           "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
            "-r:Mono.Cecil.dll"
            "./Samples/Sample3/Class1.cs" ]) ]
 
@@ -972,7 +971,6 @@ module Targets =
            "-debug"
            "-D:MONO"
            "-out:./_Mono/Sample31/Sample31.dll"
-           "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
            "-r:Mono.Cecil.dll"
            "./Samples/Sample31/Class1.cs" ]) ]
       |> Seq.iter (fun (dir, cmd) ->
@@ -1097,8 +1095,8 @@ module Targets =
         ("./Build/common-rules.xml",
          [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool builds
            "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
-        ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
+        //("./Build/common-rules.xml",
+        // [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
         ("./Build/csharp-rules.xml",
          [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
            "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
