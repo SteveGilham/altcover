@@ -4,7 +4,7 @@
     <TargetFrameworks>net20;netstandard2.0</TargetFrameworks>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Monitor</AssemblyName>
-    <NoWarn>1701;1702;NU1603</NoWarn>
+    <NoWarn>CS9057;9057;1701;1702;NU1603</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
