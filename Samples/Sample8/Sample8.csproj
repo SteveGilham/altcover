@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;net20</TargetFrameworks>
+    <TargetFrameworks>net7.0;net20</TargetFrameworks>
     <AssemblyName>Sample8</AssemblyName>
     <ApplicationIcon>$(ProjectDir)../../AltCover/AltCover.ico</ApplicationIcon>
     <DebugType>embedded</DebugType>

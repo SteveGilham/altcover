@@ -91,7 +91,7 @@ module AltCoverTests =
   let sample8path =
     Path.Combine(
       SolutionDir(),
-      "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll"
+      "_Binaries/Sample8/Debug+AnyCPU/net7.0/Sample8.dll"
     )
 #else
   let sample4path =

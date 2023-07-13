@@ -930,7 +930,7 @@ module Targets =
         "./Samples/Sample28/SourceGenerators.sln" ]
       |> Seq.iter dotnetBuildDebug
 
-      Shell.copy "./_SourceLink" (!! "./_Binaries/Sample14/Debug+AnyCPU/netcoreapp2.1/*"))
+      Shell.copy "./_SourceLink" (!! "./_Binaries/Sample14/Debug+AnyCPU/net7.0/*"))
 
   let BuildMonoSamples =
     (fun _ ->
@@ -3671,7 +3671,7 @@ module Targets =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0"
 
       let sampleRoot =
-        Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
+        Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net7.0"
 
       let instrumented =
         "__RecordResumeTestDotNet"
