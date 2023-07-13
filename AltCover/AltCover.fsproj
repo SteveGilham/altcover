@@ -12,6 +12,8 @@
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
     <TargetLatestRuntimePatch Condition="'$(TargetFramework)' == 'netcoreapp2.0'">true</TargetLatestRuntimePatch>
+    <NoWarn>NU1901;NU1902</NoWarn>
+    <MSBuildWarningsAsMessages>NU1901;NU1902</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
