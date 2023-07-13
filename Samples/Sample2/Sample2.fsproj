@@ -7,7 +7,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <Platforms>AnyCPU;x86</Platforms>
     <DebugType>portable</DebugType>
-    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <!-- DeterministicSourcePaths>true</DeterministicSourcePaths -->
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
