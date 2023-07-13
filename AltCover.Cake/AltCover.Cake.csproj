@@ -7,7 +7,6 @@
     <AssemblyName>AltCover.Cake</AssemblyName>
     <!-- Cake is not strongnamed -->
     <SignAssembly>false</SignAssembly>
-    <NoWarn>CS9057;9057</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

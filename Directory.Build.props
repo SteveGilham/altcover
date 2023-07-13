@@ -6,7 +6,6 @@
     <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
     <!-- .nuget\packages\dotnet.reproduciblebuilds.isolated\x.x.x\Sdk\Sdk.targets -->
     <EnsureNETFrameworkReferenceAssembliesProvided>false</EnsureNETFrameworkReferenceAssembliesProvided>
-    <NoWarn>CS9057;9057</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" />
