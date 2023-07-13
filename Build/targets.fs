@@ -7962,6 +7962,12 @@ module Targets =
           "AltCover.Tests/OpenCoverWithEmbeds.xml"
           "AltCover.Tests/OpenCoverWithPartials.xml"
           "AltCover.Tests/Sample4FullTracking.xml"
+          "_Reports\AltCoverAsyncAwaitTests.xml"
+          "RegressionTesting\issue37\coverage.xml"
+          "Samples\Sample16\Test\_Issue72\combined.Test.xml"
+          "Samples\Sample16\Test\_Issue72\original.Test.xml"
+          "Samples\Sample16\Test\_Reports\solution.Test.xml"
+          "Samples\Sample16\Test\_Reports\solution.Test2.xml"
           // coverlet
           "AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
           "AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
