@@ -293,7 +293,7 @@ type MainWindow() as this =
                     Justification = "This is FP, not OO")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
 #if AVALONIA11
-        ()
+    ()
 #else
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
@@ -970,7 +970,7 @@ type MainWindow() as this =
         row.Tag <- Expanded
 
 #if AVALONIA11
-        //"AvaloniaUI v11"
+      //"AvaloniaUI v11"
 #else
       row.Items <- l
 #endif
