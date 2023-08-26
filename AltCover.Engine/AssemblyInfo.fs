@@ -16,4 +16,10 @@ open System.Runtime.InteropServices
 [<assembly: CLSCompliant(true)>]
 [<assembly: ComVisible(false)>]
 [<assembly: System.Resources.NeutralResourcesLanguageAttribute("en-GB")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1813:AvoidUnsealedAttributes",
+                            Scope = "type",
+                            Target =
+                              "System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute",
+                            Justification = "Injected type")>]
 ()
