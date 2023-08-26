@@ -154,4 +154,10 @@ module DotNet =
                             Target = "AltCoverFake.DotNet.Testing.DotNet",
                             Justification = "That's life I'm afraid")>]
 #endif
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1813:AvoidUnsealedAttributes",
+                            Scope = "type",
+                            Target =
+                              "System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute",
+                            Justification = "Injected type")>]
 ()
