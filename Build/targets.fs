@@ -3229,8 +3229,7 @@ module Targets =
         AltCover.PrepareOptions.Primitive(
           { Primitive.PrepareOptions.Create() with
               Report = simpleReport
-              AssemblyFilter =
-                [ "?Sample2" ]
+              AssemblyFilter = [ "?Sample2" ]
               TypeFilter = [ "System\\."; "Microsoft\\." ]
               InPlace = true
               ReportFormat = "NCover"
