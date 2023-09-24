@@ -1123,14 +1123,13 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     records
     |> Seq.fold
       (fun state r ->
-        { state with
-            Hash = accumulate r.Hash state.Hash
-            Token = accumulate r.Token state.Token
-            Name = accumulate r.Name state.Name
-            Strategy = r.Strategy @ state.Strategy
-            Entry = r.Entry @ state.Entry
-            Exit = r.Exit @ state.Exit
-            Uid = index + 1 })
+        { Hash = accumulate r.Hash state.Hash
+          Token = accumulate r.Token state.Token
+          Name = accumulate r.Name state.Name
+          Strategy = r.Strategy @ state.Strategy
+          Entry = r.Entry @ state.Entry
+          Exit = r.Exit @ state.Exit
+          Uid = index + 1 })
       { Hash = String.Empty
         Token = String.Empty
         Name = String.Empty

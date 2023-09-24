@@ -1405,8 +1405,8 @@ module
       | MethodPoint m -> visitMethodPoint s m
       | BranchPoint b -> visitBranchPoint s b
       | AfterMethod m -> visitAfterMethod s m
-      | AfterType _ -> visitAfterType s
-      | AfterModule _ -> visitAfterModule s
+      | AfterType -> visitAfterType s
+      | AfterModule -> visitAfterModule s
       | _ -> s
 
     let result =

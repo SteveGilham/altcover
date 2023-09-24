@@ -240,10 +240,9 @@ module Targets =
       | Some path ->
         try // detect if we have the SDK
           DotNet.info (fun opt ->
-            { opt with
-                Common =
-                  { dotnetOptions opt.Common with
-                      DotNetCliPath = path } })
+            { Common =
+                { dotnetOptions opt.Common with
+                    DotNetCliPath = path } })
           |> ignore
 
           perhaps
@@ -4986,11 +4985,10 @@ module Targets =
           Environment.SetEnvironmentVariable("platform", "x86")
 
           DotNet.info (fun o' ->
-            { o' with
-                Common =
-                  { o'.Common with
-                      WorkingDirectory = s
-                      DotNetCliPath = dotnetPath86 |> Option.get } })
+            { Common =
+                { o'.Common with
+                    WorkingDirectory = s
+                    DotNetCliPath = dotnetPath86 |> Option.get } })
           |> printfn "%A"
 
           printfn "Build the sample2 code as x86"
