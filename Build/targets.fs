@@ -2580,6 +2580,9 @@ module Targets =
   let UnitTestWithAltCoverCoreRunner =
     (fun _ ->
       Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
+      
+      Shell.cleanDir ("./_Binaries/Sample4LongForm")
+      dotnetBuildDebug "./MCS.sln"
 
       let keyfile =
         Path.getFullName "Build/SelfTest.snk"
