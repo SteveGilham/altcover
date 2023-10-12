@@ -3949,6 +3949,8 @@ module Targets =
                .Replace("\\", "/")
            ),
            None))
+        |> Seq.map (fun (x,y,z) -> [(x,y,z); (x, Some (y.Value.Replace("build", "buildMultiTargeting")), z)])
+        |> Seq.concat
         |> Seq.toList
 
       Directory.ensure "./_Intermediate/global"
