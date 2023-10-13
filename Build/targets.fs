@@ -3949,8 +3949,6 @@ module Targets =
                .Replace("\\", "/")
            ),
            None))
-        |> Seq.map (fun (x,y,z) -> [(x,y,z); (x, Some (y.Value.Replace("build", "buildMultiTargeting")), z)])
-        |> Seq.concat
         |> Seq.toList
 
       Directory.ensure "./_Intermediate/global"
@@ -6231,9 +6229,12 @@ module Targets =
           let fsproj = XDocument.Load projpath
 
           let targets =
-           fsproj.Descendants(XName.Get("TargetFrameworks"))
-           |> Seq.head
+            [ fsproj.Descendants(XName.Get("TargetFrameworks"))
+              fsproj.Descendants(XName.Get("TargetFramework")) ]
+            |> Seq.concat
+            |> Seq.head
 
+          targets.SetValue "net7.0"
           targets.AddAfterSelf(XElement(XName.Get "DocumentationFile"))
 
           fsproj.Descendants(XName.Get("HintPath"))
@@ -6438,10 +6439,10 @@ module Targets =
         printfn "optest failing test ------------------------------------------------"
 
         let xx =
-          Path.getFullName "./_DotnetTestFail/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestFail/coverage.xml"
 
         let xxa =
-          Path.getFullName "./_DotnetTestFailInPlace/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestFailInPlace/coverage.xml"
 
         let pf1 =
           { p0 with
@@ -6565,10 +6566,10 @@ module Targets =
           "optest failing test fast ------------------------------------------------"
 
         let xx =
-          Path.getFullName "./_DotnetTestFailFast/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestFailFast/coverage.xml"
 
         let xxa =
-          Path.getFullName "./_DotnetTestFailFastInPlace/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestFailFastInPlace/coverage.xml"
 
         let pf1 =
           { p0 with
@@ -6730,7 +6731,7 @@ module Targets =
           ""
 
         let x =
-          Path.getFullName "./_DotnetTestLineCover/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestLineCover/coverage.xml"
 
         do
           use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
@@ -6752,7 +6753,7 @@ module Targets =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
             |> Seq.length,
             Is.EqualTo 13,
-            "./_DotnetTestLineCover/coverage.net7.0.xml"
+            "./_DotnetTestLineCover/coverage.xml"
           )
 
           Assert.That(
@@ -6762,7 +6763,7 @@ module Targets =
           )
 
         let xa =
-          Path.getFullName "./_DotnetTestLineCoverInPlace/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestLineCoverInPlace/coverage.xml"
 
         do
           use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
@@ -6784,7 +6785,7 @@ module Targets =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
             |> Seq.length,
             Is.EqualTo 13,
-            "./_DotnetTestLineCoverInPlace/coverage.net7.0.xml"
+            "./_DotnetTestLineCoverInPlace/coverage.xml"
           )
 
           Assert.That(
@@ -6825,7 +6826,7 @@ module Targets =
           ""
 
         let x =
-          Path.getFullName "./_DotnetTestBranchCoverInPlace/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestBranchCoverInPlace/coverage.xml"
 
         do
           use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
@@ -6867,7 +6868,7 @@ module Targets =
           ""
 
         let x =
-          Path.getFullName "./_DotnetTestBranchCover/coverage.net7.0.xml"
+          Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
 
         do
           use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword

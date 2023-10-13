@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../tools/netcoreapp2.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
+    <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
+    <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
+    <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
+  </PropertyGroup>
+
+  <UsingTask TaskName="AltCover.Prepare"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.Collect"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.PowerShell"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.GetVersion"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.Echo"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.RunSettings"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.ContingentCopy"
+        AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.RetryDelete"
+        AssemblyFile="$(AltCoverEngine)" />
+</Project>
