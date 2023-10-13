@@ -3965,7 +3965,7 @@ module Targets =
             (Path.getFullName "./_Intermediate/global")
             @@ ("altcover.global" + Path.GetExtension a)
 
-          File.WriteAllText(name, text)
+          File.WriteAllText(name, text.Replace("AltCover.targets", "altcover.global.targets"))
           (name, b, c))
 
       Directory.ensure "./_Intermediate/api"
@@ -3982,7 +3982,7 @@ module Targets =
             (Path.getFullName "./_Intermediate/api")
             @@ ("altcover.api" + Path.GetExtension a)
 
-          File.WriteAllText(name, text)
+          File.WriteAllText(name, text.Replace("AltCover.targets", "altcover.api.targets"))
           (name, b, c))
 
       let poshFiles where =
