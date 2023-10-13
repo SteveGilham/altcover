@@ -1,7 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Import tasks -->
-  <Import Project="$(MSBuildThisFileDirectory)../buildMultiTargeting/AltCover.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../buildMultiTargeting/AltCover.targets"
+          Condition=" '$(AltCoverBuildMultiTargeting)' != 'true' "/>
 
   <PropertyGroup>
     <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Instrumented'))</AltCoverInstrumentedDirectory>
