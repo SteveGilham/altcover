@@ -9,8 +9,8 @@
     <PackageVersion Include="AltCover.Fake" Version="8.6.68" />
     <PackageVersion Include="Avalonia" Version="0.10.18" />
     <PackageVersion Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.0.0-preview4" />
-    <PackageVersion Include="Avalonia.Themes.Simple" Version="11.0.0-preview4" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.0.5" />
+    <PackageVersion Include="Avalonia.Themes.Simple" Version="11.0.5" />
     <PackageVersion Include="BlackFox.CommandLine" Version="1.0.0" />
     <PackageVersion Include="BlackFox.VsWhere" Version="1.1.0" />
     <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
@@ -45,14 +45,14 @@
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
-    <PackageVersion Include="Markdig" Version="0.32.0" />
+    <PackageVersion Include="Markdig" Version="0.33.0" />
     <PackageVersion Include="MessageBox.Avalonia" Version="2.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="16.0.0" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
@@ -62,7 +62,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.6.133" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="NuGet.CommandLine" Version="6.6.1" />
+    <PackageVersion Include="NuGet.CommandLine" Version="6.7.0" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
@@ -78,15 +78,15 @@
     <PackageVersion Include="System.Security.Permissions" Version="7.0.0" />
     <PackageVersion Include="Unquote" Version="6.1.0" />
     <PackageVersion Include="XmlDoc2CmdletDoc" Version="0.4.0-dotnetcore0001" />
-    <PackageVersion Include="xunit" Version="2.5.0" />
+    <PackageVersion Include="xunit" Version="2.5.3" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
-    <PackageVersion Include="xunit.analyzers" Version="1.2.0" />
-    <PackageVersion Include="xunit.assert" Version="2.5.0" />
-    <PackageVersion Include="xunit.core" Version="2.5.0" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.5.0" />
-    <PackageVersion Include="xunit.extensibility.execution" Version="2.5.0" />
-    <PackageVersion Include="xunit.runner.console" Version="2.5.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.4.0" />
+    <PackageVersion Include="xunit.assert" Version="2.5.3" />
+    <PackageVersion Include="xunit.core" Version="2.5.3" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.5.3" />
+    <PackageVersion Include="xunit.extensibility.execution" Version="2.5.3" />
+    <PackageVersion Include="xunit.runner.console" Version="2.5.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageVersion Include="YoloDev.Expecto.TestSdk" Version="0.14.2" />
   </ItemGroup>
 </Project>
