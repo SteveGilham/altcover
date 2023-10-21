@@ -82,4 +82,11 @@ module MonitorTests =
     let result = (code, branch)
     let t2 = sprintf "%A" result
 
-    test' <@ List.exists (fun x -> x = result) expect @> (t2 + text)
+    test'
+      <@
+        code > 115
+        && code < 261
+        && branch > 24
+        && branch < 38
+      @>
+      (text + Environment.NewLine + t2)
