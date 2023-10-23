@@ -20,12 +20,6 @@
         "gendarme"
       ]
     },
-    "dotnet-fsharplint": {
-      "version": "0.21.3",
-      "commands": [
-        "dotnet-fsharplint"
-      ]
-    },
     "coveralls.net": {
       "version": "4.0.1",
       "commands": [

@@ -41,6 +41,7 @@
     <PackageVersion Include="Fake.Tools.git" Version="5.23.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
     <PackageVersion Include="FSharp.Core" Version="7.0.400" />
+    <PackageVersion Include="FSharpLint.Core" Version="0.21.3" />
     <PackageVersion Include="FsUnit" Version="5.4.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />

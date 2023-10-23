@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DriveApi", "Build\DriveApi.fsproj", "{D6D1E6E2-26E8-4043-A65E-45A176E07A27}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "lint", "Build\lint.fsproj", "{E9216F6A-7D2C-47F4-BC7C-D43DE7D837CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{D6D1E6E2-26E8-4043-A65E-45A176E07A27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6D1E6E2-26E8-4043-A65E-45A176E07A27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6D1E6E2-26E8-4043-A65E-45A176E07A27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9216F6A-7D2C-47F4-BC7C-D43DE7D837CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9216F6A-7D2C-47F4-BC7C-D43DE7D837CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9216F6A-7D2C-47F4-BC7C-D43DE7D837CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9216F6A-7D2C-47F4-BC7C-D43DE7D837CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
