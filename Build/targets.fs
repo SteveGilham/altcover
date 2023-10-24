@@ -11,11 +11,9 @@ module Targets =
   open System.Xml.Linq
   open System.Xml.Schema
 
-  open Actions
   open AltCode.Fake.DotNet
   open AltCoverFake.DotNet.DotNet
   open AltCoverFake.DotNet.Testing
-  open AltCoverFake.DotNet.DotNet
 
   open Fake.Core
   open Fake.Core.TargetOperators
