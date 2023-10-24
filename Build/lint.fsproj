@@ -6,10 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Output.fs" />
     <Compile Include="lint.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Argu" />
     <PackageReference Include="FSharpLint.Core" />
   </ItemGroup>
 

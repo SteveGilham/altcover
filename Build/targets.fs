@@ -936,7 +936,8 @@ module Targets =
         "./AltCover.Visualizer.sln"
         "./MCS.sln"
         "./Samples/Sample14/Sample14.sln"
-        "./Samples/Sample28/SourceGenerators.sln" ]
+        "./Samples/Sample28/SourceGenerators.sln"
+        "./Build/lint.fsproj" ]
       |> Seq.iter dotnetBuildDebug
 
       Shell.copy "./_SourceLink" (!! "./_Binaries/Sample14/Debug+AnyCPU/net7.0/*"))
@@ -1000,7 +1001,15 @@ module Targets =
         Path.getFullName "./fsharplint.json"
 
       let doLint f =
-        CreateProcess.fromRawCommand "dotnet" [ "fsharplint"; "lint"; "-l"; cfg; f ]
+        CreateProcess.fromRawCommand
+          "dotnet"
+          [ "run"
+            "--project"
+            ".\Build\lint.fsproj"
+            "lint"
+            "-l"
+            cfg
+            f ]
         |> CreateProcess.setEnvironmentVariable
           "DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"
           "2"

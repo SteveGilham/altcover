@@ -7,6 +7,7 @@
     <PackageVersion Include="altcover" Version="8.6.68" />
     <PackageVersion Include="AltCover.Api" Version="8.6.68" />
     <PackageVersion Include="AltCover.Fake" Version="8.6.68" />
+    <PackageVersion Include="Argu" Version="6.1.1" />
     <PackageVersion Include="Avalonia" Version="0.10.18" />
     <PackageVersion Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.0.5" />
