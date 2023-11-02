@@ -49,7 +49,7 @@
     <PackageReference Include="Avalonia.Desktop" VersionOverride="11.0.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" VersionOverride="11.0.5" />
     <PackageReference Include="Avalonia.Themes.Simple" VersionOverride="11.0.5" />
-    <PackageReference Include="MessageBox.Avalonia" VersionOverride="3.1.4" />
+    <PackageReference Include="MessageBox.Avalonia" VersionOverride="3.1.5.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

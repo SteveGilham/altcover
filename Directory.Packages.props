@@ -17,7 +17,7 @@
     <PackageVersion Include="Cake.Common" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="1.0.0" />
     <PackageVersion Include="Cake.Core" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Version="2.0.0" />
-    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.1" />
+    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
@@ -40,8 +40,8 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="5.23.0" />
     <PackageVersion Include="Fake.Tools.git" Version="5.23.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="7.0.400" />
-    <PackageVersion Include="FsUnit" Version="5.4.0" />
+    <PackageVersion Include="FSharp.Core" Version="7.0.401" />
+    <PackageVersion Include="FsUnit" Version="5.5.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
@@ -78,14 +78,14 @@
     <PackageVersion Include="System.Security.Permissions" Version="7.0.0" />
     <PackageVersion Include="Unquote" Version="6.1.0" />
     <PackageVersion Include="XmlDoc2CmdletDoc" Version="0.4.0-dotnetcore0001" />
-    <PackageVersion Include="xunit" Version="2.5.3" />
+    <PackageVersion Include="xunit" Version="2.6.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.analyzers" Version="1.4.0" />
-    <PackageVersion Include="xunit.assert" Version="2.5.3" />
-    <PackageVersion Include="xunit.core" Version="2.5.3" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.5.3" />
-    <PackageVersion Include="xunit.extensibility.execution" Version="2.5.3" />
-    <PackageVersion Include="xunit.runner.console" Version="2.5.3" />
+    <PackageVersion Include="xunit.assert" Version="2.6.0" />
+    <PackageVersion Include="xunit.core" Version="2.6.0" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.6.0" />
+    <PackageVersion Include="xunit.extensibility.execution" Version="2.6.0" />
+    <PackageVersion Include="xunit.runner.console" Version="2.6.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageVersion Include="YoloDev.Expecto.TestSdk" Version="0.14.2" />
   </ItemGroup>
