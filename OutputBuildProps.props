@@ -31,11 +31,12 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
-    <NoWarn>52</NoWarn>
+    <NoWarn>CS9057;9057;52</NoWarn>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'!='Debug'">
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <NoWarn>CS9057;9057</NoWarn>
   </PropertyGroup>
 </Project>

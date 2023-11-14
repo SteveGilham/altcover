@@ -5,7 +5,7 @@
     <RootNamespace>AltCover.FontSupport</RootNamespace>
     <AssemblyName>AltCover.FontSupport</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;8002</NoWarn>
+    <NoWarn>$(NoWarn);1701;1702;8002</NoWarn>
     <WarningsAsErrors>NU1605</WarningsAsErrors>
     <DocumentationFile />
   </PropertyGroup>

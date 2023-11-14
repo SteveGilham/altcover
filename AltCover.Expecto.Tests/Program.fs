@@ -31,13 +31,5 @@ module ExpectoMain =
 module UnitTestStub =
   [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
   let unitTestStub argv =
-    let writeResults =
-      TestResults.writeNUnitSummary (
-        "AltCover.Expecto.TestResults.xml",
-        "AltCover.Expecto.Tests"
-      )
 
-    let config =
-      defaultConfig.appendSummaryHandler writeResults
-
-    runTestsWithArgs config argv ExpectoMain.tests
+    runTestsWithCLIArgs Seq.empty<CLIArguments> argv ExpectoMain.tests

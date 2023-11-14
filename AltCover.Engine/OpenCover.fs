@@ -715,8 +715,8 @@ module internal OpenCover =
       | MethodPoint m -> visitMethodPoint s m
       | BranchPoint b -> visitBranchPoint s b
       | AfterMethod m -> visitAfterMethod s m
-      | AfterType _ -> visitAfterType s
-      | AfterModule _ -> visitAfterModule s
+      | AfterType -> visitAfterType s
+      | AfterModule -> visitAfterModule s
       | Finish -> afterAll s
       | _ -> s
 

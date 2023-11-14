@@ -11,11 +11,9 @@ open System.Linq
 [<RequireQualifiedAccess>]
 module DotNet =
   type ICLIOptions =
-    interface
-      abstract member ForceDelete: bool
-      abstract member FailFast: bool
-      abstract member ShowSummary: String
-    end
+    abstract member ForceDelete: bool
+    abstract member FailFast: bool
+    abstract member ShowSummary: String
 
   [<NoComparison;
     SuppressMessage("Microsoft.Design", "CA1034", Justification = "Idiomatic F#");

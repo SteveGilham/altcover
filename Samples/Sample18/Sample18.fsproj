@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net472</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>Sample18</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
     <DebugType>portable</DebugType>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)'=='net7.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0'">
     <NoWarn>988</NoWarn>
   </PropertyGroup>
 
