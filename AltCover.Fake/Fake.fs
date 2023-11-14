@@ -13,12 +13,11 @@ module Trace =
 
   let Create () =
     AltCover.LoggingOptions.Primitive
-      { Primitive.LoggingOptions.Create() with
-          Info = Trace.trace
-          Warn = Trace.traceImportant
-          Failure = Trace.traceError
-          Echo = Trace.traceVerbose
-          Verbose = Trace.traceVerbose }
+      { Info = Trace.trace
+        Warn = Trace.traceImportant
+        Failure = Trace.traceError
+        Echo = Trace.traceVerbose
+        Verbose = Trace.traceVerbose }
 
   let internal doDefault (log: AltCover.LoggingOptions option) =
     match log with
@@ -54,7 +53,7 @@ type Command private () =
 
     let target =
       match toolType with
-      | Framework _ -> "AltCover.exe"
+      | Framework -> "AltCover.exe"
       | _ -> "AltCover.dll"
 
     match
