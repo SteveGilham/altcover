@@ -48,7 +48,6 @@ module Abstract =
   /// </example>
   ///</summary>
   type ICollectOptions =
-    interface
     ///<summary>
     /// Corresponds to command line option `-r, --recorderDirectory=VALUE`
     ///</summary>
@@ -97,7 +96,6 @@ module Abstract =
     /// Corresponds to command line option `-q`
     ///</summary>
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
-  end
 // ```
 // ### interface `IPrepareOptions`
 //
@@ -123,7 +121,6 @@ module Abstract =
   /// </example>
   ///</summary>
   type IPrepareOptions =
-    interface
     ///<summary>
     /// Corresponds to command line option `-i, --inputDirectory=VALUE`
     ///</summary>
@@ -268,7 +265,6 @@ module Abstract =
     /// Corresponds to command line option ` --trivia`
     ///</summary>
     abstract member Trivia : bool with get
-  end
 // ```
 #if RUNNER
 // ### interface `ILoggingOptions`
@@ -281,7 +277,6 @@ module Abstract =
   /// Destinations for user level output
   ///</summary>
   type ILoggingOptions =
-    interface
     ///<summary>
     /// Sink for informational messages
     ///</summary>
@@ -302,5 +297,4 @@ module Abstract =
     /// Sink for detailed messages
     ///</summary>
     abstract member Verbose : Action<String> with get
-    end
 #endif

@@ -10,11 +10,15 @@ open Mono.Options
 
 module VisualizerMain =
 #if !NETSTANDARD2_0 // no AppBuilder here
+#if AVALONIA11
+
+#else
   let BuildAvaloniaApp () =
     AppBuilderBase<AppBuilder>
       .Configure<App>()
       .UsePlatformDetect()
       .LogToTrace(LogEventLevel.Warning)
+#endif
 #endif
 
   [<EntryPoint>]
@@ -33,8 +37,12 @@ module VisualizerMain =
     options.Parse(arguments) |> ignore
 
 #if !NETSTANDARD2_0
+#if AVALONIA11
+    0
+#else
     BuildAvaloniaApp()
       .StartWithClassicDesktopLifetime(arguments)
+#endif
 #else
     0
 #endif

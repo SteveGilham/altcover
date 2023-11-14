@@ -1491,10 +1491,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = null
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = null
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let countBefore =
       recorder.Head.Body.Instructions.Count
@@ -1572,10 +1571,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = null
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = null
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let countBefore =
       target.Body.Instructions.Count
@@ -1645,10 +1643,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = null
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = null
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let countBefore =
       target.Body.Instructions.Count
@@ -1723,10 +1720,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = null
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = null
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let countBefore =
       target.Body.Instructions.Count
@@ -1799,10 +1795,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = null
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = null
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let countBefore =
       target.Body.Instructions.Count
@@ -1875,10 +1870,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = null
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = null
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let countBefore =
       target.Body.Instructions.Count
@@ -1973,10 +1967,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { raw with
           RecordingMethodRef =
-            { raw.RecordingMethodRef with
-                Visit = recorder.[1]
-                Push = recorder.[1]
-                Pop = recorder.[2] } }
+            { Visit = recorder.[1]
+              Push = recorder.[1]
+              Pop = recorder.[2] } }
 
     let switch =
       target.Body.Instructions
@@ -2128,10 +2121,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let state =
         { raw with
             RecordingMethodRef =
-              { raw.RecordingMethodRef with
-                  Visit = method
-                  Push = null
-                  Pop = null }
+              { Visit = method
+                Push = null
+                Pop = null }
             MethodWorker = method.Body.GetILProcessor() }
 
       let next = branches.Head.Start.Next
@@ -2227,10 +2219,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let state =
         { raw with
             RecordingMethodRef =
-              { raw.RecordingMethodRef with
-                  Visit = method
-                  Push = null
-                  Pop = null }
+              { Visit = method
+                Push = null
+                Pop = null }
             MethodWorker = method.Body.GetILProcessor() }
 
       let next = branches.Head.Start.Next
@@ -2311,10 +2302,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let state =
         { raw with
             RecordingMethodRef =
-              { raw.RecordingMethodRef with
-                  Visit = method
-                  Push = null
-                  Pop = null }
+              { Visit = method
+                Push = null
+                Pop = null }
             MethodWorker = method.Body.GetILProcessor() }
 
       let next = branches.Head.Start.Next
@@ -3142,11 +3132,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let v =
         def''.MainModule.ImportReference visit
 
-      let r =
-        { RecorderRefs.Build() with
-            Visit = v
-            Push = v
-            Pop = v }
+      let r = { Visit = v; Push = v; Pop = v }
 
       let state' =
         { state with

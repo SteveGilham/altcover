@@ -65,6 +65,8 @@ type AboutBox() as this =
 
     vslink.Text <- Resource.GetResourceString "aboutVisualizer.Copyright"
 
+#if AVALONIA11
+#else
     let vsLinkButton =
       this.FindControl<Button>("VSLinkButton")
 
@@ -72,12 +74,15 @@ type AboutBox() as this =
     |> Event.add (fun _ ->
       Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
         "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022")
+#endif
 
     let link =
       this.FindControl<TextBlock>("Link")
 
     link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"
 
+#if AVALONIA11
+#else
     let linkButton =
       this.FindControl<Button>("LinkButton")
 
@@ -85,6 +90,7 @@ type AboutBox() as this =
     |> Event.add (fun _ ->
       Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
         "http://www.github.com/SteveGilham/altcover")
+#endif
 
     this.FindControl<TabItem>("AboutDetails").Header <-
       Resource.GetResourceString "AboutDialog.About"
@@ -286,6 +292,9 @@ type MainWindow() as this =
                     "AvoidSwitchStatementsRule",
                     Justification = "This is FP, not OO")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
+#if AVALONIA11
+    ()
+#else
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
 
@@ -314,6 +323,7 @@ type MainWindow() as this =
 
     // can we get this to tidy up after itself??
     mbox.ShowDialog(this) |> ignore
+#endif
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
@@ -691,9 +701,9 @@ type MainWindow() as this =
 #else
     let where = Persistence.readFolder ()
 
-    if Directory.Exists where then
-      ofd.SuggestedStartLocation <-
-        new Avalonia.Platform.Storage.FileIO.BclStorageFolder(where)
+    //if Directory.Exists where then
+    //  ofd.SuggestedStartLocation <-
+    //    new Avalonia.Platform.Storage.FileIO.BclStorageFolder(where)
 #endif
 
     ofd.Title <- Resource.GetResourceString "Open Coverage File"
@@ -802,13 +812,17 @@ type MainWindow() as this =
     if isWindows then
       fontItem.IsVisible <- true
 
+#if AVALONIA11
+#else
       fontItem.Click
       |> Event.add (fun _ ->
+
         let hwnd = this.PlatformImpl.Handle.Handle
 
         Fonts.SelectWin32(Persistence.readFont (), hwnd)
         |> Option.ofObj
         |> Option.iter respondToFont)
+#endif
     else if Fonts.Wish().Any() then
       fontItem.IsVisible <- true
 
@@ -890,32 +904,32 @@ type MainWindow() as this =
       |> Event.choose id
       |> Event.map (fun n ->
 #if AVALONIA11
-        use temp = ofd.SuggestedStartLocation
-        let ok, where = n.TryGetUri()
-        let path = where.AbsolutePath
+        //use temp = ofd.SuggestedStartLocation
+        //let ok, where = n.TryGetUri()
+        //let path = where.AbsolutePath
 
-        if ok then
-          ofd.SuggestedStartLocation <-
-            new Avalonia.Platform.Storage.FileIO.BclStorageFolder(
-              Path.GetDirectoryName path
-            )
+        //if ok then
+        //  ofd.SuggestedStartLocation <-
+        //    new Avalonia.Platform.Storage.FileIO.BclStorageFolder(
+        //      Path.GetDirectoryName path)
 #else
         ofd.Directory <- Path.GetDirectoryName n
 #endif
 
         if Persistence.save then
 #if AVALONIA11
-          let ok, where =
-            ofd.SuggestedStartLocation.TryGetUri()
+          //let ok, where =
+          //  ofd.SuggestedStartLocation.TryGetUri()
 
-          if ok then
-            Persistence.saveFolder where.AbsolutePath
+          //if ok then
+          //  Persistence.saveFolder where.AbsolutePath
+          ()
 #else
           Persistence.saveFolder ofd.Directory
 #endif
 
 #if AVALONIA11
-        justOpened <- path
+        //justOpened <- path
 #else
         justOpened <- n
 #endif
@@ -955,7 +969,11 @@ type MainWindow() as this =
       else
         row.Tag <- Expanded
 
+#if AVALONIA11
+      //"AvaloniaUI v11"
+#else
       row.Items <- l
+#endif
 
       row.Tapped
       |> Event.add (fun x ->
@@ -976,7 +994,11 @@ type MainWindow() as this =
         let remargin (t: TreeViewItem) =
           if t.HeaderPresenter.IsNotNull then
             let hp =
+#if AVALONIA11
+              t.HeaderPresenter
+#else
               t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
+#endif
 
             let grid = hp.Parent :?> Grid
             grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
@@ -1005,8 +1027,11 @@ type MainWindow() as this =
             (tip: string option) ->
           let newrow = makeNewRow pc leaf name icon
 
-          (context.Row.Items :?> List<TreeViewItem>).Add newrow
+#if AVALONIA11
 
+#else
+          (context.Row.Items :?> List<TreeViewItem>).Add newrow
+#endif
           tip
           |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
 
@@ -1029,7 +1054,11 @@ type MainWindow() as this =
                 let tree =
                   this.FindControl<TreeView>("Tree")
 
+#if AVALONIA11
+
+#else
                 tree.Items <- Enumerable.Empty<TreeViewItem>()
+#endif
                 tree.InvalidateVisual()
                 this.UpdateMRU info.FullName false)
           UpdateUISuccess =
@@ -1070,7 +1099,11 @@ type MainWindow() as this =
                 .FindControl<StackPanel>("Branches")
                 .Children.Clear()
 
+#if AVALONIA11
+
+#else
               tree.Items <- auxModel.Model
+#endif
               tree.InvalidateVisual()
 
               if info.IsNotNull then
@@ -1080,7 +1113,11 @@ type MainWindow() as this =
               let tree =
                 this.FindControl<TreeView>("Tree")
 
+#if AVALONIA11
+
+#else
               tree.Items <- Enumerable.Empty<TreeViewItem>()
+#endif
               tree.InvalidateVisual()
 
               let model = auxModel.Model

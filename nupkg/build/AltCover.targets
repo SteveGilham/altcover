@@ -1,8 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
-    <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
+    <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../tools/netcoreapp2.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
+    <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
     <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Instrumented'))</AltCoverInstrumentedDirectory>

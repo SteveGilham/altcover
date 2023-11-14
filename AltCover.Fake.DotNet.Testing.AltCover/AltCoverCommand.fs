@@ -338,4 +338,16 @@ module AltCoverCommand =
                             Target =
                               "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@247T.#options",
                             Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 75@75::Invoke(System.String)",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 135@135::Invoke(System.String)",
+                            Justification = "Generated code")>]
 ()

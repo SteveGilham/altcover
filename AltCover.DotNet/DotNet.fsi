@@ -20,7 +20,6 @@ module DotNet = begin
   /// <para type="description">Interface defining general command line arguments for `dotnet test` use..</para>
   /// </summary>
   type ICLIOptions =
-    interface
     /// <summary>
     /// <para type="description">The `/AltCoverFailFast` value this represents</para>
     /// </summary>
@@ -33,7 +32,6 @@ module DotNet = begin
     /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
     /// </summary>
     abstract member ShowSummary : System.String with get
-    end
 
   /// <summary>
   /// <para type="description">Union type defining general command line arguments for `dotnet test` use.</para>

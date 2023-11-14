@@ -35,14 +35,6 @@ module TestMain =
 module UnitTestStub =
   [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
   let unitTestStub argv =
-    let writeResults =
-      TestResults.writeNUnitSummary (
-        "AltCover.Visualizer.TestResults.xml",
-        "AltCover.Visualizer.Tests"
-      )
 
-    let config =
-      defaultConfig.appendSummaryHandler writeResults
-
-    runTestsWithArgs config argv TestMain.tests
+    runTestsWithCLIArgs Seq.empty<CLIArguments> argv TestMain.tests
 #endif

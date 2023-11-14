@@ -13,12 +13,11 @@ module Trace =
 
   let Create () =
     AltCover.LoggingOptions.Primitive
-      { Primitive.LoggingOptions.Create() with
-          Info = Trace.trace
-          Warn = Trace.traceImportant
-          Failure = Trace.traceError
-          Echo = Trace.traceVerbose
-          Verbose = Trace.traceVerbose }
+      { Info = Trace.trace
+        Warn = Trace.traceImportant
+        Failure = Trace.traceError
+        Echo = Trace.traceVerbose
+        Verbose = Trace.traceVerbose }
 
   let internal doDefault (log: AltCover.LoggingOptions option) =
     match log with
@@ -54,7 +53,7 @@ type Command private () =
 
     let target =
       match toolType with
-      | Framework _ -> "AltCover.exe"
+      | Framework -> "AltCover.exe"
       | _ -> "AltCover.dll"
 
     match
@@ -154,4 +153,10 @@ module DotNet =
                             Target = "AltCoverFake.DotNet.Testing.DotNet",
                             Justification = "That's life I'm afraid")>]
 #endif
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1813:AvoidUnsealedAttributes",
+                            Scope = "type",
+                            Target =
+                              "System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute",
+                            Justification = "Injected type")>]
 ()

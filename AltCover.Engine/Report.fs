@@ -156,7 +156,7 @@ module internal Report =
           head.Remove()
 
         tail
-      | AfterModule _ ->
+      | AfterModule ->
         Visitor.moduleReport <- head.ToString()
         tail
       | Finish -> s

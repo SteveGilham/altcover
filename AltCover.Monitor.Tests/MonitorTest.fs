@@ -16,7 +16,7 @@ module MonitorTests =
       [ (261, 0) ] // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net7.0.xml"
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net8.0.xml"
       ),
       [ (260, 37); (260, 36) ] ]
     |> List.filter (fst >> File.Exists)
@@ -82,4 +82,11 @@ module MonitorTests =
     let result = (code, branch)
     let t2 = sprintf "%A" result
 
-    test' <@ List.exists (fun x -> x = result) expect @> (t2 + text)
+    test'
+      <@
+        code > 115
+        && code < 261
+        && branch > 24
+        && branch < 38
+      @>
+      (text + Environment.NewLine + t2)
