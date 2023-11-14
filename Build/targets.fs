@@ -8285,7 +8285,7 @@ module Targets =
     _Target "Issue114" Issue114
     _Target "Issue156" Issue156
     _Target "MakeDocumentation" MakeDocumentation
-    _Target "BulkReport" BulkReport
+    _Target "BulkReport" (if Environment.isWindows then BulkReport else ignore)
     _Target "All" All
     _Target "CppInline" CppInline
     _Target "None" ignore
