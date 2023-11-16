@@ -438,7 +438,7 @@ module internal Main =
         String.Join(
           String.Empty,
           t
-          |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture))
+          |> Seq.map _.ToString("x2", CultureInfo.InvariantCulture)
         )
         == "4ebffcaabf10ce6a") // recorder.snk
       |> Option.defaultValue false
@@ -598,7 +598,7 @@ module internal Main =
                         |> Convert.ToBase64String
                       Refs =
                         def.MainModule.AssemblyReferences
-                        |> Seq.map (fun r -> r.Name)
+                        |> Seq.map _.Name
                         |> Seq.toList }
                     :: accumulator)
                   |> Option.defaultValue accumulator)
@@ -610,12 +610,12 @@ module internal Main =
             [])
         |> Seq.toList
         |> Seq.concat
-        |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique
+        |> Seq.groupBy _.Hash // assume hash is unique
         |> Seq.map (fun (n, agroup) ->
           { (agroup |> Seq.head) with
               Path =
                 agroup
-                |> Seq.map (fun aa -> aa.Path)
+                |> Seq.map _.Path
                 |> Seq.concat
                 |> Seq.toList })
         |> Seq.toList
@@ -625,7 +625,7 @@ module internal Main =
       // The set of all names w/o location
       let candidates =
         assemblies
-        |> Seq.map (fun a -> a.Name)
+        |> Seq.map _.Name
         |> Seq.fold (fun (s: Set<string>) n -> Set.add n s) Set.empty<string>
 
       let simplified =
@@ -646,7 +646,7 @@ module internal Main =
              else
                unassigned
                |> List.filter (fun u -> u.Refs |> List.isEmpty))
-            |> List.sortBy (fun u -> u.Name)
+            |> List.sortBy _.Name
 
           let waiting =
             stage

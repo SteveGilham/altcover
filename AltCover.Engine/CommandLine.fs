@@ -140,7 +140,7 @@ module internal CommandLine =
 
     let internal write (writer: TextWriter) colour data =
       if not (String.IsNullOrEmpty(data)) then
-        writeColoured writer colour (fun w -> w.WriteLine(data))
+        writeColoured writer colour _.WriteLine(data)
 
     let internal filter line f =
       if line |> String.IsNullOrEmpty |> not then
@@ -202,6 +202,7 @@ module internal CommandLine =
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
                       Justification = "Long enough but no longer")>]
+    [<TailCall>]
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
@@ -494,6 +495,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@286::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@287::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()

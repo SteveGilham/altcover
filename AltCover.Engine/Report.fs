@@ -106,7 +106,7 @@ module internal Report =
 
       (head.Elements("altcover.file".X)
        |> Seq.tryHead
-       |> Option.map (fun x -> x.AddBeforeSelf)
+       |> Option.map _.AddBeforeSelf
        |> Option.defaultValue head.Add)
         [| element |]
 

@@ -61,9 +61,9 @@ module internal Naming =
       String.Join(
         ",",
         def.Parameters
-        |> Seq.filter (fun x -> x.IsNotNull)
-        |> Seq.map (fun p -> p.ParameterType)
-        |> Seq.filter (fun x -> x.IsNotNull)
+        |> Seq.filter _.IsNotNull
+        |> Seq.map _.ParameterType
+        |> Seq.filter _.IsNotNull
         |> Seq.map I.fullTypeRefName
       )
 
@@ -74,7 +74,7 @@ module internal Naming =
         String.Join(
           ",",
           def.GenericParameters
-          |> Seq.filter (fun x -> x.IsNotNull)
+          |> Seq.filter _.IsNotNull
           |> Seq.map I.fullTypeRefName
         )
       else

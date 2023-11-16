@@ -42,6 +42,7 @@ module AltCoverXTests =
   </module>
 </coverage>"
 
+  [<TailCall>]
   let rec RecursiveValidate result expected depth zero =
     let rcount = result |> Seq.length
     let ecount = expected |> Seq.length
@@ -85,6 +86,7 @@ module AltCoverXTests =
 
       RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 
+  [<TailCall>]
   let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let xn name = XName.Get(name)
     let rcount = result |> Seq.length
@@ -290,7 +292,7 @@ module AltCoverXTests =
         "BOCR" ]
 
     inputs
-    |> List.map (fun i -> i.AsString())
+    |> List.map _.AsString()
     |> List.zip expected
     |> List.iter (fun (a, b) -> test <@ a = b @>)
 
@@ -676,7 +678,7 @@ module AltCoverXTests =
         TypeSafe.StaticFormat.ShowZero ]
 
     let expected = [ "-"; "+"; "++" ]
-    test <@ inputs |> List.map (fun i -> i.AsString()) = expected @>
+    test <@ inputs |> List.map _.AsString() = expected @>
 
   [<Test>]
   let PrepareOptionsCanBeValidatedWithErrors () =
@@ -889,8 +891,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let theFiles =
-        expected
-        |> List.sortBy (fun f -> f.ToUpperInvariant())
+        expected |> List.sortBy _.ToUpperInvariant()
 
       let actualFiles =
         Directory.GetFiles(output)
@@ -903,7 +904,7 @@ module AltCoverXTests =
           (Path.GetFileNameWithoutExtension f)
             .StartsWith("Microsoft.", StringComparison.Ordinal)
           |> not)
-        |> Seq.sortBy (fun f -> f.ToUpperInvariant())
+        |> Seq.sortBy _.ToUpperInvariant()
         |> Seq.toList
 
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
@@ -965,14 +966,14 @@ module AltCoverXTests =
       match existingDependencies with
       | Some p ->
         (p.Value :?> JObject).Properties()
-        |> Seq.map (fun p -> p.Name)
+        |> Seq.map _.Name
         |> Set.ofSeq
 
     test <@ reset |> Set.contains "AltCover.Recorder.g" @>
 
     let aux =
       targeted.Properties()
-      |> Seq.map (fun p -> p.Name)
+      |> Seq.map _.Name
       |> Set.ofSeq
 
     test
@@ -992,7 +993,7 @@ module AltCoverXTests =
 
     let lib =
       libraries.Properties()
-      |> Seq.map (fun p -> p.Name)
+      |> Seq.map _.Name
       |> Set.ofSeq
 
     test
@@ -1138,14 +1139,13 @@ module AltCoverXTests =
         Directory.GetFiles(output)
         |> Seq.map Path.GetFileName
         |> Seq.toList
-        |> List.sortBy (fun f -> f.ToUpperInvariant())
+        |> List.sortBy _.ToUpperInvariant()
 
       let isWindows =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let expected =
-        theFiles
-        |> List.sortBy (fun f -> f.ToUpperInvariant())
+        theFiles |> List.sortBy _.ToUpperInvariant()
 
       test <@ actual = expected @>
 
@@ -1352,7 +1352,7 @@ module AltCoverXTests =
     let md =
       def.MainModule.Types
       |> Seq.filter (fun t -> t.FullName = "Tests.M")
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.Name = "makeThing")
       |> Seq.head
 
@@ -1597,8 +1597,7 @@ module AltCoverXTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly

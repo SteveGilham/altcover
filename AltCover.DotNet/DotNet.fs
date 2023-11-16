@@ -33,7 +33,7 @@ module DotNet =
       | Force b -> b
       | Summary _
       | Fail _ -> false
-      | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
+      | Many s -> s |> Seq.exists _.ForceDelete
       | Abstract a -> a.ForceDelete
 
     member self.FailFast =
@@ -41,13 +41,13 @@ module DotNet =
       | Fail b -> b
       | Summary _
       | Force _ -> false
-      | Many s -> s |> Seq.exists (fun f -> f.FailFast)
+      | Many s -> s |> Seq.exists _.FailFast
       | Abstract a -> a.FailFast
 
     member self.ShowSummary =
       let select (s: CLIOptions seq) =
         s
-        |> Seq.map (fun f -> f.ShowSummary)
+        |> Seq.map _.ShowSummary
         |> Seq.filter (String.IsNullOrWhiteSpace >> not)
         |> Seq.tryHead
 

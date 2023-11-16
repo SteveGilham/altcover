@@ -154,6 +154,7 @@ module internal Filter =
         0x00uy
         0x00uy ]
 
+    [<TailCall>]
     let rec internal matchAttribute (name: Regex) f (nameProvider: Object) =
       (match nameProvider with
        | :? MethodDefinition as m ->
@@ -208,14 +209,14 @@ module internal Filter =
       // Algebraic types have debug proxies nested in the base type which are not attributed at the type level
       let baseType =
         Option.ofObj m.DeclaringType.DeclaringType
-        |> Option.filter (fun t -> t.HasCustomAttributes)
+        |> Option.filter _.HasCustomAttributes
         |> Option.map (fun t -> t.CustomAttributes :> seq<CustomAttribute>)
         |> Option.filter (Seq.isEmpty >> not)
         |> Option.defaultValue Seq.empty<CustomAttribute>
 
       let thisType =
         Some m.DeclaringType
-        |> Option.filter (fun t -> t.HasCustomAttributes)
+        |> Option.filter _.HasCustomAttributes
         |> Option.map (fun t -> t.CustomAttributes :> seq<CustomAttribute>)
         |> Option.filter (Seq.isEmpty >> not)
         |> Option.defaultValue Seq.empty<CustomAttribute>
@@ -337,7 +338,7 @@ module internal Filter =
           let decltype =
             methodDef.DeclaringType.BaseType
             |> Option.ofObj
-            |> Option.map (fun x -> x.Name)
+            |> Option.map _.Name
             |> Option.defaultValue String.Empty
 
           let name = methodDef.Name

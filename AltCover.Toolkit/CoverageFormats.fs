@@ -104,7 +104,7 @@ module CoverageFormats =
     |> Seq.iter (fun target ->
       let path =
         target.Descendants(XName.Get "ModulePath")
-        |> Seq.map (fun n -> n.Value)
+        |> Seq.map _.Value
         |> Seq.head
         |> Path.GetFullPath
 

@@ -109,7 +109,7 @@ module internal Json =
       def)
 
   let internal maybeDispose (def: AssemblyDefinition option) =
-    def |> Option.iter (fun d -> d.Dispose())
+    def |> Option.iter _.Dispose()
 
   // try to find the method in the assembly
   [<SuppressMessage("Gendarme.Rules.Smells",
@@ -151,12 +151,12 @@ module internal Json =
 
     let methodName =
       truemd
-      |> Option.map (fun m -> m.FullName)
+      |> Option.map _.FullName
       |> Option.defaultValue fallbackm
 
     let className =
       truemd
-      |> Option.map (fun m -> m.DeclaringType.FullName)
+      |> Option.map _.DeclaringType.FullName
       |> Option.defaultValue fallbackc
 
     (className, methodName)
@@ -256,11 +256,11 @@ module internal Json =
                   else
                     let found =
                       s.Ancestors("module".X)
-                      |> Seq.collect (fun m -> m.Descendants("altcover.file".X))
+                      |> Seq.collect _.Descendants("altcover.file".X)
                       |> Seq.filter (fun f ->
                         f.Attribute(XName.Get "document").Value == doc)
                       |> Seq.tryHead
-                      |> Option.map (fun f -> f.Attribute(XName.Get "embed").Value)
+                      |> Option.map _.Attribute(XName.Get "embed").Value
                       |> Option.filter (String.IsNullOrWhiteSpace >> not)
                       |> Option.defaultValue String.Empty
 
@@ -279,7 +279,7 @@ module internal Json =
             jmethods.Values
             |> Seq.iter (fun jm ->
               jm.SeqPnts
-              |> Seq.groupBy (fun s -> s.SL)
+              |> Seq.groupBy _.SL
               |> Seq.iter (fun (l, ss) -> jm.Lines.[l] <- lineVisits ss)))
       finally
         maybeDispose def
@@ -315,7 +315,7 @@ module internal Json =
         let embed =
           x.Attribute(XName.Get "altcover.embed")
           |> Option.ofObj
-          |> Option.map (fun e -> e.Value)
+          |> Option.map _.Value
           |> Option.defaultValue String.Empty
 
         files.Add(

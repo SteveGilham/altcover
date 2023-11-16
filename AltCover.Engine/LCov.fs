@@ -111,7 +111,7 @@ FN:4,(anonymous_0)
                  |> Seq.exists (fun s -> s.Attribute("excluded".X).Value != "true"))
             |> Seq.collect (fun m ->
               m.Descendants("seqpnt".X)
-              |> Seq.groupBy (fun s -> s.Attribute("document".X).Value)
+              |> Seq.groupBy _.Attribute("document".X).Value
               |> Seq.map (fun (d, l) -> (d, (m, l))))
             |> Seq.groupBy fst
             |> Seq.map (fun (d, dmlist) -> d, dmlist |> Seq.map snd)
@@ -211,7 +211,7 @@ FN:4,(anonymous_0)
                   b.Attribute("line".X).Value
                   |> String.IsNullOrWhiteSpace
                   |> not)
-                |> Seq.groupBy (fun b -> b.Attribute("line".X).Value)
+                |> Seq.groupBy _.Attribute("line".X).Value
                 |> Seq.sortBy (fst >> Int32.TryParse >> snd)
                 |> Seq.fold
                   (fun (f, (h: int)) (sl, bs) ->
@@ -242,7 +242,7 @@ FN:4,(anonymous_0)
           report.Descendants("Module".X)
           |> Seq.iter (fun assembly ->
             assembly.Descendants("File".X)
-            |> Seq.sortBy (fun f -> f.Attribute("fullPath".X).Value)
+            |> Seq.sortBy _.Attribute("fullPath".X).Value
             |> Seq.iter (fun f ->
               //If available, a tracefile begins with the testname which
               //   is stored in the following format:
@@ -252,7 +252,7 @@ FN:4,(anonymous_0)
                 "TN: "
                 + (assembly.Descendants("ModuleName".X)
                    |> Seq.tryHead
-                   |> Option.map (fun n -> n.Value)
+                   |> Option.map _.Value
                    |> Option.defaultValue String.Empty)
               )
               // For each source file referenced in the .da file,  there  is  a  section
@@ -353,7 +353,7 @@ FN:4,(anonymous_0)
               let branch (ms: XElement list) =
                 let (brf, brh, _) =
                   ms
-                  |> Seq.collect (fun m -> m.Descendants("BranchPoint".X))
+                  |> Seq.collect _.Descendants("BranchPoint".X)
                   |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
                   |> Seq.filter (fun b ->
                     b.Attribute("sl".X).Value
@@ -407,7 +407,7 @@ FN:4,(anonymous_0)
               // checksumming algorithm.
               let (lf, lh) =
                 methods
-                |> Seq.collect (fun m -> m.Descendants("SequencePoint".X))
+                |> Seq.collect _.Descendants("SequencePoint".X)
                 |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
                 |> Seq.filter (fun b ->
                   b.Attribute("sl".X).Value

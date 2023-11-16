@@ -67,7 +67,7 @@ module OpenCover =
                     |> Int32.TryParse
                     |> snd < next)
 
-                kill |> Seq.iter (fun b -> b.Remove())
+                kill |> Seq.iter _.Remove()
                 keep
               else
                 bs
@@ -99,7 +99,7 @@ module OpenCover =
                       (List.concat [ ki; bz |> Seq.tail |> Seq.toList ], h :: ke))
                     ([], [])
 
-                kill |> Seq.iter (fun b -> b.Remove())
+                kill |> Seq.iter _.Remove()
                 keep
               else
                 bx
@@ -208,7 +208,7 @@ module OpenCover =
     // npath complexity
     let np =
       brapts
-      |> List.groupBy (fun bp -> bp.Attribute(XName.Get "sl").Value)
+      |> List.groupBy _.Attribute(XName.Get "sl").Value
       |> Seq.fold (fun np0 (_, b) -> AltCover.OpenCover.safeMultiply (Seq.length b) np0) 1
 
     m.SetAttributeValue(XName.Get "nPathComplexity", np)
@@ -245,7 +245,7 @@ module OpenCover =
     // Fix offset, sc, ec in <MethodPoint />
     let debugInfo =
       methodDef
-      |> Option.map (fun md -> md.DebugInformation)
+      |> Option.map _.DebugInformation
       |> Option.filter (isNull >> not)
 
     m.Descendants(XName.Get "MethodPoint")
@@ -271,7 +271,7 @@ module OpenCover =
       debugInfo
       |> Option.iter (fun dbg ->
         dbg.SequencePoints
-        |> Seq.filter (fun s -> s.IsHidden |> not)
+        |> Seq.filter (_.IsHidden >> not)
         |> Seq.tryHead
         |> Option.iter (fun s ->
           x.Attribute(XName.Get "sc").Value <-
@@ -288,7 +288,7 @@ module OpenCover =
     |> Option.iter (fun d ->
       let sp =
         d.SequencePoints
-        |> Seq.filter (fun s -> s.IsHidden |> not)
+        |> Seq.filter (_.IsHidden >> not)
         |> Seq.toList
 
       seqpts
@@ -331,7 +331,7 @@ module OpenCover =
       |> ignore
 
       sp
-      |> Seq.map (fun s -> s.Document.Url)
+      |> Seq.map _.Document.Url
       |> Seq.tryFind File.Exists
       |> Option.map File.ReadAllLines
       |> Option.iter (fun f ->
@@ -570,12 +570,12 @@ module OpenCover =
   let attributeOrEmpty name (x: XElement) =
     x.Attribute(XName.Get name)
     |> Option.ofObj
-    |> Option.map (fun m -> m.Value)
+    |> Option.map _.Value
     |> Option.defaultValue String.Empty
 
   let mergeFiles (files: XElement seq) =
     files
-    |> Seq.map (fun x -> x.Attribute(XName.Get "fullPath").Value)
+    |> Seq.map _.Attribute(XName.Get "fullPath").Value
     |> Seq.distinct
     |> Seq.mapi (fun i name -> name, (i + 1))
     |> Map.ofSeq
@@ -617,7 +617,7 @@ module OpenCover =
 
     let tm =
       x.Ancestors(XName.Get "CoverageSession")
-      |> Seq.collect (fun c -> c.Descendants(XName.Get "TrackedMethod"))
+      |> Seq.collect _.Descendants(XName.Get "TrackedMethod")
       |> Seq.find (fun t -> (attributeOrEmpty "uid" t) == key)
 
     let token = attributeOrEmpty "token" tm
@@ -637,7 +637,7 @@ module OpenCover =
     np0.SetAttributeValue(XName.Get "vc", mc)
 
     group
-    |> Seq.map (fun x -> x.Attribute(XName.Get "fileid"))
+    |> Seq.map _.Attribute(XName.Get "fileid")
     |> Seq.filter (isNull >> not)
     |> Seq.tryHead
     |> Option.iter (fun a ->
@@ -646,7 +646,7 @@ module OpenCover =
 
     let times =
       group
-      |> Seq.collect (fun p -> p.Descendants(XName.Get "Time"))
+      |> Seq.collect _.Descendants(XName.Get "Time")
       |> Seq.groupBy (attributeOrEmpty "time")
       |> Seq.map (fun (t, x) -> t, x |> mergeCounts)
       |> Seq.filter (fun (_, x) -> x > 0)
@@ -659,11 +659,11 @@ module OpenCover =
 
     np0.Elements(XName.Get "Times")
     |> Seq.toList
-    |> Seq.iter (fun t -> t.Remove())
+    |> Seq.iter _.Remove()
 
     let tracks =
       group
-      |> Seq.collect (fun p -> p.Descendants(XName.Get "TrackedMethodRef"))
+      |> Seq.collect _.Descendants(XName.Get "TrackedMethodRef")
       |> Seq.map (mapTracking tracked)
       |> Seq.groupBy (attributeOrEmpty "uid")
       |> Seq.map (fun (t, x) -> t, x |> mergeCounts)
@@ -677,7 +677,7 @@ module OpenCover =
 
     np0.Elements(XName.Get "TrackedMethodRefs")
     |> Seq.toList
-    |> Seq.iter (fun t -> t.Remove())
+    |> Seq.iter _.Remove()
 
     if times |> Seq.isEmpty |> not then
       let t = XElement(XName.Get "Times")
@@ -777,7 +777,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
       group
       |> snd
-      |> Seq.map (fun m -> m.Element(XName.Get "MetadataToken").Value)
+      |> Seq.map _.Element(XName.Get "MetadataToken").Value
       |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
       |> Option.iter (fun t -> mt.Value <- t)
 
@@ -786,8 +786,8 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let fileRef modu (group: string * XElement seq) =
       group
       |> snd
-      |> Seq.collect (fun x -> x.Elements(XName.Get "FileRef"))
-      |> Seq.map (fun f -> f.Attribute(XName.Get "uid"))
+      |> Seq.collect _.Elements(XName.Get "FileRef")
+      |> Seq.map _.Attribute(XName.Get "uid")
       |> Seq.filter (isNull >> not)
       |> Seq.tryHead
       |> Option.map (fun a ->
@@ -803,7 +803,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       let sps =
         group
         |> snd
-        |> Seq.collect (fun m -> m.Descendants(XName.Get "SequencePoint"))
+        |> Seq.collect _.Descendants(XName.Get "SequencePoint")
         |> Seq.groupBy (fun s ->
           s
           |> attributeOrEmpty "sl"
@@ -831,7 +831,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       let bps =
         group
         |> snd
-        |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
+        |> Seq.collect _.Descendants(XName.Get "BranchPoint")
         |> Seq.groupBy (fun s ->
           (s
            |> attributeOrEmpty "sl"
@@ -856,9 +856,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       let mpn = XName.Get "MethodPoint"
 
       let methodPoints =
-        group
-        |> snd
-        |> Seq.collect (fun x -> x.Elements mpn)
+        group |> snd |> Seq.collect _.Elements(mpn)
 
       let mpv = methodPoints |> mergeCounts
 
@@ -995,9 +993,9 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
           let methods =
             c
             |> snd
-            |> Seq.collect (fun m -> m.Descendants(XName.Get "Method"))
-            |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-            |> Seq.groupBy (fun x -> x.Element(XName.Get "Name").Value)
+            |> Seq.collect _.Descendants(XName.Get "Method")
+            |> Seq.filter (_.Attribute(XName.Get "skippedDueTo") >> isNull)
+            |> Seq.groupBy _.Element(XName.Get "Name").Value
 
           let (msum, merged) =
             mergeMethods files tracked methods
@@ -1031,7 +1029,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let findFiles (f: XElement) =
       let foundFiles =
         modules
-        |> Seq.collect (fun m -> m.Descendants(XName.Get "File"))
+        |> Seq.collect _.Descendants(XName.Get "File")
         |> Seq.map (attributeOrEmpty "fullPath")
         |> Seq.distinct
         |> Seq.filter (String.IsNullOrWhiteSpace >> not)
@@ -1049,9 +1047,9 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     let findClasses (c: XElement) =
       let classes =
         modules
-        |> Seq.collect (fun m -> m.Descendants(XName.Get "Class"))
-        |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-        |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
+        |> Seq.collect _.Descendants(XName.Get "Class")
+        |> Seq.filter (_.Attribute(XName.Get "skippedDueTo") >> isNull)
+        |> Seq.groupBy _.Element(XName.Get "FullName").Value
 
       let msummary, merged =
         mergeClasses files tracked classes
@@ -1094,7 +1092,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
     let trackedMethods =
       modules
-      |> Seq.collect (fun m -> m.Descendants(XName.Get "TrackedMethod"))
+      |> Seq.collect _.Descendants(XName.Get "TrackedMethod")
       |> Seq.groupBy (attributeOrEmpty "token")
       |> Seq.map (fun grouped ->
         let key = (hashValue, fst grouped)
@@ -1172,14 +1170,14 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
     let files =
       inputs
-      |> Seq.collect (fun m -> m.Descendants(XName.Get "File"))
+      |> Seq.collect _.Descendants(XName.Get "File")
       |> mergeFiles
 
     let (summary, modules) =
       inputs
-      |> List.collect (fun x -> x.Descendants(XName.Get "Module") |> Seq.toList)
-      |> List.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-      |> List.groupBy (fun x -> x.Attribute(hash).Value)
+      |> List.collect (_.Descendants(XName.Get "Module") >> Seq.toList)
+      |> List.filter (_.Attribute(XName.Get "skippedDueTo") >> isNull)
+      |> List.groupBy _.Attribute(hash).Value
       |> List.map (snd >> (mergeModules files tracked))
       |> List.fold
         (fun (states: Summary, statem) (locals, localm) ->
@@ -1228,11 +1226,11 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     // heuristic for coverlet vs altcover
     let sp =
       json.Values
-      |> Seq.collect (fun m -> m.Values)
-      |> Seq.collect (fun d -> d.Values)
-      |> Seq.collect (fun c -> c.Values)
-      |> Seq.filter (fun m -> m.SeqPnts.IsNotNull)
-      |> Seq.collect (fun m -> m.SeqPnts)
+      |> Seq.collect _.Values
+      |> Seq.collect _.Values
+      |> Seq.collect _.Values
+      |> Seq.filter _.SeqPnts.IsNotNull
+      |> Seq.collect _.SeqPnts
       |> Seq.isEmpty
       |> not
 

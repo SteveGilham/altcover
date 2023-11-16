@@ -57,7 +57,7 @@ module TypeSafe =
     member self.AsStrings() =
       match self with
       | NoCommand -> Seq.empty<String>
-      | CommandArguments c -> c |> Seq.map (fun a -> a.AsString())
+      | CommandArguments c -> c |> Seq.map _.AsString()
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type Thresholds =
@@ -114,7 +114,7 @@ module TypeSafe =
     member self.AsStrings() =
       match self with
       | NoPaths -> List.empty<String>
-      | FilePaths c -> c |> Seq.map (fun a -> a.AsString()) |> Seq.toList
+      | FilePaths c -> c |> Seq.map _.AsString() |> Seq.toList
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type DirectoryPaths =
@@ -123,7 +123,7 @@ module TypeSafe =
     member self.AsStrings() =
       match self with
       | NoDirectories -> List.empty<String>
-      | DirectoryPaths c -> c |> Seq.map (fun a -> a.AsString()) |> Seq.toList
+      | DirectoryPaths c -> c |> Seq.map _.AsString() |> Seq.toList
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type FilterItem =
@@ -152,7 +152,7 @@ module TypeSafe =
     member self.AsStrings() =
       match self with
       | Unfiltered -> List.empty<String>
-      | Filters c -> c |> Seq.map (fun a -> a.AsString()) |> Seq.toList
+      | Filters c -> c |> Seq.map _.AsString() |> Seq.toList
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type ContextItem =
@@ -176,7 +176,7 @@ module TypeSafe =
     member self.AsStrings() =
       match self with
       | NoContext -> List.empty<String>
-      | Context c -> c |> Seq.map (fun a -> a.AsString()) |> Seq.toList
+      | Context c -> c |> Seq.map _.AsString() |> Seq.toList
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type SummaryFormat =
@@ -211,7 +211,7 @@ module TypeSafe =
       | RPlus -> "ROC"
       | Many s ->
         let raw =
-          String.Join(String.Empty, s |> Seq.map (fun x -> x.AsString()))
+          String.Join(String.Empty, s |> Seq.map _.AsString())
           |> Seq.distinct
           |> Seq.toArray
 

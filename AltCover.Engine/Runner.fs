@@ -260,7 +260,7 @@ module internal Runner =
 
       let classes =
         methods
-        |> Seq.groupBy (fun m -> m.Attribute("class".X).Value)
+        |> Seq.groupBy _.Attribute("class".X).Value
         |> Seq.toList
 
       let isVisited (x: XElement) =
@@ -321,8 +321,8 @@ module internal Runner =
     let internal emitAltCrapScore go (methods: XElement seq) =
       let value =
         (methods
-         |> Seq.map (fun m -> m.Attribute("crapScore".X))
-         |> Seq.filter (fun a -> a.IsNotNull)
+         |> Seq.map _.Attribute("crapScore".X)
+         |> Seq.filter _.IsNotNull
          |> Seq.map (fun d -> d.Value.InvariantParseDouble() |> snd)
          |> Seq.max)
 
@@ -368,7 +368,7 @@ module internal Runner =
 
       let methods =
         classes
-        |> Seq.collect (fun c -> c.Descendants("Method".X))
+        |> Seq.collect _.Descendants("Method".X)
         |> Seq.filter (fun c -> c.Attribute("skippedDueTo".X) |> isNull)
         |> Seq.toList
 
@@ -511,7 +511,7 @@ module internal Runner =
       let crapvalue =
         crap
         |> Option.ofObj
-        |> Option.map (fun a -> a.Value)
+        |> Option.map _.Value
         |> Option.defaultValue "0.0"
 
       let extra =
@@ -697,8 +697,7 @@ module internal Runner =
         | None -> [ best ]
         | Some t ->
           let found =
-            covered
-            |> List.map (fun d -> d.InvariantParseDouble())
+            covered |> List.map _.InvariantParseDouble()
 
           let ceil (f: float) (value: float) =
             if f <= value && value > 0.0 && f > 0.0 then
@@ -1307,7 +1306,7 @@ module internal Runner =
       m.Branches.AddRange bps
 
       m.SeqPnts
-      |> Seq.groupBy (fun s -> s.SL)
+      |> Seq.groupBy _.SL
       |> Seq.iter (fun (l, ss) -> m.Lines.[l] <- Json.lineVisits ss)
 
     [<SuppressMessage("Gendarme.Rules.Correctness",
@@ -1321,10 +1320,11 @@ module internal Runner =
                       Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
-      _
+      unusedCannotBeUnderscore
       (file: Stream)
       output
       =
+      ignore unusedCannotBeUnderscore
       let flushStart = DateTime.UtcNow
       // do work here
       let jsonText =
@@ -1341,8 +1341,8 @@ module internal Runner =
 
         if b then
           kvp.Value.Values
-          |> Seq.collect (fun doc -> doc.Values)
-          |> Seq.collect (fun c -> c.Values)
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
           |> Seq.iter (updateNativeJsonMethod hits visits))
 
       let encoded =

@@ -212,11 +212,11 @@ Actual:   False
     Assert.That(
       m2,
       Is.EqualTo
-        """Multiple failures or warnings in test:
+        ("""Multiple failures or warnings in test:
   1)   Expected: 4
   But was:  3
 
-  2) 
+  2)@
 
 3 = exp1
 3 = 4
@@ -227,13 +227,13 @@ false
   But was:  "yes"
   -----------^
 
-  4) 
+  4)@
 
 "yes" = exp2
 "yes" = "no"
 false
 
-"""
+""".Replace("@", " "))
     )
 
 #if !NET472
@@ -251,18 +251,15 @@ module ExpectoTestCommon =
 
     let testMethods =
       def.MainModule.GetTypes()
-      |> Seq.collect (fun t -> t.Methods)
-      |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
-      |> Seq.filter (fun m ->
-        m.CustomAttributes
-        |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
+      |> Seq.collect _.Methods
+      |> Seq.filter _.CustomAttributes.IsNotNull
+      |> Seq.filter (_.CustomAttributes
+        >> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
       |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
 
     let lookup =
       def.MainModule.GetAllTypes()
-      |> Seq.filter (fun t ->
-        t.Methods
-        |> Seq.exists (fun m -> m.Name = "Invoke"))
+      |> Seq.filter (_.Methods >> Seq.exists (fun m -> m.Name = "Invoke"))
       |> Seq.map (fun t ->
         (t.FullName.Replace("/", "+"), t.Methods |> Seq.find (fun m -> m.Name = "Invoke")))
       |> Map.ofSeq
@@ -271,7 +268,7 @@ module ExpectoTestCommon =
       regular
       |> List.map (
         fst
-        >> (fun f -> f.GetType().FullName.Replace("/", "+"))
+        >> _.GetType().FullName.Replace("/", "+")
         >> (fun f -> Map.find f lookup)
         >> (fun f ->
           f.Body.Instructions

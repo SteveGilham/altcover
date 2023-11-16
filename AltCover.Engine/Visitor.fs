@@ -526,7 +526,7 @@ module internal Inspector =
         (CoverageParameters.local.Value)
         && a.MainModule
            |> ProgramDatabase.getModuleDocuments
-           |> Seq.map (fun d -> d.Url)
+           |> Seq.map _.Url
            |> Seq.exists File.Exists
            |> not
       | _ -> false
@@ -847,7 +847,7 @@ module internal Visitor =
           if
             m.HasCustomAttributes
             && m.CustomAttributes
-               |> Seq.map (fun a -> a.AttributeType)
+               |> Seq.map _.AttributeType
                |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
                |> Option.isSome
           then
@@ -897,8 +897,8 @@ module internal Visitor =
           |> Option.map (fun c ->
             c.NestedTypes
             |> Seq.filter (fun t -> t.Name.IndexOf(tag, StringComparison.Ordinal) >= 0)
-            |> Seq.collect (fun t -> t.Methods)
-            |> Seq.filter (fun m -> m.HasBody))
+            |> Seq.collect _.Methods
+            |> Seq.filter _.HasBody)
           |> Option.defaultValue ([] |> Seq.ofList)
 
         let peers =
@@ -924,7 +924,7 @@ module internal Visitor =
           .Concat(peers)
           .Concat(children)
         |> Seq.filter predicate
-        |> Seq.sortBy (fun mx -> mx.DeclaringType.FullName.Split('/').Length) // strive upwards
+        |> Seq.sortBy _.DeclaringType.FullName.Split('/').Length // strive upwards
         |> Seq.tryHead
 
     let internal sameType (target: TypeReference) (candidate: TypeReference) =
@@ -1232,7 +1232,7 @@ module internal Visitor =
       (f: (Instruction -> int) -> Instruction list -> Instruction)
       (places: Instruction list)
       =
-      places |> f (fun i -> i.Offset)
+      places |> f _.Offset
 
     let internal includedSequencePoint dbg (toNext: Instruction list) toJump =
       let places = List.concat [ toNext; toJump ]
@@ -1255,6 +1255,7 @@ module internal Visitor =
 
       findEffectiveSequencePoint FakeAtReturn dbg range
 
+    [<TailCall>]
     let rec internal lastOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
       let n = i.Next
 
@@ -1266,6 +1267,7 @@ module internal Visitor =
       else
         lastOfSequencePoint dbg n
 
+    [<TailCall>]
     let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
       let p = i.Previous
 
@@ -1357,7 +1359,7 @@ module internal Visitor =
       let mutable uid = 0
 
       bps
-      |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
+      |> Seq.groupBy _.SequencePoint.Offset
       |> Seq.map selectRepresentatives // >> demoteSingletons)
       |> Seq.collect id
       |> Seq.map (fun bs ->
@@ -1371,7 +1373,7 @@ module internal Visitor =
                { bx with
                    Representative = Reporting.None }))
       |> Seq.collect id
-      |> Seq.sortBy (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
+      |> Seq.sortBy _.Key // important! instrumentation assumes we work in the order we started with
 
     let private extractBranchPoints dbg rawInstructions interesting vc =
       let makeDefault i =
@@ -1600,6 +1602,7 @@ module internal Visitor =
 
         raise (InvalidOperationException(message, x))
 
+    [<TailCall>]
     let rec internal deeper node =
       let visit n =
         // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
@@ -1660,7 +1663,7 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1391::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1393::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
@@ -1678,12 +1681,12 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1548-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1550-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1451@1451::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1453@1453::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 ()

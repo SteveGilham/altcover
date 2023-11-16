@@ -221,7 +221,7 @@ module internal Instrument =
     let internal recordingMethod (recordingAssembly: AssemblyDefinition) =
       recordingAssembly.MainModule.GetAllTypes()
       |> Seq.filter (fun t -> t.FullName == "AltCover.Recorder.Instance")
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.map (fun t -> (t.Name, t))
       |> Seq.filter (fun (n, _) -> n == "Visit" || n == "Push" || n == "Pop")
       |> Seq.sortBy fst
@@ -350,7 +350,7 @@ module internal Instrument =
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
             definition.MainModule.GetTypes()
-            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.collect _.Methods
             |> Seq.filter (fun m -> m.Name == property)
             |> Seq.head
 
@@ -370,7 +370,7 @@ module internal Instrument =
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
             definition.MainModule.GetTypes()
-            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.collect _.Methods
             |> Seq.filter (fun m -> m.Name == property)
             |> Seq.head
 
@@ -568,10 +568,7 @@ module internal Instrument =
       let prior =
         match existingDependencies with
         | None -> Set.empty<string>
-        | Some p ->
-          p.Value.Object
-          |> Seq.map (fun p -> p.Key)
-          |> Set.ofSeq
+        | Some p -> p.Value.Object |> Seq.map _.Key |> Set.ofSeq
 
       let addFirst
         (properties: KeyValuePair<string, JsonValue> seq)
@@ -1288,7 +1285,7 @@ module internal Instrument =
 
         let getterDef =
           recorder.MainModule.GetTypes()
-          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.collect _.Methods
           |> Seq.filter (fun m -> m.Name == "get_modules")
           |> Seq.head
 
@@ -1347,10 +1344,9 @@ module internal Instrument =
 
         state.RecorderSource
         |> Option.ofObj
-        |> Option.iter (fun a -> a.Close())
+        |> Option.iter _.Close()
 
-        state.AsyncSupport
-        |> Option.iter (fun a -> a.Close())
+        state.AsyncSupport |> Option.iter _.Close()
 
       { state with
           RecordingAssembly = null
@@ -1415,10 +1411,9 @@ module internal Instrument =
 
           state.RecorderSource
           |> Option.ofObj
-          |> Option.iter (fun a -> a.Close())
+          |> Option.iter _.Close()
 
-          state.AsyncSupport
-          |> Option.iter (fun a -> a.Close())
+          state.AsyncSupport |> Option.iter _.Close()
 
         reraise ()
 

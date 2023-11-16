@@ -137,8 +137,7 @@ module
 #if RUNNER || GUI
   // Deserialization ---------------------------------------------------------
 
-  let internal timesFromJsonValue (j: JsonValue) =
-    j.Array |> Seq.map (fun a -> a.String) |> Times
+  let internal timesFromJsonValue (j: JsonValue) = j.Array |> Seq.map (_.String) |> Times
 
   let internal tracksFromJsonValue (j: JsonValue) =
     j.Array
@@ -901,11 +900,8 @@ module
 
       let targets =
         value.Branches
-        |> Seq.groupBy (fun b -> b.Line)
-        |> Seq.sumBy (fun (_, x) ->
-          x
-          |> Seq.distinctBy (fun bx -> bx.EndOffset)
-          |> Seq.length)
+        |> Seq.groupBy _.Line
+        |> Seq.sumBy (fun (_1, x) -> x |> Seq.distinctBy _.EndOffset |> Seq.length)
 
       m
         .Attribute(XName.Get "cyclomaticComplexity")

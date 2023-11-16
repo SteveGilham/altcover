@@ -108,9 +108,9 @@ type AddAcceleratorCommand() =
 
     let finalmap =
       self.TypeMap
-      |> Seq.distinctBy (fun kv -> kv.Key)
-      |> Seq.distinctBy (fun kv -> kv.Value)
-      |> Seq.sortBy (fun kv -> kv.Key)
+      |> Seq.distinctBy _.Key
+      |> Seq.distinctBy _.Value
+      |> Seq.sortBy _.Key
       |> Seq.toList
 
     let display =

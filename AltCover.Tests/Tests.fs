@@ -100,13 +100,13 @@ module AltCoverTests =
   let recorderSnk =
     typeof<AltCover.Node>.Assembly
       .GetManifestResourceNames()
-    |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
+    |> Seq.find _.EndsWith(".Recorder.snk", StringComparison.Ordinal)
 
   let infrastructureSnk =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
+    |> Seq.find _.EndsWith("Infrastructure.snk", StringComparison.Ordinal)
 
   let private ff (a, b, c) = { Scope = a; Regex = b; Sense = c }
 
@@ -207,7 +207,7 @@ module AltCoverTests =
 
     let nativeName =
       here.GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("native.pdb", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("native.pdb", StringComparison.Ordinal)
 
     let native =
       here.GetManifestResourceStream(nativeName)
@@ -723,8 +723,8 @@ module AltCoverTests =
       AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
 
     def.MainModule.Types
-    |> Seq.filter (fun t -> t.IsPublic)
-    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.filter _.IsPublic
+    |> Seq.collect _.Methods
     |> Seq.iter (fun m ->
       Assert.That(
         Filter.``match`` m (ff (FilterScope.Type, Regex "23", Exclude)),
@@ -738,8 +738,8 @@ module AltCoverTests =
 
     Assert.That(
       def.MainModule.Types
-      |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generated chaff classes
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.filter _.IsPublic // exclude the many compiler generated chaff classes
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
       |> Seq.filter (fun m ->
         Filter.``match``
@@ -751,8 +751,8 @@ module AltCoverTests =
 
     Assert.That(
       def.MainModule.Types
-      |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generated chaff classes
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.filter _.IsPublic // exclude the many compiler generated chaff classes
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
       |> Seq.filter (fun m ->
         Filter.``match``
@@ -821,7 +821,7 @@ module AltCoverTests =
     let pass =
       direct.Methods
       |> Seq.filter (fun x -> Filter.``match`` x filter |> not)
-      |> Seq.map (fun x -> x.Name)
+      |> Seq.map _.Name
       |> Seq.sort
       |> Seq.toList
 
@@ -847,7 +847,7 @@ module AltCoverTests =
       |> Seq.filter (fun x ->
         x.Namespace = "Sample11"
         && Filter.``match`` x filter |> not)
-      |> Seq.map (fun x -> x.Name)
+      |> Seq.map _.Name
       |> Seq.sort
       |> Seq.toList
 
@@ -864,7 +864,7 @@ module AltCoverTests =
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class1")
-    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.collect _.Methods
     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
     |> Seq.iter (Filter.isCSharpAutoProperty >> Assert.That)
 
@@ -878,7 +878,7 @@ module AltCoverTests =
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class2")
-    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.collect _.Methods
     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
     |> Seq.iter (fun m -> Assert.That(Filter.isCSharpAutoProperty m, Is.False))
 
@@ -899,30 +899,30 @@ module AltCoverTests =
 
     let indirect =
       direct
-      |> Seq.filter (fun t -> t.HasNestedTypes)
-      |> Seq.collect (fun t -> t.NestedTypes)
+      |> Seq.filter _.HasNestedTypes
+      |> Seq.collect _.NestedTypes
       |> Seq.toList // MyUnion, MyThing
 
     let indirect2 =
       indirect
-      |> Seq.filter (fun t -> t.HasNestedTypes)
-      |> Seq.collect (fun t -> t.NestedTypes)
+      |> Seq.filter _.HasNestedTypes
+      |> Seq.collect _.NestedTypes
       |> Seq.toList // Foo, Bar, ...
 
     let indirect3 =
       indirect2
-      |> Seq.filter (fun t -> t.HasNestedTypes)
-      // |> Seq.collect (fun t -> t.NestedTypes)
-      // |> Seq.map (fun t -> t.FullName)
+      |> Seq.filter _.HasNestedTypes
+      // |> Seq.collect _.NestedTypes
+      // |> Seq.map _.FullName
       |> Seq.toList
 
     Assert.That(indirect3 |> Seq.isEmpty, sprintf "Third order types found %A" indirect3)
 
     let pass =
       Seq.concat [ direct; indirect; indirect2 ]
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.filter (not << Filter.isFSharpInternal)
-      |> Seq.map (fun x -> x.Name)
+      |> Seq.map _.Name
       |> Seq.sort
       |> Seq.toList
 
@@ -960,7 +960,7 @@ module AltCoverTests =
     let pass =
       direct.Methods
       |> Seq.filter (not << Filter.isCSharpAutoProperty)
-      |> Seq.map (fun x -> x.Name)
+      |> Seq.map _.Name
       |> Seq.sort
       |> Seq.toList
 
@@ -983,7 +983,7 @@ module AltCoverTests =
     let pass =
       direct.Methods
       |> Seq.filter (not << Filter.isCSharpAutoProperty)
-      |> Seq.map (fun x -> x.Name)
+      |> Seq.map _.Name
       |> Seq.sort
       |> Seq.toList
 
@@ -1087,7 +1087,7 @@ module AltCoverTests =
 
       let items =
         def.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.filter (fun m -> m.Name = "testMakeUnion")
         |> Seq.toList
 
@@ -1117,7 +1117,7 @@ module AltCoverTests =
 
       // beware conditionals like on NUnit.ConsoleRunner
       xml.Descendants()
-      |> Seq.filter (fun x -> x.Attribute("Include".X).IsNotNull)
+      |> Seq.filter _.Attribute("Include".X).IsNotNull
       |> Seq.map (fun x ->
         (x
           .Attribute(XName.Get("Include"))
@@ -1271,7 +1271,7 @@ module AltCoverTests =
     let synch =
       types
       |> Seq.filter (fun t -> t.Name = "Async97")
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.Name = "DoSomethingSynch")
       |> Seq.head
 
@@ -1279,7 +1279,7 @@ module AltCoverTests =
     //|> Seq.iter (fun i ->
     //  let sp = synch.DebugInformation.GetSequencePoint(i)
     //           |> Option.ofObj
-    //           |> Option.map (fun s -> s.StartLine)
+    //           |> Option.map _.StartLine
     //  printfn "%A %A" i sp)
 
     let method =
@@ -1294,7 +1294,7 @@ module AltCoverTests =
     //|> Seq.iter (fun i ->
     //  let sp = method.DebugInformation.GetSequencePoint(i)
     //           |> Option.ofObj
-    //           |> Option.map (fun s -> s.StartLine)
+    //           |> Option.map _.StartLine
     //  printfn "%A %A" i sp)
 
     Visitor.visit [] [] // cheat reset
@@ -1372,7 +1372,7 @@ module AltCoverTests =
 
     let methods =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.Name = "MoveNext")
       |> Seq.toList
 
@@ -1497,7 +1497,7 @@ module AltCoverTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("issue37.dl_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("issue37.dl_", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -1508,7 +1508,7 @@ module AltCoverTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("issue37.pd_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("issue37.pd_", StringComparison.Ordinal)
 
     use stream2 =
       Assembly
@@ -1577,7 +1577,7 @@ module AltCoverTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("issue37.dl_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("issue37.dl_", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -1588,7 +1588,7 @@ module AltCoverTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("issue37.pd_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("issue37.pd_", StringComparison.Ordinal)
 
     use stream2 =
       Assembly
@@ -1665,7 +1665,7 @@ module AltCoverTests =
 
     let methods =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.sortBy (fun m -> m.DeclaringType.FullName + "::" + m.Name)
       |> Seq.toList
 
@@ -1866,7 +1866,7 @@ module AltCoverTests =
 
     let methods =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.toList
 
     let result =
@@ -3379,6 +3379,7 @@ module AltCoverTests =
 </module>
 </coverage>"
 
+  [<TailCall>]
   let rec private recursiveValidate result expected depth zero =
     let rcount = result |> Seq.length
     let ecount = expected |> Seq.length
@@ -4693,6 +4694,7 @@ module AltCoverTests =
     let list = Visitor.I.getJumpChain fin fin
     Assert.That(list, Is.EquivalentTo [ fin ])
 
+  [<TailCall>]
   let rec private recursiveValidateOpenCover result expected' depth zero expectSkipped =
     let xn name = XName.Get(name)
     let rcount = result |> Seq.length

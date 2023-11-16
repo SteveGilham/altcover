@@ -19,13 +19,13 @@ module AltCoverTests2 =
   let recorderSnk =
     typeof<AltCover.Node>.Assembly
       .GetManifestResourceNames()
-    |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
+    |> Seq.find _.EndsWith(".Recorder.snk", StringComparison.Ordinal)
 
   let infrastructureSnk =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
+    |> Seq.find _.EndsWith("Infrastructure.snk", StringComparison.Ordinal)
 
   let private provideKeyPair () =
     use stream =
@@ -42,8 +42,7 @@ module AltCoverTests2 =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
 
     Assembly
       .GetExecutingAssembly()
@@ -142,7 +141,7 @@ module AltCoverTests2 =
     Assert.That(token1, Is.Not.EquivalentTo(token0))
 
     let token' =
-      String.Join(String.Empty, token1 |> Seq.map (fun x -> x.ToString("x2")))
+      String.Join(String.Empty, token1 |> Seq.map _.ToString("x2"))
 
     Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
 
@@ -546,7 +545,7 @@ module AltCoverTests2 =
         String.Join(
           String.Empty,
           prepared.Name.PublicKeyToken
-          |> Seq.map (fun x -> x.ToString("x2"))
+          |> Seq.map _.ToString("x2")
         )
 
       Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
@@ -761,7 +760,7 @@ module AltCoverTests2 =
           String.Join(
             String.Empty,
             raw.Name.PublicKeyToken
-            |> Seq.map (fun x -> x.ToString("x2"))
+            |> Seq.map _.ToString("x2")
           )
 
         Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"), "wrong token")
@@ -853,8 +852,8 @@ module AltCoverTests2 =
 
     let def =
       ``module``.MainModule.GetTypes()
-      |> Seq.collect (fun t -> t.Methods)
-      |> Seq.find (fun m -> m.Name.Equals("MakeConst"))
+      |> Seq.collect _.Methods
+      |> Seq.find _.Name.Equals("MakeConst")
 
     use sink =
       File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
@@ -875,8 +874,8 @@ module AltCoverTests2 =
 
     let pathGetterDef =
       ``module``.MainModule.GetTypes()
-      |> Seq.collect (fun t -> t.Methods)
-      |> Seq.find (fun m -> m.Name.Equals("get_Defer"))
+      |> Seq.collect _.Methods
+      |> Seq.find _.Name.Equals("get_Defer")
 
     let body = pathGetterDef.Body
     let worker = body.GetILProcessor()
@@ -896,7 +895,7 @@ module AltCoverTests2 =
 
     Assert.That(
       pathGetterDef.DebugInformation.Scope.Scopes
-      |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
+      |> Seq.exists _.Start.IsEndOfMethod,
       Is.False,
       "subscope.Start.IsEndOfMethod"
     )
@@ -1032,7 +1031,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           String.Join(
             String.Empty,
             raw.Name.PublicKeyToken
-            |> Seq.map (fun x -> x.ToString("x2"))
+            |> Seq.map _.ToString("x2")
           )
 
         Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
@@ -1117,7 +1116,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           String.Join(
             String.Empty,
             raw.Name.PublicKeyToken
-            |> Seq.map (fun x -> x.ToString("x2"))
+            |> Seq.map _.ToString("x2")
           )
 
         Assert.That(token', Is.EqualTo("c02b1a9f5b7cade8"), "wrong token")
@@ -1923,7 +1922,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("SwitchSample.dl_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("SwitchSample.dl_", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -1934,7 +1933,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("SwitchSample.pd_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("SwitchSample.pd_", StringComparison.Ordinal)
 
     use stream2 =
       Assembly
@@ -1977,7 +1976,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let targets =
       switch.Operand :?> Instruction array
-      |> Array.map (fun i -> i.Offset)
+      |> Array.map _.Offset
 
     Assert.That(targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
 
@@ -2006,7 +2005,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let targets2 =
       switch2.Operand :?> Instruction array
-      |> Array.map (fun i -> i.Offset)
+      |> Array.map _.Offset
 
     let next = switch2.Next.Offset
     let n2 = next + 2
@@ -2086,7 +2085,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let method =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.find (fun m -> m.Name = "as_bar")
 
     Visitor.visit [] [] // cheat reset
@@ -2182,7 +2181,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let method =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.find (fun m -> m.Name = "Bar")
 
     Visitor.visit [] [] // cheat reset
@@ -2271,7 +2270,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let method =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.find (fun m -> m.Name = "Main")
 
     Visitor.visit [] [] // cheat reset
@@ -2433,7 +2432,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let opcodes =
       func.Body.Instructions
-      |> Seq.map (fun i -> i.OpCode)
+      |> Seq.map _.OpCode
       |> Seq.toList
 
     let input =
@@ -2493,7 +2492,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let opcodes =
       func.Body.Instructions
-      |> Seq.map (fun i -> i.OpCode)
+      |> Seq.map _.OpCode
       |> Seq.toList
 
     let input =
@@ -2552,7 +2551,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     Assert.That(token1, Is.Not.EquivalentTo(token0))
 
     let token' =
-      String.Join(String.Empty, token1 |> Seq.map (fun x -> x.ToString("x2")))
+      String.Join(String.Empty, token1 |> Seq.map _.ToString("x2"))
 
     Assert.That(token', Is.EqualTo "4ebffcaabf10ce6a")
     Assert.That(result, Is.Empty)
@@ -2604,7 +2603,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(token1, Is.Not.EquivalentTo(token0))
 
       let token' =
-        String.Join(String.Empty, token1 |> Seq.map (fun x -> x.ToString("x2")))
+        String.Join(String.Empty, token1 |> Seq.map _.ToString("x2"))
 
       Assert.That(token', Is.EqualTo "4ebffcaabf10ce6a")
       Assert.That(result, Is.Empty)
@@ -2965,12 +2964,12 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let visit =
         def'.MainModule.GetAllTypes()
         |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.filter (fun m ->
           m.Name = "Visit"
           || m.Name = "Push"
           || m.Name = "Pop")
-        |> Seq.sortBy (fun m -> m.Name)
+        |> Seq.sortBy _.Name
         |> Seq.toList
         |> List.rev
 
@@ -3122,7 +3121,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
       let visit =
         def'.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.filter (fun m -> m.Name = "Visit")
         |> Seq.head
 
@@ -3394,7 +3393,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let md =
       prepared.MainModule.Types
       |> Seq.filter (fun t -> t.FullName = "AltCover.Sample3.Class3")
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.Name = "Log")
       |> Seq.head
 
@@ -3641,7 +3640,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     |> Seq.filter (fun t ->
       (string t = "AltCover.Output")
       || (string t = "AltCover.AltCover"))
-    |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
+    |> Seq.collect _.GetNestedTypes(BindingFlags.NonPublic)
     |> Seq.filter (fun t ->
       let tokens =
         [ "info"
@@ -3760,8 +3759,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
 
       Assert.That(
-        CommandLine.exceptions
-        |> List.map (fun e -> e.Message),
+        CommandLine.exceptions |> List.map _.Message,
         Is.EquivalentTo [ unique ]
       )
 
@@ -3881,8 +3879,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
 
       Assert.That(
-        CommandLine.exceptions
-        |> List.map (fun e -> e.Message),
+        CommandLine.exceptions |> List.map _.Message,
         Is.EquivalentTo [ unique ]
       )
 
