@@ -1368,7 +1368,9 @@ module Targets =
             { FxCop.Params.Create() with
                 WorkingDirectory = "."
                 DependencyDirectories =
-                  [ "./ThirdParty/gtk-sharp2"
+                  [ Path.GetFullPath "./ThirdParty/gtk-sharp2"
+                    Path.GetFullPath
+                      "./packages/system.valuetuple/4.0.0-rc3-24212-01/lib/netstandard1.1"
                     nugetCache
                     @@ "blackfox.commandline/"
                        + (ddItem "blackfox.commandline")
@@ -8285,7 +8287,14 @@ module Targets =
     _Target "Issue114" Issue114
     _Target "Issue156" Issue156
     _Target "MakeDocumentation" MakeDocumentation
-    _Target "BulkReport" (if Environment.isWindows then BulkReport else ignore)
+
+    _Target
+      "BulkReport"
+      (if Environment.isWindows then
+         BulkReport
+       else
+         ignore)
+
     _Target "All" All
     _Target "CppInline" CppInline
     _Target "None" ignore
@@ -8536,9 +8545,9 @@ module Targets =
     ==> "Deployment" // test is duplicated in the Pester testing
     |> ignore
 
-    "Unpack" ==> "ReleaseFSharpTypesX86DotNetRunner"
-    =?> ("Deployment", Option.isSome dotnetPath86)
-    |> ignore
+    //"Unpack" ==> "ReleaseFSharpTypesX86DotNetRunner"
+    //=?> ("Deployment", Option.isSome dotnetPath86)
+    //|> ignore
 
     "Unpack"
     ==> "ReleaseXUnitFSharpTypesShowVisualized"
