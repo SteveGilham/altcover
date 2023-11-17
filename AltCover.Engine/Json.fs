@@ -125,15 +125,16 @@ module internal Json =
     =
     let td =
       def
-      |> Option.bind (fun a ->
-        a.MainModule.GetAllTypes()
-        |> Seq.tryFind (fun t -> t.FullName == cname))
+      |> Option.bind (
+        _.MainModule.GetAllTypes()
+        >> Seq.tryFind (fun t -> t.FullName == cname)
+      )
 
     let md =
       td
-      |> Option.bind (fun t ->
-        t.Methods
-        |> Seq.tryFind (fun m ->
+      |> Option.bind (
+        _.Methods
+        >> Seq.tryFind (fun m ->
           m.FullName == mname
           || (m.Name == mname
               && (let dbg = m.DebugInformation
@@ -143,7 +144,8 @@ module internal Json =
                   && (let pt = dbg.SequencePoints |> Seq.head
 
                       pt.StartLine = sp.Value.SL
-                      && pt.StartColumn = sp.Value.SC)))))
+                      && pt.StartColumn = sp.Value.SC))))
+      )
 
     let truemd =
       md
@@ -219,7 +221,7 @@ module internal Json =
               let parse n =
                 x.Attribute(XName.Get n)
                 |> Option.ofObj
-                |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+                |> Option.map (_.Value >> Int32.TryParse >> snd)
                 |> Option.defaultValue 0
 
               { NativeJson.SeqPnt.VC = parse "visitcount"
@@ -376,7 +378,7 @@ module internal Json =
             let parse n =
               s.Attribute(XName.Get n)
               |> Option.ofObj
-              |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+              |> Option.map (_.Value >> Int32.TryParse >> snd)
               |> Option.defaultValue 0
 
             let docname =
@@ -399,11 +401,12 @@ module internal Json =
                     let t2 = NativeJson.Times()
 
                     t
-                    |> Seq.map (fun x ->
-                      x.Attribute(XName.Get "time").Value
-                      |> Int64.TryParse
-                      |> snd
-                      |> NativeJson.fromTracking)
+                    |> Seq.map (
+                      _.Attribute(XName.Get "time").Value
+                      >> Int64.TryParse
+                      >> snd
+                      >> NativeJson.fromTracking
+                    )
                     |> t2.AddRange
 
                     t2
@@ -418,10 +421,11 @@ module internal Json =
                     let t2 = NativeJson.Tracks()
 
                     t
-                    |> Seq.map (fun x ->
-                      x.Attribute(XName.Get "uid").Value
-                      |> Int32.TryParse
-                      |> snd)
+                    |> Seq.map (
+                      _.Attribute(XName.Get "uid").Value
+                      >> Int32.TryParse
+                      >> snd
+                    )
                     |> t2.AddRange
 
                     t2
@@ -454,7 +458,7 @@ module internal Json =
             let parse n =
               s.Attribute(XName.Get n)
               |> Option.ofObj
-              |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+              |> Option.map (_.Value >> Int32.TryParse >> snd)
               |> Option.defaultValue 0
 
             let docname =
@@ -501,10 +505,11 @@ module internal Json =
                     let t2 = NativeJson.Tracks()
 
                     t
-                    |> Seq.map (fun x ->
-                      x.Attribute(XName.Get "uid").Value
-                      |> Int32.TryParse
-                      |> snd)
+                    |> Seq.map (
+                      _.Attribute(XName.Get "uid").Value
+                      >> Int32.TryParse
+                      >> snd
+                    )
                     |> t2.AddRange
 
                     t2

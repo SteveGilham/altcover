@@ -748,8 +748,7 @@ module internal Visitor =
     // actually all vestigial classes now the first line is commented out
     let internal stripInterfaces (t: TypeDefinition) =
       // t.BaseType.IsNotNull ||
-      t.Methods
-      |> Seq.exists (fun m -> m.IsAbstract |> not)
+      t.Methods |> Seq.exists (_.IsAbstract >> not)
 
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidUnnecessarySpecializationRule",
@@ -766,9 +765,10 @@ module internal Visitor =
       sourceLinkDocuments <-
         Some x.Module
         |> Option.filter (fun _ -> CoverageParameters.sourcelink.Value)
-        |> Option.bind (fun x ->
-          x.CustomDebugInformations
-          |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
+        |> Option.bind (
+          _.CustomDebugInformations
+          >> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink)
+        )
         |> Option.map (fun i ->
           let c =
             (i :?> SourceLinkDebugInformation).Content
@@ -880,7 +880,7 @@ module internal Visitor =
           ct.DeclaringType // Hope we don't have to generalise this
           |> Option.ofObj
           |> Option.filter (fun _ -> ct.Name.StartsWith("<", StringComparison.Ordinal))
-          |> Option.map (fun c -> c.Methods |> Seq.toList)
+          |> Option.map (_.Methods >> Seq.toList)
           |> Option.defaultValue []
         ))
         |> Seq.filter (fun mx -> (mx.Name == stripped) && mx.HasBody)
@@ -910,8 +910,8 @@ module internal Visitor =
 
         let children =
           ct.NestedTypes
-          |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
-          |> Seq.collect (fun tx -> tx.Methods)
+          |> Seq.filter _.Name.StartsWith("<", StringComparison.Ordinal)
+          |> Seq.collect _.Methods
           |> Seq.filter (fun mx ->
             mx.HasBody
             && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
@@ -979,9 +979,9 @@ module internal Visitor =
         t.DeclaringType.Methods.Concat(
           t.DeclaringType.NestedTypes
           |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
-          |> Seq.collect (fun t2 -> t2.Methods)
+          |> Seq.collect _.Methods
         )
-        |> Seq.filter (fun m -> m.HasBody)
+        |> Seq.filter _.HasBody
 
       candidates
       |> Seq.tryFind (fun c ->
@@ -1070,7 +1070,7 @@ module internal Visitor =
                   m.IsConstructor
                   && m.HasParameters
                   && (m.Parameters.Count = 1))
-                |> Option.map (fun m -> m.Parameters |> Seq.head)
+                |> Option.map (_.Parameters >> Seq.head)
               with
               | None -> t :> TypeReference
               | Some other -> other.ParameterType
@@ -1328,7 +1328,7 @@ module internal Visitor =
                   || i.OpCode.FlowControl = FlowControl.Break
                   || i.OpCode.FlowControl = FlowControl.Throw
                   || i.OpCode.FlowControl = FlowControl.Branch) }) // more??
-        |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
+        |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead) // _ ambiguous??
         |> Seq.map (
           snd
           >> (fun bg ->
@@ -1484,7 +1484,7 @@ module internal Visitor =
 
         let nt =
           x :: (rest |> Seq.toList)
-          |> List.filter (fun v -> v.OpCode |> trivial.Contains |> not)
+          |> List.filter (_.OpCode >> trivial.Contains >> not)
           |> List.tryHead
 
         Option.isSome nt

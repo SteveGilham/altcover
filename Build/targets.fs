@@ -149,7 +149,7 @@ module Targets =
   let VersionTemplate =
     let vx =
       DotNet.exec
-        (fun o -> dotnetOptions (o.WithRedirectOutput true))
+        (_.WithRedirectOutput(true) >> dotnetOptions)
         ""
         "nbgv get-version -v NuGetPackageVersion"
 
@@ -170,19 +170,19 @@ module Targets =
   lastGoodPackage ()
 
   let dotnetVersion =
-    DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
+    DotNet.getVersion _.WithCommon(dotnetOptions)
 
   printfn "Using dotnet version %s" dotnetVersion
 
   let dotnetInfo =
-    DotNet.exec (fun o -> dotnetOptions (o.WithRedirectOutput true)) "" "--info"
+    DotNet.exec (_.WithRedirectOutput(true) >> dotnetOptions) "" "--info"
 
   let dotnetSdkPath =
     dotnetInfo.Results
-    |> Seq.filter (fun x -> x.IsError |> not)
-    |> Seq.map (fun x -> x.Message)
-    |> Seq.tryFind (fun x -> x.Contains "Base Path:")
-    |> Option.map (fun x -> x.Replace("Base Path:", "").TrimStart())
+    |> Seq.filter (_.IsError >> not)
+    |> Seq.map _.Message
+    |> Seq.tryFind _.Contains("Base Path:")
+    |> Option.map _.Replace("Base Path:", "").TrimStart()
 
   let refdir =
     dotnetSdkPath

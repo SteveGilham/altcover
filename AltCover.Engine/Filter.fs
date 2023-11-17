@@ -189,7 +189,7 @@ module internal Filter =
                    else
                      true
                  | _ -> true)
-               |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
+               |> Seq.exists (_.AttributeType.FullName >> name.IsMatch)
                |> f
           | _ -> false)
 
@@ -210,14 +210,14 @@ module internal Filter =
       let baseType =
         Option.ofObj m.DeclaringType.DeclaringType
         |> Option.filter _.HasCustomAttributes
-        |> Option.map (fun t -> t.CustomAttributes :> seq<CustomAttribute>)
+        |> Option.map (_.CustomAttributes >> Seq.cast<CustomAttribute>)
         |> Option.filter (Seq.isEmpty >> not)
         |> Option.defaultValue Seq.empty<CustomAttribute>
 
       let thisType =
         Some m.DeclaringType
         |> Option.filter _.HasCustomAttributes
-        |> Option.map (fun t -> t.CustomAttributes :> seq<CustomAttribute>)
+        |> Option.map (_.CustomAttributes >> Seq.cast<CustomAttribute>)
         |> Option.filter (Seq.isEmpty >> not)
         |> Option.defaultValue Seq.empty<CustomAttribute>
 
@@ -320,14 +320,10 @@ module internal Filter =
     match filter.Scope with
     | File -> I.matchItem<string> filter.Regex f nameProvider Path.GetFileName
     | Assembly ->
-      I.matchItem<AssemblyDefinition> filter.Regex f nameProvider (fun assembly ->
-        assembly.Name.Name)
+      I.matchItem<AssemblyDefinition> filter.Regex f nameProvider (_.Name.Name)
     | Module ->
-      I.matchItem<ModuleDefinition> filter.Regex f nameProvider (fun ``module`` ->
-        ``module``.Assembly.Name.Name)
-    | Type ->
-      I.matchItem<TypeDefinition> filter.Regex f nameProvider (fun typeDef ->
-        typeDef.FullName)
+      I.matchItem<ModuleDefinition> filter.Regex f nameProvider (_.Assembly.Name.Name)
+    | Type -> I.matchItem<TypeDefinition> filter.Regex f nameProvider (_.FullName)
     | Method ->
       I.matchItem<MethodDefinition>
         filter.Regex

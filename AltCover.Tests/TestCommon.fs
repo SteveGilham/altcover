@@ -211,8 +211,8 @@ Actual:   False
 
     Assert.That(
       m2,
-      Is.EqualTo
-        ("""Multiple failures or warnings in test:
+      Is.EqualTo(
+        """Multiple failures or warnings in test:
   1)   Expected: 4
   But was:  3
 
@@ -233,7 +233,9 @@ false
 "yes" = "no"
 false
 
-""".Replace("@", " "))
+"""
+          .Replace("@", " ")
+      )
     )
 
 #if !NET472
@@ -253,13 +255,18 @@ module ExpectoTestCommon =
       def.MainModule.GetTypes()
       |> Seq.collect _.Methods
       |> Seq.filter _.CustomAttributes.IsNotNull
-      |> Seq.filter (_.CustomAttributes
-        >> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
+      |> Seq.filter (
+        _.CustomAttributes
+        >> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute")
+      )
       |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
 
     let lookup =
       def.MainModule.GetAllTypes()
-      |> Seq.filter (_.Methods >> Seq.exists (fun m -> m.Name = "Invoke"))
+      |> Seq.filter (
+        _.Methods
+        >> Seq.exists (fun m -> m.Name = "Invoke")
+      )
       |> Seq.map (fun t ->
         (t.FullName.Replace("/", "+"), t.Methods |> Seq.find (fun m -> m.Name = "Invoke")))
       |> Map.ofSeq
@@ -270,18 +277,17 @@ module ExpectoTestCommon =
         fst
         >> _.GetType().FullName.Replace("/", "+")
         >> (fun f -> Map.find f lookup)
-        >> (fun f ->
-          f.Body.Instructions
-          // Where the test assembly is itself instrumented
-          // we have to allow for calls to AltCover.Recorder.Instance::Visit
-          // or the coverlet equivalent
-          // having been injected into the local function reference
+        >> (_.Body.Instructions
+            // Where the test assembly is itself instrumented
+            // we have to allow for calls to AltCover.Recorder.Instance::Visit
+            // or the coverlet equivalent
+            // having been injected into the local function reference
 
-          |> Seq.find (fun i ->
-            i.OpCode = OpCodes.Call
-            && i.Operand
-              .GetType()
-              .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
+            >> Seq.find (fun i ->
+              i.OpCode = OpCodes.Call
+              && i.Operand
+                .GetType()
+                .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
         >> (fun i ->
           let m = (i.Operand :?> MethodDefinition)
           m.DeclaringType.FullName + "::" + m.Name)

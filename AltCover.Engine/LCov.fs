@@ -33,10 +33,11 @@ module internal LCov =
       let (_, s) = m
 
       s
-      |> Seq.map (fun x ->
-        x.Attribute("line".X).Value
-        |> Int32.TryParse
-        |> snd)
+      |> Seq.map (
+        _.Attribute("line".X).Value
+        >> Int32.TryParse
+        >> snd
+      )
       |> Seq.min
 
     let internal multiSort (by: 'a -> int) (l: (string * 'a seq) seq) =
@@ -207,10 +208,11 @@ FN:4,(anonymous_0)
               let (lf, lh) =
                 methods
                 |> Seq.collect snd
-                |> Seq.filter (fun b ->
-                  b.Attribute("line".X).Value
-                  |> String.IsNullOrWhiteSpace
-                  |> not)
+                |> Seq.filter (
+                  _.Attribute("line".X).Value
+                  >> String.IsNullOrWhiteSpace
+                  >> not
+                )
                 |> Seq.groupBy _.Attribute("line".X).Value
                 |> Seq.sortBy (fst >> Int32.TryParse >> snd)
                 |> Seq.fold
@@ -270,11 +272,12 @@ FN:4,(anonymous_0)
               // FN:<line number of function start>,<function name>
               let methods =
                 p.Descendants("Method".X)
-                |> Seq.filter (fun m ->
-                  m.Descendants()
-                  |> Seq.exists (fun r ->
+                |> Seq.filter (
+                  _.Descendants()
+                  >> Seq.exists (fun r ->
                     let f = r.Attribute("fileid".X)
-                    f.IsNotNull && f.Value == uid))
+                    f.IsNotNull && f.Value == uid)
+                )
                 |> Seq.toList
 
               let FN (ms: XElement list) = // fsharplint:disable-line NonPublicValuesNames
@@ -413,8 +416,7 @@ FN:4,(anonymous_0)
                   b.Attribute("sl".X).Value
                   |> String.IsNullOrWhiteSpace
                   |> not)
-                |> Seq.groupBy (fun b ->
-                  b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+                |> Seq.groupBy (_.Attribute("sl".X).Value >> Int32.TryParse >> snd)
                 |> Seq.sortBy fst
                 |> Seq.fold
                   (fun (f, h) (line, points) ->

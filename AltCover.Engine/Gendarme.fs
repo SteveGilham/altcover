@@ -129,7 +129,7 @@ module internal Gendarme =
             | FlowControl.Branch ->
               c
               + (Option.ofObj i.Previous
-                 |> Option.map (fun (previous: Instruction) -> previous.OpCode.Code)
+                 |> Option.map _.OpCode.Code
                  |> I.``detect ternary pattern``)
             | _ -> c)
           1

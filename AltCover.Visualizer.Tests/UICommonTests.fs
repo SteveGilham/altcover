@@ -17,14 +17,14 @@ module VisualizerTests =
       [ "string"; null; "another string" ]
 
     let nulls =
-      input |> List.map (fun x -> x.IsNotNull |> not)
+      input |> List.map (_.IsNotNull >> not)
 
     test <@ nulls = [ false; true; false ] @>
 
   [<Test>]
   let AugmentNonNullableDetectNoNulls () =
     let input = [ 1; 2; 3 ]
-    test <@ input |> List.forall (fun x -> x.IsNotNull) @>
+    test <@ input |> List.forall _.IsNotNull @>
 
   // CoverageFile.fs
 

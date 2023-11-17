@@ -542,9 +542,9 @@ module internal Main =
       // Track the symbol-bearing assemblies
       let assemblies =
         instrumentFromInfos
-        |> Seq.map (fun sourceInfo ->
-          sourceInfo.GetFiles()
-          |> Seq.fold
+        |> Seq.map (
+          _.GetFiles()
+          >> Seq.fold
             (fun (accumulator: AssemblyInfo list) info ->
               let fullName = info.FullName
 
@@ -607,7 +607,8 @@ module internal Main =
                   |> Output.verbose
 
                   accumulator))
-            [])
+            []
+        )
         |> Seq.toList
         |> Seq.concat
         |> Seq.groupBy _.Hash // assume hash is unique
@@ -645,8 +646,7 @@ module internal Main =
             (if n <= 1 then
                unassigned
              else
-               unassigned
-               |> List.filter (fun u -> u.Refs |> List.isEmpty))
+               unassigned |> List.filter (_.Refs >> List.isEmpty))
             |> List.sortBy _.Name
 
           let waiting =
@@ -655,7 +655,7 @@ module internal Main =
 
           let next =
             unassigned
-            |> List.filter (fun u -> u.Refs |> List.isEmpty |> not)
+            |> List.filter (_.Refs >> List.isEmpty >> not)
             |> List.map (fun a ->
               { a with
                   Refs =

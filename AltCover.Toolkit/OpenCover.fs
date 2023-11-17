@@ -43,10 +43,11 @@ module OpenCover =
 
       let interleave =
         List.concat [ sp; bp; [ tail ] ]
-        |> List.sortBy (fun x ->
-          x.Attribute(XName.Get "offset").Value
-          |> Int32.TryParse
-          |> snd)
+        |> List.sortBy (
+          _.Attribute(XName.Get "offset").Value
+          >> Int32.TryParse
+          >> snd
+        )
 
       interleave
       |> Seq.fold
@@ -84,7 +85,7 @@ module OpenCover =
                     (fun (ki, ke) (_, bz) ->
                       let totalVisits =
                         bz
-                        |> Seq.sumBy (fun b ->
+                        |> Seq.sumBy (fun b -> // underscore ambiguous
                           b.Attribute(XName.Get "vc").Value
                           |> Int32.TryParse
                           |> snd)
@@ -269,11 +270,11 @@ module OpenCover =
       x.Add a
 
       debugInfo
-      |> Option.iter (fun dbg ->
-        dbg.SequencePoints
-        |> Seq.filter (_.IsHidden >> not)
-        |> Seq.tryHead
-        |> Option.iter (fun s ->
+      |> Option.iter (
+        _.SequencePoints
+        >> Seq.filter (_.IsHidden >> not)
+        >> Seq.tryHead
+        >> Option.iter (fun s ->
           x.Attribute(XName.Get "sc").Value <-
             s.StartColumn.ToString(CultureInfo.InvariantCulture)
 
@@ -281,7 +282,8 @@ module OpenCover =
             s.EndColumn.ToString(CultureInfo.InvariantCulture)
 
           x.Attribute(XName.Get "offset").Value <-
-            s.Offset.ToString(CultureInfo.InvariantCulture))))
+            s.Offset.ToString(CultureInfo.InvariantCulture))
+      ))
 
     // Fix sequence points as best we can
     debugInfo
@@ -1252,12 +1254,12 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/Pipe #6 stage #1 at line 52@53::Invoke(System.Tuple`2<System.Xml.Linq.XElement,Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/Pipe #6 stage #1 at line 53@54::Invoke(System.Tuple`2<System.Xml.Linq.XElement,Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/Pipe #4 stage #1 at line 755@756::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/Pipe #4 stage #1 at line 757@758::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

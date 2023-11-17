@@ -325,7 +325,7 @@ module internal PostProcess =
 
         let interleave =
           nodes
-          |> Seq.sortBy (fun x -> x.GetAttribute(orderAttr) |> Int32.TryParse |> snd)
+          |> Seq.sortBy (_.GetAttribute(orderAttr) >> Int32.TryParse >> snd)
 
         interleave
         |> Seq.fold

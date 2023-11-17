@@ -440,10 +440,11 @@ module internal OpenCover =
 
         let interleave =
           List.concat [ sp; bp; [ tail ] ]
-          |> List.sortBy (fun x ->
-            x.Attribute("offset".X).Value
-            |> Int32.TryParse
-            |> snd)
+          |> List.sortBy (
+            _.Attribute("offset".X).Value
+            >> Int32.TryParse
+            >> snd
+          )
 
         let (np, _, _) =
           interleave
@@ -460,7 +461,7 @@ module internal OpenCover =
       else if bp |> List.isEmpty |> not then
         let np =
           bp
-          |> List.groupBy (fun bp -> bp.Attribute("offset".X).Value)
+          |> List.groupBy _.Attribute("offset".X).Value
           |> Seq.fold (fun np0 (_, b) -> safeMultiply (Seq.length b) np0) 1
 
         method.SetAttributeValue("nPathComplexity".X, np)
@@ -729,6 +730,6 @@ module internal OpenCover =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/handleOrdinals@451-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/handleOrdinals@452-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler generated")>]
 ()

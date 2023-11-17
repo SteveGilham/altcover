@@ -270,14 +270,16 @@ module internal Runner =
 
       let vclasses =
         classes
-        |> Seq.filter (fun (_, ms) ->
+        |> Seq.filter (fun (dummy, ms) ->
+          ignore dummy
+
           ms
-          |> Seq.exists (fun m -> m.Descendants("seqpnt".X) |> Seq.exists isVisited))
+          |> Seq.exists (_.Descendants("seqpnt".X) >> Seq.exists isVisited))
         |> Seq.length
 
       let vmethods =
         methods
-        |> Seq.filter (fun m -> m.Descendants("seqpnt".X) |> Seq.exists isVisited)
+        |> Seq.filter (_.Descendants("seqpnt".X) >> Seq.exists isVisited)
         |> Seq.length
 
       let points =
@@ -324,7 +326,7 @@ module internal Runner =
         (methods
          |> Seq.map _.Attribute("crapScore".X)
          |> Seq.filter _.IsNotNull
-         |> Seq.map (fun d -> d.Value.InvariantParseDouble() |> snd)
+         |> Seq.map (_.Value.InvariantParseDouble() >> snd)
          |> Seq.max)
 
       if go then
@@ -343,15 +345,16 @@ module internal Runner =
 
       let classes =
         report.Descendants("Class".X)
-        |> Seq.filter (fun c -> c.Attribute("skippedDueTo".X) |> isNull)
-        |> Seq.filter (fun c -> c.Descendants("Method".X) |> Seq.isEmpty |> not)
+        |> Seq.filter (_.Attribute("skippedDueTo".X) >> isNull)
+        |> Seq.filter (_.Descendants("Method".X) >> Seq.isEmpty >> not)
         |> Seq.toList
 
       let vclasses =
         classes
-        |> Seq.filter (fun c ->
-          c.Descendants("Method".X)
-          |> Seq.exists (fun m -> m.Attribute("visited".X).Value == "true"))
+        |> Seq.filter (
+          _.Descendants("Method".X)
+          >> Seq.exists (fun m -> m.Attribute("visited".X).Value == "true")
+        )
         |> Seq.length
 
       let nc = classes.Length
@@ -370,7 +373,7 @@ module internal Runner =
       let methods =
         classes
         |> Seq.collect _.Descendants("Method".X)
-        |> Seq.filter (fun c -> c.Attribute("skippedDueTo".X) |> isNull)
+        |> Seq.filter (_.Attribute("skippedDueTo".X) >> isNull)
         |> Seq.toList
 
       let vm =

@@ -334,7 +334,7 @@ module internal Cobertura =
 
         method.Descendants("SequencePoint".X)
         |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == fileid)
-        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd) //_ is ambiguous
         |> Seq.sortBy fst
         |> Seq.iter (copySeqPnt lines)
 
@@ -448,7 +448,7 @@ module internal Cobertura =
           Map.empty
 
       report.Descendants("Module".X)
-      |> Seq.filter (fun m -> m.Descendants("Class".X) |> Seq.isEmpty |> not)
+      |> Seq.filter (_.Descendants("Class".X) >> Seq.isEmpty >> not)
       |> Seq.iter (fun ``module`` ->
         let mname =
           ``module``.Descendants("ModuleName".X)

@@ -1936,7 +1936,7 @@ module AltCoverTests =
 
     let methods =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.toList
 
     let result =
@@ -2014,9 +2014,9 @@ module AltCoverTests =
 
     let i =
       sourceAssembly.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.filter (fun m -> m.HasBody && m.Body.Instructions.Any())
-      |> Seq.map (fun m -> m.Body.Instructions |> Seq.head)
+      |> Seq.map (_.Body.Instructions >> Seq.head)
       |> Seq.head
 
     let dummy = Cil.Document("dummy")
@@ -2077,7 +2077,7 @@ module AltCoverTests =
       KeyStore.tokenOfKey <| provideKeyPair ()
 
     let token' =
-      String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
+      String.Join(String.Empty, token |> List.map _.ToString("x2"))
 
     Assert.That(token', Is.EqualTo("c02b1a9f5b7cade8"))
 
@@ -2245,7 +2245,7 @@ module AltCoverTests =
 
     let outputs =
       inputs
-      |> Seq.map (fun n -> n.After() |> Seq.toList)
+      |> Seq.map (_.After() >> Seq.toList)
       |> Seq.toList
 
     let expected =
@@ -2281,7 +2281,7 @@ module AltCoverTests =
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class1")
-    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.collect _.Methods
     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
     |> Seq.iter (fun m -> Assert.That(Visitor.I.significant m, Is.False))
 
@@ -2295,7 +2295,7 @@ module AltCoverTests =
 
     def.MainModule.Types
     |> Seq.filter (fun t -> t.Name = "Class2")
-    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.collect _.Methods
     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
     |> Seq.iter (Visitor.I.significant >> Assert.That)
 
@@ -2348,7 +2348,7 @@ module AltCoverTests =
 
     let method =
       (def.MainModule.Types
-       |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))
+       |> Seq.skipWhile _.Name.StartsWith("<")
        |> Seq.head)
         .Methods
       |> Seq.head
@@ -2463,10 +2463,7 @@ module AltCoverTests =
                         Interesting = true } ->
           Assert.That(uid, Is.EqualTo i, "point number"))
 
-      Assert.That(
-        branches |> List.map (fun b -> b.Path),
-        Is.EquivalentTo [ 0; 1; 0; 1; 2; 3; 0; 1 ]
-      )
+      Assert.That(branches |> List.map _.Path, Is.EquivalentTo [ 0; 1; 0; 1; 2; 3; 0; 1 ])
     finally
       CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
@@ -2549,7 +2546,7 @@ module AltCoverTests =
 
     let type' =
       (def.MainModule.Types
-       |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))
+       |> Seq.skipWhile _.Name.StartsWith("<")
        |> Seq.head)
 
     Visitor.visit [] [] // cheat reset
@@ -2966,7 +2963,7 @@ module AltCoverTests =
 
       let tracks =
         def.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.choose (Visitor.I.track)
         |> Seq.toList
 
@@ -2990,9 +2987,9 @@ module AltCoverTests =
 
       let tracks =
         def.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.filter (Visitor.I.track >> Option.isSome)
-        |> Seq.map (fun m -> m.Name)
+        |> Seq.map _.Name
         |> Seq.toList
 
       Assert.That(tracks, Is.EquivalentTo [ "testMakeUnion"; "testMakeThing" ])
@@ -3024,7 +3021,7 @@ module AltCoverTests =
 
       let tracks =
         def.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.choose (Visitor.I.track)
         |> Seq.toList
 
@@ -3063,7 +3060,7 @@ module AltCoverTests =
 
       let tracks =
         def.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.collect _.Methods
         |> Seq.choose (Visitor.I.track)
         |> Seq.toList
 
@@ -3247,7 +3244,7 @@ module AltCoverTests =
 
     let names =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.map Naming.I.methodName
       |> Seq.toList
 
@@ -3302,7 +3299,7 @@ module AltCoverTests =
 
     let names =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.map Naming.fullMethodName
       |> Seq.toList
 
@@ -3604,7 +3601,7 @@ module AltCoverTests =
 
       let classes =
         methods
-        |> List.groupBy (fun x -> x.Attribute("class".X).Value)
+        |> List.groupBy _.Attribute("class".X).Value
 
       let documents =
         classes
@@ -3613,7 +3610,7 @@ module AltCoverTests =
           ml
           |> Seq.map (fun m ->
             m.Descendants("seqpnt".X)
-            |> Seq.map (fun s -> s.Attribute("document".X).Value)
+            |> Seq.map _.Attribute("document".X).Value
             |> Seq.distinct
             |> Seq.toList))
 
@@ -3702,7 +3699,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -3988,7 +3985,7 @@ module AltCoverTests =
         (makeDocument document2)
           .Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
-        |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+        |> Seq.map _.Attribute(XName.Get "name").Value
         |> Seq.filter (fun n -> n <> "Main")
         |> Seq.sortBy (fun n ->
           BitConverter.ToInt32(
@@ -4027,7 +4024,7 @@ module AltCoverTests =
         (makeDocument document3)
           .Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
-        |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+        |> Seq.map _.Attribute(XName.Get "name").Value
         |> Seq.filter (fun n -> n <> "Main")
         |> Seq.sortBy (fun n ->
           BitConverter.ToInt32(
@@ -4063,7 +4060,7 @@ module AltCoverTests =
         (makeDocument document5)
           .Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
-        |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+        |> Seq.map _.Attribute(XName.Get "name").Value
         |> Seq.filter (fun n -> n <> "Main")
         |> Seq.sortBy (fun n ->
           BitConverter.ToInt32(
@@ -4210,7 +4207,7 @@ module AltCoverTests =
         Sense = Exclude }
       |> CoverageParameters.topLevel.Add
 
-      let seqTrim (s: String seq) = s |> Seq.map (fun n -> n.Trim())
+      let seqTrim (s: String seq) = s |> Seq.map _.Trim()
 
       let visitor9, document9 =
         Report.reportGenerator ()
@@ -4347,14 +4344,14 @@ module AltCoverTests =
 
       let url =
         map.Values
-        |> Seq.find (fun f -> f.EndsWith("*", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("*", StringComparison.Ordinal)
 
       let files =
         (makeDocument document)
           .Descendants(XName.Get "seqpnt")
-        |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
+        |> Seq.map _.Attribute(XName.Get "document").Value
         |> Seq.distinct
-        |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
+        |> Seq.filter _.StartsWith("https://", StringComparison.Ordinal)
         |> Seq.sort
         |> Seq.toList
 
@@ -4367,11 +4364,12 @@ module AltCoverTests =
       let untracked =
         (makeDocument document)
           .Descendants(XName.Get "seqpnt")
-        |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
+        |> Seq.map _.Attribute(XName.Get "document").Value
         |> Seq.distinct
-        |> Seq.filter (fun f ->
-          f.StartsWith("https://", StringComparison.Ordinal)
-          |> not)
+        |> Seq.filter (
+          _.StartsWith("https://", StringComparison.Ordinal)
+          >> not
+        )
         |> Seq.map Path.GetFileName
         |> Seq.sort
         |> Seq.toList
@@ -4634,7 +4632,7 @@ module AltCoverTests =
 
     let method =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.find (fun m -> m.Name = "as_bar")
 
     Visitor.visit [] [] // cheat reset
@@ -4687,7 +4685,7 @@ module AltCoverTests =
 
     let method =
       def.MainModule.GetAllTypes()
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.find (fun m -> m.Name = "as_bar")
 
     let fin =
@@ -4819,13 +4817,13 @@ module AltCoverTests =
 
       let url =
         map.Values
-        |> Seq.find (fun f -> f.EndsWith("*", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("*", StringComparison.Ordinal)
 
       let files =
         (makeDocument document)
           .Descendants(XName.Get "File")
-        |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
-        |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
+        |> Seq.map _.Attribute(XName.Get "fullPath").Value
+        |> Seq.filter _.StartsWith("https://", StringComparison.Ordinal)
         |> Seq.sort
         |> Seq.toList
 
@@ -4838,10 +4836,11 @@ module AltCoverTests =
       let untracked =
         (makeDocument document)
           .Descendants(XName.Get "File")
-        |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
-        |> Seq.filter (fun f ->
-          f.StartsWith("https://", StringComparison.Ordinal)
-          |> not)
+        |> Seq.map _.Attribute(XName.Get "fullPath").Value
+        |> Seq.filter (
+          _.StartsWith("https://", StringComparison.Ordinal)
+          >> not
+        )
         |> Seq.map Path.GetFileName
         |> Seq.sort
         |> Seq.toList
@@ -4879,8 +4878,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -5008,7 +5006,7 @@ module AltCoverTests =
              [ m.Descendants("SequencePoint".X)
                m.Descendants("Branch".X) ]
              |> Seq.concat
-             |> Seq.map (fun x -> x.Attribute("fileid".X).Value)
+             |> Seq.map _.Attribute("fileid".X).Value
              |> Seq.distinct
              |> Seq.toList)))
 
@@ -5080,8 +5078,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -5102,7 +5099,7 @@ module AltCoverTests =
 
       baseline.Descendants(xn "BranchPoint")
       |> Seq.toList
-      |> Seq.iter (fun x -> x.Remove())
+      |> Seq.iter _.Remove()
 
       let result =
         (makeDocument document).Elements()
@@ -5141,8 +5138,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -5157,7 +5153,7 @@ module AltCoverTests =
 
       baseline.Descendants(xn "SequencePoint")
       |> Seq.toList
-      |> Seq.iter (fun x -> x.Remove())
+      |> Seq.iter _.Remove()
 
       let result =
         (makeDocument document).Elements()
@@ -5174,7 +5170,7 @@ module AltCoverTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith(xml, StringComparison.Ordinal))
+      |> Seq.find _.EndsWith(xml, StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5381,8 +5377,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample1ClassExclusion.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample1ClassExclusion.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -5475,8 +5470,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -5521,8 +5515,7 @@ module AltCoverTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -5532,13 +5525,13 @@ module AltCoverTests =
       let baseline = XDocument.Load(stream)
 
       baseline.Descendants(XName.Get "Method")
-      |> Seq.filter (fun x -> x.Attributes(XName.Get "skippedDueTo").Any())
+      |> Seq.filter _.Attributes(XName.Get "skippedDueTo").Any()
       |> Seq.iter (fun x ->
         x.SetAttributeValue(XName.Get "skippedDueTo", "File")
 
         x.Descendants(XName.Get "Summary")
         |> Seq.toList
-        |> Seq.iter (fun x -> x.Remove()))
+        |> Seq.iter _.Remove())
       //|> Seq.iter (fun s -> s.SetAttributeValue(XName.Get "maxCyclomaticComplexity", "2")
       //                      s.SetAttributeValue(XName.Get "minCyclomaticComplexity", "2")))
       let result =
@@ -5624,14 +5617,14 @@ module AltCoverTests =
 
       let classes =
         doc.Descendants(XName.Get "FullName")
-        |> Seq.map (fun x -> x.Value)
+        |> Seq.map _.Value
         |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
         |> Seq.sort
         |> Seq.toList
 
       let methods =
         doc.Descendants(XName.Get "Name")
-        |> Seq.map (fun x -> x.Value)
+        |> Seq.map _.Value
         |> Seq.sort
         |> Seq.toList
 
@@ -5683,21 +5676,23 @@ module AltCoverTests =
 
       let classes =
         doc.Descendants(XName.Get "FullName")
-        |> Seq.filter (fun x ->
-          x.Parent.Attribute(XName.Get "skippedDueTo")
-          |> isNull)
-        |> Seq.map (fun x -> x.Value)
+        |> Seq.filter (
+          _.Parent.Attribute(XName.Get "skippedDueTo")
+          >> isNull
+        )
+        |> Seq.map _.Value
         |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
         |> Seq.sort
-        |> Seq.filter (fun x ->
-          x.EndsWith("Attribute", StringComparison.Ordinal)
-          |> not)
+        |> Seq.filter (
+          _.EndsWith("Attribute", StringComparison.Ordinal)
+          >> not
+        )
         |> Seq.toList
 
       let methods =
         doc.Descendants(XName.Get "Name")
-        |> Seq.map (fun x -> x.Value)
-        |> Seq.filter (fun x -> x.Contains("Attribute::.ctor") |> not)
+        |> Seq.map _.Value
+        |> Seq.filter (_.Contains("Attribute::.ctor") >> not)
         |> Seq.sort
         |> Seq.toList
 

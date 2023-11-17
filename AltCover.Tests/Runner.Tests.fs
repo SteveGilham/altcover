@@ -382,7 +382,7 @@ module AltCoverRunnerTests =
       Assert.That(
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
-        |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+        |> Seq.map _.GetAttribute("visitcount"),
         Is.EquivalentTo
           [ "11"
             "10"
@@ -945,7 +945,7 @@ module AltCoverRunnerTests =
     Assert.That(
       options
       |> Seq.filter (fun x -> x.Prototype <> "<>")
-      |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description)
+      |> Seq.forall (_.Description >> String.IsNullOrWhiteSpace >> not)
     )
 
     Assert.That(
@@ -3233,8 +3233,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        |> Seq.find
+          _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -4007,7 +4007,7 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//MethodPoint")
     |> Seq.cast<XmlElement>
-    |> Seq.iter (fun el -> el.SetAttribute("vc", "0"))
+    |> Seq.iter _.SetAttribute("vc", "0")
 
     let before =
       after.OuterXml
@@ -5530,7 +5530,7 @@ module AltCoverRunnerTests =
          |> List.map (
            sprintf "<x><seqpnt line=\"%d\" /></x>"
            >> load
-           >> (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+           >> (_.Descendants(XName.Get "x") >> Seq.head)
            >> (fun m -> (m, m.Descendants(XName.Get "seqpnt")))
          )
          |> List.toSeq))

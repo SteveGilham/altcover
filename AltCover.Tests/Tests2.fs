@@ -1542,7 +1542,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("TailCallSample.dl_", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("TailCallSample.dl_", StringComparison.Ordinal)
 
     use stream =
       Assembly

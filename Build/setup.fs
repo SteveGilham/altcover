@@ -64,7 +64,9 @@ module Setup =
       |> XDocument.Load
 
     xml.Descendants()
-    |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
+    |> Seq.filter _.Attribute(XName.Get("Include"))
+    >> isNull
+    >> not
     |> Seq.map (fun x ->
       (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("Version")).Value))
     |> Map.ofSeq

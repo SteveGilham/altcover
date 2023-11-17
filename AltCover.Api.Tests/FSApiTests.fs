@@ -1159,19 +1159,19 @@ module FSApiTests =
 
     let prepare =
       doc.Descendants()
-      |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Prepare")
+      |> Seq.filter _.Name.LocalName.Equals("AltCover.Prepare")
       |> Seq.head
 
     let prepareNames =
       prepare.Attributes()
-      |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+      |> Seq.map _.Name.LocalName.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
     let prepareFragments =
       [ DotNet.I.toPrepareListArgumentList
         >> (List.map (fun (_, n, _) -> n))
-        (fun p -> p.Verbosity)
+        _.Verbosity
         >> DotNet.I.toSharedFromValueArgumentList
         >> (List.map (fun (_, n, _, _) -> n))
         DotNet.I.toPrepareFromArgArgumentList
@@ -1189,7 +1189,7 @@ module FSApiTests =
 
     let collect =
       doc.Descendants()
-      |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Collect")
+      |> Seq.filter _.Name.LocalName.Equals("AltCover.Collect")
       |> Seq.head
 
     let collectNames =

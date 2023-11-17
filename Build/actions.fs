@@ -34,7 +34,7 @@ module Actions =
           |> Path.GetFullPath
           |> n.FullName.StartsWith
           |> not)
-        |> Seq.map (fun x -> x.FullName)
+        |> Seq.map _.FullName
         |> Seq.distinct
         // arrange so leaves get deleted first, avoiding "does not exist" warnings
         |> Seq.groupBy (fun x ->
@@ -258,7 +258,7 @@ using System.Runtime.CompilerServices;
 
     let recorded =
       coverageDocument.Descendants(XName.Get("method"))
-      |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
+      |> Seq.map _.Attribute(XName.Get("name")).Value
       |> Seq.filter (fun x -> others |> Seq.exists (fun y -> x = y) |> not)
       |> Seq.sort
       |> Seq.toList
@@ -290,7 +290,7 @@ using System.Runtime.CompilerServices;
 
     let recorded =
       coverageDocument.Descendants(XName.Get("seqpnt"))
-      |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+      |> Seq.map _.Attribute(XName.Get("visitcount")).Value
       |> Seq.toList
 
     let expected =
@@ -328,14 +328,14 @@ using System.Runtime.CompilerServices;
     let zero =
       recorded
       |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
-      |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+      |> Seq.map _.Attribute(XName.Get("line")).Value
       |> Seq.sort
       |> Seq.toList
 
     let ones =
       recorded
       |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
-      |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+      |> Seq.map _.Attribute(XName.Get("line")).Value
       |> Seq.sort
       |> Seq.toList
 
@@ -595,8 +595,8 @@ a:hover {color: #ecc;}
   let Check4Content (coverageDocument: XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("Method"))
-      |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-      |> Seq.map (fun x -> x.Value.Replace("Tests.Program", "Program/Program"))
+      |> Seq.collect _.Descendants(XName.Get("Name"))
+      |> Seq.map _.Value.Replace("Tests.Program", "Program/Program")
       |> Seq.sort
       |> Seq.toList
 
@@ -648,7 +648,7 @@ a:hover {color: #ecc;}
   let Check4Visits path before (coverageDocument: XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+      |> Seq.map _.Attribute(XName.Get("vc")).Value
       |> Seq.toList
 
     let expected =
@@ -671,10 +671,11 @@ a:hover {color: #ecc;}
 
       let vx =
         sp.Descendants(XName.Get("Time"))
-        |> Seq.sumBy (fun x ->
-          x.Attribute(XName.Get("vc")).Value
-          |> Int32.TryParse
-          |> snd)
+        |> Seq.sumBy (
+          _.Attribute(XName.Get("vc")).Value
+          >> Int32.TryParse
+          >> snd
+        )
 
       Assert.That(vc, Is.EqualTo vx, sp.Value))
 
@@ -719,7 +720,7 @@ a:hover {color: #ecc;}
 
     Assert.That(
       coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
-      |> Seq.map (fun x -> x.ToString()),
+      |> Seq.map _.ToString(),
       Is.EquivalentTo
         [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"

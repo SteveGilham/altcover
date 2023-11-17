@@ -264,7 +264,7 @@ module AltCoverTests3 =
     Assert.That(
       options
       |> Seq.filter (fun x -> x.Prototype <> "<>")
-      |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description),
+      |> Seq.forall (_.Description >> String.IsNullOrWhiteSpace >> not),
       "empty description for one or more items"
     )
 
