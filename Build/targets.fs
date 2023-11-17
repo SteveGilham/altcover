@@ -7159,6 +7159,11 @@ module Targets =
         Shell.mkdir folder
         Actions.CleanDir folder)
 
+  let debugNoBuildIn dir (o: Fake.DotNet.DotNet.TestOptions) =
+    { o.WithCommon(withWorkingDirectoryVM dir) with
+        Configuration = DotNet.BuildConfiguration.Debug
+        NoBuild = false }
+
   let Issue23 =
     (fun () ->
       try
@@ -7217,9 +7222,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p |> debugNoBuildIn "_Issue23")
               .WithAltCoverOptions
               pp0
               cc0
@@ -7299,9 +7302,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p |> debugNoBuildIn "_Issue67")
               .WithAltCoverOptions
               pp0
               cc0
@@ -7396,9 +7397,8 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p
+              |> debugNoBuildIn "./Samples/Sample16/Test/_Issue72")
               .WithAltCoverOptions
               pp0
               cc0
@@ -7466,9 +7466,8 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p
+              |> debugNoBuildIn "./Samples/Sample16/Test/_Issue72")
               .WithAltCoverOptions
               pp1
               cc0
@@ -7528,9 +7527,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p |> debugNoBuildIn "./Samples/Sample16/Test")
               .WithAltCoverOptions
               psln
               cc0
@@ -7764,9 +7761,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p |> debugNoBuildIn "_Issue114")
               .WithAltCoverOptions
               pp0
               cc0
@@ -7860,9 +7855,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            (({ p.WithCommon(withWorkingDirectoryVM "_Issue156/Tests") with
-                  Configuration = DotNet.BuildConfiguration.Debug
-                  NoBuild = false })
+            ((p |> debugNoBuildIn "_Issue156/Tests")
               .WithAltCoverOptions
               pp0
               cc0
