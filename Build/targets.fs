@@ -273,7 +273,7 @@ module Targets =
       |> XDocument.Load
 
     xml.Descendants()
-    |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
+    |> Seq.filter (_.Attribute(XName.Get("Include")) >> isNull >> not)
     |> Seq.filter (fun x ->
       match x.Attribute(XName.Get("Condition")) with
       | null -> true
@@ -666,11 +666,14 @@ module Targets =
   //----------------------------------------------------------------
 
   let _Target s f =
+
     let doTarget s f =
       let banner x =
         printfn ""
-        printfn " ****************** %s ******************" s
-        f x
+        // printfn " ****************** %s ******************" s
+        printfn " ****************** %s ******************" x.TargetInfo.Name
+        // if we ever need context we could stash it in a mutable at module level
+        f ()
 
       Target.create s banner
 
@@ -688,7 +691,7 @@ module Targets =
   //_Target "Preparation" ignore
 
   let PreClean =
-    (fun _ ->
+    (fun () ->
       // ("." |> Information.shortlog).Substring 9 |> printfn "%A"
       // dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
       !! "**/*ssemblyAttributes.cs"
@@ -697,12 +700,12 @@ module Targets =
       |> List.iter File.delete)
 
   let Clean =
-    (fun _ ->
+    (fun () ->
       printfn "Cleaning the build and deploy folders"
       Actions.Clean())
 
   let SetVersion =
-    (fun _ ->
+    (fun () ->
 
       // patch gendarme
       let configjson =
@@ -768,7 +771,7 @@ module Targets =
       let fileVersionTemplate =
         let vx =
           DotNet.exec
-            (fun o -> dotnetOptions (o.WithRedirectOutput true))
+            (_.WithRedirectOutput(true) >> dotnetOptions)
             ""
             "nbgv get-version -v Version"
 
@@ -779,7 +782,7 @@ module Targets =
 
       let tag =
         rn
-        |> Array.findIndex (fun l -> l.StartsWith("# ", StringComparison.Ordinal))
+        |> Array.findIndex _.StartsWith("# ", StringComparison.Ordinal)
 
       let hashv = String.Format("# {0}", Version)
       rn.[tag] <- rn.[tag].Replace("#", hashv)
@@ -863,7 +866,7 @@ module Targets =
   //_Target "Compilation" ignore
 
   let BuildRelease =
-    (fun _ ->
+    (fun () ->
       try
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
@@ -909,13 +912,13 @@ module Targets =
         reraise ())
 
   let BuildRecorder =
-    (fun _ -> msbuildDebug MSBuildPath "./AltCover.Recorder.sln")
+    (fun () -> msbuildDebug MSBuildPath "./AltCover.Recorder.sln")
 
   let BuildReleaseRecorder =
-    (fun _ -> msbuildRelease MSBuildPath "./AltCover.Recorder.sln")
+    (fun () -> msbuildRelease MSBuildPath "./AltCover.Recorder.sln")
 
   let BuildDebug =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_SourceLink"
       Shell.copyFile "./_SourceLink/Class2.cs" "./Samples/Sample14/Sample14/Class2.txt"
 
@@ -942,7 +945,7 @@ module Targets =
       Shell.copy "./_SourceLink" (!! "./_Binaries/Sample14/Debug+AnyCPU/net8.0/*"))
 
   let BuildMonoSamples =
-    (fun _ ->
+    (fun () ->
       [ "./Samples/Sample8/Sample8.csproj" ]
       |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
 
@@ -971,7 +974,7 @@ module Targets =
         |> Actions.Run(mcs, ".", cmd)))
 
   let BuildSample31 =
-    (fun _ ->
+    (fun () ->
       let mcs =
         "_Binaries/MCS/Release+AnyCPU/net472/MCS.exe"
 
@@ -995,7 +998,7 @@ module Targets =
   // _Target "Analysis" ignore
 
   let Lint =
-    (fun _ ->
+    (fun () ->
       let cfg =
         Path.getFullName "./fsharplint.json"
 
@@ -1077,7 +1080,7 @@ module Targets =
   //        reraise ())
 
   let Gendarme =
-    (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
+    (fun () -> // Needs debug because release is compiled --standalone which contaminates everything
 
       Directory.ensure "./_Reports"
 
@@ -1129,7 +1132,7 @@ module Targets =
               FailBuildOnDefect = true }))
 
   let FxCop =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let dumpSuppressions (report: String) =
@@ -1479,8 +1482,8 @@ module Targets =
 
         let packages =
           xml.Descendants(XName.Get("PackageReference"))
-          |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
-          |> Seq.map (fun x -> x.Attribute(XName.Get("Include")).Value)
+          |> Seq.filter (_.Attribute(XName.Get("Include")) >> isNull >> not)
+          |> Seq.map _.Attribute(XName.Get("Include")).Value
           |> Seq.toList
 
         let dirs =
@@ -1517,7 +1520,7 @@ module Targets =
   // Unit Test
 
   let UnitTest =
-    (fun _ ->
+    (fun () ->
       let reports = Path.getFullName "./_Reports"
 
       CreateProcess.fromRawCommand
@@ -1634,7 +1637,7 @@ module Targets =
     doNUnitRetry 0 f spec
 
   let JustRecorderUnitTest =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       try
@@ -1661,7 +1664,7 @@ module Targets =
         reraise ())
 
   let JustUnitTest =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       try
@@ -1704,7 +1707,7 @@ module Targets =
         reraise ())
 
   let BuildForUnitTestDotNet =
-    (fun _ ->
+    (fun () ->
       let withTagDebug (p: MSBuildParams) =
         { p with
             Properties =
@@ -1728,14 +1731,14 @@ module Targets =
           |> (buildWithCLITaggedArguments "UnitTestDotNet"))
 
       !!(@"./*Test*/*Tests.fsproj")
-      |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
+      |> Seq.filter (_.Contains("Recorder") >> not) // net20
       |> Seq.iter buildIt
 
       !!(@"./*.Valid*/*Valid*.fsproj")
       |> Seq.iter buildIt)
 
   let UnitTestDotNet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let testIt =
@@ -1761,7 +1764,7 @@ module Targets =
         reraise ())
 
   let BuildForCoverlet =
-    (fun _ ->
+    (fun () ->
       let withTagDebug (p: MSBuildParams) =
         { p with
             Properties =
@@ -1793,7 +1796,7 @@ module Targets =
       ))
 
   let UnitTestDotNetWithCoverlet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       try
@@ -1845,7 +1848,7 @@ module Targets =
                     x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
                   |> Seq.toList
 
-                key |> List.iter (fun x -> x.Parent.Remove())
+                key |> List.iter _.Parent.Remove()
 
                 let target =
                   (Path.getFullName "./_Reports")
@@ -1867,7 +1870,7 @@ module Targets =
                     ReportGenerator.ReportType.XmlSummary ]
                 TargetDir = "_Reports/_UnitTestWithCoverlet" })
           (xml
-           |> List.filter (fun p -> not <| p.Contains("Visualizer")))
+           |> List.filter (_.Contains("Visualizer") >> not))
 
         ReportGenerator.generateReports
           (fun p ->
@@ -1875,8 +1878,7 @@ module Targets =
                 ToolType = ToolType.CreateLocalTool()
                 ReportTypes = [ ReportGenerator.ReportType.Html ]
                 TargetDir = "_Reports/_VisualizerWithCoverlet" })
-          (xml
-           |> List.filter (fun p -> p.Contains("Visualizer")))
+          (xml |> List.filter _.Contains("Visualizer"))
 
         uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
         |> List.map fst
@@ -1886,7 +1888,7 @@ module Targets =
         reraise ())
 
   let UnitTestWithOpenCover =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports/_UnitTestWithOpenCover"
 
       let testFiles =
@@ -2029,7 +2031,7 @@ module Targets =
   // Hybrid (Self) Tests
 
   let UnitTestWithAltCover =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports/_UnitTestWithAltCover"
 
       // Tools
@@ -2233,7 +2235,7 @@ module Targets =
       |> printfn "%A uncovered lines")
 
   let UnitTestWithAltCoverRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports/_UnitTestWithAltCoverRunner"
 
       // Tools
@@ -2422,7 +2424,7 @@ module Targets =
       let xmlreports =
         tests
         |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report)
-        |> List.filter (fun r -> not <| r.Contains("Visualizer"))
+        |> List.filter (_.Contains("Visualizer") >> not)
 
       ReportGenerator.generateReports
         (fun p ->
@@ -2442,14 +2444,14 @@ module Targets =
               TargetDir = "_Reports/_VisualizerTestsWithAltCoverRunner" })
         (tests
          |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report)
-         |> List.filter (fun r -> r.Contains("Visualizer")))
+         |> List.filter _.Contains("Visualizer"))
 
       uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
       |> List.map fst
       |> printfn "%A uncovered lines")
 
   let UnitTestWithAltCoverCore =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports/_UnitTestWithAltCoverCore"
 
       let keyfile =
@@ -2551,7 +2553,7 @@ module Targets =
       let xmlreports =
         tests
         |> List.map (fun (_, _, report, _, _) -> report)
-        |> List.filter (fun f -> f.Contains("Visualizer") |> not)
+        |> List.filter (_.Contains("Visualizer") >> not)
 
       ReportGenerator.generateReports
         (fun p ->
@@ -2573,14 +2575,14 @@ module Targets =
               TargetDir = "_Reports/_VisualizerWithAltCoverCore" })
         (tests
          |> List.map (fun (_, _, report, _, _) -> report)
-         |> List.filter (fun f -> f.Contains("Visualizer")))
+         |> List.filter _.Contains("Visualizer"))
 
       uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
       |> List.map fst
       |> printfn "%A uncovered lines")
 
   let UnitTestWithAltCoverCoreRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
 
       Shell.cleanDir ("./_Binaries/Sample4LongForm")
@@ -2764,7 +2766,7 @@ module Targets =
   //_Target "OperationalTest" ignore
 
   let FSharpTypes =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let simpleReport =
@@ -2807,7 +2809,7 @@ module Targets =
       Actions.ValidateFSharpTypes simpleReport [])
 
   let FSharpTests =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let altcover =
@@ -2908,7 +2910,7 @@ module Targets =
         Assert.That(tmrcount, Is.LessThanOrEqualTo sptcount, name.Value)))
 
   let AsyncAwaitTests =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
       // Provoke this sub-issue : https://github.com/SteveGilham/altcover/issues/105#issuecomment-737203810
       // seen in 7.2.800, fixed in commit 93325bb645dcbfaf01b996fc99576ef4501f41b8
@@ -3011,7 +3013,7 @@ module Targets =
         Assert.That(tmrcount, Is.EqualTo sptcount, name.Value)))
 
   let FSAsyncTests =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let altcover =
@@ -3119,7 +3121,7 @@ module Targets =
           Assert.That(tmrcount, Is.EqualTo visited, name.Value))))
 
   let FSharpTypesDotNetRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let altcover =
@@ -3189,7 +3191,7 @@ module Targets =
       Actions.ValidateFSharpTypesCoverage simpleReport)
 
   let FSharpTypesDotNetCollecter =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       System.IO.Directory.GetDirectories("./_Reports", "unzi*")
@@ -3296,21 +3298,21 @@ module Targets =
       Actions.ValidateFSharpTypesCoverage simpleReport2)
 
   let BasicCSharp =
-    (fun _ ->
+    (fun () ->
       Actions.SimpleInstrumentingRun
         "_Binaries/Sample1/Debug+AnyCPU/net20"
         "_Binaries/AltCover/Release+AnyCPU/net472"
         "BasicCSharp")
 
   let BasicCSharpMono =
-    (fun _ ->
+    (fun () ->
       Actions.SimpleInstrumentingRun
         "_Mono/Sample1"
         "_Binaries/AltCover/Release+AnyCPU/net472"
         "BasicCSharpMono")
 
   let BasicCSharpUnderMono =
-    (fun _ ->
+    (fun () ->
       monoOnWindows
       |> Actions.SimpleInstrumentingRunUnderMono
         "_Binaries/Sample1/Debug+AnyCPU/net20"
@@ -3318,7 +3320,7 @@ module Targets =
         "BasicCSharpUnderMono")
 
   let BasicCSharpMonoUnderMono =
-    (fun _ ->
+    (fun () ->
       monoOnWindows
       |> Actions.SimpleInstrumentingRunUnderMono
         "_Mono/Sample1"
@@ -3326,7 +3328,7 @@ module Targets =
         "BasicCSharpMono")
 
   let CSharpMonoWithDotNet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let x =
@@ -3366,7 +3368,7 @@ module Targets =
         "CSharpMonoWithDotNet")
 
   let CSharpDotNetWithDotNet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let x =
@@ -3408,7 +3410,7 @@ module Targets =
         "CSharpDotNetWithDotNet")
 
   let CSharpDotNetWithFramework =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let simpleReport =
@@ -3451,7 +3453,7 @@ module Targets =
       Actions.ValidateSample1 simpleReport "CSharpDotNetWithFramework")
 
   let RecordResumeTest =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let simpleReport =
@@ -3517,7 +3519,7 @@ module Targets =
 
         let recorded =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+          |> Seq.map _.Attribute(XName.Get("visitcount")).Value
           |> Seq.toList
 
         let expected = Array.create 20 "0"
@@ -3558,7 +3560,7 @@ module Targets =
 
         let recorded =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+          |> Seq.map _.Attribute(XName.Get("visitcount")).Value
           |> Seq.toList
 
         Assert.That(
@@ -3576,7 +3578,7 @@ module Targets =
         Assert.That(hits, Is.LessThanOrEqualTo 8))
 
   let RecordResumeTrackingTest =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let simpleReport =
@@ -3645,7 +3647,7 @@ module Targets =
 
         let recorded =
           coverageDocument.Descendants(XName.Get("SequencePoint"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+          |> Seq.map _.Attribute(XName.Get("vc")).Value
           |> Seq.toList
 
         let expected = Array.create 20 "0"
@@ -3686,7 +3688,7 @@ module Targets =
 
         let recorded =
           coverageDocument.Descendants(XName.Get("SequencePoint"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+          |> Seq.map _.Attribute(XName.Get("vc")).Value
           |> Seq.toList
 
         Assert.That(
@@ -3710,7 +3712,7 @@ module Targets =
         Assert.That(tracked, Is.Not.Empty))
 
   let RecordResumeTestDotNet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let simpleReport =
@@ -3778,7 +3780,7 @@ module Targets =
 
         let recorded =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+          |> Seq.map _.Attribute(XName.Get("visitcount")).Value
           |> Seq.toList
 
         let expected = Array.create 20 "0"
@@ -3819,7 +3821,7 @@ module Targets =
 
         let recorded =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+          |> Seq.map _.Attribute(XName.Get("visitcount")).Value
           |> Seq.toList
 
         Assert.That(
@@ -3839,7 +3841,7 @@ module Targets =
   // Packaging
 
   let Packaging =
-    (fun _ ->
+    (fun () ->
       let altCover =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
 
@@ -4308,7 +4310,7 @@ module Targets =
   //_Target "PrepareFrameworkBuild" ignore
 
   let PrepareDotNetBuild =
-    (fun _ ->
+    (fun () ->
       let netcoresource =
         Path.getFullName "./AltCover/AltCover.fsproj"
 
@@ -4385,7 +4387,7 @@ module Targets =
           XDocument.Load "./Build/AltCover.nuspec"
 
         dotnetNupkg.Descendants(x "readme")
-        |> Seq.iter (fun hint -> hint.SetValue readme)
+        |> Seq.iter _.SetValue(readme)
 
         let title =
           dotnetNupkg.Descendants(x "title") |> Seq.head
@@ -4424,7 +4426,7 @@ module Targets =
         dotnetNupkg.Save path))
 
   let PrepareReadMe =
-    (fun _ ->
+    (fun () ->
       let c =
         Copyright
           .Replace("©", "&#xa9;")
@@ -4444,7 +4446,7 @@ module Targets =
   //_Target "Deployment" ignore
 
   let Unpack =
-    (fun _ ->
+    (fun () ->
       !! "./_Pack*/*.nupkg"
       |> Seq.iter (fun nugget ->
         let packdir = Path.GetDirectoryName nugget
@@ -4516,7 +4518,7 @@ module Targets =
           ("documenting " + n)))
 
   let WindowsPowerShell =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Documentation"
 
       let v = Version.Split([| '-' |]).[0]
@@ -4541,7 +4543,7 @@ module Targets =
       |> (Actions.AssertResult "powershell"))
 
   let Pester =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -4659,7 +4661,7 @@ module Targets =
       |> printfn "%s")
 
   let SimpleReleaseTest =
-    (fun _ ->
+    (fun () ->
       let unpack =
         match NuGetAltCover with
         | Some test ->
@@ -4673,7 +4675,7 @@ module Targets =
         "SimpleReleaseTest")
 
   let SimpleZipReleaseTest =
-    (fun _ ->
+    (fun () ->
       let binaryPath =
         match NuGetAltCover with
         | Some test ->
@@ -4743,7 +4745,7 @@ module Targets =
         reportSigil)
 
   let SimpleMonoReleaseTest =
-    (fun _ ->
+    (fun () ->
       let unpack =
         match NuGetAltCover with
         | Some test ->
@@ -4754,7 +4756,7 @@ module Targets =
       Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest")
 
   let ReleaseDotNetWithFramework =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -4806,7 +4808,7 @@ module Targets =
         "ReleaseDotNetWithFramework")
 
   let ReleaseMonoWithDotNet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -4845,7 +4847,7 @@ module Targets =
         "ReleaseMonoWithDotNet")
 
   let ReleaseDotNetWithDotNet =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -4889,7 +4891,7 @@ module Targets =
         "ReleaseDotNetWithDotNet")
 
   let ReleaseFSharpTypesDotNetRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -4965,7 +4967,7 @@ module Targets =
       Actions.ValidateFSharpTypesCoverage x)
 
   let ReleaseFSharpTypesX86DotNetRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -5071,7 +5073,7 @@ module Targets =
         Environment.SetEnvironmentVariable("platform", ""))
 
   let ReleaseXUnitFSharpTypesDotNetRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -5143,7 +5145,7 @@ module Targets =
       Actions.ValidateFSharpTypesCoverage x)
 
   let OpenCoverForPester =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let reportDir =
@@ -5262,7 +5264,7 @@ module Targets =
       Shell.copyFile binary2Target binary2)
 
   let ReleaseXUnitFSharpTypesShowVisualized =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -5329,7 +5331,7 @@ module Targets =
 
         let vcs =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+          |> Seq.map (_.Attribute(XName.Get "visitcount").Value >> int)
           |> Seq.groupBy id
           |> Seq.sortBy fst
           |> Seq.toList
@@ -5387,7 +5389,7 @@ module Targets =
 
         let vcs =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+          |> Seq.map (_.Attribute(XName.Get "visitcount").Value >> int)
           |> Seq.groupBy id
           |> Seq.sortBy fst
           |> Seq.toList
@@ -5436,7 +5438,7 @@ module Targets =
 
         let vcs =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+          |> Seq.map (_.Attribute(XName.Get "visitcount").Value >> int)
           |> Seq.groupBy id
           |> Seq.sortBy fst
           |> Seq.toList
@@ -5518,7 +5520,7 @@ module Targets =
 
         let vcs =
           coverageDocument.Descendants(XName.Get("seqpnt"))
-          |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+          |> Seq.map (_.Attribute(XName.Get "visitcount").Value >> int)
           |> Seq.groupBy id
           |> Seq.sortBy fst
           |> Seq.toList
@@ -5534,7 +5536,7 @@ module Targets =
         ))
 
   let ReleaseXUnitFSharpTypesDotNetFullRunner =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let unpack =
@@ -5606,7 +5608,7 @@ module Targets =
       Actions.CheckSample4Visits before x)
 
   let JsonReporting =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
 
       let runner =
@@ -5659,9 +5661,9 @@ module Targets =
 
         let recorded =
           coverageDocument.Values
-          |> Seq.collect (fun d -> d.Values)
-          |> Seq.collect (fun c -> c.Values)
-          |> Seq.collect (fun m -> m.Keys)
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
+          |> Seq.collect _.Keys
           |> Seq.sort
           |> Seq.toList
 
@@ -5726,11 +5728,11 @@ module Targets =
 
         let recorded =
           coverageDocument.Values
-          |> Seq.collect (fun d -> d.Values)
-          |> Seq.collect (fun c -> c.Values)
-          |> Seq.collect (fun m -> m.Values)
-          |> Seq.collect (fun m -> m.SeqPnts)
-          |> Seq.map (fun s -> s.VC)
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
+          |> Seq.collect _.SeqPnts
+          |> Seq.map _.VC
           |> Seq.toList
 
         let expected =
@@ -5748,14 +5750,14 @@ module Targets =
 
         let methods =
           coverageDocument.Values
-          |> Seq.collect (fun d -> d.Values)
-          |> Seq.collect (fun c -> c.Values)
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
           |> Seq.collect id
           |> Seq.toList
 
         let trackedFormat =
           methods
-          |> List.filter (fun m -> m.Value.TId.HasValue)
+          |> List.filter _.Value.TId.HasValue
           |> List.map (fun m -> m.Key, m.Value.TId.Value)
           |> List.sortBy snd
           |> List.map (sprintf "%A")
@@ -5769,7 +5771,7 @@ module Targets =
 
         //let trackedTimes =
         methods
-        |> List.filter (fun m -> m.Value.TId.HasValue)
+        |> List.filter _.Value.TId.HasValue
         //                        |> List.collect (fun m -> let first = m.Value.Entry
         |> List.iter (fun m ->
           let first =
@@ -5797,14 +5799,13 @@ module Targets =
 
         let trackedVisits =
           coverageDocument.Values
-          |> Seq.collect (fun d -> d.Values)
-          |> Seq.collect (fun c -> c.Values)
-          |> Seq.collect (fun m -> m.Values)
-          |> Seq.collect (fun m -> m.SeqPnts)
-          |> Seq.filter (fun s -> s.Tracks |> isNull |> not)
-          |> Seq.collect (fun s -> s.Tracks)
-          |> Seq.map (fun i ->
-            i.ToString(System.Globalization.CultureInfo.InvariantCulture))
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
+          |> Seq.collect _.Values
+          |> Seq.collect _.SeqPnts
+          |> Seq.filter (_.Tracks >> isNull >> not)
+          |> Seq.collect _.Tracks
+          |> Seq.map _.ToString(System.Globalization.CultureInfo.InvariantCulture)
           |> Seq.toList
 
         Assert.That(
@@ -5824,7 +5825,7 @@ module Targets =
       checkSample4Visits before x)
 
   let MSBuildTest =
-    (fun _ ->
+    (fun () ->
       Directory.ensure "./_Reports"
       let build = Path.getFullName "Build"
 
@@ -5886,7 +5887,7 @@ module Targets =
         "./Samples/Sample4/Sample4LongForm.fsproj")
 
   let Cake2Test =
-    (fun _ ->
+    (fun () ->
       let before = Actions.ticksNow ()
 
       try
@@ -6034,7 +6035,7 @@ module Targets =
           Actions.CleanDir folder))
 
   let ApiUse =
-    (fun _ ->
+    (fun () ->
       let before = Actions.ticksNow ()
 
       try
@@ -6187,7 +6188,7 @@ module Targets =
           Actions.CleanDir folder))
 
   let DotnetTestIntegration =
-    (fun _ ->
+    (fun () ->
       let assertFile f = Assert.That(File.Exists f, f)
 
       let assertCopied p =
@@ -6508,7 +6509,7 @@ module Targets =
 
           let recorded =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
-            |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
             |> Seq.toList
 
           Assert.That(
@@ -6557,7 +6558,7 @@ module Targets =
 
           let recorded =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
-            |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
             |> Seq.toList
 
           Assert.That(
@@ -6636,7 +6637,7 @@ module Targets =
 
           let recorded =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
-            |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
             |> Seq.toList
 
           Assert.That(
@@ -6684,7 +6685,7 @@ module Targets =
 
           let recorded =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
-            |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
             |> Seq.toList
 
           Assert.That(
@@ -7018,7 +7019,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let Issue20 =
-    (fun _ -> // plus added verbosity testing
+    (fun () -> // plus added verbosity testing
       try
         let config =
           XDocument.Load "./Build/NuGet.config.dotnettest"
@@ -7159,7 +7160,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let Issue23 =
-    (fun _ ->
+    (fun () ->
       try
         Directory.ensure "./_Issue23"
         Shell.cleanDir ("./_Issue23")
@@ -7235,7 +7236,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let Issue67 =
-    (fun _ ->
+    (fun () ->
       try
         Directory.ensure "./_Issue67" // escaping the | in a regex by doubling
         Shell.cleanDir ("./_Issue67")
@@ -7315,7 +7316,7 @@ module Targets =
 
         let passed =
           cover.Descendants(XName.Get("Module"))
-          |> Seq.filter (fun x -> x.Attribute(XName.Get("skippedDueTo")) |> isNull)
+          |> Seq.filter (_.Attribute(XName.Get("skippedDueTo")) >> isNull)
           |> Seq.length
 
         Assert.That(passed, Is.EqualTo 2)
@@ -7327,7 +7328,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let Issue72 =
-    (fun _ -> // Confusing switch case coverage @ https://github.com/SteveGilham/altcover/issues/72
+    (fun () -> // Confusing switch case coverage @ https://github.com/SteveGilham/altcover/issues/72
       try
         Directory.ensure "./Samples/Sample16/Test/_Issue72"
         Shell.cleanDir ("./Samples/Sample16/Test/_Issue72")
@@ -7425,7 +7426,7 @@ module Targets =
 
           let found =
             coverageDocument.Descendants(XName.Get("BranchPoint"))
-            |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
             |> Seq.toList
 
           test
@@ -7495,7 +7496,7 @@ module Targets =
 
           let found =
             coverageDocument.Descendants(XName.Get("BranchPoint"))
-            |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
             |> Seq.toList
 
           test
@@ -7550,7 +7551,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let DotnetGlobalIntegration =
-    (fun _ ->
+    (fun () ->
       let working =
         Path.getFullName "./_DotnetGlobalTest"
 
@@ -7700,7 +7701,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let Issue114 =
-    (fun _ ->
+    (fun () ->
       try
         Directory.ensure "./_Issue114"
         Shell.cleanDir ("./_Issue114")
@@ -7782,7 +7783,7 @@ module Targets =
         Actions.CleanDir folder)
 
   let Issue156 =
-    (fun _ ->
+    (fun () ->
       try
         Directory.ensure "./_Issue156"
         Shell.cleanDir ("./_Issue156")
@@ -7878,7 +7879,7 @@ module Targets =
   // AOB
 
   let MakeDocumentation =
-    (fun _ ->
+    (fun () ->
       let branch = Information.getBranchName (".")
       Assert.That(branch, Is.EqualTo("master").Or.StartWith("develop/docs/"), branch)
 
@@ -7891,7 +7892,7 @@ module Targets =
       |> (Actions.AssertResult "powershell"))
 
   let BulkReport =
-    (fun _ ->
+    (fun () ->
       printfn "Overall coverage reporting"
 
       // coverageSummary ()
@@ -7929,9 +7930,10 @@ module Targets =
 
       let files =
         !!(@"./**/*.xml")
-        |> Seq.filter (fun f ->
-          f.StartsWith(packages, StringComparison.Ordinal)
-          |> not)
+        |> Seq.filter (
+          _.StartsWith(packages, StringComparison.Ordinal)
+          >> not
+        )
         |> Seq.toList
 
       let xml =
@@ -8141,7 +8143,7 @@ module Targets =
   //_Target "All" ignore
 
   let CppInline =
-    (fun _ ->
+    (fun () ->
       if Environment.isWindows then
         Directory.ensure "./_Reports/CppInline"
         msbuildDebug None "./Samples/Sample29/SimpleMix.sln"
@@ -8172,7 +8174,7 @@ module Targets =
 
   // AOB
   let All =
-    (fun _ ->
+    (fun () ->
       if
         Environment.isWindows
         && currentBranch.StartsWith "release/"

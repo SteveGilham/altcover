@@ -64,9 +64,7 @@ module Setup =
       |> XDocument.Load
 
     xml.Descendants()
-    |> Seq.filter _.Attribute(XName.Get("Include"))
-    >> isNull
-    >> not
+    |> Seq.filter (_.Attribute(XName.Get("Include")) >> isNull >> not)
     |> Seq.map (fun x ->
       (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("Version")).Value))
     |> Map.ofSeq
@@ -102,14 +100,19 @@ module Setup =
 
   let _Target s f =
     Target.description s
-    Target.create s f
+
+    let wrap f x =
+      printfn ">> %A <<" x
+      f ()
+
+    Target.create s (wrap f)
 
   let resetColours _ =
     Console.ForegroundColor <- consoleBefore |> fst
     Console.BackgroundColor <- consoleBefore |> snd
 
   let FxCop =
-    (fun _ ->
+    (fun () ->
       fxcop
       |> Option.iter (fun fx ->
         Directory.ensure "./packages/fxcop/"
