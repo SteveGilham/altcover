@@ -42,6 +42,7 @@ module ThreadLevel =
   let internal push x = CallTrack.Push x
   let internal pop () = CallTrack.Pop()
 
+  // [<TailCall>]
   let rec stack1 i =
     let here =
       Thread.CurrentThread.GetHashCode()
@@ -100,6 +101,7 @@ module AsyncLevel =
   let internal push x = CallTrack.Push x
   let internal pop () = CallTrack.Pop()
 
+  // [<TailCall>]
   let rec stack1 i =
     let here =
       Thread.CurrentThread.GetHashCode()

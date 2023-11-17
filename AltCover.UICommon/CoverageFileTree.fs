@@ -65,6 +65,7 @@ module CoverageFileTree =
                     "ReviewSelfAssignmentRule",
                     Justification =
                       "Final line is a self-assignment for 'depth' -- compiler fault")>]
+  [<TailCall>]
   let rec private scan (s: string) index depth =
     match s.[index] with
     | '<' -> scan s (index + 1) (depth + 1)
@@ -124,6 +125,7 @@ module CoverageFileTree =
         )
 
       let gcroot (s: string) =
+        // [<TailCall>]
         let rec step (s: string) (i: int) =
           let next =
             s.IndexOf("gcroot<", i, StringComparison.Ordinal)
@@ -615,18 +617,18 @@ module CoverageFileTree =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/step@128::Invoke(System.String,System.Int32)",
+                              "AltCover.CoverageFileTree/step@130::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethod@165::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                              "AltCover.CoverageFileTree/applyMethod@167::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
                             Justification = "Possibly too much work")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethods@357-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
+                              "AltCover.CoverageFileTree/applyMethods@359-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
                             Justification = "Inlined library code")>]
 ()

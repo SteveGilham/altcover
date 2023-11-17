@@ -93,6 +93,7 @@ type internal Threshold =
     let chars =
       x.ToUpperInvariant() |> Seq.toList
 
+    // [<TailCall>]
     let rec partition data result =
       match data with
       | [] -> result
@@ -1010,6 +1011,7 @@ module internal Runner =
             use formatter =
               new System.IO.BinaryReader(results)
 
+            // [<TailCall>]
             let rec sink hitcount =
               let hit =
                 try
@@ -1031,6 +1033,7 @@ module internal Runner =
                       let t =
                         Dictionary<string, Dictionary<int, PointVisit>>()
 
+                      // [<TailCall>]
                       let rec ``module`` () =
                         let m = formatter.ReadString()
 
@@ -1042,6 +1045,7 @@ module internal Runner =
 
                           let points = formatter.ReadInt32()
 
+                          // [<TailCall>]
                           let rec sequencePoint pts =
                             if pts > 0 then
                               let p = formatter.ReadInt32()
@@ -1053,6 +1057,7 @@ module internal Runner =
                               let pv = t.[m].[p]
                               pv.Count <- pv.Count + n
 
+                              // [<TailCall>]
                               let rec tracking () =
                                 let track = formatter.ReadByte() |> int
 

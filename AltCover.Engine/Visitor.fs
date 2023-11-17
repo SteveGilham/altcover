@@ -1198,6 +1198,7 @@ module internal Visitor =
     let internal indexList l = l |> List.mapi (fun i x -> (i, x))
 
     let internal getJumpChain (terminal: Instruction) (i: Instruction) =
+      // [<TailCall>]
       let rec accumulate (state: Instruction) l =
         let gendarme = l
 
@@ -1644,6 +1645,7 @@ module internal Visitor =
       accumulator.Clear()
 
   let internal encloseState (visitor: 'TState -> 'T -> 'TState) (current: 'TState) =
+    // [<TailCall>]
     let rec stateful l =
       new Fix<'T>(fun (node: 'T) ->
         let next = visitor l node
@@ -1663,30 +1665,30 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1393::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1394::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1241::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1242::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1244::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/finish@1245::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1550-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1551-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1453@1453::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1454@1454::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 ()

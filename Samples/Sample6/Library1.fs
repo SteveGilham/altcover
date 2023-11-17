@@ -9,6 +9,7 @@ module Module =
     let aux i = i + 1
 
     let FI li =
+      // [<TailCall>]
       let rec FII lii acc =
         match lii with
         | [] -> acc

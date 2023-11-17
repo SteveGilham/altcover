@@ -636,6 +636,7 @@ module internal Main =
                 a.Refs
                 |> List.filter (fun n -> Set.contains n candidates) })
 
+      // [<TailCall>]
       let rec bundle unassigned unresolved collection n =
         match unassigned with
         | [] -> collection

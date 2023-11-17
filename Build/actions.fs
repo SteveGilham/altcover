@@ -20,6 +20,7 @@ module Actions =
   open AltCoverFake.DotNet.Testing
 
   let Clean () =
+    // [<TailCall>]
     let rec clean1 depth =
       try
         (DirectoryInfo ".")
@@ -79,6 +80,7 @@ module Actions =
     clean1 0
 
   let CleanDir folder =
+    // [<TailCall>]
     let rec clean1 depth =
       try
         Shell.deleteDir folder

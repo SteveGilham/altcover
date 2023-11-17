@@ -71,6 +71,7 @@ type Service() as this =
       async {
         let interval = TimeSpan(0, 0, 5)
 
+        // [<TailCall>]
         let rec loop () =
           if this.waiter.WaitOne(interval) then
             Debug.WriteLine "Service exiting"

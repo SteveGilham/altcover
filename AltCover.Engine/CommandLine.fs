@@ -23,6 +23,7 @@ module internal Process =
     // Work around observed unreliability of WaitForExit()
     // with an unbounded wait under mono on travis-ci
     member self.WaitForExitCustom() =
+      // [<TailCall>]
       let rec loop () =
         try
           if self.WaitForExit(1000) then
@@ -495,6 +496,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@287::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@288::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()

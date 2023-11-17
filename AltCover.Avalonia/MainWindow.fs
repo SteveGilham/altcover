@@ -203,6 +203,7 @@ type MainWindow() as this =
   [<SuppressMessage("Gendarme.Rules.Portability",
                     "NewLineLiteralRule",
                     Justification = "That is kind of the point...")>]
+  [<TailCall>]                    
   let rec linesOfString (s: string) (start: int) (lines: TextLine list) =
     let rn = s.IndexOf("\r\n", start)
 

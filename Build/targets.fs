@@ -1599,6 +1599,7 @@ module Targets =
   //_Target "UncoveredUnitTest" ignore
 
   let NUnitRetry f spec =
+    // [<TailCall>]
     let rec doNUnitRetry depth f spec =
       try
         if File.Exists spec then
@@ -2382,6 +2383,7 @@ module Targets =
                 WorkingDirectory = "." }
 
           let nUnitRetry2 () =
+            // [<TailCall>]
             let rec doNUnitRetry2 depth =
               try
                 if File.Exists nunitReport then

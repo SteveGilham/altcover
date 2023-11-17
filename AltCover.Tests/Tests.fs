@@ -2852,6 +2852,7 @@ module AltCoverTests =
   let TestFixPointInvoke () =
     let mutable called = 0
 
+    // [<TailCall>]
     let rec stateful l =
       new Fix<Node>(fun node ->
         called <- called + 1
@@ -2867,6 +2868,7 @@ module AltCoverTests =
   let TestFixPointApply () =
     let mutable called = 0
 
+    // [<TailCall>]
     let rec stateful l =
       new Fix<Node>(fun node ->
         called <- called + 1

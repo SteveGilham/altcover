@@ -31,6 +31,7 @@ module internal Naming =
                                                         "AvoidSpeculativeGenerality too")>]
     let internal typeRefName (def: TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
 
+    // NOT [<TailCall>]
     let rec internal fullTypeRefName (def: TypeReference) =
       let deft = def.DeclaringType
 
@@ -47,6 +48,7 @@ module internal Naming =
         emptyIfIsNullOrWhiteSpace def.Name
 
   // "Public" interface
+  // NOT [<TailCall>]
   let rec internal fullTypeName (def: TypeDefinition) =
     let deft = def.DeclaringType
 
