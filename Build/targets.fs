@@ -4317,7 +4317,8 @@ module Targets =
               Configuration = DotNet.BuildConfiguration.Release
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.ConsoleLogParameters = []
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
-              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog = true
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
+                true
               Framework = Some "netcoreapp2.0" })
         netcoresource
 
@@ -4328,7 +4329,8 @@ module Targets =
               Configuration = DotNet.BuildConfiguration.Release
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.ConsoleLogParameters = []
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
-              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog = true
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
+                true
               Framework = Some "net5.0" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
@@ -5830,13 +5832,16 @@ module Targets =
 
       DotNet.msbuild
         (fun opt ->
-          let tmp = opt.WithCommon(fun o' ->
+          let tmp =
+            opt.WithCommon(fun o' ->
               { dotnetOptions o' with
                   WorkingDirectory = sample })
+
           { tmp with
               Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.ConsoleLogParameters = []
               Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DistributedLoggers = None
-              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DisableInternalBinLog = true
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DisableInternalBinLog =
+                true
               Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.Properties =
                 ("AltCoverTag", "MSBuildTest_")
                 :: tmp.MSBuildParams.Properties })
@@ -8060,12 +8065,12 @@ module Targets =
           "AltCover.Tests/OpenCoverWithEmbeds.xml"
           "AltCover.Tests/OpenCoverWithPartials.xml"
           "AltCover.Tests/Sample4FullTracking.xml"
-          "_Reports\AltCoverAsyncAwaitTests.xml"
-          "RegressionTesting\issue37\coverage.xml"
-          "Samples\Sample16\Test\_Issue72\combined.Test.xml"
-          "Samples\Sample16\Test\_Issue72\original.Test.xml"
-          "Samples\Sample16\Test\_Reports\solution.Test.xml"
-          "Samples\Sample16\Test\_Reports\solution.Test2.xml"
+          "_Reports/AltCoverAsyncAwaitTests.xml"
+          "RegressionTesting/issue37/coverage.xml"
+          "Samples/Sample16/Test/_Issue72/combined.Test.xml"
+          "Samples/Sample16/Test/_Issue72/original.Test.xml"
+          "Samples/Sample16/Test/_Reports/solution.Test.xml"
+          "Samples/Sample16/Test/_Reports/solution.Test2.xml"
           // coverlet
           "AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
           "AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
@@ -8267,13 +8272,7 @@ module Targets =
     _Target "Issue114" Issue114
     _Target "Issue156" Issue156
     _Target "MakeDocumentation" MakeDocumentation
-
-    _Target
-      "BulkReport"
-      (if Environment.isWindows then
-         BulkReport
-       else
-         ignore)
+    _Target "BulkReport" BulkReport
 
     _Target "All" All
     _Target "CppInline" CppInline
