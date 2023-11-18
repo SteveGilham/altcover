@@ -12,6 +12,7 @@ module Augment =
 #else
 module internal Augment =
 #endif
+  let nullObject : System.Object = null
 
 #if !ValidateGendarmeEmulation
   [<SuppressMessage("Microsoft.Globalization",

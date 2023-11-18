@@ -351,7 +351,7 @@ module internal OpenCover =
         |> Option.map _.Value
 
       if e.Interesting && attr = Some "File" then
-        element.SetAttributeValue("skippedDueTo".X, null)
+        element.SetAttributeValue("skippedDueTo".X, nullObject)
 
       match (e.Interesting, e.SeqPnt, s.Excluded) with
       | (true, Some codeSegment, Nothing) ->

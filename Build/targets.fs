@@ -8002,7 +8002,7 @@ module Targets =
             true)
         |> List.map fst
 
-      Assert.That(coberturaFiles, Is.EquivalentTo [], "coberturaFiles")
+      Assert.That(coberturaFiles, Is.EquivalentTo List.empty<string>, "coberturaFiles")
 
       let cobertura2Files =
         xml

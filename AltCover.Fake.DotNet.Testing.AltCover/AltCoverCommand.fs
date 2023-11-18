@@ -169,12 +169,14 @@ module AltCoverCommand =
     let parameters =
       Fake.DotNet.DotNet.TestOptions.Create() |> options
 
+    let nullObject : Object = null
+
     let args =
-      builder.Invoke(null, [| parameters |]) :?> string list
+      builder.Invoke(nullObject, [| parameters |]) :?> string list
 
     let cmdArgs =
       builder2.Invoke(
-        null,
+        nullObject,
         [| ("test"
             |> Args.fromWindowsCommandLine
             |> Seq.toList)

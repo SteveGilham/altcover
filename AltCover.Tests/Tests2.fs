@@ -964,10 +964,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let n = i.ToString().Replace("-", "_")
 
       s.Constants.Add
-      <| ConstantDebugInformation("I" + n, primitive, null)
+      <| ConstantDebugInformation("I" + n, primitive, nullObject)
 
       s.Constants.Add
-      <| ConstantDebugInformation("A" + n, np, null)
+      <| ConstantDebugInformation("A" + n, np, nullObject)
 
       rescope.Scopes.Add s)
 

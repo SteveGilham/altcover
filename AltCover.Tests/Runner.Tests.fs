@@ -2542,7 +2542,7 @@ module AltCoverRunnerTests =
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
-        main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
+        main.Invoke(nullObject, [| [| "RuNN"; "-r"; unique |] |])
 
       Assert.That(returnCode, Is.EqualTo 255)
 
@@ -3458,7 +3458,7 @@ module AltCoverRunnerTests =
 
     Assert.That(r, Is.EqualTo 4)
     Assert.That(File.Exists(unique + ".acv"))
-    Assert.That(counts, Is.EquivalentTo [])
+    Assert.That(counts, Is.Empty)
 
   [<Test>]
   let TrackingPayloadShouldReportAsExpected () =

@@ -31,7 +31,7 @@ module internal ProgramDatabase =
         .GetMethod("GetEmbeddedPortablePdbEntry")
 
     let internal getEmbeddedPortablePdbEntry (assembly: AssemblyDefinition) =
-      getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |])
+      getEmbed.Invoke(nullObject, [| assembly.MainModule.GetDebugHeader() :> obj |])
       :?> ImageDebugHeaderEntry
 
     let internal getSymbolsByFolder fileName folderName =
@@ -176,7 +176,7 @@ module internal ProgramDatabase =
         let msfdirectory, dir =
           construct "Microsoft.Cci.Pdb.MsfDirectory" [| reader; head; bits |]
 
-        let datastream =
+        let datastream : Object =
           (field msfdirectory "streams" dir) :?> System.Collections.IEnumerable
           |> Seq.cast
           |> Seq.skip 1

@@ -7,6 +7,7 @@
     <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

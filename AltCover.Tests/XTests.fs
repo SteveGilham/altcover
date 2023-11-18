@@ -1418,7 +1418,7 @@ module AltCoverXTests =
         let p =
           t2.GetProperty("value", BindingFlags.NonPublic ||| BindingFlags.Static)
 
-        let v = p.GetValue(null)
+        let v = p.GetValue(nullObject)
 
         test <@ v.IsNotNull @>
         test <@ v.GetType() = typeof<System.Threading.AsyncLocal<Stack<int>>> @>
@@ -1426,7 +1426,7 @@ module AltCoverXTests =
         let m =
           t2.GetMethod("instance", BindingFlags.NonPublic ||| BindingFlags.Static)
 
-        let v2 = m.Invoke(null, [||])
+        let v2 = m.Invoke(nullObject, [||])
 
         test <@ v2.IsNotNull @>
         test <@ v2.GetType() = typeof<Stack<int>> @>

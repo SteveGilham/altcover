@@ -1016,7 +1016,7 @@ type MainWindow() as this =
     |> Event.add (fun index ->
       let mutable auxModel =
         { Model = List<TreeViewItem>()
-          Row = null }
+          Row = nullObject }
 
       let addNode =
         fun

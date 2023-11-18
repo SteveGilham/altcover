@@ -7,6 +7,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <NoWarn>NU1702</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

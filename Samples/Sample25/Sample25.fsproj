@@ -4,6 +4,7 @@
     <TargetFrameworks>net20</TargetFrameworks>
     <AssemblyName>Sample25</AssemblyName>
     <RootNamespace>Sample25</RootNamespace>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

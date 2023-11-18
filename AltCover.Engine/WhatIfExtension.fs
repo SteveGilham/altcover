@@ -3,7 +3,6 @@
 open System.Diagnostics.CodeAnalysis
 open System.Runtime.CompilerServices
 
-[<Extension>]
 module PrepareExtension =
   [<Extension>]
   let WhatIf (prepare: Abstract.IPrepareOptions) : AltCover.ValidatedCommandLine =
@@ -12,7 +11,6 @@ module PrepareExtension =
         (AltCover.PrepareOptions.Abstract prepare)
           .Validate() }
 
-[<Extension>]
 module CollectExtension =
   [<Extension>]
   let WhatIf

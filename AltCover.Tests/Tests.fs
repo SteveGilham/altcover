@@ -1049,7 +1049,7 @@ module AltCoverTests =
       [ StaticFilter.AsCovered
         StaticFilter.Hidden
         StaticFilter.NoFilter ]
-      |> List.map (fun k -> Visitor.I.selectExemption k [] Exemption.None)
+      |> List.map (fun k -> Visitor.I.selectExemption k List.empty<obj> Exemption.None)
 
     test
       <@
@@ -2837,7 +2837,7 @@ module AltCoverTests =
           )
 
       let unique = Guid.NewGuid().ToString()
-      let op _ = raise <| IOException(unique)
+      let op _ : Object = raise <| IOException(unique)
 
       let x =
         Assert.Throws<InvalidOperationException>(fun () ->

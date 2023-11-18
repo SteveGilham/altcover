@@ -363,4 +363,4 @@ module internal CecilExtension =
     |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
     |> Seq.iter (fun i ->
       i.OpCode <- OpCodes.Nop
-      i.Operand <- null)
+      i.Operand <- nullObject)

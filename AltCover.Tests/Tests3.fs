@@ -3682,7 +3682,7 @@ module AltCoverTests3 =
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
-        main.Invoke(null, [| [| "TargetsPath" |] |])
+        main.Invoke(nullObject, [| [| "TargetsPath" |] |])
 
       Assert.That(returnCode, Is.EqualTo 0)
       test <@ stderr.ToString() |> String.IsNullOrEmpty @>
@@ -3728,7 +3728,7 @@ module AltCoverTests3 =
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
-        main.Invoke(null, [| [| "-i"; unique |] |])
+        main.Invoke(nullObject, [| [| "-i"; unique |] |])
 
       Assert.That(returnCode, Is.EqualTo 255)
 

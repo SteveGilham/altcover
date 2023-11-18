@@ -552,7 +552,7 @@ module CoverageFileTree =
         [ (missing, "NotAllSourcePresent")
           (newer, "SomeSourceModified") ]
         |> Seq.filter (fun (x, y) -> x |> Seq.isEmpty |> not)
-        |> Seq.map (fun (x, y) -> Resource.Format(y, [||]))
+        |> Seq.map (fun (x, y) -> Resource.Format(y, Array.empty<Object>))
 
       let pc = pcCover [ navigator ]
 
