@@ -352,13 +352,10 @@ module Targets =
         WorkingDirectory = Path.getFullName dir }
 
   let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
-    let msb =
-      { o.MSBuildParams with
-          ConsoleLogParameters = []
-          DistributedLoggers = None
-          DisableInternalBinLog = true }
-
-    { o with MSBuildParams = msb }
+    { o with
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.ConsoleLogParameters = []
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.DistributedLoggers = None
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.DisableInternalBinLog = true }
 
   let buildWithCLIArguments (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with MSBuildParams = cliArguments }
@@ -368,14 +365,11 @@ module Targets =
       ("AltCoverTag", (tag + "_"))
       :: o.MSBuildParams.Properties
 
-    let msb =
-      { o.MSBuildParams with
-          ConsoleLogParameters = []
-          Properties = p
-          DistributedLoggers = None
-          DisableInternalBinLog = true }
-
-    { o with MSBuildParams = msb }
+    { o with
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.ConsoleLogParameters = []
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.Properties = p
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.DistributedLoggers = None
+        Fake.DotNet.DotNet.TestOptions.MSBuildParams.DisableInternalBinLog = true }
 
   let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) =
     { o with
@@ -4321,12 +4315,9 @@ module Targets =
           { options with
               OutputPath = Some publish
               Configuration = DotNet.BuildConfiguration.Release
-              MSBuildParams =
-                { options.MSBuildParams with
-                    ConsoleLogParameters = []
-                    DistributedLoggers = None
-                    DisableInternalBinLog = true
-                    Properties = options.MSBuildParams.Properties }
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.ConsoleLogParameters = []
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog = true
               Framework = Some "netcoreapp2.0" })
         netcoresource
 
@@ -4335,12 +4326,9 @@ module Targets =
           { options with
               OutputPath = Some(publish + ".visualizer")
               Configuration = DotNet.BuildConfiguration.Release
-              MSBuildParams =
-                { options.MSBuildParams with
-                    ConsoleLogParameters = []
-                    DistributedLoggers = None
-                    DisableInternalBinLog = true
-                    Properties = options.MSBuildParams.Properties }
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.ConsoleLogParameters = []
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog = true
               Framework = Some "net5.0" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
@@ -5842,21 +5830,16 @@ module Targets =
 
       DotNet.msbuild
         (fun opt ->
-          let tmp =
-            opt.WithCommon(fun o' ->
+          let tmp = opt.WithCommon(fun o' ->
               { dotnetOptions o' with
                   WorkingDirectory = sample })
-
-          let mparams =
-            { tmp.MSBuildParams with
-                ConsoleLogParameters = []
-                DistributedLoggers = None
-                DisableInternalBinLog = true
-                Properties =
-                  ("AltCoverTag", "MSBuildTest_")
-                  :: tmp.MSBuildParams.Properties }
-
-          { tmp with MSBuildParams = mparams })
+          { tmp with
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.ConsoleLogParameters = []
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DistributedLoggers = None
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DisableInternalBinLog = true
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.Properties =
+                ("AltCoverTag", "MSBuildTest_")
+                :: tmp.MSBuildParams.Properties })
         (build @@ "msbuildtest.proj")
 
       printfn "Checking samples4 output"
