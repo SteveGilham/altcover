@@ -132,7 +132,7 @@ module ValidateGendarmeEmulation =
   let GratuitousCoverage () =
     let l = Left 23
     let r = Right true
-    let mutable x : Object = null
+    let mutable x: Object = null
     test <@ (23).IsNotNull @>
     test <@ x.IsNotNull |> not @>
 

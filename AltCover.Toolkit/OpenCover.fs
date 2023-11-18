@@ -82,13 +82,16 @@ module OpenCover =
                      b.Attribute(XName.Get "offsetchain").Value,
                      b.Attribute(XName.Get "offsetend").Value))
                   |> List.fold
-                    (fun (ki, ke) (_, bz) ->
+                    (fun (ki, ke) (whatever, bz) ->
+                      ignore whatever
+
                       let totalVisits =
                         bz
-                        |> Seq.sumBy (fun b -> // underscore ambiguous
-                          b.Attribute(XName.Get "vc").Value
-                          |> Int32.TryParse
-                          |> snd)
+                        |> Seq.sumBy (
+                          _.Attribute(XName.Get "vc").Value
+                          >> Int32.TryParse
+                          >> snd
+                        )
 
                       let h = bz |> Seq.head
 

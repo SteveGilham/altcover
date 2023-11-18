@@ -176,7 +176,7 @@ module internal ProgramDatabase =
         let msfdirectory, dir =
           construct "Microsoft.Cci.Pdb.MsfDirectory" [| reader; head; bits |]
 
-        let datastream : Object =
+        let datastream: Object =
           (field msfdirectory "streams" dir) :?> System.Collections.IEnumerable
           |> Seq.cast
           |> Seq.skip 1

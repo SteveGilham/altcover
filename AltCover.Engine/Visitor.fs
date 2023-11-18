@@ -1307,7 +1307,9 @@ module internal Visitor =
         | _ -> []
 
     let private coalesceBranchPoints dbg (bps: GoTo seq) =
-      let selectRepresentatives (_, bs) =
+      let selectRepresentatives (whatever, bs) =
+        ignore whatever
+
         let last =
           lastOfSequencePoint dbg (bs |> Seq.head).Start
 
@@ -1328,7 +1330,7 @@ module internal Visitor =
                   || i.OpCode.FlowControl = FlowControl.Break
                   || i.OpCode.FlowControl = FlowControl.Throw
                   || i.OpCode.FlowControl = FlowControl.Branch) }) // more??
-        |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead) // _ ambiguous??
+        |> Seq.groupBy (_.Target >> Seq.tryHead)
         |> Seq.map (
           snd
           >> (fun bg ->

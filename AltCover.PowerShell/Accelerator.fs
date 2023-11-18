@@ -145,7 +145,8 @@ type AddAcceleratorCommand() =
              String.Empty)
       )
     then
-      let nullObject : System.Object = null
+      let nullObject: System.Object = null
+
       finalmap
       |> Seq.iter (fun kv ->
         adder.Invoke(nullObject, [| kv.Key :> obj; kv.Value :> obj |])
@@ -184,7 +185,7 @@ type GetAcceleratorCommand() =
       acceleratorsType.GetProperty("Get")
 
     let result = Hashtable()
-    let nullObject : System.Object = null
+    let nullObject: System.Object = null
 
     (finder.GetValue(nullObject, [||]) :?> Dictionary<string, Type>)
     |> Seq.iter (fun kv -> result.Add(kv.Key, kv.Value))

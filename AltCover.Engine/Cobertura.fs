@@ -334,7 +334,7 @@ module internal Cobertura =
 
         method.Descendants("SequencePoint".X)
         |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == fileid)
-        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd) //_ is ambiguous
+        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd) //_ is ambiguous???
         |> Seq.sortBy fst
         |> Seq.iter (copySeqPnt lines)
 
