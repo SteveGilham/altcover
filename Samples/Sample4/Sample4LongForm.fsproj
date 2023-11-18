@@ -8,6 +8,7 @@
     <WarningLevel>3</WarningLevel>
     <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
     <OutputPathWithoutEndSlash>$(BuildDir)$(ProjectBuildDirectoryName)/legacy</OutputPathWithoutEndSlash>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
