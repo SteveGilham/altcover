@@ -24,11 +24,11 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [ExposeReturnCode](TypeSafe.PrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](TypeSafe.PrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](TypeSafe.PrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
-| [InputDirectories](TypeSafe.PrepareOptions/InputDirectories-apidoc) { get; } | Corresponds to command line option ` -i, --inputDirectory=VALUE` |
-| [Keys](TypeSafe.PrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option ` -k, --key=VALUE` |
+| [InputDirectories](TypeSafe.PrepareOptions/InputDirectories-apidoc) { get; } | Corresponds to command line option `-i, --inputDirectory=VALUE` |
+| [Keys](TypeSafe.PrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option `-k, --key=VALUE` |
 | [LineCover](TypeSafe.PrepareOptions/LineCover-apidoc) { get; } | Corresponds to command line option `--linecover` |
 | [LocalSource](TypeSafe.PrepareOptions/LocalSource-apidoc) { get; } | Corresponds to command line option `-l, --localSource` |
-| [MethodFilter](TypeSafe.PrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
+| [MethodFilter](TypeSafe.PrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option `-m, --methodFilter=VALUE` |
 | [MethodPoint](TypeSafe.PrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
 | [MethodTopLevel](TypeSafe.PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](TypeSafe.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
@@ -36,17 +36,17 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [Report](TypeSafe.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](TypeSafe.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](TypeSafe.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
-| [ShowGenerated](TypeSafe.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
+| [ShowGenerated](TypeSafe.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](TypeSafe.PrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
 | [SingleVisit](TypeSafe.PrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
 | [SourceLink](TypeSafe.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](TypeSafe.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](TypeSafe.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
-| [Trivia](TypeSafe.PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option ` --trivia` |
+| [Trivia](TypeSafe.PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option `--trivia` |
 | [TypeFilter](TypeSafe.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](TypeSafe.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](TypeSafe.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line options `-q` and `--verbose` |
-| [VisibleBranches](TypeSafe.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
+| [VisibleBranches](TypeSafe.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option `-v, --visibleBranches` |
 | [ZipFile](TypeSafe.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
 
 ## See Also
