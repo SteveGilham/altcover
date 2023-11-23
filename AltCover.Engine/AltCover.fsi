@@ -169,7 +169,7 @@ namespace AltCoverFake.DotNet.Testing
       with
         interface Abstract.IPrepareOptions
         ///<summary>
-        /// Corresponds to command line option ` -i, --inputDirectory=VALUE`
+        /// Corresponds to command line option `-i, --inputDirectory=VALUE`
         ///</summary>
         member InputDirectories : System.String list
         ///<summary>
@@ -185,7 +185,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member Dependencies : System.String list
         ///<summary>
-        /// Corresponds to command line option ` -k, --key=VALUE`
+        /// Corresponds to command line option `-k, --key=VALUE`
         ///</summary>
         member Keys : System.String list
         ///<summary>
@@ -213,7 +213,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member TypeFilter : System.String list
         ///<summary>
-        /// Corresponds to command line option ` -m, --methodFilter=VALUE`
+        /// Corresponds to command line option `-m, --methodFilter=VALUE`
         ///</summary>
         member MethodFilter : System.String list
         ///<summary>
@@ -293,7 +293,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member LocalSource : bool
         ///<summary>
-        /// Corresponds to command line option ` -v, --visibleBranches`
+        /// Corresponds to command line option `-v, --visibleBranches`
         ///</summary>
         member VisibleBranches : bool
         ///<summary>
@@ -301,7 +301,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member ShowStatic : string
         ///<summary>
-        /// Corresponds to command line option ` --showGenerated`
+        /// Corresponds to command line option `--showGenerated`
         ///</summary>
         member ShowGenerated : bool
         ///<summary>
@@ -309,7 +309,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member Verbosity : System.Diagnostics.TraceLevel
         ///<summary>
-        /// Corresponds to command line option ` --trivia`
+        /// Corresponds to command line option `--trivia`
         ///</summary>
         member Trivia: bool with get
 // ```

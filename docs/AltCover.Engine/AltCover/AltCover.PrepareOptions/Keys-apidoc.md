@@ -1,6 +1,6 @@
 # AltCover.PrepareOptions.Keys property
 
-Corresponds to command line option ` -k, --key=VALUE`
+Corresponds to command line option `-k, --key=VALUE`
 
 ```csharp
 public FSharpList<string> Keys { get; }

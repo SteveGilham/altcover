@@ -1,6 +1,6 @@
 # Prepare.Keys property
 
-Corresponds to command line option ` -k, --key=VALUE`
+Corresponds to command line option `-k, --key=VALUE`
 
 ```csharp
 public string[] Keys { get; set; }

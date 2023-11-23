@@ -107,7 +107,7 @@ namespace AltCoverFake.DotNet.Testing
     type PrepareOptions =
       {
         ///<summary>
-        /// Corresponds to command line option ` -i, --inputDirectory=VALUE`
+        /// Corresponds to command line option `-i, --inputDirectory=VALUE`
         ///</summary>
         InputDirectories: seq<System.String>
         ///<summary>
@@ -123,7 +123,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         Dependencies: seq<System.String>
         ///<summary>
-        /// Corresponds to command line option ` -k, --key=VALUE`
+        /// Corresponds to command line option `-k, --key=VALUE`
         ///</summary>
         Keys: seq<System.String>
         ///<summary>
@@ -151,7 +151,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         TypeFilter: seq<System.String>
         ///<summary>
-        /// Corresponds to command line option ` -m, --methodFilter=VALUE`
+        /// Corresponds to command line option `-m, --methodFilter=VALUE`
         ///</summary>
         MethodFilter: seq<System.String>
         ///<summary>
@@ -231,7 +231,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         LocalSource: bool
         ///<summary>
-        /// Corresponds to command line option ` -v, --visibleBranches`
+        /// Corresponds to command line option `-v, --visibleBranches`
         ///</summary>
         VisibleBranches: bool
         ///<summary>
@@ -239,7 +239,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         ShowStatic: string
         ///<summary>
-        /// Corresponds to command line option ` --showGenerated`
+        /// Corresponds to command line option `--showGenerated`
         ///</summary>
         ShowGenerated: bool
         ///<summary>
@@ -247,7 +247,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
         ///<summary>
-        /// Corresponds to command line option ` --trivia`
+        /// Corresponds to command line option `--trivia`
         ///</summary>
         Trivia: bool
       }

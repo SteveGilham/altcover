@@ -9,11 +9,9 @@ namespace AltCoverFake.DotNet.Testing
 [<RequireQualifiedAccess>]
 module DotNet = begin
   type ICLIOptions =
-    interface
     abstract member ForceDelete : bool with get
     abstract member FailFast : bool with get
     abstract member ShowSummary : System.String with get
-    end
 
   [<NoComparison>]
   type CLIOptions =
@@ -54,9 +52,9 @@ vs
         collect:Abstract.ICollectOptions -> options:ICLIOptions -> (string*string) list
 
 ## module `Options`
-* [<RequireQualifiedAccess>]
-* default interface implementations with get and set members, and
-  * type CLI - implements DotNet.ICLIOptions : default values fale or empty
+* `[<RequireQualifiedAccess>]`
+* default interface implementations with get and set members
+  * type CLI - implements DotNet.ICLIOptions : default values false or empty
   * type Collect - implements Abstract.ICollectOptions : default values as per the `Primitive.CollectOptions` record
   * type Prepare - implements Abstract.IPrepareOptions : default values as per the `Primitive.PrepareOptions` record
 
