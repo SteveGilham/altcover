@@ -60,6 +60,7 @@ module Targets =
           [ @"System\."
             @"Sample3\.Class2"
             "Microsoft"
+            "<Start"
             "ICSharpCode"
             "UnitTestStub" ]
           @ (p.TypeFilter |> Seq.toList) }
@@ -82,6 +83,7 @@ module Targets =
             @"Sample3\.Class2"
             "Microsoft"
             "ICSharpCode"
+            "<Start"
             "UnitTestStub"
             "SolutionRoot" ]
           |> Seq.map TypeSafe.Raw
@@ -126,6 +128,7 @@ module Targets =
             @"Sample3\.Class2"
             "Microsoft"
             "ICSharpCode"
+            "<Start"
             "UnitTestStub"
             "SolutionRoot" ]
           |> Seq.map TypeSafe.Raw

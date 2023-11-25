@@ -12,7 +12,6 @@ module Augment =
 #else
 module internal Augment =
 #endif
-  [<ExcludeFromCodeCoverageAttribute>]
   let nullObject: System.Object = null
 
 #if !ValidateGendarmeEmulation
