@@ -1544,10 +1544,13 @@ module Targets =
 
       if
         Environment.isWindows
-        && "GITHUB_RUN_NUMBER"
-           |> (Environment.environVar
-               >> String.IsNullOrWhiteSpace
-               >> not)
+        && [ "GITHUB_RUN_NUMBER"
+             "COVERALLS_REPO_TOKEN" ]
+           |> List.forall (
+             Environment.environVar
+             >> String.IsNullOrWhiteSpace
+             >> not
+           )
       then
         let maybe envvar fallback =
           let x = Environment.environVar envvar

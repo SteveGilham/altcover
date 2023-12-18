@@ -401,16 +401,11 @@ using System.Runtime.CompilerServices;
   let AssertResult (msg: string) (result: Fake.Core.ProcessResult<'a>) =
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let Run (file, dir, (args:string seq)) msg =
+  let Run (file, dir, (args: string seq)) msg =
     printfn "Actions.Run %A on %A with %A" file dir args
     args |> Seq.iter (printfn "%A")
 
-    CreateProcess.fromRawCommand
-      file
-      (if isNull args then
-         Seq.empty<string>
-       else
-         args)
+    CreateProcess.fromRawCommand file args
     |> CreateProcess.withWorkingDirectory dir
     |> CreateProcess.withFramework
     |> Proc.run
