@@ -1067,17 +1067,20 @@ module AltCoverTests3 =
       let pcom a b =
         Path.Combine(b, a) |> canonicalDirectory
 
+      let AssertAreEqual (a:obj, b:obj) =
+        Assert.That(a, Is.EqualTo b)
+
       match parse with
       | Right _ ->
         CoverageParameters.inputDirectories ()
         |> Seq.toList
         |> List.zip ([ "."; ".." ] |> List.map canonicalDirectory)
-        |> List.iter Assert.AreEqual
+        |> List.iter AssertAreEqual
 
         CoverageParameters.outputDirectories ()
         |> Seq.toList
         |> List.zip ([ "."; ".." ] |> List.map (pcom "__Instrumented"))
-        |> List.iter Assert.AreEqual
+        |> List.iter AssertAreEqual
 
         CoverageParameters.inplace.Value <- true
         CoverageParameters.theOutputDirectories.Add "maybe"
@@ -1087,7 +1090,7 @@ module AltCoverTests3 =
         |> List.zip
           [ canonicalDirectory "maybe"
             ".." |> (pcom "__Saved") ]
-        |> List.iter Assert.AreEqual
+        |> List.iter AssertAreEqual
 
     finally
       CoverageParameters.theOutputDirectories.Clear()
@@ -3300,7 +3303,7 @@ module AltCoverTests3 =
         let result =
           Main.I.screenAssembly (Path.GetFileName f) def
 
-        Assert.True(result |> Option.isSome, f))
+        Assert.That(result |> Option.isSome, f))
 
       Assert.That(sb.ToString(), Is.Empty)
 
@@ -3334,14 +3337,14 @@ module AltCoverTests3 =
       let s1 =
         Main.I.screenAssembly "Sample3.dll" prepared
 
-      Assert.True(s1 |> Option.isNone, "Sample3.dll")
+      Assert.That(s1 |> Option.isNone, "Sample3.dll")
 
       Environment.NewLine |> sb.Append |> ignore
 
       let s1 =
         Main.I.screenAssembly "Sample4.dll" assembly
 
-      Assert.True(s1 |> Option.isNone, "Sample4.dll")
+      Assert.That(s1 |> Option.isNone, "Sample4.dll")
 
       let expected =
         "Skipping Sample3.dll as it has already been instrumented."

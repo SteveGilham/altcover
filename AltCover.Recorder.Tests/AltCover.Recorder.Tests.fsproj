@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net20'">

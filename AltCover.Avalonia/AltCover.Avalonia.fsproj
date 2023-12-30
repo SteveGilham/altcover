@@ -45,9 +45,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" />
-    <PackageReference Include="Avalonia.Desktop" />
-    <PackageReference Include="MessageBox.Avalonia" />
+    <PackageReference Include="Avalonia" VersionOverride="0.10.18" />
+    <PackageReference Include="Avalonia.Desktop" VersionOverride="0.10.18" />
+    <PackageReference Include="MessageBox.Avalonia" VersionOverride="2.1.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

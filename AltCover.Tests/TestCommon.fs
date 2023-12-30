@@ -174,9 +174,8 @@ Actual:   False
     // printfn "%s" fallback
     // printfn "*********************************************"
 
-    Assert.That(
-      fallback,
-      Does.EndWith
+    let expected =
+#if NET472
         """  actual = expected
 "yes" = "no"
 false
@@ -185,6 +184,26 @@ false
   But was:  "yes"
   -----------^
 """
+#else
+        """  actual = expected
+"yes" = "no"
+false""" + "\n" + """Assert.That(, )
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+"""
+#endif
+
+    Assert.That(
+      fallback,
+      Does.EndWith expected
+
+      //,"VV*********************************************" + Environment.NewLine +
+      //fallback.TrimEnd() + Environment.NewLine +
+      //"^^*********************************************" + Environment.NewLine +
+      //(sprintf "%A %A" fallback.Length expected.Length) +
+      //"^^*********************************************" + Environment.NewLine
     )
 
     let m =
@@ -212,6 +231,7 @@ Actual:   False
     Assert.That(
       m2,
       Is.EqualTo(
+#if NET472
         """Multiple failures or warnings in test:
   1)   Expected: 4
   But was:  3
@@ -234,6 +254,32 @@ false
 false
 
 """
+#else
+        """Multiple failures or warnings in test:
+  1)   Assert.That(, )
+  Expected: 4
+  But was:  3
+
+  2)@
+
+3 = exp1
+3 = 4
+false
+
+  3)   Assert.That(, )
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+
+  4)@
+
+"yes" = exp2
+"yes" = "no"
+false
+
+"""
+#endif
           .Replace("@", " ")
       )
     )

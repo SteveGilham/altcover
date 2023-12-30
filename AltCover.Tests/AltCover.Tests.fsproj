@@ -135,7 +135,8 @@
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Security.Permissions" />
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>

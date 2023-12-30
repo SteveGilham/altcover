@@ -30,7 +30,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="FSharp.Core">

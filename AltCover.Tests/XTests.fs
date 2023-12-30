@@ -885,7 +885,7 @@ module AltCoverXTests =
           "xunit.execution.dotnet.dll"
           "xunit.runner.reporters.netcoreapp10.dll"
           "xunit.runner.utility.netcoreapp10.dll"
-          "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
+          "xunit.runner.visualstudio.testadapter.dll" ]
 
       let isWindows =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"

@@ -550,7 +550,7 @@ module AltCoverTests2 =
 
       Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
 
-      Assert.True(
+      Assert.That(
         prepared.CustomAttributes
         |> Seq.exists (fun a ->
           a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute"),
@@ -973,7 +973,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     rescope.Scopes.Add rescope
 
-    Assert.True(InstructionOffset().IsEndOfMethod, "End should go to none")
+    Assert.That (InstructionOffset().IsEndOfMethod, "End should go to none")
 
     // prune 1 recursion and 2 at end => 3
     Assert.That(rescope.Scopes |> Seq.length, Is.EqualTo(4 + 3))
