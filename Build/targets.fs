@@ -2948,11 +2948,7 @@ module Targets =
           { Primitive.PrepareOptions.Create() with
               Report = simpleReport
               CallContext = [ "[Test]" ]
-              AssemblyFilter =
-                [ "Adapter"
-                  "nunit"
-                  "Microsoft"
-                  "testhost" ]
+              AssemblyFilter = [ "Adapter"; "nunit" ]
               TypeFilter = [ "System\\."; "Microsoft\\." ]
               InPlace = true
               ReportFormat = "OpenCover"

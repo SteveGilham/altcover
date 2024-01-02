@@ -109,15 +109,10 @@ open System.Runtime.CompilerServices
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
 #else
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
@@ -132,7 +127,6 @@ using System.Runtime.CompilerServices;
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug {0}")]
 [assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={1}")]
-[assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={2}")]
 #else
 [assembly: AssemblyConfiguration("Release {0}")]
 #endif"""
@@ -168,18 +162,6 @@ using System.Runtime.CompilerServices;
     Array.append prefix buffer
 
   let InternalsVisibleTo version =
-    use stream2 = // fsharplint:disable-next-line  RedundantNewKeyword
-      new System.IO.FileStream(
-        "./Build/SelfTest.snk",
-        System.IO.FileMode.Open,
-        System.IO.FileAccess.Read
-      )
-
-    //let pair2 = StrongNameKeyPair(stream2)
-    //let key2 = BitConverter.ToString pair2.PublicKey
-    let key2 =
-      stream2 |> GetPublicKey |> BitConverter.ToString
-
     use stream = // fsharplint:disable-next-line  RedundantNewKeyword
       new System.IO.FileStream(
         "./Build/Infrastructure.snk",
@@ -200,8 +182,7 @@ using System.Runtime.CompilerServices;
           System.Globalization.CultureInfo.InvariantCulture,
           model,
           version,
-          key.Replace("-", String.Empty),
-          key2.Replace("-", String.Empty)
+          key.Replace("-", String.Empty)
         )
 
       // Update the file only if it would change
