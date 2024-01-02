@@ -2542,7 +2542,21 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let result =
       Instrument.I.updateVisibleTo def
 
-    Assert.Fail()
+    let va =
+        result.CustomAttributes
+        |> Seq.filter (fun a ->
+          a.AttributeType.FullName.Equals("System.Runtime.CompilerServices.InternalsVisibleToAttribute"))
+        |> Seq.toList
+        |> List.map (_.ConstructorArguments >> Seq.head)
+        |> List.map (_.Value >> string)
+
+    let expected =
+      [
+        "AltCover.Tests.Visualizer, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916443A2EE1D294E8CFA7666FB3F512D998D7CEAC4909E35EDB2AC1E104DE68890A93716D1D1931F7228AAC0523CACF50FD82CDB4CCF4FF4BF0DED95E3A383F4F371E3B82C45502CE74D7D572583495208C1905E0F1E8A3CCE66C4C75E4CA32E9A8F8DEE64E059C0DC0266E8D2CB6D7EBD464B47E062F80B63D390E389217FB7"
+        "AltCover.Tests.Visualizer"
+      ]
+
+    test <@ va = expected @>
 
   [<Test>]
   let NewStrongNameShouldUpdateVisibleTo () =
@@ -2555,7 +2569,8 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let token0 = def.Name.PublicKeyToken
 
     use stream =
-      typeof<AltCover.Node>.Assembly
+      Assembly
+        .GetExecutingAssembly()
         .GetManifestResourceStream(ivtSnk)
 
     use buffer = new MemoryStream()
@@ -2567,7 +2582,21 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let result =
       Instrument.I.updateVisibleTo def
 
-    Assert.Fail()
+    let va =
+        result.CustomAttributes
+        |> Seq.filter (fun a ->
+          a.AttributeType.FullName.Equals("System.Runtime.CompilerServices.InternalsVisibleToAttribute"))
+        |> Seq.toList
+        |> List.map (_.ConstructorArguments >> Seq.head)
+        |> List.map (_.Value >> string)
+
+    let expected =
+      [
+        "AltCover.Tests.Visualizer, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916443A2EE1D294E8CFA7666FB3F512D998D7CEAC4909E35EDB2AC1E104DE68890A93716D1D1931F7228AAC0523CACF50FD82CDB4CCF4FF4BF0DED95E3A383F4F371E3B82C45502CE74D7D572583495208C1905E0F1E8A3CCE66C4C75E4CA32E9A8F8DEE64E059C0DC0266E8D2CB6D7EBD464B47E062F80B63D390E389217FB7"
+        "AltCover.Tests.Visualizer, PublicKey=0024000004800000940000000602000000240000525341310004000001000100F9A856F46C312969423375AB83A0509FA025FB6EC6C8CC5655AD7EEBADCF63011850CE7367C183B914C95CF7801FE7CB7DC836DBF661FC841CDB5401DFFD3DF995B2204A2CB7E3665DB1381BD966B1D15447424030640829C653DE4E47C54D79BDFA5620864CE46846B87A6901887F6CB5474BCEA43DDC12EA90DFC5DEC9DBAB"
+      ]
+
+    test <@ va = expected @>
 
   [<Test>]
   let UpdateStrongReferencesShouldChangeSigningKeyWherePossible () =

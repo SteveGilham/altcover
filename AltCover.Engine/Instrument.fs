@@ -232,6 +232,42 @@ module internal Instrument =
     let internal updateVisibleTo
       (assembly: AssemblyDefinition)
       =
+      let va =
+        assembly.CustomAttributes
+        |> Seq.filter (fun a ->
+          a.AttributeType.FullName.Equals("System.Runtime.CompilerServices.InternalsVisibleToAttribute"))
+        |> Seq.toList
+
+      let tag a =
+        match CoverageParameters.defaultStrongNameKey with
+        | None -> a
+        | Some key -> a + ", PublicKey=" + (key.PublicKey |> Seq.toArray |> BitConverter.ToString).Replace("-", String.Empty)
+
+      let attrtype = va |> Seq.tryHead
+
+      let injectRef (ref:string) =
+        let constructor =
+          attrtype.Value.AttributeType.Resolve().GetConstructors()
+          |> Seq.head
+
+        let blob = System.Collections.Generic.List<Byte>(System.Text.Encoding.ASCII.GetBytes(ref))
+        blob.Insert(0, 0uy)
+        blob.Insert(0, 1uy)
+        blob.AddRange [0uy; 0uy]
+
+        let inject =
+          CustomAttribute(constructor, blob |> Seq.toArray)
+
+        inject.ConstructorArguments.Add(CustomAttributeArgument(constructor.Parameters[0].ParameterType ,ref))
+
+        assembly.CustomAttributes.Add inject
+
+      va
+      |> List.map (_.ConstructorArguments >> Seq.head)
+      |> List.map (_.Value >> string)
+      |> List.map (_.Split(',') >> Seq.head >> tag)
+      |> List.iter injectRef
+
       assembly
 
     // Applies a new key to an assembly name
@@ -820,7 +856,7 @@ module internal Instrument =
       )
       |> sink
 
-      writeAssembly definition first
+      writeAssembly (updateVisibleTo definition) first
 
       targets
       |> Seq.tail
