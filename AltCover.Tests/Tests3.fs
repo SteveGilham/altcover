@@ -1067,8 +1067,7 @@ module AltCoverTests3 =
       let pcom a b =
         Path.Combine(b, a) |> canonicalDirectory
 
-      let AssertAreEqual (a:obj, b:obj) =
-        Assert.That(a, Is.EqualTo b)
+      let AssertAreEqual (a: obj, b: obj) = Assert.That(a, Is.EqualTo b)
 
       match parse with
       | Right _ ->

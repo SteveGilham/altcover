@@ -229,42 +229,55 @@ module internal Instrument =
       |> Seq.toList
       |> List.rev
 
-    let internal updateVisibleTo
-      (assembly: AssemblyDefinition)
-      =
+    let internal updateVisibleTo (assembly: AssemblyDefinition) =
       let va =
         assembly.CustomAttributes
         |> Seq.filter (fun a ->
-          a.AttributeType.FullName.Equals("System.Runtime.CompilerServices.InternalsVisibleToAttribute"))
+          a.AttributeType.FullName.Equals(
+            "System.Runtime.CompilerServices.InternalsVisibleToAttribute",
+            StringComparison.Ordinal
+          ))
         |> Seq.toList
 
       let tag a =
         match CoverageParameters.defaultStrongNameKey with
         | None -> a
-        | Some key -> a + ", PublicKey=" + (key.PublicKey |> Seq.toArray |> BitConverter.ToString).Replace("-", String.Empty)
+        | Some key ->
+          a
+          + ", PublicKey="
+          + (key.PublicKey
+             |> Seq.toArray
+             |> BitConverter.ToString)
+            .Replace("-", String.Empty)
 
       let attrtype = va |> Seq.tryHead
 
-      let injectRef (ref:string) =
+      let injectRef (ref: string) =
         let constructor =
-          attrtype.Value.AttributeType.Resolve().GetConstructors()
+          attrtype.Value.AttributeType
+            .Resolve()
+            .GetConstructors()
           |> Seq.head
 
-        let blob = System.Collections.Generic.List<Byte>(System.Text.Encoding.ASCII.GetBytes(ref))
+        let blob =
+          System.Collections.Generic.List<Byte>(System.Text.Encoding.ASCII.GetBytes(ref))
+
         blob.Insert(0, 0uy)
         blob.Insert(0, 1uy)
-        blob.AddRange [0uy; 0uy]
+        blob.AddRange [ 0uy; 0uy ]
 
         let inject =
           CustomAttribute(constructor, blob |> Seq.toArray)
 
-        inject.ConstructorArguments.Add(CustomAttributeArgument(constructor.Parameters[0].ParameterType ,ref))
+        inject.ConstructorArguments.Add(
+          CustomAttributeArgument(constructor.Parameters[0].ParameterType, ref)
+        )
 
         assembly.CustomAttributes.Add inject
 
       va
       |> List.map (_.ConstructorArguments >> Seq.head)
-      |> List.map (_.Value >> string)
+      |> List.map (_.Value.ToString())
       |> List.map (_.Split(',') >> Seq.head >> tag)
       |> List.iter injectRef
 
@@ -1467,3 +1480,10 @@ module internal Instrument =
   // <returns>Stateful visitor function</returns>
   let internal instrumentGenerator (assemblies: string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Instrument/I/tag@243::Invoke(System.String)",
+                            Justification = "Replace override not available")>]
+()

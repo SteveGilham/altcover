@@ -176,7 +176,7 @@ Actual:   False
 
     let expected =
 #if NET472
-        """  actual = expected
+      """  actual = expected
 "yes" = "no"
 false
   Expected string length 2 but was 3. Strings differ at index 0.
@@ -185,9 +185,11 @@ false
   -----------^
 """
 #else
-        """  actual = expected
+      """  actual = expected
 "yes" = "no"
-false""" + "\n" + """Assert.That(, )
+false"""
+      + "\n"
+      + """Assert.That(, )
   Expected string length 2 but was 3. Strings differ at index 0.
   Expected: "no"
   But was:  "yes"
@@ -199,11 +201,11 @@ false""" + "\n" + """Assert.That(, )
       fallback,
       Does.EndWith expected
 
-      //,"VV*********************************************" + Environment.NewLine +
-      //fallback.TrimEnd() + Environment.NewLine +
-      //"^^*********************************************" + Environment.NewLine +
-      //(sprintf "%A %A" fallback.Length expected.Length) +
-      //"^^*********************************************" + Environment.NewLine
+    //,"VV*********************************************" + Environment.NewLine +
+    //fallback.TrimEnd() + Environment.NewLine +
+    //"^^*********************************************" + Environment.NewLine +
+    //(sprintf "%A %A" fallback.Length expected.Length) +
+    //"^^*********************************************" + Environment.NewLine
     )
 
     let m =
