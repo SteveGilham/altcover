@@ -229,6 +229,11 @@ module internal Instrument =
       |> Seq.toList
       |> List.rev
 
+    let internal updateVisibleTo
+      (assembly: AssemblyDefinition)
+      =
+      assembly
+
     // Applies a new key to an assembly name
     // param name="assemblyName">The name to update</param>
     // param name="key">The possibly empty key to use</param>

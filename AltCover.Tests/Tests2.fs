@@ -27,6 +27,12 @@ module AltCoverTests2 =
       .GetManifestResourceNames()
     |> Seq.find _.EndsWith("Infrastructure.snk", StringComparison.Ordinal)
 
+  let ivtSnk =
+    Assembly
+      .GetExecutingAssembly()
+      .GetManifestResourceNames()
+    |> Seq.find _.EndsWith("InternalsVisibleTest.snk", StringComparison.Ordinal)
+
   let private provideKeyPair () =
     use stream =
       Assembly
@@ -2522,6 +2528,46 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Seq.zip opcodes input.MethodBody.Instructions
 
     Assert.That(paired' |> Seq.forall (fun (i, j) -> i = j.OpCode))
+
+  [<Test>]
+  let NoStrongNameShouldUpdateVisibleTo () =
+    let path =
+      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+
+    use def = AssemblyResolver.ReadAssembly path
+    ProgramDatabase.readSymbols def
+
+    CoverageParameters.defaultStrongNameKey <- None
+
+    let result =
+      Instrument.I.updateVisibleTo def
+
+    Assert.Fail()
+
+  [<Test>]
+  let NewStrongNameShouldUpdateVisibleTo () =
+    let path =
+      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+
+    use def = AssemblyResolver.ReadAssembly path
+
+    ProgramDatabase.readSymbols def
+    let token0 = def.Name.PublicKeyToken
+
+    use stream =
+      typeof<AltCover.Node>.Assembly
+        .GetManifestResourceStream(ivtSnk)
+
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+
+    CoverageParameters.defaultStrongNameKey <-
+      Some(StrongNameKeyData.Make(buffer.ToArray()))
+
+    let result =
+      Instrument.I.updateVisibleTo def
+
+    Assert.Fail()
 
   [<Test>]
   let UpdateStrongReferencesShouldChangeSigningKeyWherePossible () =

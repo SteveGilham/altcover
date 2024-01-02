@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="InternalsVisibleTest.snk" />
     <EmbeddedResource Include="native.pdb" />
     <None Include="Sample31.dll">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
