@@ -253,11 +253,7 @@ module internal Instrument =
       let attrtype = va |> Seq.tryHead
 
       let injectRef (ref: string) =
-        let constructor =
-          attrtype.Value.AttributeType
-            .Resolve()
-            .GetConstructors()
-          |> Seq.head
+        let constructor = attrtype.Value.Constructor
 
         let blob =
           System.Collections.Generic.List<Byte>(System.Text.Encoding.ASCII.GetBytes(ref))
@@ -1484,6 +1480,7 @@ module internal Instrument =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
-                            Target = "AltCover.Instrument/I/tag@243::Invoke(System.String)",
+                            Target =
+                              "AltCover.Instrument/I/tag@243::Invoke(System.String)",
                             Justification = "Replace override not available")>]
 ()
