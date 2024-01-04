@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 25)
+# (Habu series release 26)
+
+# 8.6.125 (Habu series release 25)
 * [BUGFIX] Issue 197 : Update `[InternalsVisibleTo]` references during instrumentation.  Finally fixing an issue that's been there since 2010!
 
 # 8.6.95 (Habu series release 24)
