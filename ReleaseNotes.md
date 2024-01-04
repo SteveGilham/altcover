@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 25)
+* [BUGFIX] Issue 197 : Update `[InternalsVisibleTo]` references during instrumentation.  Finally fixing an issue that's been there since 2010!
 
 # 8.6.95 (Habu series release 24)
 * Built with and supports net8.0 release
