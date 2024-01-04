@@ -20,6 +20,7 @@ module Actions =
   open AltCoverFake.DotNet.Testing
 
   let Clean () =
+    // [<TailCall>]
     let rec clean1 depth =
       try
         (DirectoryInfo ".")
@@ -33,7 +34,7 @@ module Actions =
           |> Path.GetFullPath
           |> n.FullName.StartsWith
           |> not)
-        |> Seq.map (fun x -> x.FullName)
+        |> Seq.map _.FullName
         |> Seq.distinct
         // arrange so leaves get deleted first, avoiding "does not exist" warnings
         |> Seq.groupBy (fun x ->
@@ -79,6 +80,7 @@ module Actions =
     clean1 0
 
   let CleanDir folder =
+    // [<TailCall>]
     let rec clean1 depth =
       try
         Shell.deleteDir folder
@@ -107,15 +109,10 @@ open System.Runtime.CompilerServices
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
 #else
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
@@ -130,7 +127,6 @@ using System.Runtime.CompilerServices;
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug {0}")]
 [assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={1}")]
-[assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={2}")]
 #else
 [assembly: AssemblyConfiguration("Release {0}")]
 #endif"""
@@ -166,18 +162,6 @@ using System.Runtime.CompilerServices;
     Array.append prefix buffer
 
   let InternalsVisibleTo version =
-    use stream2 = // fsharplint:disable-next-line  RedundantNewKeyword
-      new System.IO.FileStream(
-        "./Build/SelfTest.snk",
-        System.IO.FileMode.Open,
-        System.IO.FileAccess.Read
-      )
-
-    //let pair2 = StrongNameKeyPair(stream2)
-    //let key2 = BitConverter.ToString pair2.PublicKey
-    let key2 =
-      stream2 |> GetPublicKey |> BitConverter.ToString
-
     use stream = // fsharplint:disable-next-line  RedundantNewKeyword
       new System.IO.FileStream(
         "./Build/Infrastructure.snk",
@@ -198,8 +182,7 @@ using System.Runtime.CompilerServices;
           System.Globalization.CultureInfo.InvariantCulture,
           model,
           version,
-          key.Replace("-", String.Empty),
-          key2.Replace("-", String.Empty)
+          key.Replace("-", String.Empty)
         )
 
       // Update the file only if it would change
@@ -256,7 +239,7 @@ using System.Runtime.CompilerServices;
 
     let recorded =
       coverageDocument.Descendants(XName.Get("method"))
-      |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
+      |> Seq.map _.Attribute(XName.Get("name")).Value
       |> Seq.filter (fun x -> others |> Seq.exists (fun y -> x = y) |> not)
       |> Seq.sort
       |> Seq.toList
@@ -288,7 +271,7 @@ using System.Runtime.CompilerServices;
 
     let recorded =
       coverageDocument.Descendants(XName.Get("seqpnt"))
-      |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+      |> Seq.map _.Attribute(XName.Get("visitcount")).Value
       |> Seq.toList
 
     let expected =
@@ -326,14 +309,14 @@ using System.Runtime.CompilerServices;
     let zero =
       recorded
       |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
-      |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+      |> Seq.map _.Attribute(XName.Get("line")).Value
       |> Seq.sort
       |> Seq.toList
 
     let ones =
       recorded
       |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
-      |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+      |> Seq.map _.Attribute(XName.Get("line")).Value
       |> Seq.sort
       |> Seq.toList
 
@@ -399,13 +382,11 @@ using System.Runtime.CompilerServices;
   let AssertResult (msg: string) (result: Fake.Core.ProcessResult<'a>) =
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let Run (file, dir, args) msg =
-    CreateProcess.fromRawCommand
-      file
-      (if isNull args then
-         Seq.empty<string>
-       else
-         args)
+  let Run (file, dir, (args: string seq)) msg =
+    printfn "Actions.Run %A on %A with %A" file dir args
+    args |> Seq.iter (printfn "%A")
+
+    CreateProcess.fromRawCommand file args
     |> CreateProcess.withWorkingDirectory dir
     |> CreateProcess.withFramework
     |> Proc.run
@@ -593,8 +574,8 @@ a:hover {color: #ecc;}
   let Check4Content (coverageDocument: XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("Method"))
-      |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-      |> Seq.map (fun x -> x.Value.Replace("Tests.Program", "Program/Program"))
+      |> Seq.collect _.Descendants(XName.Get("Name"))
+      |> Seq.map _.Value.Replace("Tests.Program", "Program/Program")
       |> Seq.sort
       |> Seq.toList
 
@@ -646,7 +627,7 @@ a:hover {color: #ecc;}
   let Check4Visits path before (coverageDocument: XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+      |> Seq.map _.Attribute(XName.Get("vc")).Value
       |> Seq.toList
 
     let expected =
@@ -669,10 +650,11 @@ a:hover {color: #ecc;}
 
       let vx =
         sp.Descendants(XName.Get("Time"))
-        |> Seq.sumBy (fun x ->
-          x.Attribute(XName.Get("vc")).Value
-          |> Int32.TryParse
-          |> snd)
+        |> Seq.sumBy (
+          _.Attribute(XName.Get("vc")).Value
+          >> Int32.TryParse
+          >> snd
+        )
 
       Assert.That(vc, Is.EqualTo vx, sp.Value))
 
@@ -717,7 +699,7 @@ a:hover {color: #ecc;}
 
     Assert.That(
       coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
-      |> Seq.map (fun x -> x.ToString()),
+      |> Seq.map _.ToString(),
       Is.EquivalentTo
         [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"

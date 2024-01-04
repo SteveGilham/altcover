@@ -1,6 +1,6 @@
 # TypeSafe.PrepareOptions.ShowGenerated property
 
-Corresponds to command line option ` --showGenerated`
+Corresponds to command line option `--showGenerated`
 
 ```csharp
 public Flag ShowGenerated { get; }

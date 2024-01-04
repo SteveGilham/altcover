@@ -438,7 +438,7 @@ module internal Main =
         String.Join(
           String.Empty,
           t
-          |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture))
+          |> Seq.map _.ToString("x2", CultureInfo.InvariantCulture)
         )
         == "4ebffcaabf10ce6a") // recorder.snk
       |> Option.defaultValue false
@@ -542,9 +542,9 @@ module internal Main =
       // Track the symbol-bearing assemblies
       let assemblies =
         instrumentFromInfos
-        |> Seq.map (fun sourceInfo ->
-          sourceInfo.GetFiles()
-          |> Seq.fold
+        |> Seq.map (
+          _.GetFiles()
+          >> Seq.fold
             (fun (accumulator: AssemblyInfo list) info ->
               let fullName = info.FullName
 
@@ -598,7 +598,7 @@ module internal Main =
                         |> Convert.ToBase64String
                       Refs =
                         def.MainModule.AssemblyReferences
-                        |> Seq.map (fun r -> r.Name)
+                        |> Seq.map _.Name
                         |> Seq.toList }
                     :: accumulator)
                   |> Option.defaultValue accumulator)
@@ -607,15 +607,16 @@ module internal Main =
                   |> Output.verbose
 
                   accumulator))
-            [])
+            []
+        )
         |> Seq.toList
         |> Seq.concat
-        |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique
+        |> Seq.groupBy _.Hash // assume hash is unique
         |> Seq.map (fun (n, agroup) ->
           { (agroup |> Seq.head) with
               Path =
                 agroup
-                |> Seq.map (fun aa -> aa.Path)
+                |> Seq.map _.Path
                 |> Seq.concat
                 |> Seq.toList })
         |> Seq.toList
@@ -625,7 +626,7 @@ module internal Main =
       // The set of all names w/o location
       let candidates =
         assemblies
-        |> Seq.map (fun a -> a.Name)
+        |> Seq.map _.Name
         |> Seq.fold (fun (s: Set<string>) n -> Set.add n s) Set.empty<string>
 
       let simplified =
@@ -636,6 +637,7 @@ module internal Main =
                 a.Refs
                 |> List.filter (fun n -> Set.contains n candidates) })
 
+      // [<TailCall>]
       let rec bundle unassigned unresolved collection n =
         match unassigned with
         | [] -> collection
@@ -644,9 +646,8 @@ module internal Main =
             (if n <= 1 then
                unassigned
              else
-               unassigned
-               |> List.filter (fun u -> u.Refs |> List.isEmpty))
-            |> List.sortBy (fun u -> u.Name)
+               unassigned |> List.filter (_.Refs >> List.isEmpty))
+            |> List.sortBy _.Name
 
           let waiting =
             stage
@@ -654,7 +655,7 @@ module internal Main =
 
           let next =
             unassigned
-            |> List.filter (fun u -> u.Refs |> List.isEmpty |> not)
+            |> List.filter (_.Refs >> List.isEmpty >> not)
             |> List.map (fun a ->
               { a with
                   Refs =

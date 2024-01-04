@@ -221,13 +221,63 @@ module internal Instrument =
     let internal recordingMethod (recordingAssembly: AssemblyDefinition) =
       recordingAssembly.MainModule.GetAllTypes()
       |> Seq.filter (fun t -> t.FullName == "AltCover.Recorder.Instance")
-      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.collect _.Methods
       |> Seq.map (fun t -> (t.Name, t))
       |> Seq.filter (fun (n, _) -> n == "Visit" || n == "Push" || n == "Pop")
       |> Seq.sortBy fst
       |> Seq.map snd
       |> Seq.toList
       |> List.rev
+
+    let internal updateVisibleTo (assembly: AssemblyDefinition) =
+      let va =
+        assembly.CustomAttributes
+        |> Seq.filter (fun a ->
+          a.AttributeType.FullName.Equals(
+            "System.Runtime.CompilerServices.InternalsVisibleToAttribute",
+            StringComparison.Ordinal
+          ))
+        |> Seq.toList
+
+      let tag a =
+        match CoverageParameters.defaultStrongNameKey with
+        | None -> a
+        | Some key ->
+          a
+          + ", PublicKey="
+          + (key.PublicKey
+             |> Seq.toArray
+             |> BitConverter.ToString)
+            .Replace("-", String.Empty)
+
+      let attrtype = va |> Seq.tryHead
+
+      let injectRef (ref: string) =
+        let constructor = attrtype.Value.Constructor
+
+        let blob =
+          System.Collections.Generic.List<Byte>(System.Text.Encoding.ASCII.GetBytes(ref))
+
+        blob.Insert(0, 0uy)
+        blob.Insert(0, 1uy)
+        blob.AddRange [ 0uy; 0uy ]
+
+        let inject =
+          CustomAttribute(constructor, blob |> Seq.toArray)
+
+        inject.ConstructorArguments.Add(
+          CustomAttributeArgument(constructor.Parameters[0].ParameterType, ref)
+        )
+
+        assembly.CustomAttributes.Add inject
+
+      va
+      |> List.map (_.ConstructorArguments >> Seq.head)
+      |> List.map (_.Value.ToString())
+      |> List.map (_.Split(',') >> Seq.head >> tag)
+      |> List.iter injectRef
+
+      assembly
 
     // Applies a new key to an assembly name
     // param name="assemblyName">The name to update</param>
@@ -350,7 +400,7 @@ module internal Instrument =
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
             definition.MainModule.GetTypes()
-            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.collect _.Methods
             |> Seq.filter (fun m -> m.Name == property)
             |> Seq.head
 
@@ -370,7 +420,7 @@ module internal Instrument =
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
             definition.MainModule.GetTypes()
-            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.collect _.Methods
             |> Seq.filter (fun m -> m.Name == property)
             |> Seq.head
 
@@ -568,10 +618,7 @@ module internal Instrument =
       let prior =
         match existingDependencies with
         | None -> Set.empty<string>
-        | Some p ->
-          p.Value.Object
-          |> Seq.map (fun p -> p.Key)
-          |> Set.ofSeq
+        | Some p -> p.Value.Object |> Seq.map _.Key |> Set.ofSeq
 
       let addFirst
         (properties: KeyValuePair<string, JsonValue> seq)
@@ -818,7 +865,7 @@ module internal Instrument =
       )
       |> sink
 
-      writeAssembly definition first
+      writeAssembly (updateVisibleTo definition) first
 
       targets
       |> Seq.tail
@@ -1288,7 +1335,7 @@ module internal Instrument =
 
         let getterDef =
           recorder.MainModule.GetTypes()
-          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.collect _.Methods
           |> Seq.filter (fun m -> m.Name == "get_modules")
           |> Seq.head
 
@@ -1347,10 +1394,9 @@ module internal Instrument =
 
         state.RecorderSource
         |> Option.ofObj
-        |> Option.iter (fun a -> a.Close())
+        |> Option.iter _.Close()
 
-        state.AsyncSupport
-        |> Option.iter (fun a -> a.Close())
+        state.AsyncSupport |> Option.iter _.Close()
 
       { state with
           RecordingAssembly = null
@@ -1415,10 +1461,9 @@ module internal Instrument =
 
           state.RecorderSource
           |> Option.ofObj
-          |> Option.iter (fun a -> a.Close())
+          |> Option.iter _.Close()
 
-          state.AsyncSupport
-          |> Option.iter (fun a -> a.Close())
+          state.AsyncSupport |> Option.iter _.Close()
 
         reraise ()
 
@@ -1431,3 +1476,11 @@ module internal Instrument =
   // <returns>Stateful visitor function</returns>
   let internal instrumentGenerator (assemblies: string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Instrument/I/tag@243::Invoke(System.String)",
+                            Justification = "Replace override not available")>]
+()

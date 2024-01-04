@@ -99,7 +99,7 @@ module Configuration =
 
     config.XPathSelectElements("//Font")
     |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
+    |> Seq.iter _.Remove()
 
     let inject =
       XElement(XName.Get "Font", font)
@@ -166,7 +166,7 @@ module Configuration =
 
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
+    |> Seq.iter _.Remove()
 
     let inject = config.FirstNode :?> XElement
 
@@ -182,7 +182,7 @@ module Configuration =
     let _, config = ensureFile ()
 
     config.XPathSelectElements("//RecentlyOpened")
-    |> Seq.map (fun n -> n.FirstNode.ToString())
+    |> Seq.map _.FirstNode.ToString()
     |> Seq.filter (fun n -> File.Exists(n))
     |> Seq.toList
     |> sink
@@ -195,7 +195,7 @@ module Configuration =
 
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
+    |> Seq.iter _.Remove()
 
     let (x, y) = location ()
     let (width, height) = size ()
@@ -243,7 +243,7 @@ module Configuration =
 
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
-    |> Seq.iter (fun f -> f.Remove())
+    |> Seq.iter _.Remove()
 
     config.Save file
 

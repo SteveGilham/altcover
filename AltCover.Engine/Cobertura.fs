@@ -48,7 +48,7 @@ module internal Cobertura =
       |> Seq.sort
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
-        |> Seq.iter (fun s -> s.Add(XElement("source".X, XText(f)))))
+        |> Seq.iter _.Add(XElement("source".X, XText(f))))
 
     let internal nCover (report: XDocument) (packages: XElement) =
       let processSeqPnts document (method: XElement) (lines: XElement) =
@@ -160,7 +160,7 @@ module internal Cobertura =
             method.Attribute("class".X).Value
 
           method.Descendants("seqpnt".X)
-          |> Seq.map (fun s -> s.Attribute("document".X).Value)
+          |> Seq.map _.Attribute("document".X).Value
           |> Seq.distinct
           |> Seq.sort
           |> Seq.map (fun d -> (cname, d), method))
@@ -334,7 +334,7 @@ module internal Cobertura =
 
         method.Descendants("SequencePoint".X)
         |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == fileid)
-        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd) //_ is ambiguous???
         |> Seq.sortBy fst
         |> Seq.iter (copySeqPnt lines)
 
@@ -430,7 +430,7 @@ module internal Cobertura =
           [ method.Descendants("SequencePoint".X)
             method.Descendants("BranchPoint".X) ]
           |> Seq.concat
-          |> Seq.map (fun s -> s.Attribute("fileid".X).Value)
+          |> Seq.map _.Attribute("fileid".X).Value
           |> Seq.distinct
           |> Seq.sort
           |> Seq.map (fun d -> (cname, d), method))
@@ -448,11 +448,11 @@ module internal Cobertura =
           Map.empty
 
       report.Descendants("Module".X)
-      |> Seq.filter (fun m -> m.Descendants("Class".X) |> Seq.isEmpty |> not)
+      |> Seq.filter (_.Descendants("Class".X) >> Seq.isEmpty >> not)
       |> Seq.iter (fun ``module`` ->
         let mname =
           ``module``.Descendants("ModuleName".X)
-          |> Seq.map (fun x -> x.Value)
+          |> Seq.map _.Value
           |> Seq.head
 
         let package =
@@ -560,6 +560,6 @@ module internal Cobertura =
 
     rewrite
     |> Option.ofObj
-    |> Option.iter (fun d -> d.Save(path.Value |> Option.get))
+    |> Option.iter _.Save(path.Value |> Option.get)
 
     (result, 0uy, String.Empty)

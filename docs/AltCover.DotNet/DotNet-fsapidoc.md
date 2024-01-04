@@ -10,11 +10,9 @@ namespace AltCover
 [<RequireQualifiedAccess>]
 module DotNet = begin
   type ICLIOptions =
-    interface
     abstract member ForceDelete : bool with get
     abstract member FailFast : bool with get
     abstract member ShowSummary : System.String with get
-    end
 
   [<NoComparison>]
   type CLIOptions =

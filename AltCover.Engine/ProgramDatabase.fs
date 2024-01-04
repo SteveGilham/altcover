@@ -31,7 +31,7 @@ module internal ProgramDatabase =
         .GetMethod("GetEmbeddedPortablePdbEntry")
 
     let internal getEmbeddedPortablePdbEntry (assembly: AssemblyDefinition) =
-      getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |])
+      getEmbed.Invoke(nullObject, [| assembly.MainModule.GetDebugHeader() :> obj |])
       :?> ImageDebugHeaderEntry
 
     let internal getSymbolsByFolder fileName folderName =
@@ -68,7 +68,7 @@ module internal ProgramDatabase =
         |> Seq.filter (fun e ->
           e.Data.Length > 0x18
           && e.Directory.Type = ImageDebugType.CodeView)
-        |> Seq.map (fun x -> x.Data)
+        |> Seq.map _.Data
         |> Seq.filter (fun x -> lead x = 1396986706)
         |> Seq.map extractGuid
         |> Seq.toList
@@ -146,7 +146,7 @@ module internal ProgramDatabase =
             classtype.GetConstructor(
               binding,
               null,
-              parameters |> Array.map (fun x -> x.GetType()),
+              parameters |> Array.map _.GetType(),
               [||]
             )
 
@@ -176,7 +176,7 @@ module internal ProgramDatabase =
         let msfdirectory, dir =
           construct "Microsoft.Cci.Pdb.MsfDirectory" [| reader; head; bits |]
 
-        let datastream =
+        let datastream: Object =
           (field msfdirectory "streams" dir) :?> System.Collections.IEnumerable
           |> Seq.cast
           |> Seq.skip 1
@@ -226,9 +226,9 @@ module internal ProgramDatabase =
 
     (tokens,
      Some assembly.MainModule
-     |> Option.filter (fun x -> x.HasDebugHeader)
-     |> Option.map (fun x -> x.GetDebugHeader())
-     |> Option.filter (fun x -> x.HasEntries)
+     |> Option.filter _.HasDebugHeader
+     |> Option.map _.GetDebugHeader()
+     |> Option.filter _.HasEntries
      |> Option.bind (fun x ->
        x.Entries
        |> Seq.filter (fun e ->
@@ -312,10 +312,10 @@ module internal ProgramDatabase =
   // maybe move this somewhere else, now?
   let internal getModuleDocuments (``module``: ModuleDefinition) =
     ``module``.GetAllTypes()
-    |> Seq.collect (fun t -> t.GetMethods())
-    |> Seq.collect (fun m -> m.DebugInformation.SequencePoints)
-    |> Seq.map (fun s -> s.Document)
-    |> Seq.distinctBy (fun d -> d.Url)
+    |> Seq.collect _.GetMethods()
+    |> Seq.collect _.DebugInformation.SequencePoints
+    |> Seq.map _.Document
+    |> Seq.distinctBy _.Url
     |> Seq.toList
 
 [<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",

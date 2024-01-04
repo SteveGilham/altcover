@@ -8,12 +8,10 @@ namespace AltCover
 ```
 ## module `PrepareExtension` and module `CollectExtension`
 ```
-[<Extension>]
 module PrepareExtension = begin
   [<Extension>]
   val WhatIf : prepare:Abstract.IPrepareOptions -> AltCover.ValidatedCommandLine
 end
-[<Extension>]
 module CollectExtension = begin
   [<Extension>]
   val WhatIf :

@@ -7,6 +7,7 @@ open AltCover
 open Mono.Cecil
 
 module Rocks =
+  [<TailCall>]
   let rec GetAllTypes (t: TypeDefinition) =
     t
     :: (List.collect
@@ -55,9 +56,9 @@ module ValidateGendarmeEmulation =
          |> Seq.cast<TypeDefinition>
          |> Seq.map Rocks.GetAllTypes
          |> List.concat
-         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
+         |> List.map (_.Methods >> Seq.cast<MethodDefinition>)
          |> Seq.concat
-         |> Seq.sortBy (fun m -> m.FullName)))
+         |> Seq.sortBy _.FullName))
       |> seqStringify
       |> Seq.choose id
       |> Seq.toList
@@ -87,9 +88,9 @@ module ValidateGendarmeEmulation =
          |> Seq.cast<TypeDefinition>
          |> Seq.map Rocks.GetAllTypes
          |> List.concat
-         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
+         |> List.map (_.Methods >> Seq.cast<MethodDefinition>)
          |> Seq.concat
-         |> Seq.sortBy (fun m -> m.FullName)))
+         |> Seq.sortBy _.FullName))
       |> seqStringify
       |> Seq.choose id
       |> Seq.toList
@@ -118,9 +119,9 @@ module ValidateGendarmeEmulation =
          |> Seq.cast<TypeDefinition>
          |> Seq.map Rocks.GetAllTypes
          |> List.concat
-         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
+         |> List.map (_.Methods >> Seq.cast<MethodDefinition>)
          |> Seq.concat
-         |> Seq.sortBy (fun m -> m.FullName)))
+         |> Seq.sortBy _.FullName))
       |> seqStringify
       |> Seq.choose id
       |> Seq.toList
@@ -131,8 +132,7 @@ module ValidateGendarmeEmulation =
   let GratuitousCoverage () =
     let l = Left 23
     let r = Right true
-    let mutable x = Object()
-    x <- null
+    let mutable x: Object = null
     test <@ (23).IsNotNull @>
     test <@ x.IsNotNull |> not @>
 

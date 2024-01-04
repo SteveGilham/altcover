@@ -228,9 +228,12 @@ module internal Counter =
       let startTimeNode =
         root.GetAttributeNode("startTime")
 
+      let nullObject: System.Object = null
+
       if
         format = ReportFormat.NCover
-        && Object.ReferenceEquals(startTimeNode, null) |> not
+        && Object.ReferenceEquals(startTimeNode, nullObject)
+           |> not
       then
         let startTimeAttr = startTimeNode.Value
 

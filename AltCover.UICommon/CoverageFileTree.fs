@@ -65,6 +65,7 @@ module CoverageFileTree =
                     "ReviewSelfAssignmentRule",
                     Justification =
                       "Final line is a self-assignment for 'depth' -- compiler fault")>]
+  [<TailCall>]
   let rec private scan (s: string) index depth =
     match s.[index] with
     | '<' -> scan s (index + 1) (depth + 1)
@@ -124,6 +125,7 @@ module CoverageFileTree =
         )
 
       let gcroot (s: string) =
+        // [<TailCall>]
         let rec step (s: string) (i: int) =
           let next =
             s.IndexOf("gcroot<", i, StringComparison.Ordinal)
@@ -226,12 +228,12 @@ module CoverageFileTree =
                   Exists = true
                   Stale = false
                   Icon = environment.Icons.Source })
-          |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
-          |> Seq.sortBy (fun s -> s.FileName |> upcase)
+          |> Seq.distinctBy _.FullName // allows for same name, different path
+          |> Seq.sortBy (_.FileName >> upcase)
           |> Seq.toList
 
         let hasSource =
-          sources |> List.exists (fun s -> s.Exists)
+          sources |> List.exists _.Exists
 
         let icon =
           if hasSource then
@@ -313,7 +315,7 @@ module CoverageFileTree =
 
       if special <> MethodType.Normal then
         let pc =
-          keys |> Seq.map (fun x -> x.Navigator) |> pcCover
+          keys |> (Seq.map _.Navigator) |> pcCover
 
         let newrow =
           environment.AddNode
@@ -327,14 +329,14 @@ module CoverageFileTree =
             None
 
         keys
-        |> Seq.sortBy (fun key -> key.Name |> DisplayName)
+        |> Seq.sortBy (_.Name >> DisplayName)
         |> Seq.iter (applyMethod newrow)
       else
         applyMethod theModel (keys |> Seq.head)
 
     let methods =
       nodes
-      |> Seq.groupBy (fun key -> key.Name |> DisplayName |> HandleSpecialName)
+      |> Seq.groupBy (_.Name >> DisplayName >> HandleSpecialName)
       |> Seq.toArray
 
     let orderMethods array =
@@ -377,15 +379,12 @@ module CoverageFileTree =
           (environment.Icons.Module, String.Empty) // TODO maybe
         else
           let pc =
-            group
-            |> snd
-            |> Seq.map (fun x -> x.Navigator)
-            |> pcCover
+            group |> snd |> Seq.map _.Navigator |> pcCover
 
           let names =
             group
             |> snd
-            |> Seq.map (fun key -> key.Name |> DisplayName)
+            |> Seq.map (_.Name >> DisplayName)
             |> Seq.filter (fun d -> d.[0] <> '.')
             |> Seq.toList
 
@@ -410,9 +409,7 @@ module CoverageFileTree =
       || name.StartsWith(n + "/", StringComparison.Ordinal)
 
     let classlist =
-      nodes
-      |> Seq.groupBy (fun x -> x.ClassName)
-      |> Seq.toList
+      nodes |> Seq.groupBy _.ClassName |> Seq.toList
 
     let classnames =
       classlist |> Seq.map fst |> Set.ofSeq
@@ -423,8 +420,7 @@ module CoverageFileTree =
 
       classnames
       |> Seq.filter (fun cn -> contains cn "+" || contains cn "/")
-      |> Seq.map (fun cn ->
-        cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
+      |> Seq.map _.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0]
       |> Seq.distinct
       |> Seq.filter (fun mn -> classnames |> Set.contains mn |> not)
       |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
@@ -479,10 +475,7 @@ module CoverageFileTree =
       let name = fst group
 
       let pc =
-        group
-        |> snd
-        |> Seq.map (fun x -> x.Navigator)
-        |> pcCover
+        group |> snd |> Seq.map _.Navigator |> pcCover
 
       let newrow =
         environment.AddNode theModel environment.Icons.Namespace pc name None
@@ -510,7 +503,7 @@ module CoverageFileTree =
             else
               classfullname.Substring(1 + lastdot)
           Name = m.GetAttribute("name", String.Empty) })
-      |> Seq.groupBy (fun x -> x.NameSpace)
+      |> Seq.groupBy _.NameSpace
       |> Seq.sortBy fst
 
     methods |> Seq.iter (applyToModel model)
@@ -542,13 +535,13 @@ module CoverageFileTree =
       let sourceFiles =
         navigator.Select("//seqpnt/@document")
         |> Seq.cast<XPathNavigator>
-        |> Seq.map (fun x -> x.Value)
+        |> Seq.map _.Value
         |> Seq.distinct
 
       let missing =
         sourceFiles
         |> Seq.map GetSource
-        |> Seq.filter (fun f -> not f.Exists)
+        |> Seq.filter (_.Exists >> not)
 
       let newer =
         sourceFiles
@@ -559,7 +552,7 @@ module CoverageFileTree =
         [ (missing, "NotAllSourcePresent")
           (newer, "SomeSourceModified") ]
         |> Seq.filter (fun (x, y) -> x |> Seq.isEmpty |> not)
-        |> Seq.map (fun (x, y) -> Resource.Format(y, [||]))
+        |> Seq.map (fun (x, y) -> Resource.Format(y, Array.empty<Object>))
 
       let pc = pcCover [ navigator ]
 
@@ -615,18 +608,18 @@ module CoverageFileTree =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/step@128::Invoke(System.String,System.Int32)",
+                              "AltCover.CoverageFileTree/step@130::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethod@165::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                              "AltCover.CoverageFileTree/applyMethod@167::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
                             Justification = "Possibly too much work")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethods@357-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
+                              "AltCover.CoverageFileTree/applyMethods@359-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
                             Justification = "Inlined library code")>]
 ()

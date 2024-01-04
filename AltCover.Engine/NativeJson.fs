@@ -137,12 +137,11 @@ module
 #if RUNNER || GUI
   // Deserialization ---------------------------------------------------------
 
-  let internal timesFromJsonValue (j: JsonValue) =
-    j.Array |> Seq.map (fun a -> a.String) |> Times
+  let internal timesFromJsonValue (j: JsonValue) = j.Array |> Seq.map (_.String) |> Times
 
   let internal tracksFromJsonValue (j: JsonValue) =
     j.Array
-    |> Seq.map (fun a -> a.Number |> Math.Round |> int)
+    |> Seq.map (_.Number >> Math.Round >> int)
     |> Tracks
 
   let internal zero = JsonValue(0.0)
@@ -205,7 +204,7 @@ module
       Ordinal = (softNumberFromKey o "Ordinal") |> uint
       Hits = (softNumberFromKey o "Hits")
       // Optionals
-      Id = valueFromKey o "Id" 0 (fun t -> t.Number |> Math.Round |> int)
+      Id = valueFromKey o "Id" 0 (_.Number >> Math.Round >> int)
       Times = timesByKey o
       Tracks = tracksByKey o }
 
@@ -230,8 +229,11 @@ module
     let o = j.Object
 
     let tid =
-      valueFromKey o "TId" (System.Nullable()) (fun t ->
-        t.Number |> Math.Round |> int |> Nullable<int>)
+      valueFromKey
+        o
+        "TId"
+        (System.Nullable())
+        (_.Number >> Math.Round >> int >> Nullable<int>)
 
     { Lines = valueFromKey o "Lines" (Lines()) linesFromJsonValue
       Branches = valueFromKey o "Branches" (Branches()) branchesFromJsonValue
@@ -901,11 +903,8 @@ module
 
       let targets =
         value.Branches
-        |> Seq.groupBy (fun b -> b.Line)
-        |> Seq.sumBy (fun (_, x) ->
-          x
-          |> Seq.distinctBy (fun bx -> bx.EndOffset)
-          |> Seq.length)
+        |> Seq.groupBy _.Line
+        |> Seq.sumBy (fun (_1, x) -> x |> Seq.distinctBy _.EndOffset |> Seq.length)
 
       m
         .Attribute(XName.Get "cyclomaticComplexity")
@@ -1036,7 +1035,7 @@ module
   let internal summarize sd (m: XElement) name =
     let (nb, vb, ns, vs) =
       m.Descendants(XName.Get name)
-      |> Seq.collect (fun m2 -> m2.Elements(XName.Get "Summary"))
+      |> Seq.collect _.Elements(XName.Get "Summary")
       |> Seq.fold
         (fun (bn, bv, sn, sv) ms ->
           (bn + valueOf ms "numBranchPoints",
@@ -1126,7 +1125,7 @@ module
 
       kvp.Value
       |> Seq.tryFind (fun kvp -> kvp.Key == "\u00ABAltCover.embed\u00BB")
-      |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
+      |> Option.bind (_.Value.Keys >> Seq.tryHead)
       |> Option.iter (fun embed ->
         item.Add(XAttribute(XName.Get "altcover.embed", embed)))
 
@@ -1197,7 +1196,7 @@ module
         let topword =
           offset
           |> Option.ofObj
-          |> Option.map (fun x -> x.Value |> Int64.TryParse |> snd)
+          |> Option.map (_.Value >> Int64.TryParse >> snd)
           |> Option.defaultValue 0L
 
         let sl =

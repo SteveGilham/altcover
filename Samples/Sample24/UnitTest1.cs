@@ -15,7 +15,7 @@ namespace NUnitTestProject1
     public async Task AddAsync_Returns_The_Sum_Of_X_And_Y()
     {
       int result = await AddAsync(1, 1);
-      Assert.AreEqual(AddSynch(1, 1), result);
+      Assert.That(AddSynch(1, 1), Is.EqualTo(result));
     }
 
     public async Task<int> AddAsync(int x, int y)

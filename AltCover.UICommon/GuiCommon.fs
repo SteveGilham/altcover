@@ -60,13 +60,14 @@ module GuiCommon =
   let Embed (node: XPathNavigator) (document: string) =
     node.SelectAncestors("module", String.Empty, false)
     |> Seq.cast<XPathNavigator>
-    |> Seq.collect (fun n ->
-      n.SelectDescendants("altcover.file", String.Empty, false)
-      |> Seq.cast<XPathNavigator>)
+    |> Seq.collect (
+      _.SelectDescendants("altcover.file", String.Empty, false)
+      >> Seq.cast<XPathNavigator>
+    )
     |> Seq.filter (fun n ->
       n.GetAttribute("document", String.Empty)
       == document)
-    |> Seq.map (fun n -> n.GetAttribute("embed", String.Empty))
+    |> Seq.map _.GetAttribute("embed", String.Empty)
     |> Seq.filter (String.IsNullOrWhiteSpace >> not)
     |> Seq.tryHead
 

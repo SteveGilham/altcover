@@ -526,7 +526,7 @@ module internal Inspector =
         (CoverageParameters.local.Value)
         && a.MainModule
            |> ProgramDatabase.getModuleDocuments
-           |> Seq.map (fun d -> d.Url)
+           |> Seq.map _.Url
            |> Seq.exists File.Exists
            |> not
       | _ -> false
@@ -748,8 +748,7 @@ module internal Visitor =
     // actually all vestigial classes now the first line is commented out
     let internal stripInterfaces (t: TypeDefinition) =
       // t.BaseType.IsNotNull ||
-      t.Methods
-      |> Seq.exists (fun m -> m.IsAbstract |> not)
+      t.Methods |> Seq.exists (_.IsAbstract >> not)
 
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidUnnecessarySpecializationRule",
@@ -766,9 +765,10 @@ module internal Visitor =
       sourceLinkDocuments <-
         Some x.Module
         |> Option.filter (fun _ -> CoverageParameters.sourcelink.Value)
-        |> Option.bind (fun x ->
-          x.CustomDebugInformations
-          |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
+        |> Option.bind (
+          _.CustomDebugInformations
+          >> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink)
+        )
         |> Option.map (fun i ->
           let c =
             (i :?> SourceLinkDebugInformation).Content
@@ -847,7 +847,7 @@ module internal Visitor =
           if
             m.HasCustomAttributes
             && m.CustomAttributes
-               |> Seq.map (fun a -> a.AttributeType)
+               |> Seq.map _.AttributeType
                |> Seq.tryFind (fun a -> full == a.Name || full == a.FullName)
                |> Option.isSome
           then
@@ -880,7 +880,7 @@ module internal Visitor =
           ct.DeclaringType // Hope we don't have to generalise this
           |> Option.ofObj
           |> Option.filter (fun _ -> ct.Name.StartsWith("<", StringComparison.Ordinal))
-          |> Option.map (fun c -> c.Methods |> Seq.toList)
+          |> Option.map (_.Methods >> Seq.toList)
           |> Option.defaultValue []
         ))
         |> Seq.filter (fun mx -> (mx.Name == stripped) && mx.HasBody)
@@ -897,8 +897,8 @@ module internal Visitor =
           |> Option.map (fun c ->
             c.NestedTypes
             |> Seq.filter (fun t -> t.Name.IndexOf(tag, StringComparison.Ordinal) >= 0)
-            |> Seq.collect (fun t -> t.Methods)
-            |> Seq.filter (fun m -> m.HasBody))
+            |> Seq.collect _.Methods
+            |> Seq.filter _.HasBody)
           |> Option.defaultValue ([] |> Seq.ofList)
 
         let peers =
@@ -910,8 +910,8 @@ module internal Visitor =
 
         let children =
           ct.NestedTypes
-          |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
-          |> Seq.collect (fun tx -> tx.Methods)
+          |> Seq.filter _.Name.StartsWith("<", StringComparison.Ordinal)
+          |> Seq.collect _.Methods
           |> Seq.filter (fun mx ->
             mx.HasBody
             && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
@@ -924,7 +924,7 @@ module internal Visitor =
           .Concat(peers)
           .Concat(children)
         |> Seq.filter predicate
-        |> Seq.sortBy (fun mx -> mx.DeclaringType.FullName.Split('/').Length) // strive upwards
+        |> Seq.sortBy _.DeclaringType.FullName.Split('/').Length // strive upwards
         |> Seq.tryHead
 
     let internal sameType (target: TypeReference) (candidate: TypeReference) =
@@ -979,9 +979,9 @@ module internal Visitor =
         t.DeclaringType.Methods.Concat(
           t.DeclaringType.NestedTypes
           |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
-          |> Seq.collect (fun t2 -> t2.Methods)
+          |> Seq.collect _.Methods
         )
-        |> Seq.filter (fun m -> m.HasBody)
+        |> Seq.filter _.HasBody
 
       candidates
       |> Seq.tryFind (fun c ->
@@ -1070,7 +1070,7 @@ module internal Visitor =
                   m.IsConstructor
                   && m.HasParameters
                   && (m.Parameters.Count = 1))
-                |> Option.map (fun m -> m.Parameters |> Seq.head)
+                |> Option.map (_.Parameters >> Seq.head)
               with
               | None -> t :> TypeReference
               | Some other -> other.ParameterType
@@ -1198,6 +1198,7 @@ module internal Visitor =
     let internal indexList l = l |> List.mapi (fun i x -> (i, x))
 
     let internal getJumpChain (terminal: Instruction) (i: Instruction) =
+      // [<TailCall>]
       let rec accumulate (state: Instruction) l =
         let gendarme = l
 
@@ -1232,7 +1233,7 @@ module internal Visitor =
       (f: (Instruction -> int) -> Instruction list -> Instruction)
       (places: Instruction list)
       =
-      places |> f (fun i -> i.Offset)
+      places |> f _.Offset
 
     let internal includedSequencePoint dbg (toNext: Instruction list) toJump =
       let places = List.concat [ toNext; toJump ]
@@ -1255,6 +1256,7 @@ module internal Visitor =
 
       findEffectiveSequencePoint FakeAtReturn dbg range
 
+    [<TailCall>]
     let rec internal lastOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
       let n = i.Next
 
@@ -1266,6 +1268,7 @@ module internal Visitor =
       else
         lastOfSequencePoint dbg n
 
+    [<TailCall>]
     let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
       let p = i.Previous
 
@@ -1304,7 +1307,9 @@ module internal Visitor =
         | _ -> []
 
     let private coalesceBranchPoints dbg (bps: GoTo seq) =
-      let selectRepresentatives (_, bs) =
+      let selectRepresentatives (whatever, bs) =
+        ignore whatever
+
         let last =
           lastOfSequencePoint dbg (bs |> Seq.head).Start
 
@@ -1325,7 +1330,7 @@ module internal Visitor =
                   || i.OpCode.FlowControl = FlowControl.Break
                   || i.OpCode.FlowControl = FlowControl.Throw
                   || i.OpCode.FlowControl = FlowControl.Branch) }) // more??
-        |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
+        |> Seq.groupBy (_.Target >> Seq.tryHead)
         |> Seq.map (
           snd
           >> (fun bg ->
@@ -1357,7 +1362,7 @@ module internal Visitor =
       let mutable uid = 0
 
       bps
-      |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
+      |> Seq.groupBy _.SequencePoint.Offset
       |> Seq.map selectRepresentatives // >> demoteSingletons)
       |> Seq.collect id
       |> Seq.map (fun bs ->
@@ -1371,7 +1376,7 @@ module internal Visitor =
                { bx with
                    Representative = Reporting.None }))
       |> Seq.collect id
-      |> Seq.sortBy (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
+      |> Seq.sortBy _.Key // important! instrumentation assumes we work in the order we started with
 
     let private extractBranchPoints dbg rawInstructions interesting vc =
       let makeDefault i =
@@ -1481,7 +1486,7 @@ module internal Visitor =
 
         let nt =
           x :: (rest |> Seq.toList)
-          |> List.filter (fun v -> v.OpCode |> trivial.Contains |> not)
+          |> List.filter (_.OpCode >> trivial.Contains >> not)
           |> List.tryHead
 
         Option.isSome nt
@@ -1600,6 +1605,7 @@ module internal Visitor =
 
         raise (InvalidOperationException(message, x))
 
+    [<TailCall>]
     let rec internal deeper node =
       let visit n =
         // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
@@ -1641,6 +1647,7 @@ module internal Visitor =
       accumulator.Clear()
 
   let internal encloseState (visitor: 'TState -> 'T -> 'TState) (current: 'TState) =
+    // [<TailCall>]
     let rec stateful l =
       new Fix<'T>(fun (node: 'T) ->
         let next = visitor l node
@@ -1660,30 +1667,30 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1391::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1396::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1241::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1242::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1244::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/finish@1245::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1548-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1553-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1451@1451::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1456@1456::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 ()

@@ -120,7 +120,7 @@ module private Gui =
       String.Join(
         Environment.NewLine,
         [ AltCover.AssemblyVersionInformation.AssemblyCopyright
-          Resource.Format("aboutVisualizer.Copyright", [])
+          Resource.Format("aboutVisualizer.Copyright", List.empty<Object>)
           "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022" ]
       )
 
@@ -282,7 +282,7 @@ module private Gui =
         ResponseType.Ok,
         Resource.GetResourceString "OpenFile.Cancel",
         ResponseType.Cancel,
-        null
+        nullObject
       )
 
     let data =
@@ -906,7 +906,7 @@ module private Gui =
     handler.classStructureTree.QueryTooltip
     |> Event.add (fun (x: QueryTooltipArgs) ->
       let tip = x.Tooltip
-      x.RetVal <- null
+      x.RetVal <- nullObject
       let mutable path: TreePath = null
 
       if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path) then

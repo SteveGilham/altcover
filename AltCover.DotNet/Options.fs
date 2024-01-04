@@ -6,7 +6,6 @@ namespace AltCoverFake.DotNet.Testing
 
 open System
 open System.Diagnostics.CodeAnalysis
-open System.Linq
 
 [<RequireQualifiedAccess>]
 module Options =

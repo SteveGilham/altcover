@@ -151,7 +151,7 @@ module internal PostProcess =
 
       sp
       |> Seq.take 1
-      |> Seq.collect (fun p -> p.Attributes)
+      |> Seq.collect _.Attributes
       |> Seq.iter (fun a -> m.SetAttribute a.Name a.Value))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
@@ -177,7 +177,7 @@ module internal PostProcess =
     =
     let token =
       method.GetElementsByTagName("MetadataToken")
-      |> Seq.map (fun m -> m.InnerText)
+      |> Seq.map _.InnerText
       |> Seq.head
 
     let vc =
@@ -325,7 +325,7 @@ module internal PostProcess =
 
         let interleave =
           nodes
-          |> Seq.sortBy (fun x -> x.GetAttribute(orderAttr) |> Int32.TryParse |> snd)
+          |> Seq.sortBy (_.GetAttribute(orderAttr) >> Int32.TryParse >> snd)
 
         interleave
         |> Seq.fold

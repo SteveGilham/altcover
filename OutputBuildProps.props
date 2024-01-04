@@ -13,7 +13,7 @@
     <KeyDir>$(MSBuildThisFileDirectory)Build\</KeyDir>
     <InfrastructureKey>$(KeyDir)Infrastructure.snk</InfrastructureKey>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
-    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <OtherFlags>--keyfile:$(InfrastructureKey) --strict-indentation+</OtherFlags>
     <RollForward>Major</RollForward>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -23,6 +23,7 @@
     <AssemblyOriginatorKeyFile>$(InfrastructureKey)</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <WarnOn>FS3559;FS3560</WarnOn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

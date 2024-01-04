@@ -174,10 +174,9 @@ Actual:   False
     // printfn "%s" fallback
     // printfn "*********************************************"
 
-    Assert.That(
-      fallback,
-      Does.EndWith
-        """  actual = expected
+    let expected =
+#if NET472
+      """  actual = expected
 "yes" = "no"
 false
   Expected string length 2 but was 3. Strings differ at index 0.
@@ -185,6 +184,28 @@ false
   But was:  "yes"
   -----------^
 """
+#else
+      """  actual = expected
+"yes" = "no"
+false"""
+      + "\n"
+      + """Assert.That(, )
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+"""
+#endif
+
+    Assert.That(
+      fallback,
+      Does.EndWith expected
+
+    //,"VV*********************************************" + Environment.NewLine +
+    //fallback.TrimEnd() + Environment.NewLine +
+    //"^^*********************************************" + Environment.NewLine +
+    //(sprintf "%A %A" fallback.Length expected.Length) +
+    //"^^*********************************************" + Environment.NewLine
     )
 
     let m =
@@ -211,12 +232,13 @@ Actual:   False
 
     Assert.That(
       m2,
-      Is.EqualTo
+      Is.EqualTo(
+#if NET472
         """Multiple failures or warnings in test:
   1)   Expected: 4
   But was:  3
 
-  2) 
+  2)@
 
 3 = exp1
 3 = 4
@@ -227,13 +249,41 @@ false
   But was:  "yes"
   -----------^
 
-  4) 
+  4)@
 
 "yes" = exp2
 "yes" = "no"
 false
 
 """
+#else
+        """Multiple failures or warnings in test:
+  1)   Assert.That(, )
+  Expected: 4
+  But was:  3
+
+  2)@
+
+3 = exp1
+3 = 4
+false
+
+  3)   Assert.That(, )
+  Expected string length 2 but was 3. Strings differ at index 0.
+  Expected: "no"
+  But was:  "yes"
+  -----------^
+
+  4)@
+
+"yes" = exp2
+"yes" = "no"
+false
+
+"""
+#endif
+          .Replace("@", " ")
+      )
     )
 
 #if !NET472
@@ -251,18 +301,20 @@ module ExpectoTestCommon =
 
     let testMethods =
       def.MainModule.GetTypes()
-      |> Seq.collect (fun t -> t.Methods)
-      |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
-      |> Seq.filter (fun m ->
-        m.CustomAttributes
-        |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
+      |> Seq.collect _.Methods
+      |> Seq.filter _.CustomAttributes.IsNotNull
+      |> Seq.filter (
+        _.CustomAttributes
+        >> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute")
+      )
       |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
 
     let lookup =
       def.MainModule.GetAllTypes()
-      |> Seq.filter (fun t ->
-        t.Methods
-        |> Seq.exists (fun m -> m.Name = "Invoke"))
+      |> Seq.filter (
+        _.Methods
+        >> Seq.exists (fun m -> m.Name = "Invoke")
+      )
       |> Seq.map (fun t ->
         (t.FullName.Replace("/", "+"), t.Methods |> Seq.find (fun m -> m.Name = "Invoke")))
       |> Map.ofSeq
@@ -271,20 +323,19 @@ module ExpectoTestCommon =
       regular
       |> List.map (
         fst
-        >> (fun f -> f.GetType().FullName.Replace("/", "+"))
+        >> _.GetType().FullName.Replace("/", "+")
         >> (fun f -> Map.find f lookup)
-        >> (fun f ->
-          f.Body.Instructions
-          // Where the test assembly is itself instrumented
-          // we have to allow for calls to AltCover.Recorder.Instance::Visit
-          // or the coverlet equivalent
-          // having been injected into the local function reference
+        >> (_.Body.Instructions
+            // Where the test assembly is itself instrumented
+            // we have to allow for calls to AltCover.Recorder.Instance::Visit
+            // or the coverlet equivalent
+            // having been injected into the local function reference
 
-          |> Seq.find (fun i ->
-            i.OpCode = OpCodes.Call
-            && i.Operand
-              .GetType()
-              .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
+            >> Seq.find (fun i ->
+              i.OpCode = OpCodes.Call
+              && i.Operand
+                .GetType()
+                .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
         >> (fun i ->
           let m = (i.Operand :?> MethodDefinition)
           m.DeclaringType.FullName + "::" + m.Name)

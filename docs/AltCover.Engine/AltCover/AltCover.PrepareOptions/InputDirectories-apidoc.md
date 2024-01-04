@@ -1,6 +1,6 @@
 # AltCover.PrepareOptions.InputDirectories property
 
-Corresponds to command line option ` -i, --inputDirectory=VALUE`
+Corresponds to command line option `-i, --inputDirectory=VALUE`
 
 ```csharp
 public FSharpList<string> InputDirectories { get; }
