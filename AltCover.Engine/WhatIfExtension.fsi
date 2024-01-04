@@ -10,7 +10,6 @@ open System.Runtime.CompilerServices /// no doc
 ///<summary>
 /// `Abstract.IPrepareOptions` extension methods
 ///</summary>
-[<Extension>]
 module PrepareExtension = begin
   ///<summary>
   /// Validates the supplied options
@@ -23,7 +22,6 @@ end
 ///<summary>
 /// `Abstract.ICollectOptions` extension methods
 ///</summary>
-[<Extension>]
 module CollectExtension = begin
   ///<summary>
   /// Validates the supplied options

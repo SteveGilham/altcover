@@ -96,6 +96,7 @@ module AltCoverCoreTests =
     use formatter = // fsharplint:disable-next-line  RedundantNewKeyword
       new System.IO.BinaryReader(stream)
 
+    // [<TailCall>]
     let rec sink () =
       maybeIOException (fun () ->
         let id = formatter.ReadString()
@@ -115,6 +116,7 @@ module AltCoverCoreTests =
            let t =
              Dictionary<string, Dictionary<int, PointVisit>>()
 
+           // [<TailCall>]
            let rec ``module`` () =
              let m = formatter.ReadString()
 
@@ -124,6 +126,7 @@ module AltCoverCoreTests =
                t.Add(m, Dictionary<int, PointVisit>())
                let points = formatter.ReadInt32()
 
+               // [<TailCall>]
                let rec sequencePoint pts =
                  if pts > 0 then
                    let p = formatter.ReadInt32()
@@ -131,6 +134,7 @@ module AltCoverCoreTests =
                    let pv = Adapter.init (n, [])
                    t.[m].Add(p, pv)
 
+                   // [<TailCall>]
                    let rec tracking () =
                      let track = formatter.ReadByte() |> int
 

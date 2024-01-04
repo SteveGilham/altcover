@@ -8,6 +8,7 @@
     <!-- see https://github.com/NuGet/Home/issues/8797 -->
     <NoWarn>NU1702</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -49,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net20'">

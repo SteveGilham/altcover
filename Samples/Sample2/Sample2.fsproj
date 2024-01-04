@@ -18,7 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="NUnit3TestAdapter">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

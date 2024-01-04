@@ -22,6 +22,7 @@ let patchArray s =
   |> Seq.map (fun (x: byte) -> x.ToString("X2").ToLower())
   |> Seq.toList
 
+[<TailCall>]
 let rec chunkArray (s: string list) =
   let chunk = 39
   s |> Seq.truncate chunk |> Seq.iter Console.Write

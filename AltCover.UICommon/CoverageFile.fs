@@ -68,7 +68,7 @@ module Transformer =
     // normalize file names
     let sources =
       document.Descendants(XName.Get "source")
-      |> Seq.map (fun x -> x.Value)
+      |> Seq.map _.Value
       |> Seq.toList
 
     document.Descendants(XName.Get "class")

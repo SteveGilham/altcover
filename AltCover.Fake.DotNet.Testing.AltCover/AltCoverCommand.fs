@@ -169,12 +169,14 @@ module AltCoverCommand =
     let parameters =
       Fake.DotNet.DotNet.TestOptions.Create() |> options
 
+    let nullObject: Object = null
+
     let args =
-      builder.Invoke(null, [| parameters |]) :?> string list
+      builder.Invoke(nullObject, [| parameters |]) :?> string list
 
     let cmdArgs =
       builder2.Invoke(
-        null,
+        nullObject,
         [| ("test"
             |> Args.fromWindowsCommandLine
             |> Seq.toList)
@@ -324,19 +326,19 @@ module AltCoverCommand =
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@296T.#monoPath",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@298T.#monoPath",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@296T.#options",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@298T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@247T.#options",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@249T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",

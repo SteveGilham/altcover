@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v3
+    - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.100'
     - name: Tools
@@ -42,11 +42,11 @@ jobs:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
       run: dotnet run --project .\Build\Build.fsproj
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
           name: nupkgs
           path: _Packagin*/*.nupkg
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
           name: reports.windows
@@ -61,7 +61,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v3
+    - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.100'
     - name: Tools
@@ -70,7 +70,7 @@ jobs:
       run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
       run: dotnet run --project ./Build/Build.fsproj 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
           name: reports.linux

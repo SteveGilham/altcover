@@ -23,8 +23,7 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -44,7 +43,7 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("OpenCoverStrict.xsd", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("OpenCoverStrict.xsd", StringComparison.Ordinal)
 
     use sstream =
       Assembly
@@ -71,8 +70,7 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -103,7 +101,7 @@ module FSApiTests =
 
     after.Descendants(XName.Get "SequencePoint")
     |> Seq.toList
-    |> List.iter (fun el -> el.Remove())
+    |> List.iter _.Remove()
 
     after.Descendants(XName.Get "MethodPoint")
     |> Seq.iter (fun el -> setAttribute el "vc" "0")
@@ -890,7 +888,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
 
     doc.Descendants()
-    |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
+    |> Seq.map _.Attribute(XName.Get "excluded")
     |> Seq.filter (isNull >> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
@@ -944,7 +942,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
 
     doc.Descendants()
-    |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
+    |> Seq.map _.Attribute(XName.Get "excluded")
     |> Seq.filter (isNull >> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
@@ -1150,7 +1148,7 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("AltCover.targets", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("AltCover.targets", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -1161,19 +1159,19 @@ module FSApiTests =
 
     let prepare =
       doc.Descendants()
-      |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Prepare")
+      |> Seq.filter _.Name.LocalName.Equals("AltCover.Prepare")
       |> Seq.head
 
     let prepareNames =
       prepare.Attributes()
-      |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+      |> Seq.map _.Name.LocalName.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
     let prepareFragments =
       [ DotNet.I.toPrepareListArgumentList
         >> (List.map (fun (_, n, _) -> n))
-        (fun p -> p.Verbosity)
+        _.Verbosity
         >> DotNet.I.toSharedFromValueArgumentList
         >> (List.map (fun (_, n, _, _) -> n))
         DotNet.I.toPrepareFromArgArgumentList
@@ -1191,24 +1189,21 @@ module FSApiTests =
 
     let collect =
       doc.Descendants()
-      |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Collect")
+      |> Seq.filter _.Name.LocalName.Equals("AltCover.Collect")
       |> Seq.head
 
     let collectNames =
       collect.Attributes()
-      |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+      |> Seq.map _.Name.LocalName.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
     let collectFragments =
-      [ //DotNet.I.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-        DotNet.I.toCollectFromArgArgumentList
+      [ DotNet.I.toCollectFromArgArgumentList
         >> (List.map (fun (_, n, _) -> n))
-        (fun c -> c.Verbosity)
+        _.Verbosity
         >> DotNet.I.toSharedFromValueArgumentList
-        >> (List.map (fun (_, n, _, _) -> n))
-        //DotNet.I.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
-        ]
+        >> (List.map (fun (_, n, _, _) -> n)) ]
       |> List.collect (fun f -> f coll)
       |> List.sort
 
@@ -1220,7 +1215,7 @@ module FSApiTests =
 
     let optionNames =
       typeof<DotNet.CLIOptions>.GetProperties()
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -1232,8 +1227,7 @@ module FSApiTests =
     let opt = DotNet.CLIOptions.Fail true
 
     let optionsFragments =
-      [ //DotNet.I.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-        DotNet.I.toCLIOptionsFromArgArgumentList
+      [ DotNet.I.toCLIOptionsFromArgArgumentList
         >> (List.map (fun (_, n, _) -> n))
         DotNet.I.toCLIOptionsArgArgumentList
         >> (List.map (fun (_, n, _, _) -> n)) ]

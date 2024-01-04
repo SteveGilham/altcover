@@ -30,12 +30,12 @@ module HandlerCommon =
 
     let document =
       allpoints
-      |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
+      |> Seq.map _.GetAttribute("document", String.Empty)
       |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
 
     let line =
       allpoints
-      |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
+      |> Seq.map _.GetAttribute("line", String.Empty)
       |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
 
     if document |> Option.isNone || line |> Option.isNone then
@@ -133,7 +133,7 @@ module HandlerCommon =
     |> Seq.cast<XPathNavigator>
     |> Seq.map (coverageToTag lineOnly)
     |> Seq.filter (filterCoverage sourceLines)
-    |> Seq.sortByDescending (fun t -> t.VisitCount)
+    |> Seq.sortByDescending _.VisitCount
     |> Seq.toList
 
   [<SuppressMessage("Microsoft.Naming",
@@ -141,7 +141,7 @@ module HandlerCommon =
                     Justification = "Why is this different to 'TagBranches'???")>]
   let TagLines (visited: 'Tag) (notVisited: 'Tag) (tags: CodeTag list) =
     tags
-    |> List.groupBy (fun t -> t.Line)
+    |> List.groupBy _.Line
     |> List.map (fun (l, t) ->
       let total =
         t
@@ -180,7 +180,7 @@ module HandlerCommon =
   let TagBranches (methodPath: XPathNavigator) (file: Source) =
     (methodPath.Select("//branch[@document='" + file.FullName + "']") // TODO
      |> Seq.cast<XPathNavigator>
-     |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
+     |> Seq.groupBy _.GetAttribute("line", String.Empty)
      |> Seq.toList
      |> Seq.map (fun n ->
        let line =
@@ -207,7 +207,7 @@ module HandlerCommon =
 
     let files =
       window.CoverageFiles
-      |> List.filter (fun n -> not (n.Equals(path, casematch)))
+      |> List.filter (_.Equals(path, casematch) >> not)
       |> Seq.truncate (9)
       |> Seq.toList
 

@@ -67,6 +67,7 @@ module internal Output =
 
     use writer = new StreamWriter(stream)
 
+    //[<TailCall>]
     let rec logException padding ex =
       ex.ToString() |> writer.WriteLine
 

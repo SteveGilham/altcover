@@ -31,6 +31,7 @@ module internal Naming =
                                                         "AvoidSpeculativeGenerality too")>]
     let internal typeRefName (def: TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
 
+    // NOT [<TailCall>]
     let rec internal fullTypeRefName (def: TypeReference) =
       let deft = def.DeclaringType
 
@@ -47,6 +48,7 @@ module internal Naming =
         emptyIfIsNullOrWhiteSpace def.Name
 
   // "Public" interface
+  // NOT [<TailCall>]
   let rec internal fullTypeName (def: TypeDefinition) =
     let deft = def.DeclaringType
 
@@ -61,9 +63,9 @@ module internal Naming =
       String.Join(
         ",",
         def.Parameters
-        |> Seq.filter (fun x -> x.IsNotNull)
-        |> Seq.map (fun p -> p.ParameterType)
-        |> Seq.filter (fun x -> x.IsNotNull)
+        |> Seq.filter _.IsNotNull
+        |> Seq.map _.ParameterType
+        |> Seq.filter _.IsNotNull
         |> Seq.map I.fullTypeRefName
       )
 
@@ -74,7 +76,7 @@ module internal Naming =
         String.Join(
           ",",
           def.GenericParameters
-          |> Seq.filter (fun x -> x.IsNotNull)
+          |> Seq.filter _.IsNotNull
           |> Seq.map I.fullTypeRefName
         )
       else

@@ -11,11 +11,12 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE</DefineConstants>
-    <OtherFlags>$(OtherFlags) --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
+    <OtherFlags>--keyfile:$(InfrastructureKey) --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>

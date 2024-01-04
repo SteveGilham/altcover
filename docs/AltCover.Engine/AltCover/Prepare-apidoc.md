@@ -23,11 +23,11 @@ public class Prepare : Task
 | [ExposeReturnCode](Prepare/ExposeReturnCode-apidoc) { get; set; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](Prepare/FileFilter-apidoc) { get; set; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](Prepare/InPlace-apidoc) { get; set; } | Corresponds to command line option `--inplace` |
-| [InputDirectories](Prepare/InputDirectories-apidoc) { get; set; } | Corresponds to command line option ` -i, --inputDirectory=VALUE` |
-| [Keys](Prepare/Keys-apidoc) { get; set; } | Corresponds to command line option ` -k, --key=VALUE` |
+| [InputDirectories](Prepare/InputDirectories-apidoc) { get; set; } | Corresponds to command line option `-i, --inputDirectory=VALUE` |
+| [Keys](Prepare/Keys-apidoc) { get; set; } | Corresponds to command line option `-k, --key=VALUE` |
 | [LineCover](Prepare/LineCover-apidoc) { get; set; } | Corresponds to command line option `--linecover` |
 | [LocalSource](Prepare/LocalSource-apidoc) { get; set; } | Corresponds to command line option `-l, --localSource` |
-| [MethodFilter](Prepare/MethodFilter-apidoc) { get; set; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
+| [MethodFilter](Prepare/MethodFilter-apidoc) { get; set; } | Corresponds to command line option `-m, --methodFilter=VALUE` |
 | [MethodPoint](Prepare/MethodPoint-apidoc) { get; set; } | Corresponds to command line option `--methodpoint` |
 | [MethodTopLevel](Prepare/MethodTopLevel-apidoc) { get; set; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Prepare/OutputDirectories-apidoc) { get; set; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
@@ -35,17 +35,17 @@ public class Prepare : Task
 | [Report](Prepare/Report-apidoc) { get; set; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Prepare/ReportFormat-apidoc) { get; set; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Prepare/Save-apidoc) { get; set; } | Corresponds to command line option `--save` |
-| [ShowGenerated](Prepare/ShowGenerated-apidoc) { get; set; } | Corresponds to command line option ` --showGenerated` |
+| [ShowGenerated](Prepare/ShowGenerated-apidoc) { get; set; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](Prepare/ShowStatic-apidoc) { get; set; } | Corresponds to command line option `--showstatic[=VALUE]` |
 | [SingleVisit](Prepare/SingleVisit-apidoc) { get; set; } | Corresponds to command line option `--single` |
 | [SourceLink](Prepare/SourceLink-apidoc) { get; set; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
-| [Trivia](Prepare/Trivia-apidoc) { get; set; } | Corresponds to command line option ` --trivia` |
+| [Trivia](Prepare/Trivia-apidoc) { get; set; } | Corresponds to command line option `--trivia` |
 | [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } | Corresponds to command line option `--typetoplevel=VALUE` |
-| [Verbosity](Prepare/Verbosity-apidoc) { get; set; } | Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values) |
-| [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } | Corresponds to command line option ` -v, --visibleBranches` |
+| [Verbosity](Prepare/Verbosity-apidoc) { get; set; } | Corresponds to command line options `-q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values) |
+| [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } | Corresponds to command line option `-v, --visibleBranches` |
 | [ZipFile](Prepare/ZipFile-apidoc) { get; set; } | Corresponds to command line option `--zipfile` |
 | override [Execute](Prepare/Execute-apidoc)() | Perform the operation |
 

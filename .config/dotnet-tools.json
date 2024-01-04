@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.1.26",
+      "version": "5.2.0",
       "commands": [
         "reportgenerator"
       ]
@@ -15,13 +15,13 @@
       ]
     },
     "altcode.gendarme-tool": {
-      "version": "2023.8.26.15512",
+      "version": "2023.12.27.19054",
       "commands": [
         "gendarme"
       ]
     },
     "dotnet-fsharplint": {
-      "version": "0.21.3",
+      "version": "0.23.0",
       "commands": [
         "dotnet-fsharplint"
       ]

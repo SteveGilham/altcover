@@ -74,7 +74,7 @@ module internal OpenCover =
   module internal I =
     let internal setChain (xbranch: XElement) branch =
       let chain =
-        branch.Target.Tail |> List.map (fun i -> i.Offset)
+        branch.Target.Tail |> List.map _.Offset
 
       xbranch.SetAttributeValue(
         "offsetchain".X,
@@ -84,7 +84,7 @@ module internal OpenCover =
           String.Join(
             " ",
             l
-            |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))
+            |> Seq.map _.ToString(CultureInfo.InvariantCulture)
           )
       )
 
@@ -348,10 +348,10 @@ module internal OpenCover =
       let attr =
         element.Attribute("skippedDueTo".X)
         |> Option.ofObj
-        |> Option.map (fun a -> a.Value)
+        |> Option.map _.Value
 
       if e.Interesting && attr = Some "File" then
-        element.SetAttributeValue("skippedDueTo".X, null)
+        element.SetAttributeValue("skippedDueTo".X, nullObject)
 
       match (e.Interesting, e.SeqPnt, s.Excluded) with
       | (true, Some codeSegment, Nothing) ->
@@ -440,10 +440,11 @@ module internal OpenCover =
 
         let interleave =
           List.concat [ sp; bp; [ tail ] ]
-          |> List.sortBy (fun x ->
-            x.Attribute("offset".X).Value
-            |> Int32.TryParse
-            |> snd)
+          |> List.sortBy (
+            _.Attribute("offset".X).Value
+            >> Int32.TryParse
+            >> snd
+          )
 
         let (np, _, _) =
           interleave
@@ -460,7 +461,7 @@ module internal OpenCover =
       else if bp |> List.isEmpty |> not then
         let np =
           bp
-          |> List.groupBy (fun bp -> bp.Attribute("offset".X).Value)
+          |> List.groupBy _.Attribute("offset".X).Value
           |> Seq.fold (fun np0 (_, b) -> safeMultiply (Seq.length b) np0) 1
 
         method.SetAttributeValue("nPathComplexity".X, np)
@@ -533,7 +534,7 @@ module internal OpenCover =
       if skipped then
         method.Elements("Summary".X)
         |> Seq.toList
-        |> Seq.iter (fun x -> x.Remove())
+        |> Seq.iter _.Remove()
       else
         method.Elements("Summary".X)
         |> Seq.iter (addMethodSummary s cc)
@@ -651,9 +652,9 @@ module internal OpenCover =
           head.Parent.Descendants("SequencePoint".X)
           head.Parent.Descendants("BranchPoint".X) ]
         |> Seq.concat
-        |> Seq.map (fun d -> d.Attribute("fileid".X))
-        |> Seq.filter (fun a -> a.IsNotNull)
-        |> Seq.map (fun a -> a.Value)
+        |> Seq.map _.Attribute("fileid".X)
+        |> Seq.filter _.IsNotNull
+        |> Seq.map _.Value
         |> Seq.distinct
         |> Seq.map Int32.TryParse
         |> Seq.filter fst
@@ -729,6 +730,6 @@ module internal OpenCover =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/handleOrdinals@451-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/handleOrdinals@452-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler generated")>]
 ()

@@ -576,6 +576,10 @@ module ExpectoTestManifest =
        "Tests2.ExcludedAfterMethodShouldNotChangeState"
        Tests.AltCoverTests2.IncludedAfterMethodShouldRewriteMethod,
        "Tests2.IncludedAfterMethodShouldRewriteMethod"
+       Tests.AltCoverTests2.NoStrongNameShouldUpdateVisibleTo,
+       "Tests2.NoStrongNameShouldUpdateVisibleTo"
+       Tests.AltCoverTests2.NewStrongNameShouldUpdateVisibleTo,
+       "Tests2.NewStrongNameShouldUpdateVisibleTo"
        Tests.AltCoverTests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible,
        "Tests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible"
        Tests.AltCoverTests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2,

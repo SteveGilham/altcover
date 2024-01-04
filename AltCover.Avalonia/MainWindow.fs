@@ -203,6 +203,7 @@ type MainWindow() as this =
   [<SuppressMessage("Gendarme.Rules.Portability",
                     "NewLineLiteralRule",
                     Justification = "That is kind of the point...")>]
+  [<TailCall>]
   let rec linesOfString (s: string) (start: int) (lines: TextLine list) =
     let rn = s.IndexOf("\r\n", start)
 
@@ -422,7 +423,7 @@ type MainWindow() as this =
         (n.Column - 1)
         + (lines
            |> Seq.take (n.Line - 1)
-           |> Seq.sumBy (fun l -> l.Length))
+           |> Seq.sumBy _.Length)
 
       let ec =
         if n.LineOnly then
@@ -894,7 +895,7 @@ type MainWindow() as this =
 
          s |> Async.AwaitTask |> Async.RunSynchronously)
         |> Option.ofObj
-        |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
+        |> Option.map (_.FirstOrDefault() >> Option.ofObj)
         |> Option.iter openFile.Trigger
       }
       |> Async.Start)
@@ -1015,7 +1016,7 @@ type MainWindow() as this =
     |> Event.add (fun index ->
       let mutable auxModel =
         { Model = List<TreeViewItem>()
-          Row = null }
+          Row = nullObject }
 
       let addNode =
         fun
@@ -1069,7 +1070,7 @@ type MainWindow() as this =
               this.Title <- "AltCover.Visualizer"
 
               tree.Items.OfType<IDisposable>()
-              |> Seq.iter (fun x -> x.Dispose())
+              |> Seq.iter _.Dispose()
 
               let t1 =
 #if AVALONIA11

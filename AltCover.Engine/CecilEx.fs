@@ -29,7 +29,7 @@ module AssemblyConstants =
       Environment
         .GetEnvironmentVariable("PATH")
         .Split([| Path.PathSeparator |])
-      |> Seq.map (fun p -> p.Trim([| '"' |]))
+      |> Seq.map _.Trim([| '"' |])
 
     let files = [ "dotnet"; "dotnet.exe" ]
 
@@ -45,7 +45,7 @@ module AssemblyConstants =
       |> (Option.defaultValue String.Empty)
 
     e.Split([| Path.PathSeparator |])
-    |> Seq.map (fun p -> p.Trim([| '"' |]))
+    |> Seq.map _.Trim([| '"' |])
     |> Seq.filter (String.IsNullOrWhiteSpace >> not)
     |> Seq.toList
 
@@ -363,4 +363,4 @@ module internal CecilExtension =
     |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
     |> Seq.iter (fun i ->
       i.OpCode <- OpCodes.Nop
-      i.Operand <- null)
+      i.Operand <- nullObject)

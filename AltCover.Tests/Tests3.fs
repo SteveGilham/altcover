@@ -27,7 +27,7 @@ module AltCoverTests3 =
 
     let program =
       files
-      |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
       |> Seq.head
 
     let saved = (Console.Out, Console.Error)
@@ -101,7 +101,7 @@ module AltCoverTests3 =
     let optionNames =
       options
       |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+        (o.GetNames() |> Seq.maxBy _.Length)
           .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -116,7 +116,7 @@ module AltCoverTests3 =
     let optionNames =
       options
       |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+        (o.GetNames() |> Seq.maxBy _.Length)
           .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -124,7 +124,7 @@ module AltCoverTests3 =
     let primitiveNames =
       typeof<Primitive.PrepareOptions>
       |> FSharpType.GetRecordFields
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -142,7 +142,7 @@ module AltCoverTests3 =
     let typesafeNames =
       typeof<TypeSafe.PrepareOptions>
       |> FSharpType.GetRecordFields
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -158,7 +158,7 @@ module AltCoverTests3 =
 
     let fsapiNames =
       typeof<AltCover.PrepareOptions>.GetProperties()
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -179,7 +179,7 @@ module AltCoverTests3 =
         Args.flagItems >> (List.map fst)
         Args.countItems >> (List.map fst) ]
       |> List.collect (fun f -> f args)
-      |> List.map (fun k -> k.Trim('-'))
+      |> List.map _.Trim('-')
       |> List.sort
 
     Assert.That(
@@ -210,7 +210,7 @@ module AltCoverTests3 =
           ||| BindingFlags.Public
           ||| BindingFlags.Instance
         )
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -228,7 +228,7 @@ module AltCoverTests3 =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("AltCover.targets", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("AltCover.targets", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -244,7 +244,7 @@ module AltCoverTests3 =
 
     let attributeNames =
       prepare.Attributes()
-      |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+      |> Seq.map _.Name.LocalName.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -264,7 +264,7 @@ module AltCoverTests3 =
     Assert.That(
       options
       |> Seq.filter (fun x -> x.Prototype <> "<>")
-      |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description),
+      |> Seq.forall (_.Description >> String.IsNullOrWhiteSpace >> not),
       "empty description for one or more items"
     )
 
@@ -1067,17 +1067,19 @@ module AltCoverTests3 =
       let pcom a b =
         Path.Combine(b, a) |> canonicalDirectory
 
+      let AssertAreEqual (a: obj, b: obj) = Assert.That(a, Is.EqualTo b)
+
       match parse with
       | Right _ ->
         CoverageParameters.inputDirectories ()
         |> Seq.toList
         |> List.zip ([ "."; ".." ] |> List.map canonicalDirectory)
-        |> List.iter Assert.AreEqual
+        |> List.iter AssertAreEqual
 
         CoverageParameters.outputDirectories ()
         |> Seq.toList
         |> List.zip ([ "."; ".." ] |> List.map (pcom "__Instrumented"))
-        |> List.iter Assert.AreEqual
+        |> List.iter AssertAreEqual
 
         CoverageParameters.inplace.Value <- true
         CoverageParameters.theOutputDirectories.Add "maybe"
@@ -1087,7 +1089,7 @@ module AltCoverTests3 =
         |> List.zip
           [ canonicalDirectory "maybe"
             ".." |> (pcom "__Saved") ]
-        |> List.iter Assert.AreEqual
+        |> List.iter AssertAreEqual
 
     finally
       CoverageParameters.theOutputDirectories.Clear()
@@ -1532,7 +1534,7 @@ module AltCoverTests3 =
         let token =
           x
           |> KeyStore.tokenOfKey
-          |> List.map (fun x -> x.ToString("x2"))
+          |> List.map _.ToString("x2")
 
         Assert.That(String.Join(String.Empty, token), Is.EqualTo("c02b1a9f5b7cade8"))
     finally
@@ -1677,7 +1679,7 @@ module AltCoverTests3 =
           String.Join(
             String.Empty,
             BitConverter.GetBytes(x)
-            |> Seq.map (fun x -> x.ToString("x2"))
+            |> Seq.map _.ToString("x2")
           ))
         |> Seq.sort
 
@@ -3300,7 +3302,7 @@ module AltCoverTests3 =
         let result =
           Main.I.screenAssembly (Path.GetFileName f) def
 
-        Assert.True(result |> Option.isSome, f))
+        Assert.That(result |> Option.isSome, f))
 
       Assert.That(sb.ToString(), Is.Empty)
 
@@ -3334,14 +3336,14 @@ module AltCoverTests3 =
       let s1 =
         Main.I.screenAssembly "Sample3.dll" prepared
 
-      Assert.True(s1 |> Option.isNone, "Sample3.dll")
+      Assert.That(s1 |> Option.isNone, "Sample3.dll")
 
       Environment.NewLine |> sb.Append |> ignore
 
       let s1 =
         Main.I.screenAssembly "Sample4.dll" assembly
 
-      Assert.True(s1 |> Option.isNone, "Sample4.dll")
+      Assert.That(s1 |> Option.isNone, "Sample4.dll")
 
       let expected =
         "Skipping Sample3.dll as it has already been instrumented."
@@ -3388,10 +3390,10 @@ module AltCoverTests3 =
 
     Assert.That(
       t.EnumerateFiles("*", SearchOption.AllDirectories)
-      |> Seq.map (fun x -> x.FullName.Substring(tlen)),
+      |> Seq.map _.FullName.Substring(tlen),
       Is.EquivalentTo(
         f.EnumerateFiles("*", SearchOption.AllDirectories)
-        |> Seq.map (fun x -> x.FullName.Substring(flen))
+        |> Seq.map _.FullName.Substring(flen)
       ),
       "Simple to-from comparison failed"
     )
@@ -3415,10 +3417,7 @@ module AltCoverTests3 =
       y,
       Is.EquivalentTo(
         x
-        |> Seq.map (
-          (fun x -> x.AssemblyPath)
-          >> Path.GetFileNameWithoutExtension
-        )
+        |> Seq.map (_.AssemblyPath >> Path.GetFileNameWithoutExtension)
       ),
       "Prepared lists mismatch"
     )
@@ -3427,13 +3426,13 @@ module AltCoverTests3 =
 
     let assemblyPaths =
       x
-      |> Seq.map (fun x -> x.AssemblyPath)
+      |> Seq.map _.AssemblyPath
       |> Seq.sort
       |> Seq.toList
 
     let assemblies =
       f.EnumerateFiles()
-      |> Seq.map (fun x -> x.FullName)
+      |> Seq.map _.FullName
       |> Seq.filter (fun f ->
         f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
         || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
@@ -3461,7 +3460,7 @@ module AltCoverTests3 =
 
     let program =
       files
-      |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
       |> Seq.head
 
     let saved = (Console.Out, Console.Error)
@@ -3685,7 +3684,7 @@ module AltCoverTests3 =
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
-        main.Invoke(null, [| [| "TargetsPath" |] |])
+        main.Invoke(nullObject, [| [| "TargetsPath" |] |])
 
       Assert.That(returnCode, Is.EqualTo 0)
       test <@ stderr.ToString() |> String.IsNullOrEmpty @>
@@ -3731,7 +3730,7 @@ module AltCoverTests3 =
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
-        main.Invoke(null, [| [| "-i"; unique |] |])
+        main.Invoke(nullObject, [| [| "-i"; unique |] |])
 
       Assert.That(returnCode, Is.EqualTo 255)
 
@@ -3811,13 +3810,13 @@ module AltCoverTests3 =
 
       let mainHelp =
         Main.I.declareOptions ()
-        |> Seq.map (fun o -> o.Prototype)
+        |> Seq.map _.Prototype
         |> Seq.filter (fun s -> s.Length <> 2)
         |> Seq.map fixup
 
       let runnerHelp =
         Runner.declareOptions ()
-        |> Seq.map (fun o -> o.Prototype)
+        |> Seq.map _.Prototype
         |> Seq.filter (fun s -> s.Length <> 2)
         |> Seq.map fixup
 

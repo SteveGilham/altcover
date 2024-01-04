@@ -533,7 +533,7 @@ namespace AltCoverFake.DotNet.Testing
     type PrepareOptions =
       {
         ///<summary>
-        /// Corresponds to command line option ` -i, --inputDirectory=VALUE`
+        /// Corresponds to command line option `-i, --inputDirectory=VALUE`
         ///</summary>
         InputDirectories: DirectoryPaths
         ///<summary>
@@ -549,7 +549,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         Dependencies: FilePaths
         ///<summary>
-        /// Corresponds to command line option ` -k, --key=VALUE`
+        /// Corresponds to command line option `-k, --key=VALUE`
         ///</summary>
         Keys: FilePaths
         ///<summary>
@@ -577,7 +577,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         TypeFilter: Filters
         ///<summary>
-        /// Corresponds to command line option ` -m, --methodFilter=VALUE`
+        /// Corresponds to command line option `-m, --methodFilter=VALUE`
         ///</summary>
         MethodFilter: Filters
         ///<summary>
@@ -657,7 +657,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         LocalSource: Flag
         ///<summary>
-        /// Corresponds to command line option ` -v, --visibleBranches`
+        /// Corresponds to command line option `-v, --visibleBranches`
         ///</summary>
         VisibleBranches: Flag
         ///<summary>
@@ -665,7 +665,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         ShowStatic: StaticFormat
         ///<summary>
-        /// Corresponds to command line option ` --showGenerated`
+        /// Corresponds to command line option `--showGenerated`
         ///</summary>
         ShowGenerated: Flag
         ///<summary>
@@ -673,7 +673,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
         ///<summary>
-        /// Corresponds to command line option ` --trivia`
+        /// Corresponds to command line option `--trivia`
         ///</summary>
         Trivia: Flag
  }

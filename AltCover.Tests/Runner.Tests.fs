@@ -23,7 +23,7 @@ module AltCoverUsage =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("AltCover.Usage.txt", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("AltCover.Usage.txt", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -38,8 +38,7 @@ module AltCoverUsage =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -217,14 +216,13 @@ module AltCoverRunnerTests =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+    |> Seq.find _.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal)
 
   let resource2 =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find (fun n ->
-      n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+    |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
   let internal init n l =
     let tmp =
@@ -282,7 +280,7 @@ module AltCoverRunnerTests =
     Assert.That(
       after.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
-      |> Seq.map (fun x -> x.GetAttribute("vc")),
+      |> Seq.map _.GetAttribute("vc"),
       Is.EquivalentTo
         [ "11"
           "10"
@@ -299,7 +297,7 @@ module AltCoverRunnerTests =
     Assert.That(
       after.SelectNodes("//BranchPoint")
       |> Seq.cast<XmlElement>
-      |> Seq.map (fun x -> x.GetAttribute("vc")),
+      |> Seq.map _.GetAttribute("vc"),
       Is.EquivalentTo [ "2"; "2" ]
     )
 
@@ -384,7 +382,7 @@ module AltCoverRunnerTests =
       Assert.That(
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
-        |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+        |> Seq.map _.GetAttribute("visitcount"),
         Is.EquivalentTo
           [ "11"
             "10"
@@ -486,7 +484,7 @@ module AltCoverRunnerTests =
       Assert.That(
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
-        |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+        |> Seq.map _.GetAttribute("visitcount"),
         Is.EquivalentTo
           [ "11"
             "10"
@@ -514,7 +512,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -554,8 +552,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("GenuineNCover158.json", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -604,8 +601,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -636,7 +632,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("OpenCover.json", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("OpenCover.json", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -719,7 +715,7 @@ module AltCoverRunnerTests =
 
     let program =
       files
-      |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
       |> Seq.head
 
     CommandLine.toConsole ()
@@ -793,7 +789,7 @@ module AltCoverRunnerTests =
     let optionNames =
       options
       |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+        (o.GetNames() |> Seq.maxBy _.Length)
           .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -808,7 +804,7 @@ module AltCoverRunnerTests =
     let optionNames =
       options
       |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy (fun n -> n.Length))
+        (o.GetNames() |> Seq.maxBy _.Length)
           .ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
@@ -816,7 +812,7 @@ module AltCoverRunnerTests =
     let primitiveNames =
       typeof<Primitive.CollectOptions>
       |> FSharpType.GetRecordFields
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -834,7 +830,7 @@ module AltCoverRunnerTests =
     let typesafeNames =
       typeof<TypeSafe.CollectOptions>
       |> FSharpType.GetRecordFields
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -850,7 +846,7 @@ module AltCoverRunnerTests =
 
     let fsapiNames =
       typeof<AltCover.CollectOptions>.GetProperties()
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -895,7 +891,7 @@ module AltCoverRunnerTests =
           ||| BindingFlags.Public
           ||| BindingFlags.Instance
         )
-      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+      |> Seq.map _.Name.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -914,7 +910,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("AltCover.targets", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("AltCover.targets", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -930,7 +926,7 @@ module AltCoverRunnerTests =
 
     let attributeNames =
       collect.Attributes()
-      |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+      |> Seq.map _.Name.LocalName.ToLowerInvariant()
       |> Seq.sort
       |> Seq.toList
 
@@ -949,7 +945,7 @@ module AltCoverRunnerTests =
     Assert.That(
       options
       |> Seq.filter (fun x -> x.Prototype <> "<>")
-      |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description)
+      |> Seq.forall (_.Description >> String.IsNullOrWhiteSpace >> not)
     )
 
     Assert.That(
@@ -2362,8 +2358,8 @@ module AltCoverRunnerTests =
             Assembly
               .GetExecutingAssembly()
               .GetManifestResourceNames()
-            |> Seq.find (fun n ->
-              n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+            |> Seq.find
+              _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
 
           use frombytes =
             Assembly
@@ -2447,7 +2443,7 @@ module AltCoverRunnerTests =
 
     let program =
       files
-      |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
       |> Seq.head
 
     CommandLine.toConsole ()
@@ -2546,7 +2542,7 @@ module AltCoverRunnerTests =
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
       let returnCode =
-        main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
+        main.Invoke(nullObject, [| [| "RuNN"; "-r"; unique |] |])
 
       Assert.That(returnCode, Is.EqualTo 255)
 
@@ -2613,8 +2609,8 @@ module AltCoverRunnerTests =
               Assembly
                 .GetExecutingAssembly()
                 .GetManifestResourceNames()
-              |> Seq.find (fun n ->
-                n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+              |> Seq.find
+                _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
 
             use frombytes =
               Assembly
@@ -2669,7 +2665,7 @@ module AltCoverRunnerTests =
 
     let program =
       files
-      |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
       |> Seq.head
 
     CommandLine.toConsole ()
@@ -2830,7 +2826,7 @@ module AltCoverRunnerTests =
       Assert.That(
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
-        |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+        |> Seq.map _.GetAttribute("visitcount"),
         Is.EquivalentTo
           [ "11"
             "10"
@@ -2879,7 +2875,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -2949,8 +2945,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        |> Seq.find
+          _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -3106,7 +3102,7 @@ module AltCoverRunnerTests =
       Assert.That(
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
-        |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+        |> Seq.map _.GetAttribute("visitcount"),
         Is.EquivalentTo
           [ "11"
             "10"
@@ -3158,7 +3154,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -3237,8 +3233,8 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        |> Seq.find
+          _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly
@@ -3462,7 +3458,7 @@ module AltCoverRunnerTests =
 
     Assert.That(r, Is.EqualTo 4)
     Assert.That(File.Exists(unique + ".acv"))
-    Assert.That(counts, Is.EquivalentTo [])
+    Assert.That(counts, Is.Empty)
 
   [<Test>]
   let TrackingPayloadShouldReportAsExpected () =
@@ -3809,7 +3805,7 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
-    |> Seq.iter (fun el -> el.SetAttribute("bev", "0"))
+    |> Seq.iter _.SetAttribute("bev", "0")
 
     let empty =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -3831,8 +3827,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -3862,12 +3857,12 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
-    |> Seq.iter (fun el -> el.SetAttribute("bev", "0"))
+    |> Seq.iter _.SetAttribute("bev", "0")
 
     after.DocumentElement.SelectNodes("//MethodPoint")
     |> Seq.cast<XmlElement>
     |> Seq.toList
-    |> List.iter (fun el -> el.RemoveAllAttributes())
+    |> List.iter _.RemoveAllAttributes()
 
     let visits =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -4012,7 +4007,7 @@ module AltCoverRunnerTests =
 
     after.DocumentElement.SelectNodes("//MethodPoint")
     |> Seq.cast<XmlElement>
-    |> Seq.iter (fun el -> el.SetAttribute("vc", "0"))
+    |> Seq.iter _.SetAttribute("vc", "0")
 
     let before =
       after.OuterXml
@@ -4066,8 +4061,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -4098,7 +4092,7 @@ module AltCoverRunnerTests =
 
     after.Descendants(XName.Get "SequencePoint")
     |> Seq.toList
-    |> List.iter (fun el -> el.Remove())
+    |> List.iter _.Remove()
 
     after.Descendants(XName.Get "MethodPoint")
     |> Seq.iter (fun el -> setAttribute el "vc" "0")
@@ -4207,7 +4201,6 @@ module AltCoverRunnerTests =
         Assert.That(collected, Is.EqualTo String.Empty))
     finally
       resetInfo ()
-
 
   [<Test>]
   let EmptyNCoverGeneratesExpectedSummary () =
@@ -4327,7 +4320,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -4512,8 +4505,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -4598,8 +4590,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -4829,7 +4820,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("SimpleCoverage.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -4888,8 +4879,8 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+      |> Seq.find
+        _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -4977,8 +4968,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5017,7 +5007,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("OpenCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5049,8 +5039,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5090,8 +5079,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5123,7 +5111,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5157,7 +5145,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("NCover.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("NCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5189,8 +5177,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5225,8 +5212,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("NCoverWithPartials.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("NCoverWithPartials.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5258,7 +5244,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5292,7 +5278,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample5.ncover.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5324,7 +5310,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample4.coverlet.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample4.coverlet.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5361,8 +5347,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5394,7 +5379,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("JsonWithPartials.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("JsonWithPartials.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5431,8 +5416,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5464,7 +5448,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5504,7 +5488,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("NCoverBugFix.lcov", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("NCoverBugFix.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5546,7 +5530,7 @@ module AltCoverRunnerTests =
          |> List.map (
            sprintf "<x><seqpnt line=\"%d\" /></x>"
            >> load
-           >> (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+           >> (_.Descendants(XName.Get "x") >> Seq.head)
            >> (fun m -> (m, m.Descendants(XName.Get "seqpnt")))
          )
          |> List.toSeq))
@@ -5647,7 +5631,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("NCover122.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("NCover122.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5694,7 +5678,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("NCover122.cobertura", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5729,8 +5713,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5778,8 +5761,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("NCoverWithPartials.cob.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("NCoverWithPartials.cob.xml", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5814,7 +5796,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5862,8 +5844,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample5.ncover.cobertura", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample5.ncover.cobertura", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5898,8 +5879,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -5949,8 +5929,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -5985,7 +5964,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("JsonWithPartials.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("JsonWithPartials.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6035,8 +6014,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -6083,7 +6061,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample5.native.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample5.native.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6133,8 +6111,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -6169,7 +6146,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample5.native.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample5.native.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6204,8 +6181,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal)
 
     use stream2 =
       Assembly
@@ -6250,7 +6226,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("JsonWithPartials.json", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("JsonWithPartials.json", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6286,8 +6262,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("JsonWithPartialsToRawXml.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("JsonWithPartialsToRawXml.xml", StringComparison.Ordinal)
 
     use stream2 =
       Assembly
@@ -6321,7 +6296,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6369,8 +6344,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("NCoverBugFix.cobertura", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("NCoverBugFix.cobertura", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -6405,7 +6379,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("issue122.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("issue122.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6445,7 +6419,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("issue122.cobertura", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("issue122.cobertura", StringComparison.Ordinal)
 
       use stream2 =
         Assembly
@@ -6487,8 +6461,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n ->
-        n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
+      |> Seq.find _.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly
@@ -6529,8 +6502,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n ->
-          n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
+        |> Seq.find _.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal)
 
       use stream2 =
         Assembly

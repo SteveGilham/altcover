@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <GendarmeVersion>2023.8.26.15512</GendarmeVersion>
+    <GendarmeVersion>2023.12.27.19054</GendarmeVersion>
     <GendarmeToolDir>..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
@@ -55,7 +55,8 @@
     </PackageReference>
     <PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="NUnit3TestAdapter">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -28,7 +28,6 @@ The members correspond to the like-named command line options for `AltCover Runn
 
 ```
   type ICollectOptions =
-    interface
     abstract member RecorderDirectory : String with get
     abstract member WorkingDirectory : String with get
     abstract member Executable : String with get
@@ -40,7 +39,6 @@ The members correspond to the like-named command line options for `AltCover Runn
     abstract member ExposeReturnCode : bool with get
     abstract member SummaryFormat : String with get
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
-  end
 ```
 ### interface `IPrepareOptions`
 
@@ -51,7 +49,6 @@ The members correspond to the like-named command line options for `AltCover`, ex
 
 ```
   type IPrepareOptions =
-    interface
     abstract member InputDirectories : IEnumerable<String> with get
     abstract member OutputDirectories : IEnumerable<String> with get
     abstract member SymbolDirectories : IEnumerable<String> with get
@@ -88,7 +85,6 @@ The members correspond to the like-named command line options for `AltCover`, ex
     abstract member ShowGenerated : bool with get
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
     abstract member Trivia : bool with get
-  end
 ```
 
 ### interface `ILoggingOptions`
@@ -98,11 +94,9 @@ command line and usage warninings only.
 
 ```
   type ILoggingOptions =
-    interface
     abstract member Info : Action<String> with get
     abstract member Warn : Action<String> with get
     abstract member Failure : Action<String> with get
     abstract member Echo : Action<String> with get
     abstract member Verbose : Action<String> with get
-    end
 

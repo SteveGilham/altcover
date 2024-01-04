@@ -24,11 +24,11 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [ExposeReturnCode](Primitive.PrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](Primitive.PrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](Primitive.PrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
-| [InputDirectories](Primitive.PrepareOptions/InputDirectories-apidoc) { get; } | Corresponds to command line option ` -i, --inputDirectory=VALUE` |
-| [Keys](Primitive.PrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option ` -k, --key=VALUE` |
+| [InputDirectories](Primitive.PrepareOptions/InputDirectories-apidoc) { get; } | Corresponds to command line option `-i, --inputDirectory=VALUE` |
+| [Keys](Primitive.PrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option `-k, --key=VALUE` |
 | [LineCover](Primitive.PrepareOptions/LineCover-apidoc) { get; } | Corresponds to command line option `--linecover` |
 | [LocalSource](Primitive.PrepareOptions/LocalSource-apidoc) { get; } | Corresponds to command line option `-l, --localSource` |
-| [MethodFilter](Primitive.PrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
+| [MethodFilter](Primitive.PrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option `-m, --methodFilter=VALUE` |
 | [MethodPoint](Primitive.PrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
 | [MethodTopLevel](Primitive.PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Primitive.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
@@ -36,17 +36,17 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [Report](Primitive.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Primitive.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Primitive.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
-| [ShowGenerated](Primitive.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
+| [ShowGenerated](Primitive.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](Primitive.PrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
 | [SingleVisit](Primitive.PrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
 | [SourceLink](Primitive.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Primitive.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Primitive.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
-| [Trivia](Primitive.PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option ` --trivia` |
+| [Trivia](Primitive.PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option `--trivia` |
 | [TypeFilter](Primitive.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Primitive.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](Primitive.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line options `-q` and `--verbose` |
-| [VisibleBranches](Primitive.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
+| [VisibleBranches](Primitive.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option `-v, --visibleBranches` |
 | [ZipFile](Primitive.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
 
 ## See Also

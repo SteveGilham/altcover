@@ -30,7 +30,7 @@ type Prepare =
     ///</summary>
     override Execute : unit -> bool
     ///<summary>
-    /// Corresponds to command line option ` -i, --inputDirectory=VALUE`
+    /// Corresponds to command line option `-i, --inputDirectory=VALUE`
     ///</summary>
     member InputDirectories : string array with get, set
     ///<summary>
@@ -46,7 +46,7 @@ type Prepare =
     ///</summary>
     member Dependencies : string array with get, set
     ///<summary>
-    /// Corresponds to command line option ` -k, --key=VALUE`
+    /// Corresponds to command line option `-k, --key=VALUE`
     ///</summary>
     member Keys : string array with get, set
     ///<summary>
@@ -74,7 +74,7 @@ type Prepare =
     ///</summary>
     member TypeFilter : string array with get, set
     ///<summary>
-    /// Corresponds to command line option ` -m, --methodFilter=VALUE`
+    /// Corresponds to command line option `-m, --methodFilter=VALUE`
     ///</summary>
     member MethodFilter : string array with get, set
     ///<summary>
@@ -154,7 +154,7 @@ type Prepare =
     ///</summary>
     member LocalSource : bool with get, set
     ///<summary>
-    /// Corresponds to command line option ` -v, --visibleBranches`
+    /// Corresponds to command line option `-v, --visibleBranches`
     ///</summary>
     member VisibleBranches : bool with get, set
     ///<summary>
@@ -162,15 +162,15 @@ type Prepare =
     ///</summary>
     member ShowStatic : string with get, set
     ///<summary>
-    /// Corresponds to command line option ` --showGenerated`
+    /// Corresponds to command line option `--showGenerated`
     ///</summary>
     member ShowGenerated : bool with get, set
     ///<summary>
-    /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line options `-q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
     ///<summary>
-    /// Corresponds to command line option ` --trivia`
+    /// Corresponds to command line option `--trivia`
     ///</summary>
     member Trivia: bool with get, set
   end
@@ -240,7 +240,7 @@ type Collect =
     ///</summary>
     member SummaryFormat : string with get, set
     ///<summary>
-    /// Corresponds to command line options ` -q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line options `-q` and `--verbose` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
@@ -313,7 +313,7 @@ type Echo =
     [<Required>]
     member Text : string with get, set
     ///<summary>
-    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line option `-q` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
@@ -349,7 +349,7 @@ type RunSettings =
     ///</summary>
     member TestSetting : string with get, set
     ///<summary>
-    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+    /// Corresponds to command line option `-q` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end

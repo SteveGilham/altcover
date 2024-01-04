@@ -7,6 +7,7 @@ open Tests
 [<SetUp>]
 let Setup () = ()
 
+[<TailCall>]
 let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
   let x name = XName.Get(name)
   let rcount = result |> Seq.length
