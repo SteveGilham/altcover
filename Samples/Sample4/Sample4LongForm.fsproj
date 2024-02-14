@@ -60,7 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net9.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.fs" />
+    <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net9.0\.NETCoreApp,Version=v9.0.AssemblyAttributes.fs" />
     <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\net9.0\Sample4.AssemblyInfo.fs" />
   </ItemGroup>
 
