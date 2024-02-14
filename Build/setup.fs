@@ -102,7 +102,7 @@ module Setup =
     Target.description s
 
     let wrap f x =
-      printfn ">> %A <<" x
+      //printfn ">> %A <<" x
       f ()
 
     Target.create s (wrap f)

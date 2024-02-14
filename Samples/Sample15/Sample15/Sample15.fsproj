@@ -29,7 +29,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="5.0.1">
+    <PackageReference Include="FSharp.Core" Version="8.0.200">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

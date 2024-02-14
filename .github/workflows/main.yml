@@ -32,7 +32,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.100'
+        dotnet-version: '8.0.200'
     - name: Tools
       run: dotnet tool restore
     - name: Setup
@@ -63,7 +63,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.100'
+        dotnet-version: '8.0.200'
     - name: Tools
       run: dotnet tool restore
     - name: Setup

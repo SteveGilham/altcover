@@ -7,7 +7,7 @@ open AltCover
 open Mono.Cecil
 
 module Rocks =
-  [<TailCall>]
+  //[<TailCall>]
   let rec GetAllTypes (t: TypeDefinition) =
     t
     :: (List.collect
