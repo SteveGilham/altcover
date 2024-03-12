@@ -332,6 +332,9 @@ type Echo() =
 
     true
 
+[<SuppressMessage("Gendarme.Rules.Serialization",
+                  "RelaxedMarkAllNonSerializableFieldsRule",
+                  Justification = "Not going to do that")>]
 type RunSettings() =
   inherit Task(null)
 
@@ -354,6 +357,9 @@ type RunSettings() =
                     Justification = "Unit test accessor")>]
   member val internal MessageIO: (string -> unit) option = None with get, set
 
+  member val internal GetTempFileName: Func<string> =
+    Func<string>(Path.GetTempFileName) with get, set
+
   override self.Execute() =
     let signal =
       Option.defaultValue self.Message self.MessageIO
@@ -367,7 +373,7 @@ type RunSettings() =
       |> sprintf "Settings Before: %s"
       |> signal
 
-    let tempFile = Path.GetTempFileName()
+    let tempFile = self.GetTempFileName.Invoke()
 
     try
       let settings =

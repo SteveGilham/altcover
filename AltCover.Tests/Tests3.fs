@@ -4455,10 +4455,29 @@ module AltCoverTests3 =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
 
+  let MakeRunSettings () =
+    let subject = RunSettings()
+
+    let temper =
+      subject
+        .GetType()
+        .GetProperty("GetTempFileName", BindingFlags.Instance ||| BindingFlags.NonPublic)
+
+    let basic =
+      temper.GetValue(subject) :?> Func<string>
+
+    let badge =
+      (fun () ->
+        let t1 = basic.Invoke()
+        Path.Combine(Path.GetDirectoryName t1, "altcover.test." + Path.GetFileName(t1)))
+
+    temper.SetValue(subject, Func<string>(badge))
+    subject
+
   [<Test>]
   let RunSettingsFailsIfCollectorNotFound () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4474,6 +4493,7 @@ module AltCoverTests3 =
         .GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
     write.SetValue(subject, Some(fun (s: string) -> ()))
+
     Assert.That(subject.Execute(), Is.False)
     Assert.That(subject.Extended, Is.Empty)
     CommandLine.verbosity <- 0
@@ -4495,7 +4515,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsWorksIfOK () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4517,8 +4537,17 @@ module AltCoverTests3 =
     Assert.That(subject.Execute(), Is.True)
     Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
 
+    Assert.That(
+      Path
+        .GetFileName(subject.Extended)
+        .StartsWith("altcover.test.")
+    )
+
     let result =
       subject.Extended |> File.ReadAllText
+
+    [ subject.Extended ]
+    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     Assert.That(
       result
@@ -4542,7 +4571,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsExtendsOK () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4571,6 +4600,9 @@ module AltCoverTests3 =
     let result =
       subject.Extended |> File.ReadAllText
 
+    [ subject.Extended ]
+    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
+
     Assert.That(
       result
         .Replace("\r", String.Empty)
@@ -4593,7 +4625,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsThrowsIfUninitialized () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4616,7 +4648,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsRecoversOK () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4640,6 +4672,9 @@ module AltCoverTests3 =
 
     let result =
       subject.Extended |> File.ReadAllText
+
+    [ subject.Extended ]
+    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     Assert.That(
       result
