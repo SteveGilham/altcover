@@ -5,8 +5,9 @@
     <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
-    <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Instrumented'))</AltCoverInstrumentedDirectory>
-    <AltCoverSavedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Saved'))</AltCoverSavedDirectory>
+    <AltCoverOutputRoot Condition="'$(AltCoverOutputRoot)' == ''">$(TargetDir)</AltCoverOutputRoot>
+    <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(AltCoverOutputRoot), '__Instrumented'))</AltCoverInstrumentedDirectory>
+    <AltCoverSavedDirectory>$([System.IO.Path]::Combine($(AltCoverOutputRoot), '__Saved'))</AltCoverSavedDirectory>
     <AltCoverFileExtension Condition="'$(AltCoverReportFormat).Substring(0,1).ToUpperInvariant()' != 'J'">.xml</AltCoverFileExtension>
     <AltCoverFileExtension Condition="'$(AltCoverReportFormat).Substring(0,1).ToUpperInvariant()' == 'J'">.json</AltCoverFileExtension>
   </PropertyGroup>
@@ -195,10 +196,10 @@
 
   <Target Name="AltCoverDeleteTempRunSettingsFile">
     <Message Text="Deleting $(VSTestSetting)" />
-    <Delete Files="$(VSTestSetting)" >
-      <Output TaskParameter="DeletedFiles" ItemName="AltCoverDeletedList"/>
+    <Delete Files="$(VSTestSetting)">
+      <Output TaskParameter="DeletedFiles" ItemName="AltCoverDeletedList" />
     </Delete>
-    <Message Text="Deleted files: '@(AltCoverDeletedList)'"/>
+    <Message Text="Deleted files: '@(AltCoverDeletedList)'" />
   </Target>
 
   <Target Name="AltCoverTidy">
@@ -206,8 +207,8 @@
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverSavedFiles Include="$(AltCoverSavedDirectory))_$(ProjectName)/*.*" />
     </ItemGroup>
-    <CallTarget Targets="AltCoverDeleteTempRunSettingsFile" 
-                Condition="$(VSTestSetting.EndsWith('.altcover.runsettings')) AND Exists($(VSTestSetting))"/>
+    <CallTarget Targets="AltCoverDeleteTempRunSettingsFile"
+                Condition="$(VSTestSetting.EndsWith('.altcover.runsettings')) AND Exists($(VSTestSetting))" />
     <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCoverInPlace)' != 'false'" />
     <RemoveDir Directories="$(AltCoverSavedDirectory)_$(ProjectName)" Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)') AND '$(AltCoverInPlace)' != 'false'" />
     <AltCover.RetryDelete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCoverInPlace)' != 'false'" />

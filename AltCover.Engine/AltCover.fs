@@ -434,6 +434,12 @@ module AltCover =
       | Abstract a -> a.Trivia
       | TypeSafe t -> t.Trivia.AsBool()
 
+    member self.OutputRoot =
+      match self with
+      | Primitive p -> p.OutputRoot
+      | Abstract a -> a.OutputRoot
+      | TypeSafe t -> t.OutputRoot.AsString()
+
     interface Abstract.IPrepareOptions with
       member self.InputDirectories =
         self.InputDirectories |> PrepareOptions.ToSeq
@@ -512,6 +518,7 @@ module AltCover =
       member self.ShowGenerated = self.ShowGenerated
       member self.Verbosity = self.Verbosity
       member self.Trivia = self.Trivia
+      member self.OutputRoot = self.OutputRoot
 
 #if RUNNER
     static member private ValidateArray a f key =

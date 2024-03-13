@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "8.6",
+  "version": "8.7",
   "release": {
-    "branchName" : "release/v{version}",
-    "versionIncrement" : "build",
-    "firstUnstableTag" : "pre-release"
+    "branchName": "release/v{version}",
+    "versionIncrement": "build",
+    "firstUnstableTag": "pre-release"
   },
   "publicReleaseRefSpec": [
     "^refs/heads/release/.*"

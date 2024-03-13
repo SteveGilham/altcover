@@ -710,7 +710,8 @@ type InvokeAltCoverCommand() =
         ShowStatic = showStatic.[self.ShowStatic |> int]
         ShowGenerated = self.ShowGenerated.IsPresent
         Verbosity = self.Verbosity
-        Trivia = self.Trivia.IsPresent }
+        Trivia = self.Trivia.IsPresent
+        OutputRoot = String.Empty }
 
   member private self.Log() =
     AltCover.LoggingOptions.Primitive

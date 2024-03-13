@@ -92,7 +92,8 @@ module Primitive =
       ShowStatic: string
       ShowGenerated: bool
       Verbosity: System.Diagnostics.TraceLevel
-      Trivia: bool }
+      Trivia: bool
+      OutputRoot: string }
     static member Create() =
       { InputDirectories = Seq.empty
         OutputDirectories = Seq.empty
@@ -129,7 +130,8 @@ module Primitive =
         ShowStatic = "-"
         ShowGenerated = false
         Verbosity = System.Diagnostics.TraceLevel.Info
-        Trivia = false }
+        Trivia = false
+        OutputRoot = String.Empty }
 
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false)>]

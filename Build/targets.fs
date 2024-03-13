@@ -6008,6 +6008,8 @@ module Targets =
               )
 
             Actions.CheckSample4 before x
+
+            Assert.That(File.Exists(@".\_Binaries\cake_dotnettest\OutputRoot\__Instrumented_cake_dotnettest\AltCover.Recorder.g.dll"))
           finally
             Actions.RunDotnet
               (fun o' ->

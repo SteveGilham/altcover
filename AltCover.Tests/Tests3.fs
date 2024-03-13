@@ -129,15 +129,10 @@ module AltCoverTests3 =
       |> Seq.toList
 
     // add "commandline"
-    Assert.That(
-      primitiveNames |> List.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", optionNames)
-      + Environment.NewLine
-      + "but got primitive "
-      + String.Join("; ", primitiveNames)
-    )
+    testWithFallback
+      <@ (primitiveNames) |> List.length = optionCount + 1 @> // adds optionroot
+      (primitiveNames |> List.length)
+      (Is.EqualTo(optionCount + 1))
 
     let typesafeNames =
       typeof<TypeSafe.PrepareOptions>
@@ -146,15 +141,10 @@ module AltCoverTests3 =
       |> Seq.sort
       |> Seq.toList
 
-    Assert.That(
-      typesafeNames |> List.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", optionNames)
-      + Environment.NewLine
-      + "but got typesafe "
-      + String.Join("; ", typesafeNames)
-    )
+    testWithFallback
+      <@ (typesafeNames) |> List.length = optionCount + 1 @> // adds optionroot
+      (typesafeNames |> List.length)
+      (Is.EqualTo(optionCount + 1))
 
     let fsapiNames =
       typeof<AltCover.PrepareOptions>.GetProperties()
@@ -182,26 +172,16 @@ module AltCoverTests3 =
       |> List.map _.Trim('-')
       |> List.sort
 
-    Assert.That(
-      commandFragments |> List.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", optionNames)
-      + Environment.NewLine
-      + "but got fragments "
-      + String.Join("; ", commandFragments)
-    )
+    testWithFallback
+      <@ (commandFragments) |> List.length = optionCount @> // drop -q/--verbose => verbosity
+      (commandFragments |> List.length)
+      (Is.EqualTo(optionCount))
 
     // Adds "Tag", "IsPrimitive", "IsTypeSafe"
-    Assert.That(
-      fsapiNames |> Seq.length,
-      Is.EqualTo(optionCount + fsapiCases + 1), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", primitiveNames)
-      + Environment.NewLine
-      + "but got fsapi "
-      + String.Join("; ", fsapiNames)
-    )
+    testWithFallback
+      <@ (fsapiNames) |> List.length = optionCount + fsapiCases + 2 @> // drop -q/--verbose => verbosity
+      (fsapiNames |> List.length)
+      (Is.EqualTo(optionCount + fsapiCases + 2))
 
     let taskNames =
       typeof<Prepare>
@@ -214,15 +194,10 @@ module AltCoverTests3 =
       |> Seq.sort
       |> Seq.toList
 
-    Assert.That(
-      taskNames |> Seq.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", primitiveNames)
-      + Environment.NewLine
-      + "but got tasks "
-      + String.Join("; ", taskNames)
-    )
+    testWithFallback
+      <@ (taskNames) |> List.length = optionCount @> // drop -q/--verbose => verbosity
+      (taskNames |> List.length)
+      (Is.EqualTo(optionCount))
 
     let targets =
       Assembly
@@ -251,15 +226,10 @@ module AltCoverTests3 =
     // dotnet test loses commandline, defer, exposereturncode, save
     //                   N/A,         fixed, N/A,              fixed
     // inplace is explicitly hard-coded
-    Assert.That(
-      attributeNames |> Seq.length,
-      Is.EqualTo(optionCount - 4), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", primitiveNames)
-      + Environment.NewLine
-      + "but got targets "
-      + String.Join("; ", attributeNames)
-    )
+    testWithFallback
+      <@ (attributeNames) |> List.length = optionCount - 4 @> // drop -q/--verbose => verbosity
+      (attributeNames |> List.length)
+      (Is.EqualTo(optionCount - 4))
 
     Assert.That(
       options

@@ -676,6 +676,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option `--trivia`
         ///</summary>
         Trivia: Flag
+        ///<summary>
+        /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
+        ///</summary>
+        OutputRoot : FilePath
  }
       with
         ///<summary>

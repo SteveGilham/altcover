@@ -138,6 +138,7 @@ type Prepare() =
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
   member val Trivia = false with get, set
+  member val OutputRoot = String.Empty with get, set
 
   member private self.Message text =
     ``base``.Log.LogMessage(MessageImportance.High, text)
@@ -190,7 +191,8 @@ type Prepare() =
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated
           Verbosity = TaskHelpers.parse self.Verbosity
-          Trivia = self.Trivia }
+          Trivia = self.Trivia
+          OutputRoot = self.OutputRoot }
 
     Command.Prepare task log = 0
 
@@ -332,9 +334,7 @@ type Echo() =
 
     true
 
-[<SuppressMessage("Gendarme.Rules.Serialization",
-                  "RelaxedMarkAllNonSerializableFieldsRule",
-                  Justification = "Not going to do that")>]
+[<AutoSerializable(false)>]
 type RunSettings() =
   inherit Task(null)
 

@@ -124,6 +124,7 @@ module Options =
     member val ShowGenerated = false with get, set
     member val Verbosity = System.Diagnostics.TraceLevel.Info with get, set
     member val Trivia = false with get, set
+    member val OutputRoot = String.Empty with get, set
 
     interface Abstract.IPrepareOptions with
       member self.InputDirectories =
@@ -188,6 +189,7 @@ module Options =
       member self.ShowGenerated = self.ShowGenerated
       member self.Verbosity = self.Verbosity
       member self.Trivia = self.Trivia
+      member self.OutputRoot = self.OutputRoot
 
 #if RUNNER
   [<AutoSerializable(false)>]

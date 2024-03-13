@@ -1183,9 +1183,9 @@ module FSApiTests =
 
     // not input and output directories  (inplace now allowed)
     testWithFallback
-      <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 2) @>
+      <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 1) @>
       (prepareFragments |> List.length)
-      (Is.EqualTo((prepareNames |> List.length) - 2))
+      (Is.EqualTo((prepareNames |> List.length) - 1))
 
     let collect =
       doc.Descendants()
@@ -1303,6 +1303,16 @@ module FSApiTests =
     test
       <@
         DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+      @>
+
+    let tprep =
+      TypeSafe.PrepareOptions.Create()
+
+    let prep2 = AltCover.PrepareOptions.TypeSafe tprep
+
+    test
+      <@
+        DotNet.ToTestArguments prep2 coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let pprep2 = Options.Prepare()
