@@ -1305,10 +1305,10 @@ module FSApiTests =
         DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
-    let tprep =
-      TypeSafe.PrepareOptions.Create()
+    let tprep = TypeSafe.PrepareOptions.Create()
 
-    let prep2 = AltCover.PrepareOptions.TypeSafe tprep
+    let prep2 =
+      AltCover.PrepareOptions.TypeSafe tprep
 
     test
       <@
