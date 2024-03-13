@@ -357,8 +357,8 @@ type RunSettings() =
                     Justification = "Unit test accessor")>]
   member val internal MessageIO: (string -> unit) option = None with get, set
 
-  member val internal GetTempFileName: Func<string> =
-    Func<string>(Path.GetTempFileName) with get, set
+  member val internal GetTempFileName: (unit -> string) =
+    Path.GetTempFileName with get, set
 
   override self.Execute() =
     let signal =
@@ -373,7 +373,7 @@ type RunSettings() =
       |> sprintf "Settings Before: %s"
       |> signal
 
-    let tempFile = self.GetTempFileName.Invoke()
+    let tempFile = self.GetTempFileName()
 
     try
       let settings =

@@ -4464,14 +4464,14 @@ module AltCoverTests3 =
         .GetProperty("GetTempFileName", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
     let basic =
-      temper.GetValue(subject) :?> Func<string>
+      temper.GetValue(subject) :?> (unit -> string)
 
     let badge =
       (fun () ->
-        let t1 = basic.Invoke()
+        let t1 = basic ()
         Path.Combine(Path.GetDirectoryName t1, "altcover.test." + Path.GetFileName(t1)))
 
-    temper.SetValue(subject, Func<string>(badge))
+    temper.SetValue(subject, badge)
     subject
 
   [<Test>]
