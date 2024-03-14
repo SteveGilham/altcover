@@ -306,7 +306,8 @@ module TypeSafe =
       ShowStatic: StaticFormat
       ShowGenerated: Flag
       Verbosity: System.Diagnostics.TraceLevel
-      Trivia: Flag }
+      Trivia: Flag
+      OutputRoot: FilePath }
     static member Create() =
       { InputDirectories = NoDirectories
         OutputDirectories = NoDirectories
@@ -343,7 +344,8 @@ module TypeSafe =
         ShowStatic = StaticFormat.Default
         ShowGenerated = Clear
         Verbosity = System.Diagnostics.TraceLevel.Info
-        Trivia = Clear }
+        Trivia = Clear
+        OutputRoot = NoFile }
 
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",

@@ -873,7 +873,6 @@ module AltCoverXTests =
         [ "AltCover.Recorder.g.dll"
           "FSharp.Core.dll"
           "Newtonsoft.Json.dll"
-          "NuGet.Frameworks.dll"
           "Sample4.deps.json"
           "Sample4.dll"
           "Sample4.runtimeconfig.json"

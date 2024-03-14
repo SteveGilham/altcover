@@ -250,6 +250,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option `--trivia`
         ///</summary>
         Trivia: bool
+        ///<summary>
+        /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
+        ///</summary>
+        OutputRoot : string
       }
     with
         ///<summary>

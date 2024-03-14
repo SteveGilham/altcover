@@ -262,9 +262,13 @@ module Abstract =
     ///</summary>
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
     ///<summary>
-    /// Corresponds to command line option ` --trivia`
+    /// Corresponds to command line option `--trivia`
     ///</summary>
     abstract member Trivia : bool with get
+    ///<summary>
+    /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
+    ///</summary>
+    abstract member OutputRoot : string with get
 // ```
 #if RUNNER
 // ### interface `ILoggingOptions`
