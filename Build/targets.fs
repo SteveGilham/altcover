@@ -318,7 +318,7 @@ module Targets =
   let coverletcollector =
     ("./packages/"
      + (packageVersion "coverlet.collector")
-     + "/build/netstandard1.0/coverlet.collector.dll")
+     + "/build/netstandard2.0/coverlet.collector.dll")
     |> Path.getFullName
 
   let cliArguments =
@@ -6008,6 +6008,12 @@ module Targets =
               )
 
             Actions.CheckSample4 before x
+
+            Assert.That(
+              File.Exists(
+                "./_Binaries/cake_dotnettest/OutputRoot/__Instrumented_cake_dotnettest/AltCover.Recorder.g.dll"
+              )
+            )
           finally
             Actions.RunDotnet
               (fun o' ->

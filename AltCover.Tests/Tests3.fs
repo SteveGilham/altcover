@@ -129,15 +129,10 @@ module AltCoverTests3 =
       |> Seq.toList
 
     // add "commandline"
-    Assert.That(
-      primitiveNames |> List.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", optionNames)
-      + Environment.NewLine
-      + "but got primitive "
-      + String.Join("; ", primitiveNames)
-    )
+    testWithFallback
+      <@ (primitiveNames) |> List.length = optionCount + 1 @> // adds optionroot
+      (primitiveNames |> List.length)
+      (Is.EqualTo(optionCount + 1))
 
     let typesafeNames =
       typeof<TypeSafe.PrepareOptions>
@@ -146,15 +141,10 @@ module AltCoverTests3 =
       |> Seq.sort
       |> Seq.toList
 
-    Assert.That(
-      typesafeNames |> List.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", optionNames)
-      + Environment.NewLine
-      + "but got typesafe "
-      + String.Join("; ", typesafeNames)
-    )
+    testWithFallback
+      <@ (typesafeNames) |> List.length = optionCount + 1 @> // adds optionroot
+      (typesafeNames |> List.length)
+      (Is.EqualTo(optionCount + 1))
 
     let fsapiNames =
       typeof<AltCover.PrepareOptions>.GetProperties()
@@ -182,26 +172,16 @@ module AltCoverTests3 =
       |> List.map _.Trim('-')
       |> List.sort
 
-    Assert.That(
-      commandFragments |> List.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", optionNames)
-      + Environment.NewLine
-      + "but got fragments "
-      + String.Join("; ", commandFragments)
-    )
+    testWithFallback
+      <@ (commandFragments) |> List.length = optionCount @> // drop -q/--verbose => verbosity
+      (commandFragments |> List.length)
+      (Is.EqualTo(optionCount))
 
     // Adds "Tag", "IsPrimitive", "IsTypeSafe"
-    Assert.That(
-      fsapiNames |> Seq.length,
-      Is.EqualTo(optionCount + fsapiCases + 1), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", primitiveNames)
-      + Environment.NewLine
-      + "but got fsapi "
-      + String.Join("; ", fsapiNames)
-    )
+    testWithFallback
+      <@ (fsapiNames) |> List.length = optionCount + fsapiCases + 2 @> // drop -q/--verbose => verbosity
+      (fsapiNames |> List.length)
+      (Is.EqualTo(optionCount + fsapiCases + 2))
 
     let taskNames =
       typeof<Prepare>
@@ -214,15 +194,10 @@ module AltCoverTests3 =
       |> Seq.sort
       |> Seq.toList
 
-    Assert.That(
-      taskNames |> Seq.length,
-      Is.EqualTo(optionCount), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", primitiveNames)
-      + Environment.NewLine
-      + "but got tasks "
-      + String.Join("; ", taskNames)
-    )
+    testWithFallback
+      <@ (taskNames) |> List.length = optionCount @> // drop -q/--verbose => verbosity
+      (taskNames |> List.length)
+      (Is.EqualTo(optionCount))
 
     let targets =
       Assembly
@@ -251,15 +226,10 @@ module AltCoverTests3 =
     // dotnet test loses commandline, defer, exposereturncode, save
     //                   N/A,         fixed, N/A,              fixed
     // inplace is explicitly hard-coded
-    Assert.That(
-      attributeNames |> Seq.length,
-      Is.EqualTo(optionCount - 4), // drop -q/--verbose => verbosity
-      "expected "
-      + String.Join("; ", primitiveNames)
-      + Environment.NewLine
-      + "but got targets "
-      + String.Join("; ", attributeNames)
-    )
+    testWithFallback
+      <@ (attributeNames) |> List.length = optionCount - 4 @> // drop -q/--verbose => verbosity
+      (attributeNames |> List.length)
+      (Is.EqualTo(optionCount - 4))
 
     Assert.That(
       options
@@ -4455,10 +4425,29 @@ module AltCoverTests3 =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
 
+  let MakeRunSettings () =
+    let subject = RunSettings()
+
+    let temper =
+      subject
+        .GetType()
+        .GetProperty("GetTempFileName", BindingFlags.Instance ||| BindingFlags.NonPublic)
+
+    let basic =
+      temper.GetValue(subject) :?> (unit -> string)
+
+    let badge =
+      (fun () ->
+        let t1 = basic ()
+        Path.Combine(Path.GetDirectoryName t1, "altcover.test." + Path.GetFileName(t1)))
+
+    temper.SetValue(subject, badge)
+    subject
+
   [<Test>]
   let RunSettingsFailsIfCollectorNotFound () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4474,6 +4463,7 @@ module AltCoverTests3 =
         .GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
     write.SetValue(subject, Some(fun (s: string) -> ()))
+
     Assert.That(subject.Execute(), Is.False)
     Assert.That(subject.Extended, Is.Empty)
     CommandLine.verbosity <- 0
@@ -4495,7 +4485,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsWorksIfOK () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4517,8 +4507,17 @@ module AltCoverTests3 =
     Assert.That(subject.Execute(), Is.True)
     Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
 
+    Assert.That(
+      Path
+        .GetFileName(subject.Extended)
+        .StartsWith("altcover.test.")
+    )
+
     let result =
       subject.Extended |> File.ReadAllText
+
+    [ subject.Extended ]
+    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     Assert.That(
       result
@@ -4542,7 +4541,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsExtendsOK () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4571,6 +4570,9 @@ module AltCoverTests3 =
     let result =
       subject.Extended |> File.ReadAllText
 
+    [ subject.Extended ]
+    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
+
     Assert.That(
       result
         .Replace("\r", String.Empty)
@@ -4593,7 +4595,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsThrowsIfUninitialized () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4616,7 +4618,7 @@ module AltCoverTests3 =
   [<Test>]
   let RunSettingsRecoversOK () =
     Main.init ()
-    let subject = RunSettings()
+    let subject = MakeRunSettings()
 
     let dc =
       subject
@@ -4640,6 +4642,9 @@ module AltCoverTests3 =
 
     let result =
       subject.Extended |> File.ReadAllText
+
+    [ subject.Extended ]
+    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     Assert.That(
       result

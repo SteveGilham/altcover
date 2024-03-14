@@ -138,6 +138,7 @@ type Prepare() =
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
   member val Trivia = false with get, set
+  member val OutputRoot = String.Empty with get, set
 
   member private self.Message text =
     ``base``.Log.LogMessage(MessageImportance.High, text)
@@ -190,7 +191,8 @@ type Prepare() =
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated
           Verbosity = TaskHelpers.parse self.Verbosity
-          Trivia = self.Trivia }
+          Trivia = self.Trivia
+          OutputRoot = self.OutputRoot }
 
     Command.Prepare task log = 0
 
@@ -332,6 +334,7 @@ type Echo() =
 
     true
 
+[<AutoSerializable(false)>]
 type RunSettings() =
   inherit Task(null)
 
@@ -354,6 +357,9 @@ type RunSettings() =
                     Justification = "Unit test accessor")>]
   member val internal MessageIO: (string -> unit) option = None with get, set
 
+  member val internal GetTempFileName: (unit -> string) =
+    Path.GetTempFileName with get, set
+
   override self.Execute() =
     let signal =
       Option.defaultValue self.Message self.MessageIO
@@ -367,7 +373,7 @@ type RunSettings() =
       |> sprintf "Settings Before: %s"
       |> signal
 
-    let tempFile = Path.GetTempFileName()
+    let tempFile = self.GetTempFileName()
 
     try
       let settings =
