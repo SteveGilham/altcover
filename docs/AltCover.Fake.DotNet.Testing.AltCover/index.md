@@ -41,15 +41,15 @@ Make one of these
 #r "nuget: AltCover.Fake"
 
 let prep =
-    AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive
-        { AltCoverFake.DotNet.Testing.Primitive.PrepareOptions.Create() with
-            XmlReport = "./__UnitTestWithAltCover.xml"
-            OutputDirectories = [| "./__UnitTestWithAltCover" |]
-            StrongNameKey = "./Build/Infrastructure.snk"
-            ReportFormat = "NCover"
-            InPlace = false
-            Save = false }
-    |> AltCoverFake.DotNet.Testing.AltCoverCommand.Prepare
+  AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive
+    { AltCoverFake.DotNet.Testing.Primitive.PrepareOptions.Create() with
+        XmlReport = "./__UnitTestWithAltCover.xml"
+        OutputDirectories = [| "./__UnitTestWithAltCover" |]
+        StrongNameKey = "./Build/Infrastructure.snk"
+        ReportFormat = "NCover"
+        InPlace = false
+        Save = false }
+  |> AltCoverFake.DotNet.Testing.AltCoverCommand.Prepare
 
 { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create prep with
     ToolPath = "altcover"
@@ -67,23 +67,31 @@ let prep =
 #r "nuget: AltCover.Fake"
 #r "nuget: Fake.DotNet.Cli"
 
-let ForceTrue = AltCoverFake.DotNet.Testing.DotNet.CLIOptions.Force true
+let ForceTrue =
+  AltCoverFake.DotNet.Testing.DotNet.CLIOptions.Force true
 
-let prep = AltCoverFake.DotNet.Testing.Primitive.PrepareOptions.Create()
+let prep =
+  AltCoverFake.DotNet.Testing.Primitive.PrepareOptions.Create()
 
-let coll = AltCoverFake.DotNet.Testing.Primitive.CollectOptions.Create()
+let coll =
+  AltCoverFake.DotNet.Testing.Primitive.CollectOptions.Create()
 
 let prep1 =
-    { prep with
-        CallContext = [ "[Fact]"; "0" ]
-        AssemblyFilter = [| "xunit" |] }
+  { prep with
+      CallContext = [ "[Fact]"; "0" ]
+      AssemblyFilter = [| "xunit" |] }
 
-let prepare = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive prep1
+let prepare =
+  AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive prep1
 
 let collect =
-    AltCoverFake.DotNet.Testing.AltCover.CollectOptions.Primitive { coll with SummaryFormat = "+B" }
+  AltCoverFake.DotNet.Testing.AltCover.CollectOptions.Primitive
+    { coll with SummaryFormat = "+B" }
 
 open AltCoverFake.DotNet.DotNet // extension method WithAltCoverOptions
-Fake.DotNet.DotNet.test (fun to' -> to'.WithAltCoverOptions prepare collect ForceTrue) "dotnettest.fsproj"
+
+Fake.DotNet.DotNet.test
+  (fun to' -> to'.WithAltCoverOptions prepare collect ForceTrue)
+  "dotnettest.fsproj"
 
 ```

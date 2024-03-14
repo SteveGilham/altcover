@@ -29,6 +29,7 @@ public class Prepare
 | [MethodPoint](Options.Prepare/MethodPoint-apidoc) { get; set; } |  |
 | [MethodTopLevel](Options.Prepare/MethodTopLevel-apidoc) { get; set; } |  |
 | [OutputDirectories](Options.Prepare/OutputDirectories-apidoc) { get; set; } |  |
+| [OutputRoot](Options.Prepare/OutputRoot-apidoc) { get; set; } |  |
 | [PathFilter](Options.Prepare/PathFilter-apidoc) { get; set; } |  |
 | [Report](Options.Prepare/Report-apidoc) { get; set; } |  |
 | [ReportFormat](Options.Prepare/ReportFormat-apidoc) { get; set; } |  |

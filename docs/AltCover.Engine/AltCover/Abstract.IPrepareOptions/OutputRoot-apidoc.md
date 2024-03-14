@@ -1,9 +1,9 @@
-# Abstract.IPrepareOptions.Trivia property
+# Abstract.IPrepareOptions.OutputRoot property
 
-Corresponds to command line option `--trivia`
+Corresponds to dotnet test option `/p:AltCoverOutputRoot`
 
 ```csharp
-public bool Trivia { get; }
+public string OutputRoot { get; }
 ```
 
 ## See Also
