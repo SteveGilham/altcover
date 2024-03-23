@@ -440,6 +440,10 @@ namespace AltCoverFake.DotNet.Testing
       /// OpenCover style
       ///</summary>
       | OpenCover
+      ///<summary>
+      /// AltCover JSON style
+      ///</summary>
+      | Json
       with
         ///<summary>
         /// Returns the string to use in the command line

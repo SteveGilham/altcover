@@ -232,6 +232,7 @@ module TypeSafe =
   type ReportFormat =
     | NCover
     | OpenCover
+    | Json
     member self.AsString() = self.ToString()
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
