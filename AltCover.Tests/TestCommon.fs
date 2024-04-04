@@ -127,7 +127,7 @@ module TestCommonTests =
     test <@ (Maybe false 1 2) = 2 @>
     test <@ SolutionDir() |> String.IsNullOrEmpty |> not @>
     test <@ SolutionDir() = AltCover.SolutionRoot.location @>
-//    test <@ where.StartsWith(AltCover.SolutionRoot.location, StringComparison.Ordinal) @>
+  //    test <@ where.StartsWith(AltCover.SolutionRoot.location, StringComparison.Ordinal) @>
 
   [<Test>]
   let SelfTest () =

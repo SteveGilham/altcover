@@ -2826,7 +2826,9 @@ module AltCoverTests =
       |> Seq.toList
 
     // work round my local symlinks
-    let where = Assembly.GetExecutingAssembly().Location
+    let where =
+      Assembly.GetExecutingAssembly().Location
+
     let index = where.IndexOf "_Binaries"
     let at = where.Substring(0, index)
 
@@ -3714,7 +3716,9 @@ module AltCoverTests =
       use reader = new StreamReader(stream)
 
       // work round my local symlinks
-      let where = Assembly.GetExecutingAssembly().Location
+      let where =
+        Assembly.GetExecutingAssembly().Location
+
       let index = where.IndexOf "_Binaries"
       let at = where.Substring(0, index)
 
