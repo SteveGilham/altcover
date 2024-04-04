@@ -996,6 +996,24 @@ module AltCoverTests =
 
   // Visitor.fs
   [<Test>]
+  let ReportFileShouldBeCorrectlyExtended () =
+    try
+      let path1 =
+        Path.Combine(SolutionRoot.location, "test.xml")
+
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+      CoverageParameters.theReportPath <- Some path1
+      test <@ CoverageParameters.reportPath () = path1 @>
+
+      CoverageParameters.portable.Value <- true
+      test <@ CoverageParameters.reportPath () = "./test.xml" @>
+
+    finally
+      CoverageParameters.theReportPath <- None
+      CoverageParameters.theReportFormat <- None
+      CoverageParameters.portable.Value <- false
+
+  [<Test>]
   let ReportFileShouldBeCorrectlySuffixed () =
     try
       let path1 =
