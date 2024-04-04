@@ -77,6 +77,7 @@ module internal Main =
     CoverageParameters.staticFilter <- None
     CoverageParameters.showGenerated.Value <- false
     CoverageParameters.trivia.Value <- false
+    CoverageParameters.portable.Value <- false
 
   let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -324,6 +325,7 @@ module internal Main =
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
         (CommandLine.ddFlag "trivia" CoverageParameters.trivia)
+        (CommandLine.ddFlag "portable" CoverageParameters.portable)
         ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
         ("verbose", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity - 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
@@ -367,33 +369,42 @@ module internal Main =
         let outputDirectories =
           CoverageParameters.outputDirectories ()
 
-        inputDirectories
-        |> Seq.iter (fun fromDirectory ->
-          if outputDirectories.Contains fromDirectory then
-            CommandLine.error <-
-              CommandLine.Format.Local("NotInPlace", fromDirectory)
-              :: CommandLine.error)
+        if
+          CoverageParameters.portable.Value
+          && inputDirectories.Length > 1
+        then
+          CommandLine.error <-
+            CommandLine.Format.Local("NotPortable")
+            :: CommandLine.error
+        else
 
-        CommandLine.doPathOperation
-          (fun () ->
-            let found =
-              outputDirectories |> Seq.filter Directory.Exists
+          inputDirectories
+          |> Seq.iter (fun fromDirectory ->
+            if outputDirectories.Contains fromDirectory then
+              CommandLine.error <-
+                CommandLine.Format.Local("NotInPlace", fromDirectory)
+                :: CommandLine.error)
 
-            if
-              CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
-              && CommandLine.error |> List.isEmpty
-              && found.Any()
-            then
-              found
-              |> Seq.iter (fun toDirectory ->
-                CommandLine.error <-
-                  CommandLine.Format.Local("SaveExists", toDirectory)
-                  :: CommandLine.error)
+          CommandLine.doPathOperation
+            (fun () ->
+              let found =
+                outputDirectories |> Seq.filter Directory.Exists
 
-            if CommandLine.error |> List.isEmpty then
-              (Seq.iter CommandLine.ensureDirectory outputDirectories))
-          ()
-          false
+              if
+                CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
+                && CommandLine.error |> List.isEmpty
+                && found.Any()
+              then
+                found
+                |> Seq.iter (fun toDirectory ->
+                  CommandLine.error <-
+                    CommandLine.Format.Local("SaveExists", toDirectory)
+                    :: CommandLine.error)
+
+              if CommandLine.error |> List.isEmpty then
+                (Seq.iter CommandLine.ensureDirectory outputDirectories))
+            ()
+            false
 
         if CommandLine.error |> List.isEmpty |> not then
           Left("UsageError", options)
@@ -728,7 +739,11 @@ module internal Main =
         CommandLine.applyVerbosity ()
 
         let report =
-          CoverageParameters.reportPath ()
+          Path.Combine(
+            CoverageParameters.outputDirectories ()
+            |> Seq.head,
+            CoverageParameters.reportPath ()
+          )
 
         let result =
           CommandLine.doPathOperation

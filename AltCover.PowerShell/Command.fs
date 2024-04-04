@@ -603,6 +603,15 @@ type InvokeAltCoverCommand() =
   member val Trivia: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
+  /// <para type="description">Portable operation - coverage report, control file and recorded data co-located with the recorder assembly</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument",
+              Mandatory = false,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Portable: SwitchParameter = SwitchParameter(false) with get, set
+
+  /// <summary>
   /// <para type="description">Instrument and show code that is by default skipped as trivial.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
@@ -715,7 +724,8 @@ type InvokeAltCoverCommand() =
         ShowGenerated = self.ShowGenerated.IsPresent
         Verbosity = self.Verbosity
         Trivia = self.Trivia.IsPresent
-        OutputRoot = String.Empty }
+        OutputRoot = String.Empty
+        Portable = self.Portable.IsPresent }
 
   member private self.Log() =
     AltCover.LoggingOptions.Primitive

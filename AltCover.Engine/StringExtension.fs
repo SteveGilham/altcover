@@ -15,6 +15,9 @@ module internal StringExtension =
     x.Equals(y, System.StringComparison.Ordinal)
 
 #if !FAKEAPI
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Used but inlined many places")>]
 #if !DEBUG && !NET20
   [<MethodImplAttribute(MethodImplOptions.AggressiveInlining)>]
 #endif

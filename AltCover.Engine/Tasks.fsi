@@ -173,6 +173,10 @@ type Prepare =
     /// Corresponds to command line option `--trivia`
     ///</summary>
     member Trivia: bool with get, set
+    ///<summary>
+    /// Corresponds to command line option `--portable`
+    ///</summary>
+    member Portable: bool with get, set
   end
 // ```
 // ## Task `AltCover.Collect`

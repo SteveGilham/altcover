@@ -139,6 +139,7 @@ type Prepare() =
   member val Verbosity = "Info" with get, set
   member val Trivia = false with get, set
   member val OutputRoot = String.Empty with get, set
+  member val Portable = false with get, set
 
   member private self.Message text =
     ``base``.Log.LogMessage(MessageImportance.High, text)
@@ -192,7 +193,8 @@ type Prepare() =
           ShowGenerated = self.ShowGenerated
           Verbosity = TaskHelpers.parse self.Verbosity
           Trivia = self.Trivia
-          OutputRoot = self.OutputRoot }
+          OutputRoot = self.OutputRoot
+          Portable = self.Portable }
 
     Command.Prepare task log = 0
 

@@ -96,7 +96,7 @@ module AltCoverTests3 =
   let ShouldHaveExpectedOptions () =
     Main.init ()
     let options = Main.I.declareOptions ()
-    let optionCount = 36
+    let optionCount = 37
 
     let optionNames =
       options
@@ -227,7 +227,7 @@ module AltCoverTests3 =
     //                   N/A,         fixed, N/A,              fixed
     // inplace is explicitly hard-coded
     testWithFallback
-      <@ (attributeNames) |> List.length = optionCount - 4 @> // drop -q/--verbose => verbosity
+      <@ (attributeNames) |> List.length = optionCount - 5 @> // drop --portable/-q/--verbose => verbosity
       (attributeNames |> List.length)
       (Is.EqualTo(optionCount - 4))
 
