@@ -26,6 +26,12 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let ReportFile = "Coverage.Default.xml"
 
+  let ReportFilePath =
+    Path.Combine(
+      Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+      ReportFile
+    )
+
   /// <summary>
   /// Gets whether to defer output until process exit
   /// This property's IL code is modified to store the actual value
@@ -203,7 +209,7 @@ module Instance =
     let internal mutex =
       new System.Threading.Mutex(false, Token + ".mutex")
 
-    let internal signalFile () = ReportFile + ".acv"
+    let internal signalFile () = ReportFilePath + ".acv"
 
     /// <summary>
     /// Reporting back to the mother-ship
@@ -254,7 +260,7 @@ module Instance =
                 own
                 counts
                 CoverageFormat
-                ReportFile
+                ReportFilePath
                 None
 
             getResource "Coverage statistics flushing took {0:N} seconds"
@@ -307,7 +313,7 @@ module Instance =
         sprintf "%A" DateTime.UtcNow.Ticks
 
       let filename =
-        ReportFile + "." + stamp + ".exn"
+        ReportFilePath + "." + stamp + ".exn"
 
       use file =
         File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write)

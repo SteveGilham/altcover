@@ -406,7 +406,7 @@ module AltCoverTests =
   [<Test>]
   let ExceptionLoggedToFile () =
     let path =
-      Instance.ReportFile |> Path.GetFullPath
+      Instance.ReportFilePath |> Path.GetFullPath
 
     let where = path |> Path.GetDirectoryName
 
@@ -444,7 +444,7 @@ module AltCoverTests =
   [<Test>]
   let WrappedExceptionLoggedToFile () =
     let path =
-      Instance.ReportFile |> Path.GetFullPath
+      Instance.ReportFilePath |> Path.GetFullPath
 
     let where = path |> Path.GetDirectoryName
 
@@ -543,7 +543,7 @@ module AltCoverTests =
         let key = " "
 
         let path =
-          Instance.ReportFile |> Path.GetFullPath
+          Instance.ReportFilePath |> Path.GetFullPath
 
         let where = path |> Path.GetDirectoryName
 
@@ -1224,7 +1224,7 @@ module AltCoverTests =
 
           do
             use worker =
-              new FileStream(Instance.ReportFile, FileMode.CreateNew)
+              new FileStream(Instance.ReportFilePath, FileMode.CreateNew)
 
             worker.Write(buffer, 0, size)
             ()
@@ -1248,7 +1248,7 @@ module AltCoverTests =
           Assert.That(recorded, Is.EqualTo "Pausing...")
 
           use worker' =
-            new FileStream(Instance.ReportFile, FileMode.Open)
+            new FileStream(Instance.ReportFilePath, FileMode.Open)
 
           let after = XmlDocument()
           after.Load worker'
@@ -1271,7 +1271,7 @@ module AltCoverTests =
           )
         finally
           Instance.I.trace <- save
-          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
           Adapter.VisitsClear()
           Instance.I.isRunner <- false
           Console.SetOut saved
@@ -1328,7 +1328,7 @@ module AltCoverTests =
 
           do
             use worker =
-              new FileStream(Instance.ReportFile, FileMode.CreateNew)
+              new FileStream(Instance.ReportFilePath, FileMode.CreateNew)
 
             worker.Write(buffer, 0, size)
             ()
@@ -1353,7 +1353,7 @@ module AltCoverTests =
           Assert.That(recorded, Is.EqualTo "Resuming...", recorded)
 
           use worker' =
-            new FileStream(Instance.ReportFile, FileMode.Open)
+            new FileStream(Instance.ReportFilePath, FileMode.Open)
 
           let after = XmlDocument()
           after.Load worker'
@@ -1377,7 +1377,7 @@ module AltCoverTests =
         finally
           Adapter.HardReset()
           Instance.I.trace <- save
-          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
@@ -1427,7 +1427,7 @@ module AltCoverTests =
 
           do
             use worker =
-              new FileStream(Instance.ReportFile, FileMode.CreateNew)
+              new FileStream(Instance.ReportFilePath, FileMode.CreateNew)
 
             worker.Write(buffer, 0, size)
             ()
@@ -1460,7 +1460,7 @@ module AltCoverTests =
           Assert.That(index2, Is.GreaterThan index1, recorded)
 
           use worker' =
-            new FileStream(Instance.ReportFile, FileMode.Open)
+            new FileStream(Instance.ReportFilePath, FileMode.Open)
 
           let after = XmlDocument()
           after.Load worker'
@@ -1483,7 +1483,7 @@ module AltCoverTests =
           )
         finally
           Instance.I.trace <- save
-          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
@@ -1533,7 +1533,7 @@ module AltCoverTests =
 
           do
             use worker =
-              new FileStream(Instance.ReportFile, FileMode.CreateNew)
+              new FileStream(Instance.ReportFilePath, FileMode.CreateNew)
 
             worker.Write(buffer, 0, size)
             ()
@@ -1559,7 +1559,7 @@ module AltCoverTests =
           Assert.That(recorded, Is.Empty, recorded)
 
           use worker' =
-            new FileStream(Instance.ReportFile, FileMode.Open)
+            new FileStream(Instance.ReportFilePath, FileMode.Open)
 
           let after = XmlDocument()
           after.Load worker'
@@ -1583,7 +1583,7 @@ module AltCoverTests =
         finally
           Instance.I.trace <- save
           Instance.supervision <- false
-          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
@@ -2029,10 +2029,10 @@ module AltCoverTests =
 
           do
             use archive =
-              ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Create)
+              ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Create)
 
             let entry =
-              Instance.ReportFile
+              Instance.ReportFilePath
               |> Path.GetFileName
               |> archive.CreateEntry
 
@@ -2068,10 +2068,10 @@ module AltCoverTests =
           Assert.That(index2, Is.GreaterThan index1, recorded)
 
           use zip =
-            ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Update)
+            ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Update)
 
           let entry =
-            Instance.ReportFile
+            Instance.ReportFilePath
             |> Path.GetFileName
             |> zip.GetEntry
 
@@ -2097,7 +2097,7 @@ module AltCoverTests =
           )
         finally
           Instance.I.trace <- save
-          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)

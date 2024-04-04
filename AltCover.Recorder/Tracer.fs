@@ -111,11 +111,7 @@ type internal Tracer =
       visits |> Table |> this.Push String.Empty 0
 
   member internal this.OnStart() =
-    let running =
-      if this.Tracer != "Coverage.Default.xml.acv" then
-        this.Connect()
-      else
-        this
+    let running = this.Connect()
 
     { running with Definitive = true }
 
