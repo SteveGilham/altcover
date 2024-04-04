@@ -4,7 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 27)
-* [BUGFIX] Add `Json` member to the type-safe report format enumeration
+* [BUGFIX] Add `Json` member to the report format enumerations for the typesafe API and for the `InvokeAltCover` cmdlet.
 
 # 8.7.3 (Habu series release 26)
 * [Enhancement] [Discussion 202](https://github.com/SteveGilham/altcover/discussions/202) : More careful tidying of temporary `.runsettings` files, fixing long-standing errors of both commission and omission.
