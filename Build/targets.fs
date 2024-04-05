@@ -7620,6 +7620,8 @@ module Targets =
         let o =
           Path.getFullName "./_Binaries/_DotnetGlobalTest/Debug+AnyCPU/net8.0"
 
+        let r = Path.Combine(o, Path.GetFileName x)
+
         [ AltCoverCommand.ArgumentType.ImportModule
           AltCoverCommand.ArgumentType.GetVersion ]
         |> List.iter (
@@ -7640,7 +7642,8 @@ module Targets =
                 AssemblyFilter = [| "xunit" |]
                 LocalSource = true
                 InPlace = true
-                Save = false }
+                Save = false
+                Portable = true }
           )
           |> AltCoverCommand.Prepare
 
@@ -7648,7 +7651,7 @@ module Targets =
             WorkingDirectory = working }
         |> AltCoverCommand.run
 
-        Actions.CheckSample4Content x
+        Actions.CheckSample4Content r
 
         printfn "Execute the instrumented tests"
 
@@ -7667,7 +7670,7 @@ module Targets =
             WorkingDirectory = working }
         |> AltCoverCommand.run
 
-        Actions.CheckSample4Visits before x
+        Actions.CheckSample4Visits before r
 
         let command =
           """$ImportModule = (altcover ImportModule | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ImportModule; ConvertTo-BarChart -?"""
@@ -7676,6 +7679,9 @@ module Targets =
         |> CreateProcess.withWorkingDirectory working
         |> Proc.run
         |> (Actions.AssertResult "pwsh")
+
+        // put where we want it later
+        Shell.copy (Path.GetDirectoryName x) [ r ]
 
       finally
         if set then

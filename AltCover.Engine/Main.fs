@@ -75,9 +75,9 @@ module internal Main =
     CoverageParameters.sourcelink.Value <- false // ddFlag
     CoverageParameters.coalesceBranches.Value <- false // ddFlag
     CoverageParameters.staticFilter <- None
-    CoverageParameters.showGenerated.Value <- false
-    CoverageParameters.trivia.Value <- false
-    CoverageParameters.portable.Value <- false
+    CoverageParameters.showGenerated.Value <- false // ddFlag
+    CoverageParameters.trivia.Value <- false // ddFlag
+    CoverageParameters.portable.Value <- false // ddFlag
 
   let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -710,6 +710,17 @@ module internal Main =
       | ReportFormat.NativeJson -> NativeJson.reportGenerator ()
       | _ -> Report.reportGenerator ()
 
+    let internal canonicalReportPath () =
+      Path.Combine(
+        (if CoverageParameters.inplace.Value then
+           CoverageParameters.inputDirectories ()
+         else
+           CoverageParameters.outputDirectories ())
+        |> Seq.head,
+        CoverageParameters.reportPath ()
+      )
+      |> Canonical.canonicalPath
+
     [<SuppressMessage("Gendarme.Rules.BadPractice",
                       "GetEntryAssemblyMayReturnNullRule",
                       Justification = "That is the whole point of the call.")>]
@@ -738,12 +749,7 @@ module internal Main =
       | Right(rest, fromInfo, toInfo, targetInfo) ->
         CommandLine.applyVerbosity ()
 
-        let report =
-          Path.Combine(
-            CoverageParameters.outputDirectories ()
-            |> Seq.head,
-            CoverageParameters.reportPath ()
-          )
+        let report = canonicalReportPath ()
 
         let result =
           CommandLine.doPathOperation

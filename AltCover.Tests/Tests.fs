@@ -998,20 +998,42 @@ module AltCoverTests =
   [<Test>]
   let ReportFileShouldBeCorrectlyExtended () =
     try
+      Main.init ()
+
       let path1 =
         Path.Combine(SolutionRoot.location, "test.xml")
+
+      let from = Path.Combine(path1, "from")
+      let toward = Path.Combine(path1, "to")
 
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       CoverageParameters.theReportPath <- Some path1
       test <@ CoverageParameters.reportPath () = path1 @>
 
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Add from
+      CoverageParameters.theOutputDirectories.Add toward
+
       CoverageParameters.portable.Value <- true
       test <@ CoverageParameters.reportPath () = "./test.xml" @>
 
+      test
+        <@
+          Main.I.canonicalReportPath () = (Path.Combine(toward, "test.xml")
+                                           |> Canonical.canonicalPath)
+        @>
+
+      CoverageParameters.inplace.Value <- true
+
+      test
+        <@
+          Main.I.canonicalReportPath () = (Path.Combine(from, "test.xml")
+                                           |> Canonical.canonicalPath)
+        @>
+
     finally
-      CoverageParameters.theReportPath <- None
-      CoverageParameters.theReportFormat <- None
-      CoverageParameters.portable.Value <- false
+      Main.init ()
 
   [<Test>]
   let ReportFileShouldBeCorrectlySuffixed () =
@@ -1028,22 +1050,28 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       CoverageParameters.theReportPath <- Some path1
       test <@ CoverageParameters.reportPath () = path1 @>
+      test <@ Main.I.canonicalReportPath () = Canonical.canonicalPath (path1) @>
 
       CoverageParameters.theReportPath <- Some path2
       test <@ CoverageParameters.reportPath () = path2 @>
+      test <@ Main.I.canonicalReportPath () = Canonical.canonicalPath (path2) @>
 
       CoverageParameters.theReportPath <- Some path3
       test <@ CoverageParameters.reportPath () = path1 @>
+      test <@ Main.I.canonicalReportPath () = Canonical.canonicalPath (path1) @>
 
       CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
       CoverageParameters.theReportPath <- Some path1
       test <@ CoverageParameters.reportPath () = path3 @>
+      test <@ Main.I.canonicalReportPath () = Canonical.canonicalPath (path3) @>
 
       CoverageParameters.theReportPath <- Some path2
       test <@ CoverageParameters.reportPath () = path2 @>
+      test <@ Main.I.canonicalReportPath () = Canonical.canonicalPath (path2) @>
 
       CoverageParameters.theReportPath <- Some path3
       test <@ CoverageParameters.reportPath () = path3 @>
+      test <@ Main.I.canonicalReportPath () = Canonical.canonicalPath (path3) @>
 
     finally
       CoverageParameters.theReportPath <- None

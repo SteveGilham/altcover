@@ -810,7 +810,8 @@ module ExpectoTestManifest =
        Tests.AltCoverTests3.ParsingMixedQuietWorks, "Tests3.ParsingMixedQuietWorks"
        Tests.AltCoverTests3.OutputLeftPassesThrough, "Tests3.OutputLeftPassesThrough"
        Tests.AltCoverTests3.OutputInPlaceFails, "Tests3.OutputInPlaceFails"
-       Tests.AltCoverTests3.PortableFailsOnMultiInputs, "Tests3.PortableFailsOnMultiInputs"
+       Tests.AltCoverTests3.PortableFailsOnMultiInputs,
+       "Tests3.PortableFailsOnMultiInputs"
        Tests.AltCoverTests3.ScreeningFilesShouldRejectTheInstrumentedOnes,
        "Tests3.ScreeningFilesShouldRejectTheInstrumentedOnes"
        Tests.AltCoverTests3.OutputToNewPlaceIsOK, "Tests3.OutputToNewPlaceIsOK"

@@ -12,7 +12,9 @@ open System.Reflection
 
 open System.Resources
 open System.Runtime.CompilerServices
+#if !NET20
 open System.Threading
+#endif
 
 open AltCover.Shared
 
@@ -31,6 +33,7 @@ module Instance =
       Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
       ReportFile
     )
+    |> AltCover.Canonical.canonicalPath
 
   /// <summary>
   /// Gets whether to defer output until process exit
