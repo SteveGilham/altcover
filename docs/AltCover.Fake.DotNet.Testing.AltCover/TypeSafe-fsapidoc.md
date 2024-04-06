@@ -253,6 +253,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         ShowGenerated: Flag
         Verbosity : System.Diagnostics.TraceLevel
         Trivia: Flag
+        OutputRoot : FilePath
  }
       with
         static member Create : unit -> PrepareOptions

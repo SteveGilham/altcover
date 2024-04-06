@@ -269,6 +269,10 @@ module Abstract =
     /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
     ///</summary>
     abstract member OutputRoot : string with get
+    ///<summary>
+    /// Corresponds to command line option `--portable`
+    ///</summary>
+    abstract member Portable : bool with get
 // ```
 #if RUNNER
 // ### interface `ILoggingOptions`

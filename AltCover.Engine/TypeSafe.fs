@@ -232,6 +232,7 @@ module TypeSafe =
   type ReportFormat =
     | NCover
     | OpenCover
+    | Json
     member self.AsString() = self.ToString()
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -307,7 +308,8 @@ module TypeSafe =
       ShowGenerated: Flag
       Verbosity: System.Diagnostics.TraceLevel
       Trivia: Flag
-      OutputRoot: FilePath }
+      OutputRoot: FilePath
+      Portable: Flag }
     static member Create() =
       { InputDirectories = NoDirectories
         OutputDirectories = NoDirectories
@@ -345,7 +347,8 @@ module TypeSafe =
         ShowGenerated = Clear
         Verbosity = System.Diagnostics.TraceLevel.Info
         Trivia = Clear
-        OutputRoot = NoFile }
+        OutputRoot = NoFile
+        Portable = Clear }
 
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",

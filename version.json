@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "8.7",
+  "version": "8.8",
   "release": {
     "branchName": "release/v{version}",
     "versionIncrement": "build",

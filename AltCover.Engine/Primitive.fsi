@@ -254,6 +254,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
         ///</summary>
         OutputRoot : string
+        ///<summary>
+        /// Corresponds to command line option `--portable`
+        ///</summary>
+        Portable : bool
       }
     with
         ///<summary>

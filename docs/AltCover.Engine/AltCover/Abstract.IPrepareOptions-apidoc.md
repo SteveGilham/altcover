@@ -44,6 +44,7 @@ public interface IPrepareOptions
 | [MethodPoint](Abstract.IPrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
 | [MethodTopLevel](Abstract.IPrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Abstract.IPrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
+| [OutputRoot](Abstract.IPrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | [PathFilter](Abstract.IPrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
 | [Report](Abstract.IPrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Abstract.IPrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
@@ -54,7 +55,7 @@ public interface IPrepareOptions
 | [SourceLink](Abstract.IPrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Abstract.IPrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Abstract.IPrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
-| [Trivia](Abstract.IPrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option ` --trivia` |
+| [Trivia](Abstract.IPrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option `--trivia` |
 | [TypeFilter](Abstract.IPrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Abstract.IPrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](Abstract.IPrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option `-q` |

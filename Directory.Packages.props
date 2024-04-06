@@ -55,7 +55,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="16.0.0" />
-    <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.5" Condition="'$(LocalCecil)' != 'true'" />
     <PackageVersion Include="Mono.CSharp" Version="4.0.0.143" />
     <PackageVersion Include="Mono.Options" Version="6.12.0.148" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.2.1" />

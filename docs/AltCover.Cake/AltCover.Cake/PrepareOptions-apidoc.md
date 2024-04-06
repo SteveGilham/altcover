@@ -31,6 +31,7 @@ public class PrepareOptions
 | virtual [MethodPoint](PrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
 | virtual [MethodTopLevel](PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](PrepareOptions/OutputDirectories-apidoc) { get; } | Gets the output directories (overridden by the MSBuild integration) |
+| virtual [OutputRoot](PrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | virtual [PathFilter](PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
 | virtual [Report](PrepareOptions/Report-apidoc) { get; } | Gets or sets the value that corresponds to command line option `-r, --report=VALUE` |
 | virtual [ReportFormat](PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
@@ -41,7 +42,7 @@ public class PrepareOptions
 | virtual [SourceLink](PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | virtual [StrongNameKey](PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | virtual [SymbolDirectories](PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
-| virtual [Trivia](PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option ` --trivia` |
+| virtual [Trivia](PrepareOptions/Trivia-apidoc) { get; } | Corresponds to command line option `--trivia` |
 | virtual [TypeFilter](PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | virtual [TypeTopLevel](PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | virtual [Verbosity](PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option `-q` |

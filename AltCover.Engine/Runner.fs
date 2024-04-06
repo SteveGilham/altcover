@@ -1474,8 +1474,11 @@ module internal Runner =
             let instance = snd pair
 
             let report =
-              (J.getMethod instance "get_ReportFile")
-              |> J.getFirstOperandAsString
+              Path.Combine(
+                Path.GetDirectoryName(recordingDirectory.Value),
+                (J.getMethod instance "get_ReportFile")
+                |> J.getFirstOperandAsString
+              )
               |> canonicalPath
 
             let format =

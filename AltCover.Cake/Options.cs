@@ -258,6 +258,11 @@ namespace AltCover.Cake
     /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
     ///</summary>
     public virtual string OutputRoot => String.Empty;
+
+    ///<summary>
+    /// Corresponds to command line option `--portable`
+    ///</summary>
+    public virtual bool Portable => false;
   }
 
   /// <summary>

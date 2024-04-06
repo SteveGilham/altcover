@@ -277,6 +277,8 @@ module ExpectoTestManifest =
        Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
        Tests.AltCoverTests.ReportFileShouldBeCorrectlySuffixed,
        "Tests.ReportFileShouldBeCorrectlySuffixed"
+       Tests.AltCoverTests.ReportFileShouldBeCorrectlyExtended,
+       "Tests.ReportFileShouldBeCorrectlyExtended"
        Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
        Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
        Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage,
@@ -808,6 +810,8 @@ module ExpectoTestManifest =
        Tests.AltCoverTests3.ParsingMixedQuietWorks, "Tests3.ParsingMixedQuietWorks"
        Tests.AltCoverTests3.OutputLeftPassesThrough, "Tests3.OutputLeftPassesThrough"
        Tests.AltCoverTests3.OutputInPlaceFails, "Tests3.OutputInPlaceFails"
+       Tests.AltCoverTests3.PortableFailsOnMultiInputs,
+       "Tests3.PortableFailsOnMultiInputs"
        Tests.AltCoverTests3.ScreeningFilesShouldRejectTheInstrumentedOnes,
        "Tests3.ScreeningFilesShouldRejectTheInstrumentedOnes"
        Tests.AltCoverTests3.OutputToNewPlaceIsOK, "Tests3.OutputToNewPlaceIsOK"
