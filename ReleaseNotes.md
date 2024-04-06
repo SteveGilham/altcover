@@ -5,6 +5,8 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 27)
 * [BUGFIX] Add `Json` member to the report format enumerations for the typesafe API and for the `InvokeAltCover` cmdlet.
+* [BUGFIX] Issue #214 - patch Mono.Cecil to use FIPS compliant algorithm
+* [Enhancement] Discussion #206, maybe also Issue #203 : Option `--portable` and equivalent APIs to place the coverage report file and related coverage data in the same folder as the recorder assembly, wherever that might be, allowing the whole instrumented folder structure to be moved into another file structure (e.g. different machine, different OS). 
 
 # 8.7.3 (Habu series release 26)
 * [Enhancement] [Discussion 202](https://github.com/SteveGilham/altcover/discussions/202) : More careful tidying of temporary `.runsettings` files, fixing long-standing errors of both commission and omission.
