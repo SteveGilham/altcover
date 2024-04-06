@@ -1,4 +1,4 @@
-﻿#if RUNNER
+﻿#if RUNNER || RECORDER
 namespace AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
@@ -15,7 +15,7 @@ module internal Canonical =
     Uri("file://" + (Path.GetFullPath path), UriKind.Absolute)
       .LocalPath
 
-#if !FAKE && !NoCanonicalDirectories
+#if !FAKE && !NoCanonicalDirectories && !RECORDER
   let canonicalDirectory (path: string) =
     let last = path |> Seq.last
 

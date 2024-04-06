@@ -12,7 +12,7 @@ public PrepareOptions(IEnumerable<string> inputDirectories, IEnumerable<string> 
     bool inPlace, bool save, bool zipFile, bool methodPoint, bool singleVisit, bool lineCover, 
     bool branchCover, IEnumerable<string> commandLine, bool exposeReturnCode, bool sourceLink, 
     bool defer, bool localSource, bool visibleBranches, string showStatic, bool showGenerated, 
-    TraceLevel verbosity, bool trivia)
+    TraceLevel verbosity, bool trivia, string outputRoot)
 ```
 
 ## See Also

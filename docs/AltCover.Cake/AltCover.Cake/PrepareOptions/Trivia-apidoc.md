@@ -1,6 +1,6 @@
 # PrepareOptions.Trivia property
 
-Corresponds to command line option ` --trivia`
+Corresponds to command line option `--trivia`
 
 ```csharp
 public virtual bool Trivia { get; }

@@ -38,6 +38,7 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverReport=`"path to the report" default: `coverage.xml` or `coverage.json` in the project directory
 * `/p:AltCoverReportFormat=`"Json", "NCover" or default "OpenCover"
 * `/p:AltCoverShowStatic=-|+|++` to mark simple code like auto-properties in the coverage file
+* `/p:AltCoverOutputRoot=`"path of root folder for saved/instrumented output for `dotnet test`, default `$(TargetDir)`"
 * `/p:AltCoverZipFile="true|false"` - set "true" to store the coverage report in a `.zip` archive
 * `/p:AltCoverMethodPoint="true|false"` - set "true" to record only the first point of each method
 * `/p:AltCoverSingle="true|false"` - set "true" to record only the first visit to each point

@@ -125,6 +125,7 @@ module Options =
     member val Verbosity = System.Diagnostics.TraceLevel.Info with get, set
     member val Trivia = false with get, set
     member val OutputRoot = String.Empty with get, set
+    member val Portable = false with get, set
 
     interface Abstract.IPrepareOptions with
       member self.InputDirectories =
@@ -190,6 +191,7 @@ module Options =
       member self.Verbosity = self.Verbosity
       member self.Trivia = self.Trivia
       member self.OutputRoot = self.OutputRoot
+      member self.Portable = self.Portable
 
 #if RUNNER
   [<AutoSerializable(false)>]

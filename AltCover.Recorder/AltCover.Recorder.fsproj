@@ -7,15 +7,16 @@
     <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <DefineConstants>RECORDER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
     <OtherFlags>--keyfile:$(InfrastructureKey) --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(DefineConstants)</DefineConstants>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
@@ -24,6 +25,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
+    <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
     <Compile Include="Base.fs" />
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />

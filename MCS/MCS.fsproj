@@ -23,7 +23,19 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="Mono.Cecil" Condition="'$(LocalCecil)' != 'true'" />
+    <Reference Include="Mono.Cecil" Condition="'$(LocalCecil)' == 'true'">
+      <HintPath>..\ThirdParty\cecil\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks" Condition="'$(LocalCecil)' == 'true'">
+      <HintPath>..\ThirdParty\cecil\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb" Condition="'$(LocalCecil)' == 'true'">
+      <HintPath>..\ThirdParty\cecil\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb" Condition="'$(LocalCecil)' == 'true'">
+      <HintPath>..\ThirdParty\cecil\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
     <PackageReference Include="Mono.CSharp" />
     <PackageReference Include="FSharp.Core" />
   </ItemGroup>

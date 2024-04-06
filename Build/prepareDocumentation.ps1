@@ -334,7 +334,7 @@ or, for the global tool only
 
 * The ``--dependency`` argument will expand environment variables in the paths from release 4.0.653; %USERPROFILE%, %ProgramFiles% and %NUGET_PACKAGES% are likely to be the most useful here, e.g. ``%ProgramFiles%/dotnet/shared/Microsoft.AspNetCore.App/2.1.5/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll`` or similar to pick up ASP.Net Core assemblies needed for type references
 
-* The ``--callContext`` argument is only used with ``--opencover``, otherwise it has no effect.  Tracked methods are recorded at instrumentation time, but call context information is only recorded in runner mode, including ``runner --collect``, which allows for heavier processing after the process terminates than the ``ProcessExit`` handler.
+* The ``--callContext`` argument has no effect with ``NCover`` report format.  Tracked methods are recorded at instrumentation time, but call context information is only recorded in runner mode, including ``runner --collect``, which allows for heavier processing after the process terminates than the ``ProcessExit`` handler.
 
 * In runner mode, exactly one of a command to be executed (``-x``) or the ``--collect`` option is required.  If ``--collect`` is supplied then anything after a free-standing ``--`` is ignored.
 

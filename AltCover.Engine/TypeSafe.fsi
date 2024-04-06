@@ -440,6 +440,10 @@ namespace AltCoverFake.DotNet.Testing
       /// OpenCover style
       ///</summary>
       | OpenCover
+      ///<summary>
+      /// AltCover JSON style
+      ///</summary>
+      | Json
       with
         ///<summary>
         /// Returns the string to use in the command line
@@ -680,6 +684,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to dotnet test option `/p:AltCoverOutputRoot`
         ///</summary>
         OutputRoot : FilePath
+        ///<summary>
+        /// Corresponds to command line option `--portable`
+        ///</summary>
+        Portable : Flag
  }
       with
         ///<summary>

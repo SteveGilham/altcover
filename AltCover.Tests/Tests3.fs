@@ -14,7 +14,7 @@ open Mono.Cecil.Cil
 #nowarn "25"
 
 module AltCoverTests3 =
-  // AltCover.fs and CommandLine.fs
+  // Main.fs and CommandLine.fs
   [<Test>]
   let ShouldLaunchWithExpectedOutput () =
     Main.init ()
@@ -96,7 +96,7 @@ module AltCoverTests3 =
   let ShouldHaveExpectedOptions () =
     Main.init ()
     let options = Main.I.declareOptions ()
-    let optionCount = 36
+    let optionCount = 37
 
     let optionNames =
       options
@@ -227,7 +227,7 @@ module AltCoverTests3 =
     //                   N/A,         fixed, N/A,              fixed
     // inplace is explicitly hard-coded
     testWithFallback
-      <@ (attributeNames) |> List.length = optionCount - 4 @> // drop -q/--verbose => verbosity
+      <@ (attributeNames) |> List.length = optionCount - 5 @> // drop --portable/-q/--verbose => verbosity
       (attributeNames |> List.length)
       (Is.EqualTo(optionCount - 4))
 
@@ -2825,6 +2825,53 @@ module AltCoverTests3 =
       CommandLine.verbosity <- 0
 
   [<Test>]
+  let PortableFailsOnMultiInputs () =
+    Main.init ()
+    let options = Main.I.declareOptions ()
+    let saved = (Console.Out, Console.Error)
+
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here =
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+        |> canonicalDirectory
+
+      CoverageParameters.portable.Value <- true
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Add here
+      CoverageParameters.theInputDirectories.Add "."
+
+      CoverageParameters.theOutputDirectories.Clear()
+
+      CoverageParameters.theOutputDirectories.AddRange
+        CoverageParameters.theInputDirectories
+
+      let arg = ([], options)
+      let fail = Right arg
+
+      match Main.I.processOutputLocation fail with
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(stderr.ToString(), Is.Empty)
+
+        Assert.That(
+          CommandLine.error,
+          Is.EquivalentTo
+            [ "The --portable option is not compatible with multiple output locations." ]
+        )
+
+        Assert.That(stdout.ToString(), Is.Empty)
+    finally
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+      Main.init ()
+
+  [<Test>]
   let OutputLeftPassesThrough () =
     Main.init ()
 
@@ -2854,6 +2901,7 @@ module AltCoverTests3 =
 
       CoverageParameters.theInputDirectories.Clear()
       CoverageParameters.theInputDirectories.Add here
+
       CoverageParameters.theOutputDirectories.Clear()
 
       CoverageParameters.theOutputDirectories.AddRange
@@ -2880,6 +2928,7 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
+      Main.init ()
 
   [<Test>]
   let OutputToNewPlaceIsOK () =
@@ -2898,6 +2947,7 @@ module AltCoverTests3 =
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
+      CoverageParameters.portable.Value <- true
       CoverageParameters.theInputDirectories.Clear()
       CoverageParameters.theInputDirectories.Add here
       CoverageParameters.theOutputDirectories.Clear()
@@ -2944,6 +2994,7 @@ module AltCoverTests3 =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Output.verbose <- ignore
+      Main.init ()
 
   [<Test>]
   let OutputToReallyNewPlaceIsOK () =
@@ -3008,6 +3059,7 @@ module AltCoverTests3 =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Output.verbose <- ignore
+      Main.init ()
 
   [<Test>]
   let InPlaceToExistingPlaceFails () =

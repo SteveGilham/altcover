@@ -82,6 +82,10 @@ type ReportFormat =
   /// <para type="description">Generate an OpenCover format report</para>
   /// </summary>
   | OpenCover = 1
+  /// <summary>
+  /// <para type="description">Generate a JSON format report</para>
+  /// </summary>
+  | Json = 2
 
 /// <summary>
 /// <para type="synopsis">The equivalent of the `AltCover` command or `altcover` global tool.</para>
@@ -450,7 +454,7 @@ type InvokeAltCoverCommand() =
   member val CallContext: string array = [||] with get, set
 
   /// <summary>
-  /// <para type="description">Generate the report in the specified format (NCover or the default OpenCover)</para>
+  /// <para type="description">Generate the report in the specified format (NCover, JSON or the default OpenCover)</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,
@@ -504,7 +508,7 @@ type InvokeAltCoverCommand() =
   member val Single: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">Do not record branch coverage.  Implies, and is compatible with, the -ReportFormat "opencover" option. Incompatible with `-BranchCover`.</para>
+  /// <para type="description">Do not record branch coverage.  Is not compatible with, the -ReportFormat "ncover" option. Incompatible with `-BranchCover`.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,
@@ -513,7 +517,7 @@ type InvokeAltCoverCommand() =
   member val LineCover: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">Do not record line coverage.  Implies, and is compatible with, the -ReportFormat "opencover" option. Incompatible with `-LineCover`.</para>
+  /// <para type="description">Do not record line coverage.  Is not compatible with, the -ReportFormat "ncover" option. Incompatible with `-LineCover`.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,
@@ -597,6 +601,15 @@ type InvokeAltCoverCommand() =
               ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
   member val Trivia: SwitchParameter = SwitchParameter(false) with get, set
+
+  /// <summary>
+  /// <para type="description">Portable operation - coverage report, control file and recorded data co-located with the recorder assembly</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument",
+              Mandatory = false,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Portable: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
   /// <para type="description">Instrument and show code that is by default skipped as trivial.</para>
@@ -711,7 +724,8 @@ type InvokeAltCoverCommand() =
         ShowGenerated = self.ShowGenerated.IsPresent
         Verbosity = self.Verbosity
         Trivia = self.Trivia.IsPresent
-        OutputRoot = String.Empty }
+        OutputRoot = String.Empty
+        Portable = self.Portable.IsPresent }
 
   member private self.Log() =
     AltCover.LoggingOptions.Primitive

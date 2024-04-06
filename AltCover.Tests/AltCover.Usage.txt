@@ -111,6 +111,9 @@
       --showGenerated        Optional: Mark generated code with a visit count
                                of -2 (Automatic) for the Visualizer if unvisited
       --trivia               Optional: Omit trivial sequence points
+      --portable             Optional: portable operations - coverage report,
+                               control file and recorded data co-located with
+                               the recorder assembly
   -q                         Optional, multiple: Quiet mode -- once to switch
                                off informational messages, twice to switch off
                                warnings as well, three (or more) times to
