@@ -124,16 +124,17 @@
 
   <!-- As per the first part of Microsoft.TestPlatform.targets v2.1.300, but with pre-flight checks clause -->
   <Target Name="AltCoverVSTestPreFlight">
-    <CallTarget Targets="AltCoverPreFlight" />
-    <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
-    <CallTarget Targets="AltCoverRunPreparation" ContinueOnError="ErrorAndStop" />
+    <CallTarget Targets="AltCoverPreFlight" Condition="'$(IsTestProject)' == 'true'" />
+    <CallTarget Condition="'$(VSTestNoBuild)' != 'true' AND '$(IsTestProject)' == 'true'" Targets="BuildProject" />
+    <CallTarget Condition="'$(IsTestProject)' != 'true'" Targets="ShowCallOfVSTestTaskWithParameter" />
+    <CallTarget Condition="'$(IsTestProject)' == 'true'" Targets="AltCoverRunPreparation" ContinueOnError="ErrorAndStop" />
   </Target>
 
   <!-- As per the second part Microsoft.TestPlatform.targets v2.1.809, but with OnError clause -->
   <Target Name="AltCoverVSTestCore">
     <PropertyGroup>
-      <TestTargetPath Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetPath)</TestTargetPath>
-      <TestTargetPath Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</TestTargetPath>
+      <AltCoverTestTargetPath Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetPath)</AltCoverTestTargetPath>
+      <AltCoverTestTargetPath Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</AltCoverTestTargetPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -155,7 +156,7 @@
     </ItemGroup>
 
     <AltCover.ContingentCopy
-      Condition="'$(TestTargetPath)' != '$(TargetPath)' AND ('%(AltCoverBuildItem.CopyToOutputDirectory)' == 'Always' OR '%(AltCoverBuildItem.CopyToOutputDirectory)' == 'PreserveNewest' )"
+      Condition="'$(AltCoverTestTargetPath)' != '$(TargetPath)' AND ('%(AltCoverBuildItem.CopyToOutputDirectory)' == 'Always' OR '%(AltCoverBuildItem.CopyToOutputDirectory)' == 'PreserveNewest' )"
       RelativeDir="%(AltCoverBuildItem.RelativeDir)"
       ProjectDir="$(ProjectDir)"
       CopyToOutputDirectory="%(AltCoverBuildItem.CopyToOutputDirectory)"
@@ -172,8 +173,8 @@
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
 
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
-      TestFileFullPath="$(TestTargetPath)"
-      VSTestSetting="$(VSTestSetting)"
+      TestFileFullPath="$(AltCoverTestTargetPath)"
+      VSTestSetting="$([MSBuild]::ValueOrDefault($(VSTestSetting), '$(RunSettingsFilePath)'))"
       VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
       VSTestFramework="$(TargetFrameworkMoniker)"
       VSTestPlatform="$(PlatformTarget)"
@@ -187,8 +188,17 @@
       VSTestVerbosity="$(VSTestVerbosity)"
       VSTestCollect="$(VSTestCollect)"
       VSTestBlame="$(VSTestBlame)"
+      VSTestBlameCrash="$(VSTestBlameCrash)"
+      VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)"
+      VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
+      VSTestBlameHang="$(VSTestBlameHang)"
+      VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)"
+      VSTestBlameHangTimeout="$(VSTestBlameHangTimeout)"
       VSTestTraceDataCollectorDirectoryPath="$(TraceDataCollectorDirectoryPath)"
-      VSTestNoLogo="$(VSTestNoLogo)" />
+      VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
+      VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
+      VSTestNoLogo="$(VSTestNoLogo)"
+      Condition="'$(IsTestProject)' == 'true'" />
 
     <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverFailFast)' != 'true'" />
     <OnError ExecuteTargets="AltCoverTidy" Condition="'$(AltCoverFailFast)' == 'true'" />

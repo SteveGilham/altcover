@@ -4,10 +4,11 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 28)
+* [BREAKING; BUGFIX] Issue #206 : Update to net6+ for `dotnet test` integration and respect the `$(IsTestProject)` setting from the `Microsoft.NET.Test.Sdk` package.
 
 # 8.8.10 (Habu series release 27)
 * [BUGFIX] Add `Json` member to the report format enumerations for the typesafe API and for the `InvokeAltCover` cmdlet.
-* [BUGFIX] Issue #214 - patch Mono.Cecil to use FIPS compliant algorithm
+* [BUGFIX] Issue #214 : patch Mono.Cecil to use FIPS compliant algorithm
 * [Enhancement] Discussion #206, maybe also Issue #203 : Option `--portable` and equivalent APIs to place the coverage report file and related coverage data in the same folder as the recorder assembly, wherever that might be, allowing the whole instrumented folder structure to be moved into another file structure (e.g. different machine, different OS). 
 
 # 8.7.3 (Habu series release 26)
