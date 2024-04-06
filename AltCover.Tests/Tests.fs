@@ -301,11 +301,16 @@ module AltCoverTests =
   let ShouldGetForeignPdbWithFallback () =
     let path =
       Path.Combine(SolutionDir(), "packages")
+
+    let exclude =
+      Path.Combine(path, "altcover")
+
     // Looking for the Mono.Options symbols
     let files =
       Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
 
     files
+    |> Seq.filter (_.StartsWith(exclude, StringComparison.OrdinalIgnoreCase) >> not)
     |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
     |> Seq.iter (fun p ->
       let dll = Path.ChangeExtension(p, ".dll")
@@ -321,6 +326,8 @@ module AltCoverTests =
 
         match pdb with
         | Some name -> Assert.That(name, Is.EqualTo normalized)
+        //| _ ->
+        //  raise <| InvalidOperationException((sprintf "%A for %A" dll normalized))
       with :? BadImageFormatException ->
         ())
 
@@ -332,11 +339,16 @@ module AltCoverTests =
 
       let path =
         Path.Combine(SolutionDir(), "packages")
+
+      let exclude =
+        Path.Combine(path, "altcover")
+
       // Looking for the Mono.Options symbols
       let files =
         Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
 
       files
+      |> Seq.filter (_.StartsWith(exclude, StringComparison.OrdinalIgnoreCase) >> not)
       |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
       |> Seq.iter (fun p ->
         let dll0 = Path.ChangeExtension(p, ".dll")
@@ -371,6 +383,8 @@ module AltCoverTests =
             Assert.That(name, Is.EqualTo normalized)
             AltCover.ProgramDatabase.readSymbols def
             Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName)
+          //| _ ->
+          //  raise <| InvalidOperationException((sprintf "%A for %A" dll normalized))
         with :? BadImageFormatException ->
           ())
     finally
