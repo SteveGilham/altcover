@@ -34,6 +34,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [OutputDirectories](TypeSafe.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [OutputRoot](TypeSafe.PrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | [PathFilter](TypeSafe.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Portable](TypeSafe.PrepareOptions/Portable-apidoc) { get; } | Corresponds to command line option `--portable` |
 | [Report](TypeSafe.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](TypeSafe.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](TypeSafe.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |

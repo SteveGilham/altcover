@@ -8,6 +8,7 @@ public static class Tags
 
 | name | description |
 | --- | --- |
+| const [Json](TypeSafe.ReportFormat.Tags/Json-apidoc) |  |
 | const [NCover](TypeSafe.ReportFormat.Tags/NCover-apidoc) |  |
 | const [OpenCover](TypeSafe.ReportFormat.Tags/OpenCover-apidoc) |  |
 

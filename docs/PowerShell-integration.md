@@ -1124,12 +1124,13 @@ Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>]
 [-DropReturnCode <SwitchParameter>] [-FileFilter <string[]>] [-InPlace <SwitchParameter>]
 [-InputDirectory <string[]>] [-Key <string[]>] [-LineCover <SwitchParameter>] [-LocalSource
 <SwitchParameter>] [-MethodFilter <string[]>] [-MethodPoint <SwitchParameter>] [-MethodTopLevel
-<string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-Report <string>] [-ReportFormat
-{NCover | OpenCover}] [-Save <SwitchParameter>] [-ShowGenerated <SwitchParameter>] [-ShowStatic
-{KeepHidden | Mark | Reveal}] [-Single <SwitchParameter>] [-SourceLink <SwitchParameter>]
-[-StrongNameKey <string>] [-SymbolDirectory <string[]>] [-Trivia <SwitchParameter>] [-TypeFilter
-<string[]>] [-TypeTopLevel <string[]>] [-Verbosity {Off | Error | Warning | Info | Verbose}]
-[-VisibleBranches <SwitchParameter>] [-ZipFile <SwitchParameter>] [<CommonParameters>]
+<string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-Portable <SwitchParameter>]
+[-Report <string>] [-ReportFormat {NCover | OpenCover | Json}] [-Save <SwitchParameter>]
+[-ShowGenerated <SwitchParameter>] [-ShowStatic {KeepHidden | Mark | Reveal}] [-Single
+<SwitchParameter>] [-SourceLink <SwitchParameter>] [-StrongNameKey <string>] [-SymbolDirectory
+<string[]>] [-Trivia <SwitchParameter>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>]
+[-Verbosity {Off | Error | Warning | Info | Verbose}] [-VisibleBranches <SwitchParameter>] [-ZipFile
+<SwitchParameter>] [<CommonParameters>]
 
 Invoke-AltCover [-Version] <SwitchParameter> [<CommonParameters>]
 
@@ -1472,9 +1473,9 @@ Accept wildcard characters?  false
 ```
 
 #### `-ReportFormat <ReportFormat>` 
-Generate the report in the specified format (NCover or the default OpenCover)
+Generate the report in the specified format (NCover, JSON or the default OpenCover)
 
-Possible values: NCover, OpenCover
+Possible values: NCover, OpenCover, Json
 
 ```
 Required?                    false
@@ -1542,8 +1543,8 @@ Accept wildcard characters?  false
 ```
 
 #### `-LineCover <SwitchParameter>` 
-Do not record branch coverage. Implies, and is compatible with, the -ReportFormat "opencover"
-option. Incompatible with `-BranchCover`.
+Do not record branch coverage. Is not compatible with the -ReportFormat "ncover" option.
+Incompatible with `-BranchCover`.
 
 ```
 Required?                    false
@@ -1554,8 +1555,8 @@ Accept wildcard characters?  false
 ```
 
 #### `-BranchCover <SwitchParameter>` 
-Do not record line coverage. Implies, and is compatible with, the -ReportFormat "opencover"
-option. Incompatible with `-LineCover`.
+Do not record line coverage. Is not compatible with the -ReportFormat "ncover" option.
+Incompatible with `-LineCover`.
 
 ```
 Required?                    false
@@ -1654,6 +1655,18 @@ Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
 
+#### `-Portable <SwitchParameter>` 
+Portable operation - coverage report, control file and recorded data co-located with the
+recorder assembly
+
+```
+Required?                    false
+Position?                    named
+Default value                False
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
 #### `-ShowStatic <ShowHidden>` 
 Instrument and show code that is by default skipped as trivial.
 
@@ -1716,9 +1729,9 @@ None
 
 
 ```
-Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover
+Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
 ```
--InformationAction Continue
+
 
 
 ###    Merge-OpenCover

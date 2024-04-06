@@ -10,6 +10,7 @@ public sealed class ReportFormat : IEquatable<ReportFormat>, IStructuralEquatabl
 
 | name | description |
 | --- | --- |
+| static [get_Json](TypeSafe.ReportFormat/get_Json-apidoc)() |  |
 | static [get_NCover](TypeSafe.ReportFormat/get_NCover-apidoc)() |  |
 | static [get_OpenCover](TypeSafe.ReportFormat/get_OpenCover-apidoc)() |  |
 | [AsString](TypeSafe.ReportFormat/AsString-apidoc)() | Returns the string to use in the command line |

@@ -33,6 +33,7 @@ public class PrepareOptions
 | [OutputDirectories](PrepareOptions/OutputDirectories-apidoc) { get; } | Gets the output directories (overridden by the MSBuild integration) |
 | virtual [OutputRoot](PrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | virtual [PathFilter](PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| virtual [Portable](PrepareOptions/Portable-apidoc) { get; } | Corresponds to command line option `--portable` |
 | virtual [Report](PrepareOptions/Report-apidoc) { get; } | Gets or sets the value that corresponds to command line option `-r, --report=VALUE` |
 | virtual [ReportFormat](PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | virtual [Save](PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
