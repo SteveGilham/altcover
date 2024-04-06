@@ -301,12 +301,16 @@ module AltCoverTests =
   let ShouldGetForeignPdbWithFallback () =
     let path =
       Path.Combine(SolutionDir(), "packages")
+
+    let exclude =
+      Path.Combine(path, "altcover")
+
     // Looking for the Mono.Options symbols
     let files =
       Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
 
     files
-    |> Seq.filter (_.ToLowerInvariant().Contains("altcover") >> not)
+    |> Seq.filter (_.StartsWith(exclude, StringComparison.OrdinalIgnoreCase) >> not)
     |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
     |> Seq.iter (fun p ->
       let dll = Path.ChangeExtension(p, ".dll")
@@ -335,12 +339,16 @@ module AltCoverTests =
 
       let path =
         Path.Combine(SolutionDir(), "packages")
+
+      let exclude =
+        Path.Combine(path, "altcover")
+
       // Looking for the Mono.Options symbols
       let files =
         Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
 
       files
-      |> Seq.filter (_.ToLowerInvariant().Contains("altcover") >> not)
+      |> Seq.filter (_.StartsWith(exclude, StringComparison.OrdinalIgnoreCase) >> not)
       |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
       |> Seq.iter (fun p ->
         let dll0 = Path.ChangeExtension(p, ".dll")
