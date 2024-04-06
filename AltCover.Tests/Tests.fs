@@ -2871,13 +2871,6 @@ module AltCoverTests =
             Destinations = [] } ]
       |> Seq.toList
 
-    // work round my local symlinks
-    let where =
-      Assembly.GetExecutingAssembly().Location
-
-    let index = where.IndexOf "_Binaries"
-    let at = where.Substring(0, index)
-
     deeper
     |> List.iter (fun n ->
       let text =
@@ -2885,7 +2878,7 @@ module AltCoverTests =
           .Replace(
             "Mono.Cecil.Cil.Document",
             Path
-              .Combine(at, "Samples/Sample1/Program.cs")
+              .Combine(SolutionRoot.location, "Samples/Sample1/Program.cs")
               .Replace('/', Path.DirectorySeparatorChar)
           )
 
@@ -3761,19 +3754,12 @@ module AltCoverTests =
 
       use reader = new StreamReader(stream)
 
-      // work round my local symlinks
-      let where =
-        Assembly.GetExecutingAssembly().Location
-
-      let index = where.IndexOf "_Binaries"
-      let at = where.Substring(0, index)
-
       let expected =
         reader
           .ReadToEnd()
           .Replace(
             "/_//Samples/Sample4/Tests.fs", // Not compiled deterministic
-            (Path.Combine(at, "Samples/Sample4/Tests.fs")
+            (Path.Combine(SolutionDir(), "Samples/Sample4/Tests.fs")
              |> canonicalPath)
               .Replace("\\", "\\\\")
           )
