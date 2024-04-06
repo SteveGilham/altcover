@@ -1,2 +1,8 @@
 ildasm /all /out=Mono.Options.il Mono.Options.dll
 ilasm /dll /output=..\ThirdParty\Mono.Options.dll /key=..\ThirdParty\ThirdParty.snk /resource=Mono.Options.res Mono.Options.il  
+
+
+ildasm /all /out=Mono.Cecil.il .\cecil\Mono.Cecil.dll
+
+            var sha1 = new SHA1CryptoServiceProvider ();
+ilasm /dll /output=Mono.Cecil.dll /key=.\cecil.snk /resource=.\Mono.Cecil.res .\Mono.Cecil.il

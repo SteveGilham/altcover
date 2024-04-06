@@ -1,4 +1,10 @@
 ﻿// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
+
+//copy ..\cecil\bin\Release\netstandard2.0\Mono.Cecil.dll .\ThirdParty\cecil\ -force
+//copy ..\cecil\rocks\bin\Release\netstandard2.0\Mono.Cecil.Rocks.dll .\ThirdParty\cecil\ -force
+//copy ..\cecil\symbols\mdb\bin\Release\netstandard2.0\Mono.Cecil.Mdb.dll .\ThirdParty\cecil\ -force
+//copy ..\cecil\symbols\pdb\bin\Release\netstandard2.0\Mono.Cecil.Pdb.dll .\ThirdParty\cecil\ -force
+
 namespace AltCover
 
 module Targets =
@@ -32,6 +38,21 @@ module Targets =
 
   let mutable Copyright = String.Empty
   let mutable Version = String.Empty
+
+  let localCecil =
+    let xml =
+      "./Directory.Build.props"
+      |> Path.getFullName
+      |> XDocument.Load
+
+    xml.Descendants()
+    |> Seq.filter (fun (e: XElement) ->
+      e.Name.LocalName.Equals("LocalCecil", StringComparison.OrdinalIgnoreCase))
+    |> Seq.map (fun x -> x.Value |> Boolean.TryParse |> snd)
+    |> Seq.tryLast
+    |> Option.defaultValue false
+
+  printfn "Local Cecil = %A" localCecil
 
   let currentBranch =
     "."
@@ -579,7 +600,13 @@ module Targets =
   let dotnetBuildDebug proj =
     DotNet.build
       (fun p ->
-        { p.WithCommon(dotnetOptions >> dotnetOptionsWithSkipGtkInstall) with
+        { p.WithCommon(
+            dotnetOptions
+            >> dotnetOptionsWithSkipGtkInstall
+            >> (fun o ->
+              { o with
+                  Verbosity = Some DotNet.Verbosity.Minimal })
+          ) with
             Configuration = DotNet.BuildConfiguration.Debug }
         |> buildWithCLIArguments)
       (Path.GetFullPath proj)
@@ -1425,10 +1452,13 @@ module Targets =
                     @@ "gtksharp/"
                        + (ddItem "gtksharp")
                        + "/lib/netstandard2.0"
-                    nugetCache
-                    @@ "mono.cecil/"
-                       + (ddItem "mono.cecil")
-                       + "/lib/netstandard2.0"
+                    if localCecil then
+                      Path.GetFullPath "./ThirdParty/cecil"
+                    else
+                      nugetCache
+                      @@ "mono.cecil/"
+                         + (ddItem "mono.cecil")
+                         + "/lib/netstandard2.0"
                     nugetCache
                     @@ "mono.options/"
                        + (ddItem "mono.options")
@@ -1477,10 +1507,20 @@ module Targets =
           |> Path.getFullName
           |> XDocument.Load
 
+        let skip =
+          if localCecil then
+            "mono.cecil"
+          else
+            "$$$$$$$"
+
         let packages =
           xml.Descendants(XName.Get("PackageReference"))
           |> Seq.filter (_.Attribute(XName.Get("Include")) >> isNull >> not)
           |> Seq.map _.Attribute(XName.Get("Include")).Value
+          |> Seq.filter (
+            _.Equals(skip, StringComparison.OrdinalIgnoreCase)
+            >> not
+          ) //CECIL
           |> Seq.toList
 
         let dirs =
@@ -4572,10 +4612,12 @@ module Targets =
                   "AltCover.Fake"
                   "AltCover.Cake"
                   "Recorder"
+                  "Mono"
                   "DataCollector"
                   "FSharp" ]
               InPlace = false
               ReportFormat = "OpenCover"
+              LocalSource = true
               Save = true
               VisibleBranches = true }
         )
@@ -8080,6 +8122,8 @@ module Targets =
           "AltCover.Tests/OpenCoverWithPartials.xml"
           "AltCover.Tests/Sample4FullTracking.xml"
           "_Reports/AltCoverAsyncAwaitTests.xml"
+          "_Reports/Pester.xml"
+          "_Reports/RawPester.xml"
           "RegressionTesting/issue37/coverage.xml"
           "Samples/Sample16/Test/_Issue72/combined.Test.xml"
           "Samples/Sample16/Test/_Issue72/original.Test.xml"
