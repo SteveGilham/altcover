@@ -5,6 +5,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 28)
 * [BREAKING; BUGFIX] Issue #206 : Update to net6+ for `dotnet test` integration and respect the `$(IsTestProject)` setting from the `Microsoft.NET.Test.Sdk` package.
+* Mitigate instances of `System.IO.IOException: The process cannot access the file '[coverage report]' because it is being used by another process.`
 
 # 8.8.10 (Habu series release 27)
 * [BUGFIX] Add `Json` member to the report format enumerations for the typesafe API and for the `InvokeAltCover` cmdlet.
