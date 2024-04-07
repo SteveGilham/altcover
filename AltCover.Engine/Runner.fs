@@ -1486,6 +1486,8 @@ module internal Runner =
               |> J.getFirstOperandAsNumber
               |> enum
 
+            use _ = fst pair
+
             let hits =
               Dictionary<string, Dictionary<int, PointVisit>>()
 

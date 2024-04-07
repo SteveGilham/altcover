@@ -471,4 +471,7 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   <data name="portable" xml:space="preserve">
     <value>Laŭvola: porteblaj operacioj - priraporta raporto, kontroldosiero kaj registritaj datumoj samlokaj kun la registrilo.</value>
   </data>
+  <data name="FailedToDelete" xml:space="preserve">
+    <value>Malsukcesis forigi dosieron {0}</value>
+  </data>
 </root>

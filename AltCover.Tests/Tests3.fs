@@ -4899,6 +4899,15 @@ module AltCoverTests3 =
     monitor ("Hello")
     test <@ builder.ToString() = "Hello" @>
 
+    let write0 =
+      subject
+        .GetType()
+        .GetMethod("Write0", BindingFlags.NonPublic ||| BindingFlags.Instance)
+
+    let mutable written = "written"
+    write0.Invoke(subject, [| (fun x -> written <- x); "xx"; "yy" |]) |> ignore
+    test <@ written = "Failed to delete file xx" @>
+
     let write =
       subject
         .GetType()
@@ -4906,7 +4915,7 @@ module AltCoverTests3 =
 
     let ex =
       Assert.Throws<TargetInvocationException>(fun () ->
-        write.Invoke(subject, [| "xx" |]) |> ignore)
+        write.Invoke(subject, [| "xx"; "yy" |]) |> ignore)
 
     test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
 // Recorder.fs => Recorder.Tests

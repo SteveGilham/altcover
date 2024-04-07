@@ -540,13 +540,20 @@ type RetryDelete() =
                     Justification = "MSBuild tasks use arrays")>]
   member val Files: string array = [||] with get, set
 
-  member internal self.Write message =
-    ``base``.Log.LogMessage(MessageImportance.High, message)
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "Replace the raw exception dump")>]
+  member internal self.Write0 (o: string->unit) (f:string) (_:string) : unit =
+    CommandLine.Format.Local("FailedToDelete", f)
+    |> o
+
+  member internal self.Write (f:string) (dummy:string) : unit =
+    self.Write0 (``base``.Log.LogWarning) f dummy
 
   override self.Execute() =
     if self.Files.IsNotNull then
       self.Files
       |> Seq.filter File.Exists
-      |> Seq.iter (CommandLine.I.doRetry File.Delete self.Write 10 1000 0)
+      |> Seq.iter (fun f -> (CommandLine.I.doRetry File.Delete (self.Write f) 100 100 0 f))
 
     true
