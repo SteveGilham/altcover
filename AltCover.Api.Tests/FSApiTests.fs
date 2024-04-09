@@ -1148,7 +1148,7 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find _.EndsWith("AltCover.targets", StringComparison.Ordinal)
+      |> Seq.find _.EndsWith("AltCover.proj", StringComparison.Ordinal)
 
     use stream =
       Assembly
