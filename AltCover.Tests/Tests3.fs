@@ -4905,7 +4905,15 @@ module AltCoverTests3 =
         .GetMethod("Write0", BindingFlags.NonPublic ||| BindingFlags.Instance)
 
     let mutable written = "written"
-    write0.Invoke(subject, [| (fun x -> written <- x); "xx"; "yy" |]) |> ignore
+
+    write0.Invoke(
+      subject,
+      [| (fun x -> written <- x)
+         "xx"
+         "yy" |]
+    )
+    |> ignore
+
     test <@ written = "Failed to delete file xx" @>
 
     let write =
