@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 28)
+# (Habu series release 29)
+
+# 8.8.21 (Habu series release 28)
 * [BREAKING; BUGFIX] Issue #206 : Update to net6+ for `dotnet test` integration and respect the `$(IsTestProject)` setting from the `Microsoft.NET.Test.Sdk` package.
 * Simplify the use of the AltCover MSBuild tasks via the associated package-level `.targets` file by not even including the `VSTest` integration unless both `'$(AltCover)' == 'true' AND '$(IsTestProject)' == 'true'`.
 * Mitigate instances of `System.IO.IOException: The process cannot access the file '[coverage report]' because it is being used by another process.`
