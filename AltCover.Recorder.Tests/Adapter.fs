@@ -155,10 +155,8 @@ module Adapter =
       Definitive = false }
 
   let internal invokeIssue71Wrapper<'T when 'T :> System.Exception>
-    (
-      (unique: string),
-      (called: bool array)
-    ) =
+    ((unique: string), (called: bool array))
+    =
     let constructor =
       typeof<'T>
         .GetConstructor([| typeof<System.String> |])

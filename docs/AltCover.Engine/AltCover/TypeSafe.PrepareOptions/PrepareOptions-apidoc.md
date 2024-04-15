@@ -10,7 +10,7 @@ public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDire
     Flag save, Flag zipFile, Flag methodPoint, Flag singleVisit, Flag lineCover, Flag branchCover, 
     CommandLine commandLine, Flag exposeReturnCode, Flag sourceLink, Flag defer, Flag localSource, 
     Flag visibleBranches, StaticFormat showStatic, Flag showGenerated, TraceLevel verbosity, 
-    Flag trivia, FilePath outputRoot)
+    Flag trivia, FilePath outputRoot, Flag portable)
 ```
 
 ## See Also

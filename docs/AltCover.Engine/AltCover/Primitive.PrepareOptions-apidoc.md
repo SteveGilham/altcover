@@ -34,6 +34,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [OutputDirectories](Primitive.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [OutputRoot](Primitive.PrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | [PathFilter](Primitive.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Portable](Primitive.PrepareOptions/Portable-apidoc) { get; } | Corresponds to command line option `--portable` |
 | [Report](Primitive.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Primitive.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Primitive.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |

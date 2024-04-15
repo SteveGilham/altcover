@@ -35,6 +35,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [OutputDirectories](AltCover.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [OutputRoot](AltCover.PrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | [PathFilter](AltCover.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Portable](AltCover.PrepareOptions/Portable-apidoc) { get; } | Corresponds to command line option `--portable` |
 | [Report](AltCover.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](AltCover.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](AltCover.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |

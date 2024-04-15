@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\actions.fs = Build\actions.fs
 		Build\AddStrongName.fsx = Build\AddStrongName.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
+		nupkg\build\AltCover.proj = nupkg\build\AltCover.proj
 		nupkg\build\AltCover.props = nupkg\build\AltCover.props
 		nupkg\build\AltCover.targets = nupkg\build\AltCover.targets
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
@@ -121,6 +122,18 @@ EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample27", "Samples\Sample27\Sample27.fsproj", "{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample30", "Samples\Sample30\Sample30.fsproj", "{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cecil", "Cecil", "{F56DE54A-ABD6-42F7-B61E-7BAFCCF2D787}"
+	ProjectSection(SolutionItems) = preProject
+		ThirdParty\cecil\Mono.Cecil.dll = ThirdParty\cecil\Mono.Cecil.dll
+		ThirdParty\cecil\Mono.Cecil.Mdb.dll = ThirdParty\cecil\Mono.Cecil.Mdb.dll
+		ThirdParty\cecil\Mono.Cecil.Mdb.pdb = ThirdParty\cecil\Mono.Cecil.Mdb.pdb
+		ThirdParty\cecil\Mono.Cecil.pdb = ThirdParty\cecil\Mono.Cecil.pdb
+		ThirdParty\cecil\Mono.Cecil.Pdb.dll = ThirdParty\cecil\Mono.Cecil.Pdb.dll
+		ThirdParty\cecil\Mono.Cecil.Pdb.pdb = ThirdParty\cecil\Mono.Cecil.Pdb.pdb
+		ThirdParty\cecil\Mono.Cecil.Rocks.dll = ThirdParty\cecil\Mono.Cecil.Rocks.dll
+		ThirdParty\cecil\Mono.Cecil.Rocks.pdb = ThirdParty\cecil\Mono.Cecil.Rocks.pdb
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -341,6 +354,7 @@ Global
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 		{10FB27A2-9C4D-474D-A3B9-1C554038AA7E} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
+		{F56DE54A-ABD6-42F7-B61E-7BAFCCF2D787} = {97367D43-64EF-48E1-B6B4-D951C783E6E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C31111CF-68A2-403F-9B06-9625FCBD48E3}

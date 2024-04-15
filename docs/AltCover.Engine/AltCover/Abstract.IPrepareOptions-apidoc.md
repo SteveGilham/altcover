@@ -46,6 +46,7 @@ public interface IPrepareOptions
 | [OutputDirectories](Abstract.IPrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [OutputRoot](Abstract.IPrepareOptions/OutputRoot-apidoc) { get; } | Corresponds to dotnet test option `/p:AltCoverOutputRoot` |
 | [PathFilter](Abstract.IPrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Portable](Abstract.IPrepareOptions/Portable-apidoc) { get; } | Corresponds to command line option `--portable` |
 | [Report](Abstract.IPrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Abstract.IPrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Abstract.IPrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |

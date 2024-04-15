@@ -130,6 +130,14 @@ type internal AssemblyResolver() as self =
         "dotnet|shared"
           .Replace('|', Path.DirectorySeparatorChar)
 
+      let wingac =
+        "Microsoft.NET|assembly"
+          .Replace('|', Path.DirectorySeparatorChar)
+
+      let monogac =
+        "lib|mono|gac"
+          .Replace('|', Path.DirectorySeparatorChar)
+
       let sources =
         [ AssemblyConstants.packageEnv
           [ Environment.GetEnvironmentVariable "ProgramFiles"
@@ -139,7 +147,14 @@ type internal AssemblyResolver() as self =
             Some <| Path.Combine(shareLocal, dotnetShared)
             AssemblyConstants.dotnetDir
             |> Option.map (fun p -> Path.Combine(p, "shared"))
-            Some AssemblyConstants.nugetCache ]
+            Some AssemblyConstants.nugetCache
+            Some <| Path.Combine("usr", monogac)
+            Environment.GetEnvironmentVariable "WinDir"
+            |> Option.ofObj
+            |> Option.map (fun p -> Path.Combine(p, wingac))
+            Environment.GetEnvironmentVariable "MONO_GAC_PREFIX"
+            |> Option.ofObj
+            |> Option.map (fun p -> Path.Combine(p, monogac)) ]
           |> List.choose id ]
         |> List.concat
         |> List.filter Directory.Exists

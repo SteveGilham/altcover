@@ -1,9 +1,9 @@
-# InvokeAltCoverCommand.BranchCover property
+# InvokeAltCoverCommand.Portable property
 
-Do not record line coverage. Is not compatible with the -ReportFormat "ncover" option. Incompatible with `-LineCover`.
+Portable operation - coverage report, control file and recorded data co-located with the recorder assembly
 
 ```csharp
-public SwitchParameter BranchCover { get; set; }
+public SwitchParameter Portable { get; set; }
 ```
 
 ## See Also

@@ -1,6 +1,6 @@
 # InvokeAltCoverCommand.LineCover property
 
-Do not record branch coverage. Implies, and is compatible with, the -ReportFormat "opencover" option. Incompatible with `-BranchCover`.
+Do not record branch coverage. Is not compatible with the -ReportFormat "ncover" option. Incompatible with `-BranchCover`.
 
 ```csharp
 public SwitchParameter LineCover { get; set; }

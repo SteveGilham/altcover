@@ -1,6 +1,6 @@
 # InvokeAltCoverCommand.ReportFormat property
 
-Generate the report in the specified format (NCover or the default OpenCover)
+Generate the report in the specified format (NCover, JSON or the default OpenCover)
 
 ```csharp
 public ReportFormat ReportFormat { get; set; }

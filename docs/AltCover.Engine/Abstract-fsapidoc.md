@@ -86,6 +86,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
     abstract member Trivia : bool with get
     abstract member OutputRoot : string with get
+    abstract member Portable : bool with get
 ```
 
 ### interface `ILoggingOptions`

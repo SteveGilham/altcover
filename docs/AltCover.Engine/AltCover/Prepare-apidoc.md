@@ -32,6 +32,7 @@ public class Prepare : Task
 | [MethodTopLevel](Prepare/MethodTopLevel-apidoc) { get; set; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Prepare/OutputDirectories-apidoc) { get; set; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](Prepare/PathFilter-apidoc) { get; set; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Portable](Prepare/Portable-apidoc) { get; set; } | Corresponds to command line option `--portable` |
 | [Report](Prepare/Report-apidoc) { get; set; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Prepare/ReportFormat-apidoc) { get; set; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Prepare/Save-apidoc) { get; set; } | Corresponds to command line option `--save` |

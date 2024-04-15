@@ -172,6 +172,7 @@ This holds the strongly-typed equivalent of the command line options
     type ReportFormat =
       | NCover
       | OpenCover
+      | Json
       with
         member AsString : unit -> string
       end
@@ -254,6 +255,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Verbosity : System.Diagnostics.TraceLevel
         Trivia: Flag
         OutputRoot : FilePath
+        Portable : Flag
  }
       with
         static member Create : unit -> PrepareOptions

@@ -52,9 +52,9 @@ module Problematic =
 
     for row = 0 to g.Height do
       for col = 0 to g.Width do
-        Assert.AreEqual(
+        Assert.That(
           System.Drawing.Rectangle(col, row, col, row),
-          g.Rectangle(col, row)
+          Is.EqualTo(g.Rectangle(col, row))
         )
 
   [<Test>]
@@ -64,9 +64,9 @@ module Problematic =
 
       for row = 0 to g.Height do
         for col = 0 to g.Width do
-          Assert.AreEqual(
+          Assert.That(
             System.Drawing.Rectangle(col, row, col, row),
-            g.Rectangle(col, row)
+            Is.EqualTo(g.Rectangle(col, row))
           )
     finally
       System.Console.WriteLine("Finally")

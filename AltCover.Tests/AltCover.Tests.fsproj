@@ -40,7 +40,7 @@
     <EmbeddedResource Include="AltCover.Usage.txt" />
     <EmbeddedResource Include="AltCover.Runner.Usage.txt" />
     <EmbeddedResource Include="coverage-04.xsd" />
-    <EmbeddedResource Include="..\nupkg\build\AltCover.targets" Link="AltCover.targets" />
+    <EmbeddedResource Include="..\nupkg\build\AltCover.proj" Link="AltCover.proj" />
     <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />
