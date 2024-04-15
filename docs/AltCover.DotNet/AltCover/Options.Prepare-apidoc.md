@@ -31,6 +31,7 @@ public class Prepare
 | [OutputDirectories](Options.Prepare/OutputDirectories-apidoc) { get; set; } |  |
 | [OutputRoot](Options.Prepare/OutputRoot-apidoc) { get; set; } |  |
 | [PathFilter](Options.Prepare/PathFilter-apidoc) { get; set; } |  |
+| [Portable](Options.Prepare/Portable-apidoc) { get; set; } |  |
 | [Report](Options.Prepare/Report-apidoc) { get; set; } |  |
 | [ReportFormat](Options.Prepare/ReportFormat-apidoc) { get; set; } |  |
 | [Save](Options.Prepare/Save-apidoc) { get; set; } |  |

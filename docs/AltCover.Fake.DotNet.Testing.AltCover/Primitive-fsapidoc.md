@@ -98,6 +98,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Verbosity : System.Diagnostics.TraceLevel
         Trivia: bool
         OutputRoot : string
+        Portable : bool
       }
     with
         static member Create : unit -> PrepareOptions

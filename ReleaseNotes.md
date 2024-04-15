@@ -3,9 +3,15 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 27)
+# (Habu series release 28)
+* [BREAKING; BUGFIX] Issue #206 : Update to net6+ for `dotnet test` integration and respect the `$(IsTestProject)` setting from the `Microsoft.NET.Test.Sdk` package.
+* Simplify the use of the AltCover MSBuild tasks via the associated package-level `.targets` file by not even including the `VSTest` integration unless both `'$(AltCover)' == 'true' AND '$(IsTestProject)' == 'true'`.
+* Mitigate instances of `System.IO.IOException: The process cannot access the file '[coverage report]' because it is being used by another process.`
+* Explicitly add GAC locations to the paths inspected for dependency resolution
+
+# 8.8.10 (Habu series release 27)
 * [BUGFIX] Add `Json` member to the report format enumerations for the typesafe API and for the `InvokeAltCover` cmdlet.
-* [BUGFIX] Issue #214 - patch Mono.Cecil to use FIPS compliant algorithm
+* [BUGFIX] Issue #214 : patch Mono.Cecil to use FIPS compliant algorithm
 * [Enhancement] Discussion #206, maybe also Issue #203 : Option `--portable` and equivalent APIs to place the coverage report file and related coverage data in the same folder as the recorder assembly, wherever that might be, allowing the whole instrumented folder structure to be moved into another file structure (e.g. different machine, different OS). 
 
 # 8.7.3 (Habu series release 26)

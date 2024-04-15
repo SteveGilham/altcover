@@ -508,7 +508,7 @@ type InvokeAltCoverCommand() =
   member val Single: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">Do not record branch coverage.  Is not compatible with, the -ReportFormat "ncover" option. Incompatible with `-BranchCover`.</para>
+  /// <para type="description">Do not record branch coverage.  Is not compatible with the -ReportFormat "ncover" option. Incompatible with `-BranchCover`.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,
@@ -517,7 +517,7 @@ type InvokeAltCoverCommand() =
   member val LineCover: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">Do not record line coverage.  Is not compatible with, the -ReportFormat "ncover" option. Incompatible with `-LineCover`.</para>
+  /// <para type="description">Do not record line coverage.  Is not compatible with the -ReportFormat "ncover" option. Incompatible with `-LineCover`.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,

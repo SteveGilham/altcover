@@ -8,7 +8,7 @@
 
 The full command line is 
 ```
-AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [-q] [--verbose] [--?|help|h] [-- ] [...]
+AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
 AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
@@ -134,6 +134,9 @@ In detail
       --showGenerated        Optional: Mark generated code with a visit count
                                of -2 (Automatic) for the Visualizer if unvisited
       --trivia               Optional: Omit trivial sequence points
+      --portable             Optional: portable operations - coverage report,
+                               control file and recorded data co-located with
+                               the recorder assembly
   -q                         Optional, multiple: Quiet mode -- once to switch
                                off informational messages, twice to switch off
                                warnings as well, three (or more) times to
@@ -231,7 +234,7 @@ or, for the global tool only
 
 * The `--dependency` argument will expand environment variables in the paths from release 4.0.653; %USERPROFILE%, %ProgramFiles% and %NUGET_PACKAGES% are likely to be the most useful here, e.g. `%ProgramFiles%/dotnet/shared/Microsoft.AspNetCore.App/2.1.5/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll` or similar to pick up ASP.Net Core assemblies needed for type references
 
-* The `--callContext` argument is only used with `--opencover`, otherwise it has no effect.  Tracked methods are recorded at instrumentation time, but call context information is only recorded in runner mode, including `runner --collect`, which allows for heavier processing after the process terminates than the `ProcessExit` handler.
+* The `--callContext` argument has no effect with `NCover` report format.  Tracked methods are recorded at instrumentation time, but call context information is only recorded in runner mode, including `runner --collect`, which allows for heavier processing after the process terminates than the `ProcessExit` handler.
 
 * In runner mode, exactly one of a command to be executed (`-x`) or the `--collect` option is required.  If `--collect` is supplied then anything after a free-standing `--` is ignored.
 

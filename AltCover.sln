@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\actions.fs = Build\actions.fs
 		Build\AddStrongName.fsx = Build\AddStrongName.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
+		nupkg\build\AltCover.proj = nupkg\build\AltCover.proj
 		nupkg\build\AltCover.props = nupkg\build\AltCover.props
 		nupkg\build\AltCover.targets = nupkg\build\AltCover.targets
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
