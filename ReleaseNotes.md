@@ -7,6 +7,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 * [BREAKING; BUGFIX] Issue #206 : Update to net6+ for `dotnet test` integration and respect the `$(IsTestProject)` setting from the `Microsoft.NET.Test.Sdk` package.
 * Simplify the use of the AltCover MSBuild tasks via the associated package-level `.targets` file by not even including the `VSTest` integration unless both `'$(AltCover)' == 'true' AND '$(IsTestProject)' == 'true'`.
 * Mitigate instances of `System.IO.IOException: The process cannot access the file '[coverage report]' because it is being used by another process.`
+* Explicitly add GAC locations to the paths inspected for dependency resolution
 
 # 8.8.10 (Habu series release 27)
 * [BUGFIX] Add `Json` member to the report format enumerations for the typesafe API and for the `InvokeAltCover` cmdlet.
