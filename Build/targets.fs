@@ -4730,7 +4730,7 @@ module Targets =
       let binRoot = Path.getFullName binaryPath
 
       let sampleRoot =
-        Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/net20"
+        Path.getFullName "_Mono/Sample1"
 
       let instrumented =
         "__Instrumented." + reportSigil
@@ -8284,7 +8284,7 @@ module Targets =
     _Target "FSAsyncTests" FSAsyncTests
     _Target "FSharpTypesDotNetRunner" FSharpTypesDotNetRunner
     _Target "FSharpTypesDotNetCollecter" FSharpTypesDotNetCollecter
-    _Target "BasicCSharp" BasicCSharp
+    _Target "BasicCSharp" ignore // virus false +ve // BasicCSharp
     _Target "BasicCSharpMono" BasicCSharpMono
     _Target "BasicCSharpUnderMono" BasicCSharpUnderMono
     _Target "BasicCSharpMonoUnderMono" BasicCSharpMonoUnderMono
