@@ -2,12 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net20</TargetFrameworks>
+    <TargetFrameworks>net8.0;net20;net472</TargetFrameworks>
     <AssemblyName>Sample1</AssemblyName>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="_Intermediate\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Sample16\Foo.cs" Link="Foo.cs" Condition="'$(TargetFramework)' != 'net472'"/>
   </ItemGroup>
 </Project>
