@@ -2376,7 +2376,7 @@ module Targets =
           let prep =
             AltCover.PrepareOptions.TypeSafe(
               { TypeSafe.PrepareOptions.Create() with
-                  Report = TypeSafe.FilePath altReport
+                  Report = TypeSafe.FilePath (testDirectory @@ coverageReport)
                   OutputDirectories =
                     TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath outputDirectory |]
                   StrongNameKey = TypeSafe.FilePath signingKey
@@ -2409,6 +2409,7 @@ module Targets =
             AltCover.CollectOptions.TypeSafe
               { TypeSafe.CollectOptions.Create() with
                   Executable = TypeSafe.FilePath nunitConsole
+                  OutputFile = TypeSafe.FilePath altReport
                   RecorderDirectory =
                     TypeSafe.DirectoryPath(testDirectory @@ outputDirectory)
                   CommandLine =
