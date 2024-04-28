@@ -3289,7 +3289,6 @@ module AltCoverRunnerTests =
       Runner.J.getMonitor counts unique List.length []
 
     Assert.That(r, Is.EqualTo 0)
-    Assert.That(File.Exists(unique + ".acv"))
     Assert.That(counts, Is.Empty)
 
   [<Test>]
@@ -3329,7 +3328,6 @@ module AltCoverRunnerTests =
         [ "a"; "b"; String.Empty; "c" ]
 
     Assert.That(r, Is.EqualTo 4)
-    Assert.That(File.Exists(unique + ".acv"))
 
     let expected =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -3354,8 +3352,6 @@ module AltCoverRunnerTests =
     Assert.That(counts.["b"].[1].Tracks, Is.Empty)
     Assert.That(counts.["c"].[3].Count, Is.EqualTo 1)
     Assert.That(counts.["c"].[3].Tracks, Is.Empty)
-
-    maybeDeleteFile (unique + ".acv")
 
   [<Test>]
   let CollectShouldReportAsExpected () =
@@ -3457,7 +3453,6 @@ module AltCoverRunnerTests =
         [ "a"; "b"; String.Empty; "c" ]
 
     Assert.That(r, Is.EqualTo 4)
-    Assert.That(File.Exists(unique + ".acv"))
     Assert.That(counts, Is.Empty)
 
   [<Test>]
@@ -3610,7 +3605,6 @@ module AltCoverRunnerTests =
     expected.Add("Extra", f)
 
     Assert.That(r, Is.EqualTo 7)
-    Assert.That(File.Exists(unique + ".acv"))
 
     let result =
       Dictionary<string, Dictionary<int, int64 * Track list>>()

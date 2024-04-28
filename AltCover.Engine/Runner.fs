@@ -992,6 +992,8 @@ module internal Runner =
       let timer = System.Diagnostics.Stopwatch()
       timer.Start()
 
+      File.Delete(report + ".acv")
+
       let visits =
         Directory.GetFiles(
           Path.GetDirectoryName(report),
@@ -1006,121 +1008,125 @@ module internal Runner =
                 .Length.ToString("#,#", CultureInfo.CurrentCulture)
 
             sprintf "... %s (%sb)" f length |> Output.info
-            use fileStream = File.OpenRead f
 
-            use results =
-              new DeflateStream(fileStream, CompressionMode.Decompress)
+            let after =
+              use fileStream = File.OpenRead f
 
-            use formatter =
-              new System.IO.BinaryReader(results)
+              use results =
+                new DeflateStream(fileStream, CompressionMode.Decompress)
 
-            // [<TailCall>]
-            let rec sink hitcount =
-              let hit =
-                try
-                  let id = formatter.ReadString()
-                  let strike = formatter.ReadInt32()
-                  let tag = formatter.ReadByte() |> int
+              use formatter =
+                new System.IO.BinaryReader(results)
 
-                  Some(
-                    id,
-                    strike,
-                    match enum tag with
-                    | Tag.Time -> Time <| formatter.ReadInt64()
-                    | Tag.Call -> Call <| formatter.ReadInt32()
-                    | Tag.Both ->
-                      let time = formatter.ReadInt64()
-                      let call = formatter.ReadInt32()
-                      Both { Time = time; Call = call }
-                    | Tag.Table ->
-                      let t =
-                        Dictionary<string, Dictionary<int, PointVisit>>()
+              // [<TailCall>]
+              let rec sink hitcount =
+                let hit =
+                  try
+                    let id = formatter.ReadString()
+                    let strike = formatter.ReadInt32()
+                    let tag = formatter.ReadByte() |> int
 
-                      // [<TailCall>]
-                      let rec ``module`` () =
-                        let m = formatter.ReadString()
+                    Some(
+                      id,
+                      strike,
+                      match enum tag with
+                      | Tag.Time -> Time <| formatter.ReadInt64()
+                      | Tag.Call -> Call <| formatter.ReadInt32()
+                      | Tag.Both ->
+                        let time = formatter.ReadInt64()
+                        let call = formatter.ReadInt32()
+                        Both { Time = time; Call = call }
+                      | Tag.Table ->
+                        let t =
+                          Dictionary<string, Dictionary<int, PointVisit>>()
 
-                        if String.IsNullOrEmpty m then
-                          ()
-                        else
-                          if m |> t.ContainsKey |> not then
-                            t.Add(m, Dictionary<int, PointVisit>())
+                        // [<TailCall>]
+                        let rec ``module`` () =
+                          let m = formatter.ReadString()
 
-                          let points = formatter.ReadInt32()
+                          if String.IsNullOrEmpty m then
+                            ()
+                          else
+                            if m |> t.ContainsKey |> not then
+                              t.Add(m, Dictionary<int, PointVisit>())
 
-                          // [<TailCall>]
-                          let rec sequencePoint pts =
-                            if pts > 0 then
-                              let p = formatter.ReadInt32()
-                              let n = formatter.ReadInt64()
+                            let points = formatter.ReadInt32()
 
-                              if p |> t.[m].ContainsKey |> not then
-                                t.[m].Add(p, PointVisit.Create())
+                            // [<TailCall>]
+                            let rec sequencePoint pts =
+                              if pts > 0 then
+                                let p = formatter.ReadInt32()
+                                let n = formatter.ReadInt64()
 
-                              let pv = t.[m].[p]
-                              pv.Count <- pv.Count + n
+                                if p |> t.[m].ContainsKey |> not then
+                                  t.[m].Add(p, PointVisit.Create())
 
-                              // [<TailCall>]
-                              let rec tracking () =
-                                let track = formatter.ReadByte() |> int
+                                let pv = t.[m].[p]
+                                pv.Count <- pv.Count + n
 
-                                match enum track with
-                                | Tag.Time ->
-                                  pv.Tracks.Add(Time <| formatter.ReadInt64())
-                                  tracking ()
-                                | Tag.Call ->
-                                  pv.Tracks.Add(Call <| formatter.ReadInt32())
-                                  tracking ()
-                                | Tag.Both ->
-                                  pv.Tracks.Add(
-                                    let time = formatter.ReadInt64()
-                                    let call = formatter.ReadInt32()
-                                    Both { Time = time; Call = call }
-                                  )
+                                // [<TailCall>]
+                                let rec tracking () =
+                                  let track = formatter.ReadByte() |> int
 
-                                  tracking ()
-                                // Expect never to happen                                    | Tag.Table -> ``module``()
-                                | _ -> sequencePoint (pts - 1)
+                                  match enum track with
+                                  | Tag.Time ->
+                                    pv.Tracks.Add(Time <| formatter.ReadInt64())
+                                    tracking ()
+                                  | Tag.Call ->
+                                    pv.Tracks.Add(Call <| formatter.ReadInt32())
+                                    tracking ()
+                                  | Tag.Both ->
+                                    pv.Tracks.Add(
+                                      let time = formatter.ReadInt64()
+                                      let call = formatter.ReadInt32()
+                                      Both { Time = time; Call = call }
+                                    )
 
-                              tracking ()
-                            else
-                              ``module`` ()
+                                    tracking ()
+                                  // Expect never to happen                                    | Tag.Table -> ``module``()
+                                  | _ -> sequencePoint (pts - 1)
 
-                          sequencePoint points
+                                tracking ()
+                              else
+                                ``module`` ()
 
-                      ``module`` ()
-                      Table t
-                    | _ -> Null
-                  )
-                with :? EndOfStreamException ->
-                  None
+                            sequencePoint points
 
-              match hit with
-              | Some tuple ->
-                let (key, hitPointId, visit) = tuple
+                        ``module`` ()
+                        Table t
+                      | _ -> Null
+                    )
+                  with :? EndOfStreamException ->
+                    None
 
-                let increment =
-                  if
-                    key |> String.IsNullOrWhiteSpace |> not
-                    || ((String.IsNullOrEmpty key)
-                        && hitPointId = 0
-                        && visit.GetType().ToString()
-                           == "AltCover.Track+Table")
-                  then
+                match hit with
+                | Some tuple ->
+                  let (key, hitPointId, visit) = tuple
+
+                  let increment =
                     if
-                      hits.ContainsKey key |> not
-                      && key |> String.IsNullOrWhiteSpace |> not // terminator
+                      key |> String.IsNullOrWhiteSpace |> not
+                      || ((String.IsNullOrEmpty key)
+                          && hitPointId = 0
+                          && visit.GetType().ToString()
+                             == "AltCover.Track+Table")
                     then
-                      hits.Add(key, Dictionary<int, PointVisit>())
+                      if
+                        hits.ContainsKey key |> not
+                        && key |> String.IsNullOrWhiteSpace |> not // terminator
+                      then
+                        hits.Add(key, Dictionary<int, PointVisit>())
 
-                    Counter.addVisit hits key hitPointId visit
-                  else
-                    0L
+                      Counter.addVisit hits key hitPointId visit
+                    else
+                      0L
 
-                sink (hitcount + increment)
-              | None -> hitcount
+                  sink (hitcount + increment)
+                | None -> hitcount
 
-            let after = sink before
+              sink before
+
+            File.Delete f
             timer.Stop()
 
             if after > before then
@@ -1503,15 +1509,6 @@ module internal Runner =
               "Coverage statistics flushing took {0:N} seconds"
               [| delta.TotalSeconds |]
               false
-
-            // And tidy up after everything's done
-            File.Delete(report + ".acv")
-
-            Directory.GetFiles(
-              Path.GetDirectoryName(report),
-              Path.GetFileName(report) + ".*.acv"
-            )
-            |> Seq.iter File.Delete
 
             let document =
               DocumentType.LoadReport format report
