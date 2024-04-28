@@ -304,7 +304,6 @@ using System.Runtime.CompilerServices;
 
     let recorded =
       coverageDocument.Descendants(XName.Get("seqpnt"))
-      |> Seq.filter (fun x -> x.Attribute(XName.Get("excluded")).Value <> "true")
       |> Seq.toList
 
     let zero =
@@ -421,7 +420,7 @@ using System.Runtime.CompilerServices;
       AltCover.PrepareOptions.Primitive
         { Primitive.PrepareOptions.Create() with
             // Verbosity = System.Diagnostics.TraceLevel.Verbose
-            TypeFilter = [ """System\.""" ; "Foo" ]
+            TypeFilter = [ """System\.""" ]
             Report = simpleReport
             OutputDirectories = [| "./" + instrumented |]
             ReportFormat = "NCover"
@@ -476,7 +475,7 @@ using System.Runtime.CompilerServices;
       let prep =
         AltCover.PrepareOptions.Primitive
           { Primitive.PrepareOptions.Create() with
-              TypeFilter = [ """System\.""" ; "Foo" ]
+              TypeFilter = [ """System\.""" ]
               Report = simpleReport
               OutputDirectories = [| "./" + instrumented |]
               ReportFormat = "NCover"
