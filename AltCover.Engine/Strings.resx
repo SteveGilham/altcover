@@ -478,4 +478,7 @@ If the option is not present, then the default is 'OC'.</value>
   <data name="FailedToDelete" xml:space="preserve">
     <value>Failed to delete file {0}</value>
   </data>
+  <data name="InvalidFileExtension" xml:space="preserve">
+    <value>'{0}' is not a valid file extension in this context</value>
+  </data>
 </root>

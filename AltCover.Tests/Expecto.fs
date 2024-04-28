@@ -123,6 +123,8 @@ module ExpectoTestManifest =
        "Runner.ParsingNoCoberturaGivesFailure"
        Tests.AltCoverRunnerTests.ParsingOutputGivesOutput,
        "Runner.ParsingOutputGivesOutput"
+       Tests.AltCoverRunnerTests.ParsingAcvOutputGivesFailure,
+       "Runner.ParsingAcvOutputGivesFailure"
        Tests.AltCoverRunnerTests.ParsingMultipleOutputGivesFailure,
        "Runner.ParsingMultipleOutputGivesFailure"
        Tests.AltCoverRunnerTests.ParsingNoOutputGivesFailure,

@@ -1913,6 +1913,34 @@ module AltCoverRunnerTests =
       Runner.output <- None
 
   [<Test>]
+  let ParsingAcvOutputGivesFailure () =
+    Runner.init ()
+
+    try
+      Runner.output <- None
+      Runner.collect.Value <- false
+
+      let options = Runner.declareOptions ()
+      let unique = Guid.NewGuid().ToString()
+
+      let input = [| "-o"; unique + ".acv" |]
+
+      let parse =
+        CommandLine.parseCommandLine input options
+
+      match parse with
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+
+        Assert.That(
+          CommandLine.error |> Seq.head,
+          Is.EqualTo "'.acv' is not a valid file extension in this context"
+        )
+    finally
+      Runner.output <- None
+
+  [<Test>]
   let ParsingNoOutputGivesFailure () =
     Runner.init ()
 

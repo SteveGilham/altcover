@@ -7,6 +7,7 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Text
+open System.Text.RegularExpressions
 open System.Xml
 open System.Xml.Linq
 
@@ -834,6 +835,14 @@ module internal Runner =
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--outputFile")
                :: CommandLine.error
+           else if
+             Path
+               .GetExtension(x)
+               .Equals(".acv", StringComparison.OrdinalIgnoreCase)
+           then
+             CommandLine.error <-
+               CommandLine.Format.Local("InvalidFileExtension", Path.GetExtension(x))
+               :: CommandLine.error
            else
              output <- x |> canonicalPath |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
@@ -992,11 +1001,14 @@ module internal Runner =
       let timer = System.Diagnostics.Stopwatch()
       timer.Start()
 
+      let regex = Regex("\.*\d\.acv$")
+
       let visits =
         Directory.GetFiles(
           Path.GetDirectoryName(report),
           Path.GetFileName(report) + ".*.acv"
         )
+        |> Seq.filter (fun f -> regex.IsMatch(f))
         |> Seq.fold
           (fun before f ->
             timer.Restart()
@@ -1507,10 +1519,13 @@ module internal Runner =
             // And tidy up after everything's done
             File.Delete(report + ".acv")
 
+            let regex = Regex("\.*\d\.acv$")
+
             Directory.GetFiles(
               Path.GetDirectoryName(report),
               Path.GetFileName(report) + ".*.acv"
             )
+            |> Seq.filter (fun f -> regex.IsMatch(f))
             |> Seq.iter File.Delete
 
             let document =

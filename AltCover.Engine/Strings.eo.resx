@@ -474,4 +474,7 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   <data name="FailedToDelete" xml:space="preserve">
     <value>Malsukcesis forigi dosieron {0}</value>
   </data>
+  <data name="InvalidFileExtension" xml:space="preserve">
+    <value>'{0}' ne estas valida dosiera etendo en ĉi tiu kunteksto</value>
+  </data>
 </root>

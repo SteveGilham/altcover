@@ -1511,11 +1511,16 @@ module AltCoverXTests =
       Runner.J.getMonitor <- monitor
       Runner.J.doReport <- write
       let empty = OptionSet()
-      let dummy = codedreport + ".xx.acv"
+      let dummy = codedreport + ".23.acv"
+      let dummy2 = codedreport + ".xyz.acv"
 
       do
         use temp = File.Create dummy
         test <@ dummy |> File.Exists @>
+
+      do
+        use temp = File.Create dummy2
+        test <@ dummy2 |> File.Exists @>
 
       let r =
         Runner.doCoverage
@@ -1531,7 +1536,9 @@ module AltCoverXTests =
           empty
 
       test <@ dummy |> File.Exists |> not @>
+      test <@ dummy2 |> File.Exists @>
       test <@ r = 127 @>
+      File.Delete dummy2
     finally
       Runner.J.getPayload <- save1
       Runner.J.getMonitor <- save2
