@@ -10,13 +10,13 @@ namespace TouchTest
 		private static void Main(string[] args)
 		{
 			var now = DateTime.Now;
-			if (now.Year > 2000)
+			if (now.Year > 2023)
 			{
-				Console.WriteLine("Where is my rocket pack? " + String.Join("*", args));
+				Console.WriteLine("Now "                      + String.Join("*", args));
 			}
 			else
 			{
-				Console.WriteLine("Twentieth Century, boy!");
+				Console.WriteLine("Th"        +        "en");
 			}
 		}
 	}

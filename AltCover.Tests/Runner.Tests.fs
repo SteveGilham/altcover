@@ -771,7 +771,7 @@ module AltCoverRunnerTests =
         + args
         + "\'"
         + Environment.NewLine
-        + "Where is my rocket pack? "
+        + "Now "
         + Environment.NewLine
 
       Assert.That(result, Is.EqualTo(expected))
@@ -2501,7 +2501,7 @@ module AltCoverRunnerTests =
         + String.Join(" ", args.Tail)
         + "'"
         + Environment.NewLine
-        + "Where is my rocket pack? "
+        + "Now "
         + u1
         + "*"
         + u2
@@ -2721,7 +2721,7 @@ module AltCoverRunnerTests =
         + String.Join(" ", args.Tail)
         + "'"
         + Environment.NewLine
-        + "Where is my rocket pack? "
+        + "Now "
         + u1
         + "*"
         + u2
