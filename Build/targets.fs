@@ -2376,7 +2376,7 @@ module Targets =
           let prep =
             AltCover.PrepareOptions.TypeSafe(
               { TypeSafe.PrepareOptions.Create() with
-                  Report = TypeSafe.FilePath (testDirectory @@ coverageReport)
+                  Report = TypeSafe.FilePath(testDirectory @@ coverageReport)
                   OutputDirectories =
                     TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath outputDirectory |]
                   StrongNameKey = TypeSafe.FilePath signingKey
