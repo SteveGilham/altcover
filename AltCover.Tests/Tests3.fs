@@ -83,7 +83,7 @@ module AltCoverTests3 =
         + args
         + "\'"
         + Environment.NewLine
-        + "Now "
+        + "Where is my rocket pack? "
         + Environment.NewLine
 
       Assert.That(result, Is.EqualTo(expected))
@@ -3538,7 +3538,7 @@ module AltCoverTests3 =
         + String.Join(" ", args.Tail)
         + "'"
         + Environment.NewLine
-        + "Now "
+        + "Where is my rocket pack? "
         + u1
         + "*"
         + u2
