@@ -140,21 +140,21 @@ type internal AssemblyResolver() as self =
 
       let sources =
         [ AssemblyConstants.packageEnv
-          [ Environment.GetEnvironmentVariable "ProgramFiles"
-            |> Option.ofObj
-            |> Option.map (fun p -> Path.Combine(p, dotnetShared))
-            Some <| Path.Combine(share, dotnetShared)
-            Some <| Path.Combine(shareLocal, dotnetShared)
-            AssemblyConstants.dotnetDir
-            |> Option.map (fun p -> Path.Combine(p, "shared"))
-            Some AssemblyConstants.nugetCache
+          [ Some AssemblyConstants.nugetCache
             Some <| Path.Combine("usr", monogac)
             Environment.GetEnvironmentVariable "WinDir"
             |> Option.ofObj
             |> Option.map (fun p -> Path.Combine(p, wingac))
             Environment.GetEnvironmentVariable "MONO_GAC_PREFIX"
             |> Option.ofObj
-            |> Option.map (fun p -> Path.Combine(p, monogac)) ]
+            |> Option.map (fun p -> Path.Combine(p, monogac))
+            Environment.GetEnvironmentVariable "ProgramFiles"
+            |> Option.ofObj
+            |> Option.map (fun p -> Path.Combine(p, dotnetShared))
+            Some <| Path.Combine(share, dotnetShared)
+            Some <| Path.Combine(shareLocal, dotnetShared)
+            AssemblyConstants.dotnetDir
+            |> Option.map (fun p -> Path.Combine(p, "shared")) ]
           |> List.choose id ]
         |> List.concat
         |> List.filter Directory.Exists
