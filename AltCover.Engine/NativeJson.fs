@@ -1235,10 +1235,15 @@ module
     x
 #endif
 
-  let internal fileToJson filename =
+#if GUI
+  let fileToJson filename =
     filename |> File.ReadAllText |> fromJsonText
-
+#else // RUNNER
+  let internal streamToJson (stream:Stream) =
+    use r = new StreamReader(stream)
+    r.ReadToEnd() |> fromJsonText
 #endif
+#endif // GUI || RUNNER
 
 #if RUNNER
   // Instrumentation ---------------------------------------------------------
@@ -1421,17 +1426,29 @@ type internal DocumentType =
   | XML of XDocument
   | JSON of NativeJson.Modules
   | Unknown
-  static member internal LoadReport format report =
-    if File.Exists report then
+  //static member internal LoadReport format report =
+  //  if File.Exists report then
+  //    if
+  //      format = ReportFormat.NativeJson
+  //      || format = ReportFormat.NativeJsonWithTracking
+  //    then
+  //      report |> NativeJson.fileToJson |> JSON
+  //    else
+  //      report |> XDocument.Load |> XML
+  //  else
+  //    Unknown
+
+  static member internal LoadReportStream format (report:Stream) =
+    if report.Length > 0 then
       if
         format = ReportFormat.NativeJson
         || format = ReportFormat.NativeJsonWithTracking
       then
-        report |> NativeJson.fileToJson |> JSON
+        report |> NativeJson.streamToJson |> JSON
       else
         report |> XDocument.Load |> XML
-    else
-      Unknown
+    else Unknown
+
 #endif
 
 #if GUI || RUNNER

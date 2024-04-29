@@ -100,6 +100,12 @@ module internal Zip =
     else
       (null, new MemoryStream() :> Stream)
 
+  let internal openUpdateReport format (report: string) =
+    let container, stream = openUpdate report
+    use _ = container
+    use _ = stream
+    DocumentType.LoadReportStream format stream
+
 type internal StringSink = Action<String>
 
 module internal CommandLine =
@@ -496,6 +502,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@288::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@294::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()

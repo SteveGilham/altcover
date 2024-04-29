@@ -909,7 +909,8 @@ module AltCoverXTests =
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
 
       let recordedJson =
-        match DocumentType.LoadReport CoverageParameters.theReportFormat.Value report with
+        use stream = File.OpenRead report
+        match DocumentType.LoadReportStream CoverageParameters.theReportFormat.Value stream with
         | JSON j -> j
 
       test <@ recordedJson.Keys |> Seq.toList = [ "Sample4.dll" ] @>
@@ -1155,7 +1156,8 @@ module AltCoverXTests =
         XDocument.Load(new StringReader(expectedText))
 
       let recordedXml =
-        match DocumentType.LoadReport ReportFormat.OpenCover report with
+        use stream = File.OpenRead report
+        match DocumentType.LoadReportStream ReportFormat.OpenCover stream with
         | XML x -> x
 
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true

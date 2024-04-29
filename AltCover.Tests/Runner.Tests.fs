@@ -3407,8 +3407,10 @@ module AltCoverRunnerTests =
       Assert.That(r, Is.EqualTo 0)
       Assert.That(File.Exists(unique + ".acv") |> not)
 
+      use stream = new MemoryStream()
+
       let doc =
-        DocumentType.LoadReport ReportFormat.OpenCover (unique + ".acv")
+        DocumentType.LoadReportStream ReportFormat.OpenCover stream
 
       Assert.That(doc, Is.EqualTo DocumentType.Unknown)
       Assert.That(counts, Is.Empty)
