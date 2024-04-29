@@ -1514,7 +1514,7 @@ module internal Runner =
             |> Seq.iter File.Delete
 
             let document =
-              DocumentType.LoadReport format report
+              DocumentType.LoadReport format (Option.defaultValue report output)
 
             J.doSummaries document format result)
           255
