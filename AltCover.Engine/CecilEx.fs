@@ -145,6 +145,7 @@ type internal AssemblyResolver() as self =
             Environment.GetEnvironmentVariable "WinDir"
             |> Option.ofObj
             |> Option.map (fun p -> Path.Combine(p, wingac))
+            Some  <| Path.Combine("usr", monogac)
             Environment.GetEnvironmentVariable "MONO_GAC_PREFIX"
             |> Option.ofObj
             |> Option.map (fun p -> Path.Combine(p, monogac))
