@@ -241,8 +241,7 @@ module internal PostProcess =
     format
     (document: XmlAbstraction)
     =
-    match format with
-    | ReportFormat.OpenCoverWithTracking
+    match format &&& ReportFormat.TrackMask with
     | ReportFormat.OpenCover ->
       if counts.ContainsKey Track.Entry then
         fillTrackedVisits document counts.[Track.Entry] "entry"
@@ -514,6 +513,6 @@ module internal PostProcess =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.PostProcess/Pipe #2 stage #1 at line 331@332-1::Invoke(AltCover.XmlElementAbstraction)",
+                              "AltCover.PostProcess/Pipe #2 stage #1 at line 330@331-1::Invoke(AltCover.XmlElementAbstraction)",
                             Justification = "Compiler generated")>]
 ()

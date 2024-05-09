@@ -93,7 +93,15 @@ module AltCoverTests =
     let tracer =
       Adapter.makeNullTrace String.Empty
 
-    Assert.True(tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder")
+    // whitelist test not recorder.g
+
+    let n =
+      tracer.GetType().Assembly.GetName().Name
+#if RECORDERMODERN
+    Assert.That(n, Is.EqualTo "AltCover.RecorderModern")
+#else
+    Assert.That(n, Is.EqualTo "AltCover.Recorder")
+#endif
     getMyMethodName "<="
 
   [<Test>]
@@ -154,7 +162,11 @@ module AltCoverTests =
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
         Instance.Visit key -23
-        Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+
+        Instance.CoverageFormat <-
+          ReportFormat.OpenCover
+          ||| ReportFormat.WithTracking
+
         Instance.Visit key -23
 
         let vs = Adapter.VisitsSeq()
@@ -191,7 +203,11 @@ module AltCoverTests =
   let PayloadGeneratedIsAsExpected () =
     try
       Instance.I.isRunner <- false
-      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+
+      Instance.CoverageFormat <-
+        ReportFormat.OpenCover
+        ||| ReportFormat.WithTracking
+
       Assert.True(Instance.I.callerId () |> Option.isNone)
       Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
       Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
@@ -248,7 +264,11 @@ module AltCoverTests =
 
     try
       Instance.I.isRunner <- true
-      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+
+      Instance.CoverageFormat <-
+        ReportFormat.OpenCover
+        ||| ReportFormat.WithTracking
+
       Adapter.VisitsClear()
 
       Assert.True(Instance.I.callerId () |> Option.isNone)
@@ -1644,12 +1664,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush (
-        visits,
-        AltCover.Recorder.ReportFormat.NCover,
-        reportFile,
-        outputFile
-      )
+      Adapter.doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
       |> ignore
 
       use worker' =
@@ -1733,12 +1748,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush (
-        visits,
-        AltCover.Recorder.ReportFormat.NCover,
-        reportFile,
-        outputFile
-      )
+      Adapter.doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
       |> ignore
 
       use worker' =
@@ -1815,7 +1825,7 @@ module AltCoverTests =
 
       Adapter.doFlush (
         visits,
-        AltCover.Recorder.ReportFormat.NCover,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
         reportFile,
         outputFile
       )
@@ -1905,7 +1915,7 @@ module AltCoverTests =
 
       Adapter.doFlush (
         visits,
-        AltCover.Recorder.ReportFormat.NCover,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
         reportFile,
         outputFile
       )
@@ -1976,7 +1986,12 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null)
+      Adapter.doFlush (
+        visits,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
+        reportFile,
+        null
+      )
       |> ignore
 
       Assert.That(reportFile |> File.Exists |> not)
@@ -1991,117 +2006,123 @@ module AltCoverTests =
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
-    lock Adapter.Lock (fun () ->
-      Instance.I.isRunner <- false
+    lock
+      Adapter.Lock
+      (fun () ->
+        Instance.I.isRunner <- false
 
-      trywithrelease (fun () ->
-        let saved = Console.Out
-        let here = Directory.GetCurrentDirectory()
+        trywith (fun () ->
+          let saved = Console.Out
+          let here = Directory.GetCurrentDirectory()
 
-        let where =
-          Assembly.GetExecutingAssembly().Location
-          |> Path.GetDirectoryName
+          let where =
+            Assembly.GetExecutingAssembly().Location
+            |> Path.GetDirectoryName
 
-        let unique =
-          Path.Combine(where, Guid.NewGuid().ToString())
+          let unique =
+            Path.Combine(where, Guid.NewGuid().ToString())
 
-        let save = Instance.I.trace
-        Instance.I.trace <- Adapter.makeNullTrace null
+          let save = Instance.I.trace
+          Instance.I.trace <- Adapter.makeNullTrace null
 
-        try
-          Adapter.VisitsClear()
-          use stdout = new StringWriter()
-          Console.SetOut stdout
-          Directory.CreateDirectory(unique) |> ignore
-          Directory.SetCurrentDirectory(unique)
+          try
+            Adapter.VisitsClear()
+            use stdout = new StringWriter()
+            Console.SetOut stdout
+            Directory.CreateDirectory(unique) |> ignore
+            Directory.SetCurrentDirectory(unique)
 
-          Counter.measureTime <-
-            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+            Counter.measureTime <-
+              DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
-          use stream =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
+            use stream =
+              Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceStream(resource)
 
-          let size = int stream.Length
-          let buffer = Array.create size 0uy
-          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+            let size = int stream.Length
+            let buffer = Array.create size 0uy
+            Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
-          do
-            use archive =
-              ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Create)
+            do
+              AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
+
+              use archive =
+                ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Create)
+
+              let entry =
+                Instance.ReportFilePath
+                |> Path.GetFileName
+                |> archive.CreateEntry
+
+              use sink = entry.Open()
+              sink.Write(buffer, 0, size)
+              ()
+
+            [ 0..9 ]
+            |> Seq.iter (fun i ->
+              Adapter.VisitsAdd(
+                "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
+                i,
+                (int64 (i + 1))
+              ))
+
+            Adapter.DoExit().Invoke(null, null)
+
+            let head =
+              "Coverage statistics flushing took "
+
+            let tail = " seconds\n"
+
+            let recorded =
+              stdout.ToString().Replace("\r\n", "\n")
+
+            let index1 =
+              recorded.IndexOf(head, StringComparison.Ordinal)
+
+            let index2 =
+              recorded.IndexOf(tail, StringComparison.Ordinal)
+
+            Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
+            Assert.That(index2, Is.GreaterThan index1, recorded)
+
+            use zip =
+              ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Update)
 
             let entry =
               Instance.ReportFilePath
               |> Path.GetFileName
-              |> archive.CreateEntry
+              |> zip.GetEntry
 
-            use sink = entry.Open()
-            sink.Write(buffer, 0, size)
-            ()
+            use worker' = entry.Open()
+            let after = XmlDocument()
+            after.Load worker'
 
-          [ 0..9 ]
-          |> Seq.iter (fun i ->
-            Adapter.VisitsAdd(
-              "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-              i,
-              (int64 (i + 1))
-            ))
-
-          Adapter.DoExit().Invoke(null, null)
-
-          let head =
-            "Coverage statistics flushing took "
-
-          let tail = " seconds\n"
-
-          let recorded =
-            stdout.ToString().Replace("\r\n", "\n")
-
-          let index1 =
-            recorded.IndexOf(head, StringComparison.Ordinal)
-
-          let index2 =
-            recorded.IndexOf(tail, StringComparison.Ordinal)
-
-          Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
-          Assert.That(index2, Is.GreaterThan index1, recorded)
-
-          use zip =
-            ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Update)
-
-          let entry =
-            Instance.ReportFilePath
-            |> Path.GetFileName
-            |> zip.GetEntry
-
-          use worker' = entry.Open()
-          let after = XmlDocument()
-          after.Load worker'
-
-          Assert.That(
-            after.SelectNodes("//seqpnt")
-            |> Seq.cast<XmlElement>
-            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-            Is.EquivalentTo
-              [ "11"
-                "10"
-                "9"
-                "8"
-                "7"
-                "6"
-                "4"
-                "3"
-                "2"
-                "1" ]
-          )
-        finally
-          Instance.I.trace <- save
-          AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
-          Adapter.VisitsClear()
-          Console.SetOut saved
-          Directory.SetCurrentDirectory(here)
-          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+            Assert.That(
+              after.SelectNodes("//seqpnt")
+              |> Seq.cast<XmlElement>
+              |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+              Is.EquivalentTo
+                [ "11"
+                  "10"
+                  "9"
+                  "8"
+                  "7"
+                  "6"
+                  "4"
+                  "3"
+                  "2"
+                  "1" ]
+            )
+          finally
+            Instance.I.trace <- save
+            AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
+            AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
+            Adapter.VisitsClear()
+            Console.SetOut saved
+            Directory.SetCurrentDirectory(here)
+            AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+      ignore
 
     getMyMethodName "<="
 #endif

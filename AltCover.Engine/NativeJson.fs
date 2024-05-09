@@ -1239,7 +1239,7 @@ module
   let fileToJson filename =
     filename |> File.ReadAllText |> fromJsonText
 #else // RUNNER
-  let internal streamToJson (stream:Stream) =
+  let internal streamToJson (stream: Stream) =
     use r = new StreamReader(stream)
     r.ReadToEnd() |> fromJsonText
 #endif
@@ -1438,16 +1438,14 @@ type internal DocumentType =
   //  else
   //    Unknown
 
-  static member internal LoadReportStream format (report:Stream) =
+  static member internal LoadReportStream format (report: Stream) =
     if report.Length > 0 then
-      if
-        format = ReportFormat.NativeJson
-        || format = ReportFormat.NativeJsonWithTracking
-      then
+      if format &&& ReportFormat.TrackMask = ReportFormat.NativeJson then
         report |> NativeJson.streamToJson |> JSON
       else
         report |> XDocument.Load |> XML
-    else Unknown
+    else
+      Unknown
 
 #endif
 

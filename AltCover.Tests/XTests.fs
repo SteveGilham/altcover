@@ -910,7 +910,10 @@ module AltCoverXTests =
 
       let recordedJson =
         use stream = File.OpenRead report
-        match DocumentType.LoadReportStream CoverageParameters.theReportFormat.Value stream with
+
+        match
+          DocumentType.LoadReportStream CoverageParameters.theReportFormat.Value stream
+        with
         | JSON j -> j
 
       test <@ recordedJson.Keys |> Seq.toList = [ "Sample4.dll" ] @>
@@ -1157,6 +1160,7 @@ module AltCoverXTests =
 
       let recordedXml =
         use stream = File.OpenRead report
+
         match DocumentType.LoadReportStream ReportFormat.OpenCover stream with
         | XML x -> x
 

@@ -112,6 +112,7 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.RecorderModern.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
 #else
 [<assembly: AssemblyConfiguration("Release {0}")>]

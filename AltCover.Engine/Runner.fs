@@ -1385,10 +1385,7 @@ module internal Runner =
           Zip.openUpdate report
 
         try
-          if
-            format = ReportFormat.NativeJson
-            || format = ReportFormat.NativeJsonWithTracking
-          then
+          if format &&& ReportFormat.TrackMask = ReportFormat.NativeJson then
             writeNativeJsonReport hits format file arg
           else
             AltCover.Counter.doFlushStream

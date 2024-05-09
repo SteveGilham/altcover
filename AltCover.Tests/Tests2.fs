@@ -608,7 +608,10 @@ module AltCoverTests2 =
 
       Assert.That(
         CoverageParameters.reportFormat (),
-        Is.EqualTo AltCover.ReportFormat.OpenCoverWithTracking
+        Is.EqualTo(
+          AltCover.ReportFormat.OpenCover
+          ||| ReportFormat.WithTracking
+        )
       )
 
       CoverageParameters.theInterval <- None
@@ -616,7 +619,10 @@ module AltCoverTests2 =
 
       Assert.That(
         CoverageParameters.reportFormat (),
-        Is.EqualTo AltCover.ReportFormat.OpenCoverWithTracking
+        Is.EqualTo(
+          AltCover.ReportFormat.OpenCover
+          ||| ReportFormat.WithTracking
+        )
       )
 
       CoverageParameters.trackingNames.Clear()
@@ -794,7 +800,8 @@ module AltCoverTests2 =
 
           Assert.That(
             report2,
-            AltCover.ReportFormat.OpenCoverWithTracking
+            (AltCover.ReportFormat.OpenCover
+             ||| ReportFormat.WithTracking)
             |> int
             |> Is.EqualTo,
             "wrong tracking format"
