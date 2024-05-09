@@ -596,6 +596,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldGetTrackingStyleIfSet () =
+    Main.init()
     let save2 =
       CoverageParameters.theReportFormat
 
@@ -722,6 +723,7 @@ module AltCoverTests2 =
         CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.OpenCover
         CoverageParameters.theInterval <- Some 1234567890
         CoverageParameters.single <- true
+        CoverageParameters.zipReport.Value <- true
 
         Assert.That(
           CoverageParameters.sampling (),
@@ -801,7 +803,8 @@ module AltCoverTests2 =
           Assert.That(
             report2,
             (AltCover.ReportFormat.OpenCover
-             ||| ReportFormat.WithTracking)
+             ||| ReportFormat.WithTracking
+             ||| ReportFormat.Zipped)
             |> int
             |> Is.EqualTo,
             "wrong tracking format"
