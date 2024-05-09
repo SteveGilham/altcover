@@ -93,7 +93,15 @@ module AltCoverTests =
     let tracer =
       Adapter.makeNullTrace String.Empty
 
-    Assert.True(tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder")
+    // whitelist test not recorder.g
+
+    let n =
+      tracer.GetType().Assembly.GetName().Name
+#if RECORDERMODERN
+    Assert.That(n, Is.EqualTo "AltCover.RecorderModern")
+#else
+    Assert.That(n, Is.EqualTo "AltCover.Recorder")
+#endif
     getMyMethodName "<="
 
   [<Test>]
@@ -1994,7 +2002,13 @@ module AltCoverTests =
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
 
+#if RECORDERMODERN
+      let run f = f ()
+
+      run (fun () ->
+#else
       trywithrelease (fun () ->
+#endif
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
 
@@ -2028,6 +2042,7 @@ module AltCoverTests =
           Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
           do
+            AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
             use archive =
               ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Create)
 
@@ -2098,6 +2113,7 @@ module AltCoverTests =
         finally
           Instance.I.trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
+          AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
