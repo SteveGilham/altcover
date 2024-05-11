@@ -596,7 +596,8 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldGetTrackingStyleIfSet () =
-    Main.init()
+    Main.init ()
+
     let save2 =
       CoverageParameters.theReportFormat
 
