@@ -146,6 +146,7 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
+  [<Test>]
   let RealIdShouldIncrementCount () =
     getMyMethodName "=>"
 
@@ -1207,6 +1208,7 @@ module AltCoverTests =
     trywithrelease<InvalidOperationException> (fun () ->
       InvalidOperationException() |> raise)
 
+  [<Test>]
   let PauseLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -1309,6 +1311,7 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
+  [<Test>]
   let ResumeLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -1415,6 +1418,7 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
+  [<Test>]
   let FlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -2012,11 +2016,17 @@ module AltCoverTests =
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
+#if !NET20
+  [<Test>]
+#endif
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
+      Instance.CoverageFormat <-
+        ReportFormat.NCover
+        ||| ReportFormat.Zipped
 
       trywithrelease (fun () ->
         let saved = Console.Out
@@ -2133,18 +2143,9 @@ module AltCoverTests =
     getMyMethodName "<="
 #endif
 
-  // Dead simple sequential operation
-  // run only once in Framework mode to avoid contention
   [<Test>]
-  let MailboxFunctionsAsExpected () =
+  let ShouldCreateDummyAttribute () =
     let dummy =
       AltCover.Recorder.ExcludeFromCodeCoverageAttribute()
 
     Assert.That(dummy, Is.Not.Null)
-    RealIdShouldIncrementCount()
-    PauseLeavesExpectedTraces()
-    ResumeLeavesExpectedTraces()
-#if !NET20
-    ZipFlushLeavesExpectedTraces()
-#endif
-    FlushLeavesExpectedTraces()
