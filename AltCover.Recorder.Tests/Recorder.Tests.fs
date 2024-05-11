@@ -1871,6 +1871,7 @@ module AltCoverTests =
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+#endif
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken () =
@@ -2139,7 +2140,6 @@ module AltCoverTests =
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
     getMyMethodName "<="
-#endif
 
   [<Test>]
   let ShouldCreateDummyAttribute () =
