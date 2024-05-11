@@ -220,6 +220,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidated () =
+    CommandLine.error <- []
+
     let here =
       Assembly.GetExecutingAssembly().Location
 
@@ -311,6 +313,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidatedWithErrors () =
+    CommandLine.error <- []
+
     let subject =
       TypeSafe.CollectOptions.Create()
 
@@ -347,6 +351,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBePositivelyValidatedWithErrors () =
+    CommandLine.error <- []
+
     let test =
       { TypeSafe.CollectOptions.Create() with
           RecorderDirectory =
