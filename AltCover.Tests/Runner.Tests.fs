@@ -2999,6 +2999,8 @@ module AltCoverRunnerTests =
     let junkfile =
       (reportFile + "." + (Path.GetFileName unique))
 
+    let junkfile1 = junkfile + ".1"
+
     let junkfile2 = junkfile + ".xml"
 
     try
@@ -3042,19 +3044,22 @@ module AltCoverRunnerTests =
       let (c0, w0) = Zip.openUpdate junkfile true
 
       try
-        Assert.That(c0 |> isNull)
+        Assert.That(c0.IsNotNull)
         Assert.That(w0, Is.InstanceOf<MemoryStream>())
         Assert.That(w0.Length, Is.EqualTo 0L)
       finally
         w0.Dispose()
+        c0.Dispose()
 
       // degenerate case 1a
       let junkzip = junkfile + ".zip"
-      Assert.That(junkzip |> File.Exists |> not)
+      Assert.That(junkzip |> File.Exists)
+
+      let junk1zip = junkfile1 + ".zip"
 
       do
         use archive =
-          ZipFile.Open(junkzip, ZipArchiveMode.Create)
+          ZipFile.Open(junk1zip, ZipArchiveMode.Create)
 
         let entry =
           Guid.NewGuid().ToString() |> archive.CreateEntry
@@ -3063,7 +3068,7 @@ module AltCoverRunnerTests =
         sink.Write([| 0uy |], 0, 1)
         ()
 
-      let (c0, w0) = Zip.openUpdate junkfile true
+      let (c0, w0) = Zip.openUpdate junkfile1 true
 
       try
         Assert.That(c0.IsNotNull)
@@ -3087,11 +3092,12 @@ module AltCoverRunnerTests =
       let (c1, w1) = Zip.openUpdate junkfile2 true
 
       try
-        Assert.That(c1 |> isNull)
+        Assert.That(c1.IsNotNull)
         Assert.That(w1, Is.InstanceOf<MemoryStream>())
         Assert.That(w1.Length, Is.EqualTo 0L)
       finally
-        w0.Dispose()
+        w1.Dispose()
+        c1.Dispose()
         Assert.That(junkfile2 |> File.Exists |> not)
 
       Runner.J.doReport
@@ -3128,8 +3134,12 @@ module AltCoverRunnerTests =
     finally
       Assert.That(reportFile |> File.Exists |> not)
       Assert.That(junkfile |> File.Exists |> not)
+      Assert.That(junkfile1 |> File.Exists |> not)
       Assert.That(junkfile2 |> File.Exists |> not)
       maybeDeleteFile reportZip
+      maybeDeleteFile (junkfile + ".zip")
+      maybeDeleteFile (junkfile1 + ".zip")
+      maybeDeleteFile (junkfile2 + ".zip")
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       maybeIOException (fun () -> Directory.Delete(unique))
