@@ -2024,9 +2024,7 @@ module AltCoverTests =
 
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
-      Instance.CoverageFormat <-
-        ReportFormat.NCover
-        ||| ReportFormat.Zipped
+      Instance.CoverageFormat <- ReportFormat.NCover ||| ReportFormat.Zipped
 
       trywithrelease (fun () ->
         let saved = Console.Out
