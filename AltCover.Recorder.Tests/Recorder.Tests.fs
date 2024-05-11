@@ -2002,13 +2002,7 @@ module AltCoverTests =
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
 
-#if RECORDERMODERN
-      let run f = f ()
-
-      run (fun () ->
-#else
       trywithrelease (fun () ->
-#endif
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
 
