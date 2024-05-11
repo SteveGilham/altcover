@@ -1381,8 +1381,11 @@ module internal Runner =
       report
       =
       let reporter (arg: string option) =
+        let zipped =
+          int (format &&& ReportFormat.Zipped) <> 0
+
         let (container, file) =
-          Zip.openUpdate report
+          Zip.openUpdate report zipped
 
         try
           if format &&& ReportFormat.TrackMask = ReportFormat.NativeJson then
@@ -1510,8 +1513,11 @@ module internal Runner =
             )
             |> Seq.iter File.Delete
 
+            let zipped =
+              int (format &&& ReportFormat.Zipped) <> 0
+
             let document =
-              Zip.openUpdateReport format (Option.defaultValue report output)
+              Zip.openUpdateReport format (Option.defaultValue report output) zipped
 
             J.doSummaries document format result)
           255

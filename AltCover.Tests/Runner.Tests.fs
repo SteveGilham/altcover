@@ -2802,10 +2802,10 @@ module AltCoverRunnerTests =
         junkworker.Write([||], 0, 0)
         ()
 
-      Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile None
+      Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile None // WriteLeavesExpectedTraces
       |> ignore
 
-      let (c0, w0) = Zip.openUpdate junkfile
+      let (c0, w0) = Zip.openUpdate junkfile false
 
       try
         Assert.That(c0 |> isNull)
@@ -2814,7 +2814,7 @@ module AltCoverRunnerTests =
       finally
         w0.Dispose()
 
-      Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None
+      Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None // WriteLeavesExpectedTraces
       |> ignore
 
       use worker' =
@@ -2930,12 +2930,12 @@ module AltCoverRunnerTests =
       exits.Add(2, pv)
       counts.Add(Track.Exit, exits)
 
-      Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile (Some junkFile)
+      Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile None // WriteJsonLeavesExpectedTraces
       |> ignore
 
       let jsonText =
         use worker' =
-          new FileStream(junkFile, FileMode.Open)
+          new FileStream(reportFile, FileMode.Open)
 
         use reader = new StreamReader(worker')
         reader.ReadToEnd()
@@ -2994,6 +2994,8 @@ module AltCoverRunnerTests =
     let reportFile =
       Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
 
+    let reportZip = reportFile + ".zip"
+
     let junkfile =
       (reportFile + "." + (Path.GetFileName unique))
 
@@ -3037,7 +3039,7 @@ module AltCoverRunnerTests =
 
       // degenerate case 1
       Assert.That(junkfile |> File.Exists |> not)
-      let (c0, w0) = Zip.openUpdate junkfile
+      let (c0, w0) = Zip.openUpdate junkfile true
 
       try
         Assert.That(c0 |> isNull)
@@ -3061,7 +3063,7 @@ module AltCoverRunnerTests =
         sink.Write([| 0uy |], 0, 1)
         ()
 
-      let (c0, w0) = Zip.openUpdate junkfile
+      let (c0, w0) = Zip.openUpdate junkfile true
 
       try
         Assert.That(c0.IsNotNull)
@@ -3074,11 +3076,15 @@ module AltCoverRunnerTests =
       // degenerate case 2
       Assert.That(junkfile2 |> File.Exists |> not)
 
-      Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile2 None
+      Runner.J.doReport
+        counts
+        (ReportFormat.NCover ||| ReportFormat.Zipped)
+        junkfile2
+        None // ZipWriteLeavesExpectedTraces
       |> ignore
 
       Assert.That(junkfile2 |> File.Exists |> not)
-      let (c1, w1) = Zip.openUpdate junkfile2
+      let (c1, w1) = Zip.openUpdate junkfile2 true
 
       try
         Assert.That(c1 |> isNull)
@@ -3088,11 +3094,15 @@ module AltCoverRunnerTests =
         w0.Dispose()
         Assert.That(junkfile2 |> File.Exists |> not)
 
-      Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None
+      Runner.J.doReport
+        counts
+        (ReportFormat.NCover ||| ReportFormat.Zipped)
+        reportFile
+        None // ZipWriteLeavesExpectedTraces
       |> ignore
 
       let (container, worker) =
-        Zip.openUpdate reportFile
+        Zip.openUpdate reportFile true
 
       use worker' = worker
       use container' = container
@@ -3116,9 +3126,10 @@ module AltCoverRunnerTests =
             "1" ]
       )
     finally
+      Assert.That(reportFile |> File.Exists |> not)
       Assert.That(junkfile |> File.Exists |> not)
       Assert.That(junkfile2 |> File.Exists |> not)
-      maybeDeleteFile reportFile
+      maybeDeleteFile reportZip
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       maybeIOException (fun () -> Directory.Delete(unique))
@@ -3138,6 +3149,8 @@ module AltCoverRunnerTests =
 
     let reportFile =
       Path.Combine(unique, "WriteJsonLeavesExpectedTraces.json")
+
+    let reportZip = reportFile + ".zip"
 
     let junkfile =
       (reportFile + "." + (Path.GetFileName unique))
@@ -3207,7 +3220,7 @@ module AltCoverRunnerTests =
 
       // degenerate case 1
       Assert.That(junkfile |> File.Exists |> not)
-      let (c0, w0) = Zip.openUpdate junkfile
+      let (c0, w0) = Zip.openUpdate junkfile true
 
       try
         Assert.That(c0 |> isNull)
@@ -3216,11 +3229,15 @@ module AltCoverRunnerTests =
       finally
         w0.Dispose()
 
-      Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile None
+      Runner.J.doReport
+        counts
+        (ReportFormat.NativeJson ||| ReportFormat.Zipped)
+        reportFile
+        None // ZipWriteJsonLeavesExpectedTraces
       |> ignore
 
       let (container, worker) =
-        Zip.openUpdate reportFile
+        Zip.openUpdate reportFile true
 
       use container' = container
 
@@ -3260,9 +3277,590 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
+      Assert.That(reportFile |> File.Exists |> not)
       Assert.That(junkfile |> File.Exists |> not)
       Assert.That(junkfile2 |> File.Exists |> not)
+      maybeDeleteFile reportZip
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      maybeIOException (fun () -> Directory.Delete(unique))
+
+  [<Test>]
+  let DivertedWriteLeavesExpectedTraces () =
+    Runner.init ()
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    let reportFile =
+      Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+
+    let outputFile =
+      Path.Combine(unique, "DivertedFlushLeavesExpectedTraces.xml")
+
+    let junkfile =
+      (reportFile + "." + (Path.GetFileName unique))
+
+    try
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+
+      do
+        use worker =
+          new FileStream(reportFile, FileMode.CreateNew)
+
+        stream.CopyTo worker
+
+      let hits = List<string * int * Track>()
+
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          ignore j)
+
+      let counts =
+        Dictionary<string, Dictionary<int, PointVisit>>()
+
+      hits
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
+
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
+
+      // degenerate case
+      Assert.That(junkfile |> File.Exists |> not)
+
+      do
+        use junkworker =
+          new FileStream(junkfile, FileMode.CreateNew)
+
+        junkworker.Write([||], 0, 0)
+        ()
+
+      Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile None // DivertedWriteLeavesExpectedTraces
+      |> ignore
+
+      let (c0, w0) = Zip.openUpdate junkfile false
+
+      try
+        Assert.That(c0 |> isNull)
+        Assert.That(w0, Is.InstanceOf<FileStream>())
+        Assert.That(w0.Length, Is.EqualTo 8L)
+      finally
+        w0.Dispose()
+
+      Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile (Some outputFile) // DivertedWriteLeavesExpectedTraces
+      |> ignore
+
+      use worker' =
+        new FileStream(outputFile, FileMode.Open)
+
+      let after = XmlDocument()
+      after.Load worker'
+
+      Assert.That(
+        after.SelectNodes("//seqpnt")
+        |> Seq.cast<XmlElement>
+        |> Seq.map _.GetAttribute("visitcount"),
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
+      )
+    finally
+      maybeDeleteFile outputFile
       maybeDeleteFile reportFile
+      maybeDeleteFile junkfile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      maybeIOException (fun () -> Directory.Delete(unique))
+
+  [<Test>]
+  let DivertedWriteJsonLeavesExpectedTraces () =
+    Runner.init ()
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    let reportFile =
+      Path.Combine(unique, "WriteJsonLeavesExpectedTraces.json")
+
+    let outputFile =
+      Path.Combine(unique, "DivertedWriteJsonLeavesExpectedTraces.json")
+
+    let junkFile =
+      (reportFile + "." + (Path.GetFileName unique))
+
+    try
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      let nativeJson =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(nativeJson)
+
+      do
+        use worker =
+          new FileStream(reportFile, FileMode.CreateNew)
+
+        stream.CopyTo worker
+
+      let tracks t =
+        [| Null
+           Call 0
+           Time t
+           Both { Time = t; Call = 0 } |]
+
+      let t0 = tracks 0L
+
+      let hits = List<string * int * Track>()
+
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
+          ignore j)
+
+      let counts =
+        Dictionary<string, Dictionary<int, PointVisit>>()
+
+      hits
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
+
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
+
+      let entries = Dictionary<int, PointVisit>()
+      let pv = PointVisit.Create()
+      pv.Track(Time 512L)
+      tracks (1L) |> Seq.iter pv.Track
+      entries.Add(1, pv)
+      counts.Add(Track.Entry, entries)
+
+      let exits = Dictionary<int, PointVisit>()
+      let pv = PointVisit.Create()
+      tracks (2L) |> Seq.iter pv.Track
+      pv.Track(Time 1024L)
+      exits.Add(1, pv)
+      exits.Add(2, pv)
+      counts.Add(Track.Exit, exits)
+
+      Runner.J.doReport
+        counts
+        AltCover.ReportFormat.NativeJson
+        reportFile
+        (Some outputFile) // DivertedWriteJsonLeavesExpectedTraces
+      |> ignore
+
+      let jsonText =
+        use worker' =
+          new FileStream(outputFile, FileMode.Open)
+
+        use reader = new StreamReader(worker')
+        reader.ReadToEnd()
+      // saved.WriteLine jsonText  // NOT printfn "%s" jsonText
+
+      let visitedJson =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find
+          _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(visitedJson)
+
+      use reader = new StreamReader(stream)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+
+      Assert.That(
+        jsonText
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]),
+        Is.EqualTo expected
+      )
+    finally
+      maybeDeleteFile reportFile
+      maybeDeleteFile outputFile
+      maybeDeleteFile junkFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      maybeIOException (fun () -> Directory.Delete(unique))
+
+  [<Test>]
+  let DivertedZipWriteLeavesExpectedTraces () =
+    Runner.init ()
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    let reportFile =
+      Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+
+    let reportZip = reportFile + ".zip"
+
+    let outputFile =
+      Path.Combine(unique, "DivertedFlushLeavesExpectedTraces.xml")
+
+    let outputZip = outputFile + ".zip"
+
+    let junkfile =
+      (reportFile + "." + (Path.GetFileName unique))
+
+    let junkfile2 = junkfile + ".xml"
+
+    let junkfile3 = junkfile + ".3.xml"
+
+    try
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource)
+
+      let doc = XDocument.Load stream
+      Zip.save (fun s -> doc.Save s) reportFile true // fsharplint:disable-line
+
+      let hits = List<string * int * Track>()
+
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          ignore j)
+
+      let counts =
+        Dictionary<string, Dictionary<int, PointVisit>>()
+
+      hits
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
+
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
+
+      // degenerate case 1
+      Assert.That(junkfile |> File.Exists |> not)
+      let (c0, w0) = Zip.openUpdate junkfile true
+
+      try
+        Assert.That(c0 |> isNull)
+        Assert.That(w0, Is.InstanceOf<MemoryStream>())
+        Assert.That(w0.Length, Is.EqualTo 0L)
+      finally
+        w0.Dispose()
+
+      // degenerate case 1a
+      let junkzip = junkfile + ".zip"
+      Assert.That(junkzip |> File.Exists |> not)
+
+      do
+        use archive =
+          ZipFile.Open(junkzip, ZipArchiveMode.Create)
+
+        let entry =
+          Guid.NewGuid().ToString() |> archive.CreateEntry
+
+        use sink = entry.Open()
+        sink.Write([| 0uy |], 0, 1)
+        ()
+
+      let (c0, w0) = Zip.openUpdate junkfile true
+
+      try
+        Assert.That(c0.IsNotNull)
+        Assert.That(w0, Is.InstanceOf<MemoryStream>())
+        Assert.That(w0.Length, Is.EqualTo 0L)
+      finally
+        c0.Dispose()
+        w0.Dispose()
+
+      // degenerate case 2
+      Assert.That(junkfile2 |> File.Exists |> not)
+
+      Runner.J.doReport
+        counts
+        (ReportFormat.NCover ||| ReportFormat.Zipped)
+        junkfile2
+        (Some junkfile3)
+      |> ignore
+
+      Assert.That(junkfile2 |> File.Exists |> not)
+      let (c1, w1) = Zip.openUpdate junkfile2 true
+
+      try
+        Assert.That(c1 |> isNull)
+        Assert.That(w1, Is.InstanceOf<MemoryStream>())
+        Assert.That(w1.Length, Is.EqualTo 0L)
+      finally
+        w0.Dispose()
+        Assert.That(junkfile2 |> File.Exists |> not)
+
+      Runner.J.doReport
+        counts
+        (ReportFormat.NCover ||| ReportFormat.Zipped)
+        reportFile
+        (Some outputFile)
+      |> ignore
+
+      let (container, worker) =
+        Zip.openUpdate reportFile true
+
+      use worker' = worker
+      use container' = container
+      let after = XmlDocument()
+      after.Load worker'
+
+      Assert.That(
+        after.SelectNodes("//seqpnt")
+        |> Seq.cast<XmlElement>
+        |> Seq.map _.GetAttribute("visitcount"),
+        Is.EquivalentTo
+          [ "11"
+            "10"
+            "9"
+            "8"
+            "7"
+            "6"
+            "4"
+            "3"
+            "2"
+            "1" ]
+      )
+    finally
+      Assert.That(reportFile |> File.Exists |> not, "unexpected reportfile")
+      Assert.That(outputFile |> File.Exists |> not, "unexpected outputfile")
+      Assert.That(junkfile |> File.Exists |> not, "unexpected junkfile")
+      Assert.That(junkfile2 |> File.Exists |> not, "unexpected junkfile2")
+      Assert.That(junkfile3 |> File.Exists |> not, "unexpected junkfile3")
+      maybeDeleteFile reportZip
+      maybeDeleteFile outputZip
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      maybeIOException (fun () -> Directory.Delete(unique))
+
+  [<Test>]
+  let DivertedZipWriteJsonLeavesExpectedTraces () =
+    Runner.init ()
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+
+    let where =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    let unique =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    let reportFile =
+      Path.Combine(unique, "WriteJsonLeavesExpectedTraces.json")
+
+    let reportZip = reportFile + ".zip"
+
+    let outputFile =
+      Path.Combine(unique, "DivertedWriteJsonLeavesExpectedTraces.json")
+
+    let outputZip = outputFile + ".zip"
+
+    let junkfile =
+      (reportFile + "." + (Path.GetFileName unique))
+
+    let junkfile2 = junkfile + ".json"
+
+    try
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      let nativeJson =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(nativeJson)
+
+      Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
+
+      let tracks t =
+        [| Null
+           Call 0
+           Time t
+           Both { Time = t; Call = 0 } |]
+
+      let t0 = tracks 0L
+
+      let hits = List<string * int * Track>()
+
+      [ 0..9 ]
+      |> Seq.iter (fun i ->
+        for j = 1 to i + 1 do
+          hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
+          ignore j)
+
+      let counts =
+        Dictionary<string, Dictionary<int, PointVisit>>()
+
+      hits
+      |> Seq.iter (fun (moduleId, hitPointId, hit) ->
+        if counts.ContainsKey moduleId |> not then
+          counts.Add(moduleId, Dictionary<int, PointVisit>())
+
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        |> ignore)
+
+      let entries = Dictionary<int, PointVisit>()
+      let pv = PointVisit.Create()
+      pv.Track(Time 512L)
+      tracks (1L) |> Seq.iter pv.Track
+      entries.Add(1, pv)
+      entries.Add(2, pv)
+      counts.Add(Track.Entry, entries)
+
+      let exits = Dictionary<int, PointVisit>()
+      let pv = PointVisit.Create()
+      tracks (2L) |> Seq.iter pv.Track
+      pv.Track(Time 1024L)
+      exits.Add(1, pv)
+      counts.Add(Track.Exit, exits)
+
+      // degenerate case 1
+      Assert.That(junkfile |> File.Exists |> not)
+      let (c0, w0) = Zip.openUpdate junkfile true
+
+      try
+        Assert.That(c0 |> isNull)
+        Assert.That(w0, Is.InstanceOf<MemoryStream>())
+        Assert.That(w0.Length, Is.EqualTo 0L)
+      finally
+        w0.Dispose()
+
+      Runner.J.doReport
+        counts
+        (ReportFormat.NativeJson ||| ReportFormat.Zipped)
+        reportFile
+        (Some outputFile) // DivertedZipWriteJsonLeavesExpectedTraces
+      |> ignore
+
+      let (container, worker) =
+        Zip.openUpdate outputFile true
+
+      use container' = container
+
+      let jsonText =
+        use worker' = worker
+        use reader = new StreamReader(worker')
+        reader.ReadToEnd()
+
+      let visitedJson =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find
+          _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(visitedJson)
+
+      use reader = new StreamReader(stream)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+
+      Assert.That(
+        jsonText
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |]),
+        Is.EqualTo expected
+      )
+    finally
+      Assert.That(reportFile |> File.Exists |> not, "unexpected report file")
+      Assert.That(outputFile |> File.Exists |> not, "unexpected outputfile")
+      Assert.That(junkfile |> File.Exists |> not, "unexpected junk file")
+      Assert.That(junkfile2 |> File.Exists |> not, "unexpected junk2 file")
+      maybeDeleteFile reportZip
+      maybeDeleteFile outputZip
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       maybeIOException (fun () -> Directory.Delete(unique))
