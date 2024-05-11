@@ -1516,6 +1516,15 @@ module AltCoverXTests =
         =
         test' <@ report = codedreport @> "should be default coverage file"
         test <@ output = Some alternate @>
+
+        use stream =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Tests.GenuineNCover158.Xml")
+
+        use fs = File.Create(alternate)
+        stream.CopyTo fs
+
         test <@ hits |> Seq.isEmpty @>
         TimeSpan.Zero
 
