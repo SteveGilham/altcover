@@ -5,7 +5,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 29)
 * [BUGFIX] Fix summary data for `--outputFile` option
-* [BUGFIX] Fix interection of `--zipFile` prepare option and `--outputFile` collect option
+* [BUGFIX] Fix interaction of `--zipFile` prepare option and `--outputFile` collect option
 * [BUGFIX] Issue #220 - improve dependency resolution to the GAC
 
 # 8.8.21 (Habu series release 28)
