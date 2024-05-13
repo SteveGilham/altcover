@@ -3233,11 +3233,12 @@ module AltCoverRunnerTests =
       let (c0, w0) = Zip.openUpdate junkfile true
 
       try
-        Assert.That(c0 |> isNull)
+        Assert.That(c0.IsNotNull)
         Assert.That(w0, Is.InstanceOf<MemoryStream>())
         Assert.That(w0.Length, Is.EqualTo 0L)
       finally
         w0.Dispose()
+        c0.Dispose()
 
       Runner.J.doReport
         counts
@@ -3291,6 +3292,7 @@ module AltCoverRunnerTests =
       Assert.That(junkfile |> File.Exists |> not)
       Assert.That(junkfile2 |> File.Exists |> not)
       maybeDeleteFile reportZip
+      maybeDeleteFile (junkfile + ".zip")
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       maybeIOException (fun () -> Directory.Delete(unique))
