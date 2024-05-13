@@ -424,8 +424,14 @@ module internal Counter =
     | _ ->
       addSingleVisit counts moduleId hitPointId context
       1L
-#endif
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidLongParameterListsRule",
+                    Justification = "Most of this gets curried away")>]
+  let doFlushStream postProcess pointProcess own counts format coverageFile outputFile =
+    I.doFlush postProcess pointProcess own counts format coverageFile outputFile
+
+#else
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidLongParameterListsRule",
                     Justification = "Most of this gets curried away")>]
@@ -463,7 +469,6 @@ module internal Counter =
 
     I.doFlush postProcess pointProcess own counts format coverageFile outputFile
 
-#if !RUNNER
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidLongParameterListsRule",
                     Justification = "Most of this gets curried away")>]

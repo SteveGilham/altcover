@@ -1380,10 +1380,18 @@ module internal Runner =
         let (container, file) =
           Zip.openUpdate report zipped
 
-        try
-          if format &&& ReportFormat.TrackMask = ReportFormat.NativeJson then
-            writeNativeJsonReport hits format file arg
-          else
+        use container' = container
+        use file' = file
+
+        if format &&& ReportFormat.TrackMask = ReportFormat.NativeJson then
+          writeNativeJsonReport hits format file arg
+        else
+          use outputFile =
+            match arg with
+            | None -> file
+            | _ -> new MemoryStream() :> Stream
+
+          let result =
             AltCover.Counter.doFlushStream
               (postProcess hits format)
               pointProcess
@@ -1391,12 +1399,15 @@ module internal Runner =
               hits
               format
               file
-              arg
-        finally
-          file.Dispose()
+              outputFile
 
-          if container.IsNotNull then
-            container.Dispose()
+          match arg with
+          | None -> ()
+          | Some x ->
+            outputFile.Position <- 0l
+            Zip.save (outputFile.CopyTo) x zipped
+
+          result
 
       reporter
 

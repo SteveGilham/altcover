@@ -2019,7 +2019,6 @@ module AltCoverTests =
 
 #if !NET20
   [<Test>]
-#endif
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -2140,6 +2139,7 @@ module AltCoverTests =
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
     getMyMethodName "<="
+#endif
 
   [<Test>]
   let ShouldCreateDummyAttribute () =
