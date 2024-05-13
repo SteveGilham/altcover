@@ -1328,11 +1328,13 @@ module internal Runner =
                       Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
-      unusedCannotBeUnderscore
+      format
       (file: Stream)
       output
       =
-      ignore unusedCannotBeUnderscore
+      let zipped =
+        int (format &&& ReportFormat.Zipped) <> 0
+
       let flushStart = DateTime.UtcNow
       // do work here
       let jsonText =
@@ -1357,17 +1359,8 @@ module internal Runner =
         NativeJson.serializeToUtf8Bytes json
 
       if Option.isSome output then
-        use outputFile =
-          new FileStream(
-            output.Value,
-            FileMode.OpenOrCreate,
-            FileAccess.Write,
-            FileShare.None,
-            4096,
-            FileOptions.SequentialScan
-          )
+        Zip.save (fun s -> s.Write(encoded, 0, encoded.Length)) output.Value zipped
 
-        outputFile.Write(encoded, 0, encoded.Length)
       else
         file.Seek(0L, SeekOrigin.Begin) |> ignore
         file.SetLength 0L
