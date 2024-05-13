@@ -4,6 +4,9 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 29)
+* [BUGFIX] Fix summary data for `--outputFile` option
+* [BUGFIX] Fix interection of `--zipFile` prepare option and `--outputFile` collect option
+* [BUGFIX] Issue #220 - improve dependency resolution to the GAC
 
 # 8.8.21 (Habu series release 28)
 * [BREAKING; BUGFIX] Issue #206 : Update to net6+ for `dotnet test` integration and respect the `$(IsTestProject)` setting from the `Microsoft.NET.Test.Sdk` package.
