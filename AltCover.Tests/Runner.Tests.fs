@@ -3579,6 +3579,8 @@ module AltCoverRunnerTests =
     let junkfile =
       (reportFile + "." + (Path.GetFileName unique))
 
+    let junkfile1 = junkfile + ".1"
+
     let junkfile2 = junkfile + ".xml"
 
     let junkfile3 = junkfile + ".3.xml"
@@ -3624,14 +3626,15 @@ module AltCoverRunnerTests =
       let (c0, w0) = Zip.openUpdate junkfile true
 
       try
-        Assert.That(c0 |> isNull)
+        Assert.That(c0.IsNotNull)
         Assert.That(w0, Is.InstanceOf<MemoryStream>())
         Assert.That(w0.Length, Is.EqualTo 0L)
       finally
         w0.Dispose()
+        c0.Dispose()
 
       // degenerate case 1a
-      let junkzip = junkfile + ".zip"
+      let junkzip = junkfile1 + ".zip"
       Assert.That(junkzip |> File.Exists |> not)
 
       do
@@ -3645,7 +3648,7 @@ module AltCoverRunnerTests =
         sink.Write([| 0uy |], 0, 1)
         ()
 
-      let (c0, w0) = Zip.openUpdate junkfile true
+      let (c0, w0) = Zip.openUpdate junkfile1 true
 
       try
         Assert.That(c0.IsNotNull)
@@ -3669,12 +3672,14 @@ module AltCoverRunnerTests =
       let (c1, w1) = Zip.openUpdate junkfile2 true
 
       try
-        Assert.That(c1 |> isNull)
+        Assert.That(c1.IsNotNull)
         Assert.That(w1, Is.InstanceOf<MemoryStream>())
         Assert.That(w1.Length, Is.EqualTo 0L)
       finally
-        w0.Dispose()
-        Assert.That(junkfile2 |> File.Exists |> not)
+        w1.Dispose()
+        c1.Dispose()
+
+      Assert.That(junkfile2 |> File.Exists |> not)
 
       Runner.J.doReport
         counts
@@ -3684,7 +3689,7 @@ module AltCoverRunnerTests =
       |> ignore
 
       let (container, worker) =
-        Zip.openUpdate reportFile true
+        Zip.openUpdate outputFile true
 
       use worker' = worker
       use container' = container
@@ -3711,10 +3716,15 @@ module AltCoverRunnerTests =
       Assert.That(reportFile |> File.Exists |> not, "unexpected reportfile")
       Assert.That(outputFile |> File.Exists |> not, "unexpected outputfile")
       Assert.That(junkfile |> File.Exists |> not, "unexpected junkfile")
+      Assert.That(junkfile1 |> File.Exists |> not, "unexpected junkfile1")
       Assert.That(junkfile2 |> File.Exists |> not, "unexpected junkfile2")
       Assert.That(junkfile3 |> File.Exists |> not, "unexpected junkfile3")
       maybeDeleteFile reportZip
       maybeDeleteFile outputZip
+      maybeDeleteFile (junkfile + ".zip")
+      maybeDeleteFile (junkfile1 + ".zip")
+      maybeDeleteFile (junkfile2 + ".zip")
+      maybeDeleteFile (junkfile3 + ".zip")
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       maybeIOException (fun () -> Directory.Delete(unique))
@@ -3813,11 +3823,12 @@ module AltCoverRunnerTests =
       let (c0, w0) = Zip.openUpdate junkfile true
 
       try
-        Assert.That(c0 |> isNull)
+        Assert.That(c0.IsNotNull)
         Assert.That(w0, Is.InstanceOf<MemoryStream>())
         Assert.That(w0.Length, Is.EqualTo 0L)
       finally
         w0.Dispose()
+        c0.Dispose()
 
       Runner.J.doReport
         counts
@@ -3873,6 +3884,7 @@ module AltCoverRunnerTests =
       Assert.That(junkfile2 |> File.Exists |> not, "unexpected junk2 file")
       maybeDeleteFile reportZip
       maybeDeleteFile outputZip
+      maybeDeleteFile (junkfile + ".zip")
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       maybeIOException (fun () -> Directory.Delete(unique))
