@@ -220,6 +220,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidated () =
+    CommandLine.error <- []
+
     let here =
       Assembly.GetExecutingAssembly().Location
 
@@ -311,6 +313,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidatedWithErrors () =
+    CommandLine.error <- []
+
     let subject =
       TypeSafe.CollectOptions.Create()
 
@@ -347,6 +351,8 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectOptionsCanBePositivelyValidatedWithErrors () =
+    CommandLine.error <- []
+
     let test =
       { TypeSafe.CollectOptions.Create() with
           RecorderDirectory =
@@ -909,7 +915,11 @@ module AltCoverXTests =
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
 
       let recordedJson =
-        match DocumentType.LoadReport CoverageParameters.theReportFormat.Value report with
+        use stream = File.OpenRead report
+
+        match
+          DocumentType.LoadReportStream CoverageParameters.theReportFormat.Value stream
+        with
         | JSON j -> j
 
       test <@ recordedJson.Keys |> Seq.toList = [ "Sample4.dll" ] @>
@@ -1155,7 +1165,9 @@ module AltCoverXTests =
         XDocument.Load(new StringReader(expectedText))
 
       let recordedXml =
-        match DocumentType.LoadReport ReportFormat.OpenCover report with
+        use stream = File.OpenRead report
+
+        match DocumentType.LoadReportStream ReportFormat.OpenCover stream with
         | XML x -> x
 
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
@@ -1504,6 +1516,15 @@ module AltCoverXTests =
         =
         test' <@ report = codedreport @> "should be default coverage file"
         test <@ output = Some alternate @>
+
+        use stream =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Tests.GenuineNCover158.Xml")
+
+        use fs = File.Create(alternate)
+        stream.CopyTo fs
+
         test <@ hits |> Seq.isEmpty @>
         TimeSpan.Zero
 

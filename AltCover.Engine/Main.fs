@@ -703,10 +703,11 @@ module internal Main =
       |> Option.defaultValue false
 
     let internal selectReportGenerator () =
-      match CoverageParameters.reportKind () with
-      | ReportFormat.OpenCoverWithTracking
+      match
+        CoverageParameters.reportKind ()
+        &&& ReportFormat.TrackMask
+      with
       | ReportFormat.OpenCover -> OpenCover.reportGenerator ()
-      | ReportFormat.NativeJsonWithTracking
       | ReportFormat.NativeJson -> NativeJson.reportGenerator ()
       | _ -> Report.reportGenerator ()
 

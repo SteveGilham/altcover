@@ -93,7 +93,15 @@ module AltCoverTests =
     let tracer =
       Adapter.makeNullTrace String.Empty
 
-    Assert.True(tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder")
+    // whitelist test not recorder.g
+
+    let n =
+      tracer.GetType().Assembly.GetName().Name
+#if RECORDERMODERN
+    Assert.That(n, Is.EqualTo "AltCover.RecorderModern")
+#else
+    Assert.That(n, Is.EqualTo "AltCover.Recorder")
+#endif
     getMyMethodName "<="
 
   [<Test>]
@@ -138,6 +146,7 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
+  [<Test>]
   let RealIdShouldIncrementCount () =
     getMyMethodName "=>"
 
@@ -154,7 +163,11 @@ module AltCoverTests =
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
         Instance.Visit key -23
-        Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+
+        Instance.CoverageFormat <-
+          ReportFormat.OpenCover
+          ||| ReportFormat.WithTracking
+
         Instance.Visit key -23
 
         let vs = Adapter.VisitsSeq()
@@ -191,7 +204,11 @@ module AltCoverTests =
   let PayloadGeneratedIsAsExpected () =
     try
       Instance.I.isRunner <- false
-      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+
+      Instance.CoverageFormat <-
+        ReportFormat.OpenCover
+        ||| ReportFormat.WithTracking
+
       Assert.True(Instance.I.callerId () |> Option.isNone)
       Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
       Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
@@ -248,7 +265,11 @@ module AltCoverTests =
 
     try
       Instance.I.isRunner <- true
-      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+
+      Instance.CoverageFormat <-
+        ReportFormat.OpenCover
+        ||| ReportFormat.WithTracking
+
       Adapter.VisitsClear()
 
       Assert.True(Instance.I.callerId () |> Option.isNone)
@@ -1158,7 +1179,13 @@ module AltCoverTests =
     with :? 'a ->
       g ()
 
-  let trywithrelease<'a when 'a :> exn> f = trywith f Instance.I.mutex.ReleaseMutex
+  let failsaferelease () =
+    try
+      Instance.I.mutex.ReleaseMutex()
+    with :? ApplicationException ->
+      ()
+
+  let trywithrelease<'a when 'a :> exn> f = trywith f failsaferelease
 
   [<Test>]
   let CanTryWith () =
@@ -1173,11 +1200,15 @@ module AltCoverTests =
 
     Assert.That(flag, Is.True)
 
+    trywithrelease<InvalidOperationException> (fun () ->
+      InvalidOperationException() |> raise)
+
     Instance.I.mutex.WaitOne(1000) |> ignore
 
     trywithrelease<InvalidOperationException> (fun () ->
       InvalidOperationException() |> raise)
 
+  [<Test>]
   let PauseLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -1280,6 +1311,7 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
+  [<Test>]
   let ResumeLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -1386,6 +1418,7 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
+  [<Test>]
   let FlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
@@ -1644,12 +1677,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush (
-        visits,
-        AltCover.Recorder.ReportFormat.NCover,
-        reportFile,
-        outputFile
-      )
+      Adapter.doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
       |> ignore
 
       use worker' =
@@ -1733,12 +1761,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush (
-        visits,
-        AltCover.Recorder.ReportFormat.NCover,
-        reportFile,
-        outputFile
-      )
+      Adapter.doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
       |> ignore
 
       use worker' =
@@ -1815,7 +1838,7 @@ module AltCoverTests =
 
       Adapter.doFlush (
         visits,
-        AltCover.Recorder.ReportFormat.NCover,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
         reportFile,
         outputFile
       )
@@ -1848,6 +1871,7 @@ module AltCoverTests =
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+#endif
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken () =
@@ -1905,7 +1929,7 @@ module AltCoverTests =
 
       Adapter.doFlush (
         visits,
-        AltCover.Recorder.ReportFormat.NCover,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
         reportFile,
         outputFile
       )
@@ -1976,7 +2000,12 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.doFlush (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null)
+      Adapter.doFlush (
+        visits,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
+        reportFile,
+        null
+      )
       |> ignore
 
       Assert.That(reportFile |> File.Exists |> not)
@@ -1988,11 +2017,14 @@ module AltCoverTests =
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
+#if !NET20
+  [<Test>]
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
+      Instance.CoverageFormat <- ReportFormat.NCover ||| ReportFormat.Zipped
 
       trywithrelease (fun () ->
         let saved = Console.Out
@@ -2028,6 +2060,8 @@ module AltCoverTests =
           Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
 
           do
+            AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
+
             use archive =
               ZipFile.Open(Instance.ReportFilePath + ".zip", ZipArchiveMode.Create)
 
@@ -2098,6 +2132,7 @@ module AltCoverTests =
         finally
           Instance.I.trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
+          AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
@@ -2106,18 +2141,9 @@ module AltCoverTests =
     getMyMethodName "<="
 #endif
 
-  // Dead simple sequential operation
-  // run only once in Framework mode to avoid contention
   [<Test>]
-  let MailboxFunctionsAsExpected () =
+  let ShouldCreateDummyAttribute () =
     let dummy =
       AltCover.Recorder.ExcludeFromCodeCoverageAttribute()
 
     Assert.That(dummy, Is.Not.Null)
-    RealIdShouldIncrementCount()
-    PauseLeavesExpectedTraces()
-    ResumeLeavesExpectedTraces()
-#if !NET20
-    ZipFlushLeavesExpectedTraces()
-#endif
-    FlushLeavesExpectedTraces()

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>AltCover.RecorderModern.Tests</AssemblyName>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <NoWarn>NU1702, 3559</NoWarn>
+    <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <ExtraDefines>RECORDERMODERN</ExtraDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE;RELEASE;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Adapter.fs" Link="Adapter.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.fs" Link="Tracer.Tests.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.IO.Compression" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.RecorderModern\AltCover.RecorderModern.fsproj" />
+  </ItemGroup>
+
+</Project>

@@ -70,8 +70,8 @@ module internal Zip =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:Dispose objects before losing scope",
                     Justification = "ditto, ditto.")>]
-  let internal openUpdate (report: string) =
-    if File.Exists(report + ".zip") then
+  let internal openUpdate (report: string) (zipped: bool) =
+    if zipped then
       let zip =
         ZipFile.Open(report + ".zip", ZipArchiveMode.Update)
 
@@ -85,7 +85,7 @@ module internal Zip =
           new MemoryStream() :> Stream
 
       (zip, stream)
-    else if File.Exists report then
+    else
       let stream =
         new FileStream(
           report,
@@ -97,8 +97,14 @@ module internal Zip =
         )
 
       (null, stream :> Stream)
-    else
-      (null, new MemoryStream() :> Stream)
+
+  let internal openUpdateReport format (report: string) (zipped: bool) =
+    let container, stream =
+      openUpdate report zipped
+
+    use _ = container
+    use _ = stream
+    DocumentType.LoadReportStream format stream
 
 type internal StringSink = Action<String>
 
@@ -496,6 +502,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@288::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@294::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()
