@@ -73,23 +73,31 @@
                                               </xs:complexType>
                                             </xs:element>
                                             <xs:element name="MetadataToken" nillable="true">
+                                              <xs:simpleType>
+                                                <xs:union>
                                                   <xs:simpleType>
-                                                    <xs:union>
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:integer">
-                                                                <xs:minInclusive value="0"/>
-                                                            </xs:restriction>        
-                                                        </xs:simpleType>            
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:string">
-                                                                <xs:whiteSpace value="collapse" />
-                                                                <xs:length value="0" />
-                                                            </xs:restriction>        
-                                                        </xs:simpleType>            
-                                                    </xs:union>
-                                                </xs:simpleType>
+                                                    <xs:restriction base="xs:integer">
+                                                      <xs:minInclusive value="0" />
+                                                    </xs:restriction>
+                                                  </xs:simpleType>
+                                                  <xs:simpleType>
+                                                    <xs:restriction base="xs:string">
+                                                      <xs:whiteSpace value="collapse" />
+                                                      <xs:length value="0" />
+                                                    </xs:restriction>
+                                                  </xs:simpleType>
+                                                </xs:union>
+                                              </xs:simpleType>
                                             </xs:element>
-                                            <xs:element name="Name" type="xs:string" />
+                                            <xs:element name="Name">
+                                              <xs:complexType>
+                                                <xs:simpleContent>
+                                                  <xs:extension base="xs:string">
+                                                    <xs:attribute name="generic" type="xs:string" />
+                                                  </xs:extension>
+                                                </xs:simpleContent>
+                                              </xs:complexType>
+                                            </xs:element>
                                             <xs:element name="FileRef" minOccurs="0">
                                               <xs:complexType>
                                                 <xs:attribute name="uid" type="xs:integer" use="required" />
