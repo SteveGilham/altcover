@@ -26,6 +26,7 @@ type internal OpenCoverContext =
     Excluded: Exclusion
     Files: Map<string, int>
     Embeds: Map<string, string>
+    Names: Map<string, (MethodReference * XElement)>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -47,6 +48,7 @@ type internal OpenCoverContext =
       Excluded = Nothing
       Files = Map.empty<string, int>
       Embeds = Map.empty<string, string>
+      Names = Map.empty<string, (MethodReference * XElement)>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -231,7 +233,7 @@ module internal OpenCover =
 
     let boolString b = if b then "true" else "false"
 
-    let methodElement (methodDef: MethodDefinition) =
+    let methodElement (s: OpenCoverContext) (methodDef: MethodDefinition) =
       let cc =
         Gendarme.cyclomaticComplexity methodDef
 
@@ -258,7 +260,11 @@ module internal OpenCover =
         XElement("MetadataToken".X, methodDef.MetadataToken.ToUInt32().ToString())
       )
 
-      element.Add(XElement("Name".X, methodDef.FullName))
+      let baseName = methodDef.FullName
+
+      let name = XElement("Name".X, baseName)
+
+      element.Add(name)
 
       if instrumented then
         element.Add(XElement("FileRef".X))
@@ -275,7 +281,7 @@ module internal OpenCover =
         && included <> Inspections.TrackOnly
       then
         let instrumented = included.IsInstrumented
-        let cc, element = methodElement methodDef
+        let cc, element = methodElement s methodDef
 
         if instrumented then
           element.SetAttributeValue("skippedDueTo".X, "File")

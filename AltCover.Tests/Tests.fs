@@ -90,12 +90,18 @@ module AltCoverTests =
 
   let sample8path =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net8.0/Sample8.dll")
+
+  let sample32path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net8.0/Sample32.dll")
 #else
   let sample4path =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
   let sample8path =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
+
+  let sample32path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net472/Sample32.exe")
 #endif
   let recorderSnk =
     typeof<AltCover.Node>.Assembly
@@ -3639,6 +3645,54 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
+  let ShouldGenerateExpectedXmlReportWithOverloads () =
+    let visitor, document =
+      OpenCover.reportGenerator ()
+
+    let path = sample32path
+
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      // printfn "%A" (makeDocument document)
+
+      let results =
+        (makeDocument document).Descendants("Name".X)
+        |> Seq.map _.Value
+        |> Seq.toList
+
+      //printfn "%A" results
+
+      Assert.That(results |> List.length, Is.EqualTo 8)
+      Assert.That(results |> List.distinct |> List.length, Is.EqualTo 8)
+
+      let expected =
+          ["System.Void Sample32.Program::Main(System.String[])";
+           "System.Void Sample32.Program::.ctor()";
+           "T issue222.Class1::GetService(System.IServiceProvider)";
+           "System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)";
+           "System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)";
+           "T issue222.Class1/<>c__1`3::<AddSingleton>b__1_0(System.IServiceProvider)";
+           "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_0(System.IServiceProvider)";
+           "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_1(System.IServiceProvider)"]
+
+      Assert.That(results, Is.EquivalentTo expected)
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
   let ShouldGenerateExpectedXmlReportWithPartials () =
     let visitor, document =
       Report.reportGenerator ()
@@ -3798,6 +3852,56 @@ module AltCoverTests =
           .Trim([| '\u00FF' |]),
         Is.EqualTo expected
       )
+    finally
+      CoverageParameters.trackingNames.Clear()
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedJsonReportWithOverloads () =
+    CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+
+    try
+      let visitor, document =
+        Main.I.selectReportGenerator ()
+
+      let path = sample32path
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      Assert.That(CoverageParameters.reportFormat (), Is.EqualTo(ReportFormat.NativeJson))
+
+      let result = makeJson document
+
+      let json =
+        result |> Manatee.Json.JsonValue.Parse
+
+      let s1 =
+        json.Object |> Seq.map _.Value |> Seq.toList
+
+      let collapse =
+        List.collect (fun (v: Manatee.Json.JsonValue) -> v.Object |> Seq.toList)
+        >> List.map _.Value
+
+      let key =
+        List.collect (fun (v: Manatee.Json.JsonValue) -> v.Object |> Seq.toList)
+        >> List.map _.Key
+
+      let s4 = s1 |> collapse |> collapse |> key
+
+      let expected =
+        [ "T issue222.Class1::GetService(System.IServiceProvider)"
+          "System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "System.Void Sample32.Program::Main(System.String[])" ]
+
+      Assert.That(s4, Is.EquivalentTo expected)
+
     finally
       CoverageParameters.trackingNames.Clear()
       CoverageParameters.nameFilters.Clear()

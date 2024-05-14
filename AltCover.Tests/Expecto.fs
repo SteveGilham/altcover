@@ -432,12 +432,16 @@ module ExpectoTestManifest =
        "Tests.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbeds,
        "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
+       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithOverloads,
+       "Tests.ShouldGenerateExpectedXmlReportWithOverloads"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithPartials,
        "Tests.ShouldGenerateExpectedXmlReportFromWithPartials"
        Tests.AltCoverTests.ShouldGenerateExpectedJsonReportFromDotNet,
        "Tests.ShouldGenerateExpectedJsonReportFromDotNet"
        Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithEmbeds,
        "Tests.ShouldGenerateExpectedJsonReportWithEmbeds"
+       Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithOverloads,
+       "Tests.ShouldGenerateExpectedJsonReportWithOverloads"
        Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithPartials,
        "Tests.ShouldGenerateExpectedJsonReportWithPartials"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly,
