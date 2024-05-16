@@ -38,10 +38,14 @@ module ExpectoTestManifest =
        "Runner.RepeatVisitsShouldIncrementTotal"
        Tests.AltCoverRunnerTests.KnownModuleWithPayloadMakesExpectedChangeInOpenCover,
        "Runner.KnownModuleWithPayloadMakesExpectedChangeInOpenCover"
-       Tests.AltCoverRunnerTests.FlushLeavesExpectedTraces,
-       "Runner.FlushLeavesExpectedTraces"
-       Tests.AltCoverRunnerTests.FlushLeavesExpectedTracesWhenDiverted,
-       "Runner.FlushLeavesExpectedTracesWhenDiverted"
+       Tests.AltCoverRunnerTests.DivertedWriteLeavesExpectedTraces,
+       "Runner.DivertedWriteLeavesExpectedTraces"
+       Tests.AltCoverRunnerTests.DivertedWriteJsonLeavesExpectedTraces,
+       "Runner.DivertedWriteJsonLeavesExpectedTraces"
+       Tests.AltCoverRunnerTests.DivertedZipWriteLeavesExpectedTraces,
+       "Runner.DivertedZipWriteLeavesExpectedTraces"
+       Tests.AltCoverRunnerTests.DivertedZipWriteJsonLeavesExpectedTraces,
+       "Runner.DivertedZipWriteJsonLeavesExpectedTraces"
        Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleJson,
        "Runner.NCoverShouldGeneratePlausibleJson"
        Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleJson,

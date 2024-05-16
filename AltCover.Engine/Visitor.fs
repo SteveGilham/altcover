@@ -412,27 +412,35 @@ module internal CoverageParameters =
     else
       path
 
-  let internal reportFormat () =
+  let internal reportFormat0 () =
     let fmt = reportKind ()
 
     if
       fmt = ReportFormat.OpenCover
       && (trackingNames.Any() || interval () > 0)
     then
-      ReportFormat.OpenCoverWithTracking
+      ReportFormat.OpenCover
+      ||| ReportFormat.WithTracking
     else if
       fmt = ReportFormat.NativeJson
       && (trackingNames.Any() || interval () > 0)
     then
-      ReportFormat.NativeJsonWithTracking
+      ReportFormat.NativeJson
+      ||| ReportFormat.WithTracking
     else
       fmt
 
+  let internal reportFormat () =
+    let raw = reportFormat0 ()
+
+    if zipReport.Value then
+      raw ||| ReportFormat.Zipped
+    else
+      raw
+
   let internal isTracking () =
-    match reportFormat () with
-    | ReportFormat.OpenCoverWithTracking
-    | ReportFormat.NativeJsonWithTracking -> true
-    | _ -> false
+    int (reportFormat () &&& ReportFormat.WithTracking)
+    <> 0
 
   let withBranches () = reportFormat () <> ReportFormat.NCover
 
@@ -1674,30 +1682,30 @@ module internal Visitor =
                             "AvoidMessageChainsRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Visitor/I/generated@1403::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Visitor/I/generated@1411::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No direct call available")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1249::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1257::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1252::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/finish@1260::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1560-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1568-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1463@1463::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1471@1471::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 ()

@@ -430,10 +430,11 @@ module Instance =
 
         adder moduleId hitPointId context
 
-    let internal isTrackingRunner () =
-      (CoverageFormat = ReportFormat.OpenCoverWithTracking
-       || CoverageFormat = ReportFormat.NativeJsonWithTracking)
-      && isRunner
+    let internal isTracking () =
+      (int (CoverageFormat &&& ReportFormat.WithTracking)
+       <> 0)
+
+    let internal isTrackingRunner () = isTracking () && isRunner
 
     let internal granularity () = Timer
     let internal clock () = DateTime.UtcNow.Ticks
@@ -499,10 +500,7 @@ module Instance =
   let Visit moduleId hitPointId =
     if I.recording then
       I.visitSelection
-        (if
-           (CoverageFormat = ReportFormat.OpenCoverWithTracking
-            || CoverageFormat = ReportFormat.NativeJsonWithTracking)
-         then
+        (if I.isTracking () then
            I.payloadSelector I.isTrackingRunner
          else
            Null)

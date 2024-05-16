@@ -2376,7 +2376,7 @@ module Targets =
           let prep =
             AltCover.PrepareOptions.TypeSafe(
               { TypeSafe.PrepareOptions.Create() with
-                  Report = TypeSafe.FilePath altReport
+                  Report = TypeSafe.FilePath(testDirectory @@ coverageReport)
                   OutputDirectories =
                     TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath outputDirectory |]
                   StrongNameKey = TypeSafe.FilePath signingKey
@@ -2409,6 +2409,7 @@ module Targets =
             AltCover.CollectOptions.TypeSafe
               { TypeSafe.CollectOptions.Create() with
                   Executable = TypeSafe.FilePath nunitConsole
+                  OutputFile = TypeSafe.FilePath altReport
                   RecorderDirectory =
                     TypeSafe.DirectoryPath(testDirectory @@ outputDirectory)
                   CommandLine =
@@ -3332,6 +3333,93 @@ module Targets =
       )
 
       Actions.ValidateFSharpTypesCoverage simpleReport2)
+
+  let BasicCSharp0 =
+    (fun () ->
+      let samplePath =
+        "_Binaries/Sample0/Debug+AnyCPU/net20"
+
+      let binaryPath =
+        "_Binaries/AltCover/Release+AnyCPU/net472"
+
+      let reportSigil = "BasicCSharp0"
+
+      printfn "Instrument and run a simple executable"
+      Directory.ensure "./_Reports"
+
+      let simpleReport =
+        (Path.getFullName "./_Reports")
+        @@ (reportSigil + ".xml")
+
+      let binRoot = Path.getFullName binaryPath
+      let sampleRoot = Path.getFullName samplePath
+
+      let instrumented =
+        "__Instrumented." + reportSigil
+
+      let framework =
+        Fake.DotNet.ToolType.CreateFullFramework()
+
+      let prep =
+        AltCover.PrepareOptions.Primitive
+          { Primitive.PrepareOptions.Create() with
+              // Verbosity = System.Diagnostics.TraceLevel.Verbose
+              TypeFilter = [ """System\.""" ]
+              Report = simpleReport
+              OutputDirectories = [| "./" + instrumented |]
+              ReportFormat = "NCover"
+              InPlace = false
+              Save = false }
+        |> AltCoverCommand.Prepare
+
+      let parameters =
+        { AltCoverCommand.Options.Create prep with
+            ToolPath = binRoot @@ "AltCover.exe"
+            ToolType = framework
+            WorkingDirectory = sampleRoot }
+
+      AltCoverCommand.run parameters
+      System.Threading.Thread.Sleep(1000)
+
+      Actions.Run
+        (sampleRoot @@ (instrumented + "/Sample0.exe"), (sampleRoot @@ instrumented), [])
+        "Instrumented .exe failed"
+
+      System.Threading.Thread.Sleep(1000)
+
+      use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        new FileStream(
+          simpleReport,
+          FileMode.Open,
+          FileAccess.Read,
+          FileShare.None,
+          4096,
+          FileOptions.SequentialScan
+        )
+
+      use reader = XmlReader.Create(coverageFile)
+
+      let coverageDocument =
+        XDocument.Load(reader)
+
+      let recorded =
+        coverageDocument.Descendants(XName.Get("seqpnt"))
+        |> Seq.toList
+
+      Assert.That(
+        List.length recorded,
+        Is.EqualTo 1,
+        "unexpected points in " + reportSigil
+      )
+
+      let ones =
+        recorded
+        |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
+        |> Seq.map _.Attribute(XName.Get("line")).Value
+        |> Seq.sort
+        |> Seq.toList
+
+      Assert.That(List.length ones, Is.EqualTo 1, "unexpected visits in " + reportSigil))
 
   let BasicCSharp =
     (fun () ->
@@ -4729,7 +4817,7 @@ module Targets =
       let binRoot = Path.getFullName binaryPath
 
       let sampleRoot =
-        Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/net20"
+        Path.getFullName "_Mono/Sample1"
 
       let instrumented =
         "__Instrumented." + reportSigil
@@ -8283,7 +8371,7 @@ module Targets =
     _Target "FSAsyncTests" FSAsyncTests
     _Target "FSharpTypesDotNetRunner" FSharpTypesDotNetRunner
     _Target "FSharpTypesDotNetCollecter" FSharpTypesDotNetCollecter
-    _Target "BasicCSharp" BasicCSharp
+    _Target "BasicCSharp" BasicCSharp0 // virus false +ve // BasicCSharp
     _Target "BasicCSharpMono" BasicCSharpMono
     _Target "BasicCSharpUnderMono" BasicCSharpUnderMono
     _Target "BasicCSharpMonoUnderMono" BasicCSharpMonoUnderMono

@@ -11,12 +11,21 @@ open System.Globalization
 open System.IO
 open System.Xml
 
+[<Flags>]
+[<SuppressMessage("Gendarme.Rules.Design",
+                  "FlagsShouldNotDefineAZeroValueRule",
+                  Justification = "Zero is meaningful")>]
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UsePluralNameInEnumFlagsRule",
+                  Justification = "Not meaningful to do so")>]
 type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1
-  | OpenCoverWithTracking = 2
-  | NativeJson = 3
-  | NativeJsonWithTracking = 4
+  | NativeJson = 2
+  | TrackMask = 63
+  | WithTracking = 64
+  | ZipMask = 127
+  | Zipped = 128
 
 #if !RUNNER
 open ICSharpCode.SharpZipLib.Zip
@@ -174,8 +183,7 @@ module internal Counter =
       ("//module", "moduleId", "method", [ ("seqpnt", 0) ], "visitcount")
 
     let internal xmlByFormat format =
-      match format with
-      | ReportFormat.OpenCoverWithTracking
+      match format &&& ReportFormat.TrackMask with
       | ReportFormat.OpenCover -> openCoverXml
       | ReportFormat.NCover -> nCoverXml
       | _ ->
@@ -301,8 +309,7 @@ module internal Counter =
             |> Seq.toList
             |> List.rev))
         |> Seq.mapi (fun counter (pt, flag) ->
-          ((match format with
-            | ReportFormat.OpenCoverWithTracking
+          ((match format &&& ReportFormat.TrackMask with
             | ReportFormat.OpenCover ->
               "uspid"
               |> pt.GetAttribute
@@ -417,8 +424,14 @@ module internal Counter =
     | _ ->
       addSingleVisit counts moduleId hitPointId context
       1L
-#endif
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidLongParameterListsRule",
+                    Justification = "Most of this gets curried away")>]
+  let doFlushStream postProcess pointProcess own counts format coverageFile outputFile =
+    I.doFlush postProcess pointProcess own counts format coverageFile outputFile
+
+#else
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidLongParameterListsRule",
                     Justification = "Most of this gets curried away")>]
@@ -456,7 +469,6 @@ module internal Counter =
 
     I.doFlush postProcess pointProcess own counts format coverageFile outputFile
 
-#if !RUNNER
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidLongParameterListsRule",
                     Justification = "Most of this gets curried away")>]
@@ -467,7 +479,10 @@ module internal Counter =
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "ald also 'target' is disposed")>]
   let internal doFlushFile postProcess pointProcess own counts format report output =
-    if File.Exists report then
+    let zipped =
+      int (format &&& ReportFormat.Zipped) <> 0
+
+    if not zipped then
       use coverageFile =
         new FileStream(
           report,

@@ -3756,7 +3756,10 @@ module AltCoverTests =
 
       Assert.That(
         CoverageParameters.reportFormat (),
-        Is.EqualTo ReportFormat.NativeJsonWithTracking
+        Is.EqualTo(
+          ReportFormat.NativeJson
+          ||| ReportFormat.WithTracking
+        )
       )
 
       let result = makeJson document
@@ -5479,7 +5482,10 @@ module AltCoverTests =
 
       Assert.That(
         CoverageParameters.reportFormat (),
-        Is.EqualTo ReportFormat.OpenCoverWithTracking
+        Is.EqualTo(
+          ReportFormat.OpenCover
+          ||| ReportFormat.WithTracking
+        )
       )
 
       "Program"
@@ -5626,7 +5632,10 @@ module AltCoverTests =
 
       Assert.That(
         CoverageParameters.reportFormat (),
-        Is.EqualTo ReportFormat.OpenCoverWithTracking
+        Is.EqualTo(
+          ReportFormat.OpenCover
+          ||| ReportFormat.WithTracking
+        )
       )
 
       "Main"
