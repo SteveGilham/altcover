@@ -1328,11 +1328,13 @@ module internal Runner =
                       Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
-      unusedCannotBeUnderscore
+      format
       (file: Stream)
       output
       =
-      ignore unusedCannotBeUnderscore
+      let zipped =
+        int (format &&& ReportFormat.Zipped) <> 0
+
       let flushStart = DateTime.UtcNow
       // do work here
       let jsonText =
@@ -1357,17 +1359,8 @@ module internal Runner =
         NativeJson.serializeToUtf8Bytes json
 
       if Option.isSome output then
-        use outputFile =
-          new FileStream(
-            output.Value,
-            FileMode.OpenOrCreate,
-            FileAccess.Write,
-            FileShare.None,
-            4096,
-            FileOptions.SequentialScan
-          )
+        Zip.save (fun s -> s.Write(encoded, 0, encoded.Length)) output.Value zipped
 
-        outputFile.Write(encoded, 0, encoded.Length)
       else
         file.Seek(0L, SeekOrigin.Begin) |> ignore
         file.SetLength 0L
@@ -1381,16 +1374,24 @@ module internal Runner =
       report
       =
       let reporter (arg: string option) =
-        let (container, file) =
-          Zip.openUpdate report
+        let zipped =
+          int (format &&& ReportFormat.Zipped) <> 0
 
-        try
-          if
-            format = ReportFormat.NativeJson
-            || format = ReportFormat.NativeJsonWithTracking
-          then
-            writeNativeJsonReport hits format file arg
-          else
+        let (container, file) =
+          Zip.openUpdate report zipped
+
+        use container' = container
+        use file' = file
+
+        if format &&& ReportFormat.TrackMask = ReportFormat.NativeJson then
+          writeNativeJsonReport hits format file arg
+        else
+          use outputFile =
+            match arg with
+            | None -> file
+            | _ -> new MemoryStream() :> Stream
+
+          let result =
             AltCover.Counter.doFlushStream
               (postProcess hits format)
               pointProcess
@@ -1398,12 +1399,15 @@ module internal Runner =
               hits
               format
               file
-              arg
-        finally
-          file.Dispose()
+              outputFile
 
-          if container.IsNotNull then
-            container.Dispose()
+          match arg with
+          | None -> ()
+          | Some x ->
+            outputFile.Position <- 0l
+            Zip.save (outputFile.CopyTo) x zipped
+
+          result
 
       reporter
 
@@ -1513,8 +1517,11 @@ module internal Runner =
             )
             |> Seq.iter File.Delete
 
+            let zipped =
+              int (format &&& ReportFormat.Zipped) <> 0
+
             let document =
-              DocumentType.LoadReport format report
+              Zip.openUpdateReport format (Option.defaultValue report output) zipped
 
             J.doSummaries document format result)
           255
