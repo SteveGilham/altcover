@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 30)
+* [BUGFIX] Issue #223 - degenerate source paths with Cobertura output
 
 # 8.8.53 (Habu series release 29)
 * [BUGFIX] Fix summary data for `--outputFile` option

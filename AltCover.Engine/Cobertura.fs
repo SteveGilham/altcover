@@ -41,9 +41,10 @@ module internal Cobertura =
       (attribute: string)
       =
       report.Descendants(tag.X)
-      |> Seq.map (fun s ->
-        s.Attribute(attribute.X).Value
-        |> Path.GetDirectoryName)
+      |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
+      |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
+      |> Seq.map Path.GetDirectoryName
+      |> Seq.filter _.IsNotNull
       |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
       |> Seq.sort
       |> Seq.iter (fun f ->
