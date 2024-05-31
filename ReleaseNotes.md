@@ -3,7 +3,11 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 29)
+# (Habu series release 30)
+* [BUGFIX] Issue #222 - distinguish methods differing only in number of generic parameters (JSON and cobertura in particular, but with small changes for all all output formats)
+* [BUGFIX] Issue #223 - handle degenerate source paths for Cobertura output
+
+# 8.8.53 (Habu series release 29)
 * [BUGFIX] Fix summary data for `--outputFile` option
 * [BUGFIX] Fix interaction of `--zipFile` prepare option and `--outputFile` collect option
 * [BUGFIX] Issue #220 - improve dependency resolution to the GAC

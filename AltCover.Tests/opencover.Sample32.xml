@@ -1,0 +1,137 @@
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Summary numSequencePoints="18" visitedSequencePoints="0" numBranchPoints="7" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" visitedClasses="0" numClasses="4" visitedMethods="0" numMethods="7" minCrapScore="0" maxCrapScore="0" />
+  <Modules>
+    <Module hash="ED-9B-E9-8F-80-E0-E4-DC-D2-EA-37-B8-93-E3-69-AF-3C-3B-2F-FF">
+      <Summary numSequencePoints="18" visitedSequencePoints="0" numBranchPoints="7" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" visitedClasses="0" numClasses="4" visitedMethods="0" numMethods="7" minCrapScore="0" maxCrapScore="0" />
+      <ModulePath>C:\Users\email\Documents\Github\altcover\_Binaries\Sample32\Debug+AnyCPU\net472\Sample32.exe</ModulePath>
+      <ModuleTime>2024-05-14T17:31:22.3694445Z</ModuleTime>
+      <ModuleName>Sample32</ModuleName>
+      <Files>
+        <File uid="1" fullPath="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Program.cs" />
+        <File uid="2" fullPath="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
+      </Files>
+      <Classes>
+        <Class>
+          <Summary numSequencePoints="3" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Sample32.Program</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="3" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663297</MetadataToken>
+              <Name>System.Void Sample32.Program::Main(System.String[])</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="2" ordinal="0" offset="0" sl="8" sc="5" el="8" ec="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="1" ordinal="1" offset="1" sl="9" sc="7" el="9" ec="42" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="0" ordinal="2" offset="12" sl="10" sc="5" el="10" ec="6" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663298</MetadataToken>
+              <Name>System.Void Sample32.Program::.ctor()</Name>
+              <SequencePoints />
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="12" visitedSequencePoints="0" numBranchPoints="3" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="3" minCrapScore="0" maxCrapScore="0" />
+          <FullName>issue222.Class1</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="3" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663300</MetadataToken>
+              <Name>T issue222.Class1::GetService(System.IServiceProvider)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="5" ordinal="0" offset="0" sl="13" sc="5" el="13" ec="6" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="4" ordinal="1" offset="1" sl="14" sc="7" el="14" ec="25" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="3" ordinal="2" offset="13" sl="15" sc="5" el="15" ec="6" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="2" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="4" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663301</MetadataToken>
+              <Name>System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2&lt;System.IServiceProvider,T&gt;)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="9" ordinal="0" offset="0" sl="19" sc="5" el="19" ec="6" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="8" ordinal="1" offset="1" sl="20" sc="7" el="20" ec="59" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="7" ordinal="2" offset="9" sl="21" sc="7" el="21" ec="64" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="6" ordinal="3" offset="47" sl="22" sc="5" el="22" ec="6" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="3" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="5" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="3" minCyclomaticComplexity="3" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663302</MetadataToken>
+              <Name>System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2&lt;System.IServiceProvider,T&gt;)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="14" ordinal="0" offset="0" sl="26" sc="5" el="26" ec="6" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="13" ordinal="1" offset="1" sl="27" sc="7" el="27" ec="59" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="12" ordinal="2" offset="9" sl="28" sc="7" el="28" ec="64" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="11" ordinal="3" offset="47" sl="29" sc="7" el="29" ec="64" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" uspid="10" ordinal="4" offset="85" sl="30" sc="5" el="30" ec="6" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+          <FullName>issue222.Class1/&lt;&gt;c__1`3</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663305</MetadataToken>
+              <Name>T issue222.Class1/&lt;&gt;c__1`3::&lt;AddSingleton&gt;b__1_0(System.IServiceProvider)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="15" ordinal="0" offset="0" sl="21" sc="41" el="21" ec="62" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="2" visitedSequencePoints="0" numBranchPoints="2" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="2" minCrapScore="0" maxCrapScore="0" />
+          <FullName>issue222.Class1/&lt;&gt;c__2`4</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663308</MetadataToken>
+              <Name>T issue222.Class1/&lt;&gt;c__2`4::&lt;AddSingleton&gt;b__2_0(System.IServiceProvider)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="16" ordinal="0" offset="0" sl="28" sc="41" el="28" ec="62" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663309</MetadataToken>
+              <Name>T issue222.Class1/&lt;&gt;c__2`4::&lt;AddSingleton&gt;b__2_1(System.IServiceProvider)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="17" ordinal="0" offset="0" sl="29" sc="41" el="29" ec="62" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+      </Classes>
+    </Module>
+  </Modules>
+</CoverageSession>

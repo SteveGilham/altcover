@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0" branch-rate="1" lines-covered="0" lines-valid="18" branches-covered="0" branches-valid="0" complexity="1" version="8.8.0.0" timestamp="xx">
+  <sources>
+    <source>altcover/Samples/Sample32</source>
+  </sources>
+  <packages>
+    <package name="altcover/_Binaries/sample32/Debug+AnyCPU/net8.0/Sample32.dll" line-rate="0" branch-rate="1" complexity="1">
+      <classes>
+        <class name="Sample32.Program" filename="altcover/Samples/Sample32/Program.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="Main" signature="System.Void (System.String[])" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="0" branch="false" />
+                <line number="9" hits="0" branch="false" />
+                <line number="10" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="0" branch="false" />
+            <line number="9" hits="0" branch="false" />
+            <line number="10" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="issue222.Class1" filename="altcover/Samples/Sample32/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="AddSingleton`3" signature="System.Void &lt;T1,T2,T&gt;(issue222.IServiceCollection,System.Func`2)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="19" hits="0" branch="false" />
+                <line number="20" hits="0" branch="false" />
+                <line number="21" hits="0" branch="false" />
+                <line number="22" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="AddSingleton`4" signature="System.Void &lt;T1,T2,T3,T&gt;(issue222.IServiceCollection,System.Func`2)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="26" hits="0" branch="false" />
+                <line number="27" hits="0" branch="false" />
+                <line number="28" hits="0" branch="false" />
+                <line number="29" hits="0" branch="false" />
+                <line number="30" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="GetService" signature="T &lt;T&gt;(System.IServiceProvider)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="13" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
+                <line number="15" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="13" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
+            <line number="15" hits="0" branch="false" />
+            <line number="19" hits="0" branch="false" />
+            <line number="20" hits="0" branch="false" />
+            <line number="21" hits="0" branch="false" />
+            <line number="22" hits="0" branch="false" />
+            <line number="26" hits="0" branch="false" />
+            <line number="27" hits="0" branch="false" />
+            <line number="28" hits="0" branch="false" />
+            <line number="29" hits="0" branch="false" />
+            <line number="30" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="issue222.Class1+&lt;&gt;c__1`3" filename="altcover/Samples/Sample32/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;AddSingleton&gt;b__1_0" signature="T (System.IServiceProvider)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="21" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="21" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="issue222.Class1+&lt;&gt;c__2`4" filename="altcover/Samples/Sample32/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;AddSingleton&gt;b__2_0" signature="T (System.IServiceProvider)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="28" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="&lt;AddSingleton&gt;b__2_1" signature="T (System.IServiceProvider)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="29" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="28" hits="0" branch="false" />
+            <line number="29" hits="0" branch="false" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

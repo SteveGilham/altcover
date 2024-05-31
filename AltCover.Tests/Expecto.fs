@@ -243,8 +243,12 @@ module ExpectoTestManifest =
        "Runner.JsonShouldGeneratePlausibleLcov"
        Tests.AltCoverRunnerTests.JsonWithPartialsShouldGeneratePlausibleLcov,
        "Runner.JsonWithPartialsShouldGeneratePlausibleLcov"
+       Tests.AltCoverRunnerTests.JsonWithOverloadsShouldGeneratePlausibleLcov,
+       "Runner.JsonWithOverloadsShouldGeneratePlausibleLcov"
        Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcov,
        "Runner.NCoverShouldGeneratePlausibleLcov"
+       Tests.AltCoverRunnerTests.NCoverWithOverloadsShouldGeneratePlausibleLcov,
+       "Runner.NCoverWithOverloadsShouldGeneratePlausibleLcov"
        Tests.AltCoverRunnerTests.NCoverWithPartialsShouldGeneratePlausibleLcov,
        "Runner.NCoverWithPartialsShouldGeneratePlausibleLcov"
        Tests.AltCoverRunnerTests.NCoverShouldGenerateMorePlausibleLcov,
@@ -266,6 +270,8 @@ module ExpectoTestManifest =
        "Runner.NCoverShouldGeneratePlausibleCobertura"
        Tests.AltCoverRunnerTests.NCoverWithPartialsShouldGeneratePlausibleCobertura,
        "Runner.NCoverWithPartialsShouldGeneratePlausibleCobertura"
+       Tests.AltCoverRunnerTests.NCoverWithOverloadsShouldGeneratePlausibleCobertura,
+       "Runner.NCoverWithOverloadsShouldGeneratePlausibleCobertura"
        Tests.AltCoverRunnerTests.NCoverShouldGenerateMorePlausibleCobertura,
        "Runner.NCoverShouldGenerateMorePlausibleCobertura"
        Tests.AltCoverRunnerTests.DegenerateCasesShouldNotGenerateCobertura,
@@ -274,6 +280,8 @@ module ExpectoTestManifest =
        "Runner.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName"
        Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleCobertura,
        "Runner.OpenCoverShouldGeneratePlausibleCobertura"
+       Tests.AltCoverRunnerTests.OpenCoverWithOverloadsShouldGeneratePlausibleCobertura,
+       "Runner.OpenCoverWithOverloadsShouldGeneratePlausibleCobertura"
        Tests.AltCoverRunnerTests.OpenCoverWithPartialsShouldGeneratePlausibleCobertura,
        "Runner.OpenCoverWithPartialsShouldGeneratePlausibleCobertura"
        Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported,
@@ -426,18 +434,24 @@ module ExpectoTestManifest =
        Tests.AltCoverTests.MethodNamesAreExtracted, "Tests.MethodNamesAreExtracted"
        Tests.AltCoverTests.FullMethodNamesAreExtracted,
        "Tests.FullMethodNamesAreExtracted"
+       Tests.AltCoverTests.ShouldGenerateExpectedNCoverReportWithOverloads,
+       "Tests.ShouldGenerateExpectedNCoverReportWithOverloads"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNet,
        "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet,
        "Tests.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbeds,
        "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
+       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithOverloads,
+       "Tests.ShouldGenerateExpectedXmlReportWithOverloads"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithPartials,
        "Tests.ShouldGenerateExpectedXmlReportFromWithPartials"
        Tests.AltCoverTests.ShouldGenerateExpectedJsonReportFromDotNet,
        "Tests.ShouldGenerateExpectedJsonReportFromDotNet"
        Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithEmbeds,
        "Tests.ShouldGenerateExpectedJsonReportWithEmbeds"
+       Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithOverloads,
+       "Tests.ShouldGenerateExpectedJsonReportWithOverloads"
        Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithPartials,
        "Tests.ShouldGenerateExpectedJsonReportWithPartials"
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly,

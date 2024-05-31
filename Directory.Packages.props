@@ -40,7 +40,7 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="5.23.0" />
     <PackageVersion Include="Fake.Tools.git" Version="5.23.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="8.0.200" />
+    <PackageVersion Include="FSharp.Core" Version="8.0.300" />
     <PackageVersion Include="FsUnit" Version="6.0.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
@@ -62,7 +62,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="3.2.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.6.133" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="NuGet.CommandLine" Version="6.9.1" />
+    <PackageVersion Include="NuGet.CommandLine" Version="6.10.0" />
     <PackageVersion Include="NUnit" Version="4.1.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
@@ -79,15 +79,15 @@
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <PackageVersion Include="Unquote" Version="7.0.0" />
     <PackageVersion Include="XmlDoc2CmdletDoc" Version="0.4.0-dotnetcore0001" />
-    <PackageVersion Include="xunit" Version="2.7.0" />
+    <PackageVersion Include="xunit" Version="2.8.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
-    <PackageVersion Include="xunit.analyzers" Version="1.11.0" />
-    <PackageVersion Include="xunit.assert" Version="2.7.0" />
-    <PackageVersion Include="xunit.core" Version="2.7.0" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.7.0" />
-    <PackageVersion Include="xunit.extensibility.execution" Version="2.7.0" />
-    <PackageVersion Include="xunit.runner.console" Version="2.7.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
+    <PackageVersion Include="xunit.analyzers" Version="1.13.0" />
+    <PackageVersion Include="xunit.assert" Version="2.8.0" />
+    <PackageVersion Include="xunit.core" Version="2.8.0" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.8.0" />
+    <PackageVersion Include="xunit.extensibility.execution" Version="2.8.0" />
+    <PackageVersion Include="xunit.runner.console" Version="2.8.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.0" />
     <PackageVersion Include="YoloDev.Expecto.TestSdk" Version="0.14.3" />
   </ItemGroup>
 </Project>

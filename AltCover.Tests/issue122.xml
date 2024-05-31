@@ -21,6 +21,9 @@
       <ModuleName>Sample1</ModuleName>
       <Files>
         <File uid="1" fullPath="altcover/Sample1/Program.cs" altcover.embed="hU9NS8NAED0nkP/wzKnVkgavRT3Uk6gIDRQRD2ucJkuTnTC7SQjS/+5mq+DNwwzDvI9501ttKuwm66jdJHESr9dwZB064UpUGxYHFgh1LA4VGRLlNJuZbFRLtlMloeC+rAsvTOKvJI60cSRGNSgbZS1efs2iGYw60YNyBOu8U4mB9SeelDYL68THeXuHksouZ2rgR4MSGB5xg3uvK3RL2TOPm4DpAxYey17Jk25xned5UP5Ioy0byw1le9GOHrWhRbqvSQjaop0gXB7Jv6vK4x1SXGEXMmQP7POkl+nqnGV5PnYKnRpL/5woRjJOk6ux9UMv0wofPF2kf33m5uv0DQ==" />
+        <File uid="2" fullPath="/" />
+        <File uid="3" fullPath="C:\" />
+        <File uid="4" fullPath="" />
       </Files>
       <Classes>
         <Class>
@@ -61,23 +64,23 @@
           </Methods>
         </Class>
       </Classes>
-        <Class>
-          <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-          <FullName>&lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1</FullName>
-          <Methods>
-            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
-              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100668877</MetadataToken>
-              <Name>TKey &lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1::Invoke(System.Collections.Generic.KeyValuePair`2&lt;TKey,TValue&gt;)</Name>
-              <FileRef uid="1" />
-              <SequencePoints>
-                <SequencePoint vc="0" uspid="8093" ordinal="0" offset="0" sl="669" sc="45" el="669" ec="52" bec="0" bev="0" fileid="1" />
-              </SequencePoints>
-              <BranchPoints />
-              <MethodPoint xsi:type="SequencePoint" vc="0" uspid="8093" ordinal="0" offset="0" sl="669" sc="45" el="669" ec="52" bec="0" bev="0" fileid="1" />
-            </Method>
-          </Methods>
-        </Class>
+      <Class>
+        <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
+        <FullName>&lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1</FullName>
+        <Methods>
+          <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
+            <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
+            <MetadataToken>100668877</MetadataToken>
+            <Name>TKey &lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1::Invoke(System.Collections.Generic.KeyValuePair`2&lt;TKey,TValue&gt;)</Name>
+            <FileRef uid="1" />
+            <SequencePoints>
+              <SequencePoint vc="0" uspid="8093" ordinal="0" offset="0" sl="669" sc="45" el="669" ec="52" bec="0" bev="0" fileid="1" />
+            </SequencePoints>
+            <BranchPoints />
+            <MethodPoint xsi:type="SequencePoint" vc="0" uspid="8093" ordinal="0" offset="0" sl="669" sc="45" el="669" ec="52" bec="0" bev="0" fileid="1" />
+          </Method>
+        </Methods>
+      </Class>
     </Module>
   </Modules>
 </CoverageSession>

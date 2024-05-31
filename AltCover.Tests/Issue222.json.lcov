@@ -1,0 +1,41 @@
+TN: Sample32
+SF:C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs
+FN:13,T issue222.Class1::GetService(System.IServiceProvider)
+FN:19,System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)
+FN:26,System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)
+FNDA:0,T issue222.Class1::GetService(System.IServiceProvider)
+FNDA:0,System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)
+FNDA:0,System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)
+FNF:3
+FNH:0
+BRF:0
+BRH:0
+DA:13,0
+DA:14,0
+DA:15,0
+DA:19,0
+DA:20,0
+DA:21,0
+DA:22,0
+DA:26,0
+DA:27,0
+DA:28,0
+DA:29,0
+DA:30,0
+LH:0
+LF:12
+end_of_record
+TN: Sample32
+SF:C:\Users\email\Documents\Github\altcover\Samples\Sample32\Program.cs
+FN:8,System.Void Sample32.Program::Main(System.String[])
+FNDA:0,System.Void Sample32.Program::Main(System.String[])
+FNF:1
+FNH:0
+BRF:0
+BRH:0
+DA:8,0
+DA:9,0
+DA:10,0
+LH:0
+LF:3
+end_of_record

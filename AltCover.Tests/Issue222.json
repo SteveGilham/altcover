@@ -1,0 +1,217 @@
+{
+ "Sample32.dll": {
+   "C:\\Users\\email\\Documents\\Github\\altcover\\Samples\\Sample32\\Class1.cs": {
+     "issue222.Class1": {
+       "T issue222.Class1::GetService(System.IServiceProvider)": {
+         "Lines": {
+           "13": 0,
+           "14": 0,
+           "15": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 5,
+            "EL": 15,
+            "EC": 6,
+            "Offset": 13,
+            "Id": 3
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 7,
+            "EL": 14,
+            "EC": 25,
+            "Offset": 1,
+            "Id": 4
+           },
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 5,
+            "EL": 13,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 5
+           }
+          ]
+        },
+       "System.Void issue222.Class1::AddSingleton\u00603(issue222.IServiceCollection,System.Func\u00602\u003CSystem.IServiceProvider,T\u003E)": {
+         "Lines": {
+           "19": 0,
+           "20": 0,
+           "21": 0,
+           "22": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 5,
+            "EL": 22,
+            "EC": 6,
+            "Offset": 47,
+            "Id": 6
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 7,
+            "EL": 21,
+            "EC": 64,
+            "Offset": 9,
+            "Id": 7
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 7,
+            "EL": 20,
+            "EC": 59,
+            "Offset": 1,
+            "Id": 8
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 5,
+            "EL": 19,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 9
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 41,
+            "EL": 21,
+            "EC": 62,
+            "Offset": 0,
+            "Id": 15
+           }
+          ]
+        },
+       "System.Void issue222.Class1::AddSingleton\u00604(issue222.IServiceCollection,System.Func\u00602\u003CSystem.IServiceProvider,T\u003E)": {
+         "Lines": {
+           "26": 0,
+           "27": 0,
+           "28": 0,
+           "29": 0,
+           "30": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 30,
+            "SC": 5,
+            "EL": 30,
+            "EC": 6,
+            "Offset": 85,
+            "Id": 10
+           },
+           {
+            "VC": 0,
+            "SL": 29,
+            "SC": 7,
+            "EL": 29,
+            "EC": 64,
+            "Offset": 47,
+            "Id": 11
+           },
+           {
+            "VC": 0,
+            "SL": 28,
+            "SC": 7,
+            "EL": 28,
+            "EC": 64,
+            "Offset": 9,
+            "Id": 12
+           },
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 7,
+            "EL": 27,
+            "EC": 59,
+            "Offset": 1,
+            "Id": 13
+           },
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 5,
+            "EL": 26,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 14
+           },
+           {
+            "VC": 0,
+            "SL": 28,
+            "SC": 41,
+            "EL": 28,
+            "EC": 62,
+            "Offset": 0,
+            "Id": 16
+           },
+           {
+            "VC": 0,
+            "SL": 29,
+            "SC": 41,
+            "EL": 29,
+            "EC": 62,
+            "Offset": 0,
+            "Id": 17
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\email\\Documents\\Github\\altcover\\Samples\\Sample32\\Program.cs": {
+     "Sample32.Program": {
+       "System.Void Sample32.Program::Main(System.String[])": {
+         "Lines": {
+           "8": 0,
+           "9": 0,
+           "10": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 5,
+            "EL": 10,
+            "EC": 6,
+            "Offset": 12,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 7,
+            "EL": 9,
+            "EC": 42,
+            "Offset": 1,
+            "Id": 1
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 5,
+            "EL": 8,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 2
+           }
+          ]
+        }
+      }
+    }
+  }
+}
