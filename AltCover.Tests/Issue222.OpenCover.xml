@@ -4,12 +4,12 @@
   <Modules>
     <Module hash="8B-B7-D6-7D-96-99-3E-4C-D0-CB-62-64-BC-F6-2B-DB-28-F9-AF-B2">
       <Summary numSequencePoints="18" visitedSequencePoints="0" numBranchPoints="7" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" visitedClasses="0" numClasses="4" visitedMethods="0" numMethods="7" minCrapScore="0" maxCrapScore="0" />
-      <ModulePath>C:\Users\email\Documents\Github\altcover\_Binaries\sample32\Debug+AnyCPU\net8.0\Sample32.dll</ModulePath>
+      <ModulePath>C:/Users/email/Documents/Github/altcover/_Binaries/sample32/Debug+AnyCPU/net8.0/Sample32.dll</ModulePath>
       <ModuleTime>2024-05-31T08:47:34.3615168Z</ModuleTime>
       <ModuleName>Sample32</ModuleName>
       <Files>
-        <File uid="1" fullPath="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Program.cs" />
-        <File uid="2" fullPath="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
+        <File uid="1" fullPath="altcover/Samples/Sample32/Program.cs" />
+        <File uid="2" fullPath="altcover/Samples/Sample32/Class1.cs" />
       </Files>
       <Classes>
         <Class>

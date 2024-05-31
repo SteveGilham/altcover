@@ -1,5 +1,5 @@
 TN: Sample32, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-SF:C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs
+SF:altcover/Samples/Sample32/Class1.cs
 FN:13,T issue222.Class1.GetService<T>(System.IServiceProvider)
 FN:19,System.Void issue222.Class1.AddSingleton<T1,T2,T>(issue222.IServiceCollection,System.Func`2)
 FN:21,T issue222.Class1+<>c__1`3.<AddSingleton>b__1_0(System.IServiceProvider)
@@ -32,7 +32,7 @@ LH:0
 LF:12
 end_of_record
 TN: Sample32, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-SF:C:\Users\email\Documents\Github\altcover\Samples\Sample32\Program.cs
+SF:altcover/Samples/Sample32/Program.cs
 FN:8,System.Void Sample32.Program.Main(System.String[])
 FNDA:0,System.Void Sample32.Program.Main(System.String[])
 FNF:1
