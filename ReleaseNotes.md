@@ -5,7 +5,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 30)
 * [BUGFIX] Issue #222 - distinguish methods differeing only in number of generic parameters (JSON and cobertura in particular, but with small changes for all all output formats)
-* [BUGFIX] Issue #223 - degenerate source paths with Cobertura output
+* [BUGFIX] Issue #223 - handle degenerate source paths for Cobertura output
 
 # 8.8.53 (Habu series release 29)
 * [BUGFIX] Fix summary data for `--outputFile` option
