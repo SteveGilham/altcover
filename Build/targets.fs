@@ -4342,6 +4342,7 @@ module Targets =
          "_Packaging.fake",
          "./_Generated/altcover.fake.nuspec",
          "altcover.fake") ]
+      |> List.filter (fun (_, _, _, _, p) -> p.Equals("altcover.visualizer") |> not)
       |> List.iter (fun (files, dependencies, output, nuspec, project) ->
         let outputPath = "./" + output
         let workingDir = "./_Binaries/" + output
