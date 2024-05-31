@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
-<coverage profilerVersion="AltCover 8.8.61.33432" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
-  <module moduleId="2c758bcc-6e56-459a-b5ee-2880b5d9ae46" name="C:\Users\email\Documents\Github\altcover\_Binaries\sample32\Debug+AnyCPU\net8.0\Sample32.dll" assembly="Sample32" assemblyIdentity="Sample32, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+<coverage profilerVersion="AltCover 8.8.68.14092" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
+  <module moduleId="022ee631-200a-4ec4-890a-b810c827cc4d" name="C:\Users\email\Documents\Github\altcover\_Binaries\sample32\Debug+AnyCPU\net8.0\Sample32.dll" assembly="Sample32" assemblyIdentity="Sample32, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
     <method name="Main" class="Sample32.Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Void Sample32.Program.Main(System.String[])">
       <seqpnt visitcount="0" line="8" column="5" endline="8" endcolumn="6" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Program.cs" />
       <seqpnt visitcount="0" line="9" column="7" endline="9" endcolumn="42" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Program.cs" />
@@ -12,26 +12,26 @@
       <seqpnt visitcount="0" line="14" column="7" endline="14" endcolumn="25" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="15" column="5" endline="15" endcolumn="6" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
     </method>
-    <method name="AddSingleton" class="issue222.Class1" metadataToken="100663301" excluded="false" instrumented="true" fullname="System.Void issue222.Class1.AddSingleton&lt;T1,T2,T&gt;(issue222.IServiceCollection,System.Func`2)">
+    <method name="AddSingleton`3" class="issue222.Class1" metadataToken="100663301" excluded="false" instrumented="true" fullname="System.Void issue222.Class1.AddSingleton&lt;T1,T2,T&gt;(issue222.IServiceCollection,System.Func`2)">
       <seqpnt visitcount="0" line="19" column="5" endline="19" endcolumn="6" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="20" column="7" endline="20" endcolumn="59" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="21" column="7" endline="21" endcolumn="64" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="22" column="5" endline="22" endcolumn="6" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
     </method>
-    <method name="AddSingleton" class="issue222.Class1" metadataToken="100663302" excluded="false" instrumented="true" fullname="System.Void issue222.Class1.AddSingleton&lt;T1,T2,T3,T&gt;(issue222.IServiceCollection,System.Func`2)">
+    <method name="AddSingleton`4" class="issue222.Class1" metadataToken="100663302" excluded="false" instrumented="true" fullname="System.Void issue222.Class1.AddSingleton&lt;T1,T2,T3,T&gt;(issue222.IServiceCollection,System.Func`2)">
       <seqpnt visitcount="0" line="26" column="5" endline="26" endcolumn="6" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="27" column="7" endline="27" endcolumn="59" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="28" column="7" endline="28" endcolumn="64" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="29" column="7" endline="29" endcolumn="64" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
       <seqpnt visitcount="0" line="30" column="5" endline="30" endcolumn="6" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
     </method>
-    <method name="&lt;AddSingleton&gt;b__1_0" class="issue222.Class1+&lt;&gt;c__1`3" metadataToken="100663305" excluded="false" instrumented="true" fullname="issue222.Class1+&lt;&gt;c__1`3+T issue222.Class1+&lt;&gt;c__1`3.&lt;AddSingleton&gt;b__1_0(System.IServiceProvider)">
+    <method name="&lt;AddSingleton&gt;b__1_0" class="issue222.Class1+&lt;&gt;c__1`3" metadataToken="100663305" excluded="false" instrumented="true" fullname="T issue222.Class1+&lt;&gt;c__1`3.&lt;AddSingleton&gt;b__1_0(System.IServiceProvider)">
       <seqpnt visitcount="0" line="21" column="41" endline="21" endcolumn="62" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
     </method>
-    <method name="&lt;AddSingleton&gt;b__2_0" class="issue222.Class1+&lt;&gt;c__2`4" metadataToken="100663308" excluded="false" instrumented="true" fullname="issue222.Class1+&lt;&gt;c__2`4+T issue222.Class1+&lt;&gt;c__2`4.&lt;AddSingleton&gt;b__2_0(System.IServiceProvider)">
+    <method name="&lt;AddSingleton&gt;b__2_0" class="issue222.Class1+&lt;&gt;c__2`4" metadataToken="100663308" excluded="false" instrumented="true" fullname="T issue222.Class1+&lt;&gt;c__2`4.&lt;AddSingleton&gt;b__2_0(System.IServiceProvider)">
       <seqpnt visitcount="0" line="28" column="41" endline="28" endcolumn="62" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
     </method>
-    <method name="&lt;AddSingleton&gt;b__2_1" class="issue222.Class1+&lt;&gt;c__2`4" metadataToken="100663309" excluded="false" instrumented="true" fullname="issue222.Class1+&lt;&gt;c__2`4+T issue222.Class1+&lt;&gt;c__2`4.&lt;AddSingleton&gt;b__2_1(System.IServiceProvider)">
+    <method name="&lt;AddSingleton&gt;b__2_1" class="issue222.Class1+&lt;&gt;c__2`4" metadataToken="100663309" excluded="false" instrumented="true" fullname="T issue222.Class1+&lt;&gt;c__2`4.&lt;AddSingleton&gt;b__2_1(System.IServiceProvider)">
       <seqpnt visitcount="0" line="29" column="41" endline="29" endcolumn="62" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample32\Class1.cs" />
     </method>
   </module>

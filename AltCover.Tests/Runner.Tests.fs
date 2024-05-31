@@ -5659,6 +5659,73 @@ module AltCoverRunnerTests =
       LCov.path.Value <- None
 
   [<Test>]
+  let NCoverWithOverloadsShouldGeneratePlausibleLcov () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find _.EndsWith("Issue222.NCover.xml", StringComparison.Ordinal)
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString() + "/NCover.lcov"
+      )
+
+    LCov.path.Value <- Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      let r =
+        LCov.summary (XML baseline) ReportFormat.NCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      let result = File.ReadAllText unique
+      printfn "%s" result
+
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find _.EndsWith("Issue222.NCover.lcov", StringComparison.Ordinal)
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected
+      )
+    finally
+      LCov.path.Value <- None
+
+  [<Test>]
   let NCoverShouldGenerateMorePlausibleLcov () =
     Runner.init ()
 
@@ -5784,6 +5851,76 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\\", "/")
       //printfn "%s" result
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected
+      )
+    finally
+      LCov.path.Value <- None
+
+  [<Test>]
+  let JsonWithOverloadsShouldGeneratePlausibleLcov () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find _.EndsWith("Issue222.json", StringComparison.Ordinal)
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline =
+      use r = new StreamReader(stream)
+      r.ReadToEnd() |> NativeJson.fromJsonText
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString()
+        + "/JsonWithOverloads.lcov"
+      )
+
+    LCov.path.Value <- Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      let r =
+        LCov.summary (JSON baseline) ReportFormat.NativeJson 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      let result = File.ReadAllText unique
+      printfn "%s" result
+
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find _.EndsWith("Issue222.json.lcov", StringComparison.Ordinal)
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+
       Assert.That(
         result
           .Replace("\r", String.Empty)
@@ -6116,6 +6253,89 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
           .Replace(
             """version="3.0.0.0""",
+            "version=\""
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
+              .Version.ToString()
+          )
+
+      Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+      validate result
+    finally
+      Cobertura.path.Value <- None
+
+  [<Test>]
+  let NCoverWithOverloadsShouldGeneratePlausibleCobertura () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find _.EndsWith("Issue222.NCover.xml", StringComparison.Ordinal)
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString()
+        + "/Issue222.NCover.cobertura"
+      )
+
+    Cobertura.path.Value <- Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      Runner.I.addCoberturaSummary ()
+
+      let summarize =
+        Runner.I.summaries |> Seq.head
+
+      let r =
+        summarize (XML baseline) ReportFormat.NCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+      let result =
+        Regex
+          .Replace(
+            File.ReadAllText unique,
+            """timestamp=\"\d*\">""",
+            """timestamp="xx">"""
+          )
+          .Replace("\\", "/")
+      //printfn "%s" result
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find _.EndsWith("Issue222.NCover.cobertura", StringComparison.Ordinal)
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+          .Replace(
+            """version="8.8.0.0""",
             "version=\""
             + typeof<SummaryFormat>.Assembly
               .GetName()
@@ -6857,6 +7077,89 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
           .Replace(
             """version="8.2.0.0""",
+            "version=\""
+            + typeof<SummaryFormat>.Assembly
+              .GetName()
+              .Version.ToString()
+          )
+
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected,
+        result
+      )
+
+      validate result
+    finally
+      Cobertura.path.Value <- None
+
+  [<Test>]
+  let OpenCoverWithOverloadsShouldGeneratePlausibleCobertura () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find _.EndsWith("Issue222.OpenCover.xml", StringComparison.Ordinal)
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString()
+        + "/OpenCoverWithOverloads.cobertura"
+      )
+
+    Cobertura.path.Value <- Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      let r =
+        Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+      let result =
+        Regex.Replace(
+          File.ReadAllText unique,
+          """timestamp=\"\d*\">""",
+          """timestamp="xx">"""
+        )
+      //printfn "%s" result
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find _.EndsWith("Issue222.OpenCover.cobertura", StringComparison.Ordinal)
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+          .Replace(
+            """version="3.0.0.0""",
             "version=\""
             + typeof<SummaryFormat>.Assembly
               .GetName()

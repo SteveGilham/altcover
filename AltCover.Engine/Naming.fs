@@ -83,7 +83,12 @@ module internal Naming =
         String.Empty
 
     let return' =
-      I.fullTypeRefName def.ReturnType
+      let r = def.ReturnType
+
+      if r.ContainsGenericParameter then
+        r.FullName
+      else
+        I.fullTypeRefName r
 
     String.Join(
       String.Empty,

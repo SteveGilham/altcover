@@ -3403,7 +3403,7 @@ module AltCoverTests =
         "System.Void AltCover.Sample3.Class3+Class4.set_Sample(System.Int32)"
         "System.String[] AltCover.Sample3.Class3+Class4.get_modules()"
         "System.Void AltCover.Sample3.Class3+Class4.set_modules(System.String[])"
-        "System.Collections.Generic.List`1 AltCover.Sample3.Class3+Class4.ToList<T>(T)"
+        "System.Collections.Generic.List`1<T> AltCover.Sample3.Class3+Class4.ToList<T>(T)"
         "System.Void AltCover.Sample3.Class3+Class4.#ctor()"
         "System.String AltCover.Recorder.InstrumentationAttribute.get_Assembly()"
         "System.String AltCover.Recorder.InstrumentationAttribute.get_Configuration()"
@@ -3639,6 +3639,71 @@ module AltCoverTests =
       let prev = lead.PreviousNode :?> XElement
       Assert.That(prev, Is.Not.Null)
       Assert.That(prev.Name, Is.EqualTo("method".X))
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedNCoverReportWithOverloads () =
+    let visitor, document =
+      Report.reportGenerator ()
+
+    let path = sample32path
+
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      // printfn "%A" (makeDocument document)
+
+      let doc = makeDocument document
+
+      let results =
+        doc.Descendants("method".X)
+        |> Seq.map _.Attribute("name".X).Value
+        |> Seq.toList
+
+      //printfn "%A" results
+
+      Assert.That(results |> List.length, Is.EqualTo 7)
+      Assert.That(results |> List.distinct |> List.length, Is.EqualTo 7)
+
+      let expected =
+        [ "Main"
+          "GetService"
+          "AddSingleton`3"
+          "AddSingleton`4"
+          "<AddSingleton>b__1_0"
+          "<AddSingleton>b__2_0"
+          "<AddSingleton>b__2_1" ]
+
+      Assert.That(results, Is.EquivalentTo expected)
+
+      let results =
+        doc.Descendants("method".X)
+        |> Seq.map _.Attribute("fullname".X).Value
+        |> Seq.toList
+
+      let expected =
+        [ "T issue222.Class1+<>c__1`3.<AddSingleton>b__1_0(System.IServiceProvider)"
+          "T issue222.Class1+<>c__2`4.<AddSingleton>b__2_0(System.IServiceProvider)"
+          "T issue222.Class1+<>c__2`4.<AddSingleton>b__2_1(System.IServiceProvider)"
+          "System.Void issue222.Class1.AddSingleton<T1,T2,T>(issue222.IServiceCollection,System.Func`2)"
+          "System.Void issue222.Class1.AddSingleton<T1,T2,T3,T>(issue222.IServiceCollection,System.Func`2)"
+          "System.Void Sample32.Program.Main(System.String[])"
+          "T issue222.Class1.GetService<T>(System.IServiceProvider)" ]
+
+      Assert.That(results, Is.EquivalentTo expected)
 
     finally
       CoverageParameters.nameFilters.Clear()
