@@ -26,7 +26,7 @@ type internal OpenCoverContext =
     Excluded: Exclusion
     Files: Map<string, int>
     Embeds: Map<string, string>
-    Names: Map<string, (MethodReference * XElement)>
+    Names: Map<string, (MethodDefinition * XElement)>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -48,7 +48,7 @@ type internal OpenCoverContext =
       Excluded = Nothing
       Files = Map.empty<string, int>
       Embeds = Map.empty<string, string>
-      Names = Map.empty<string, (MethodReference * XElement)>
+      Names = Map.empty<string, (MethodDefinition * XElement)>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -226,6 +226,7 @@ module internal OpenCover =
               methods :: s.Stack
             else
               s.Stack
+          Names = Map.empty<string, (MethodDefinition * XElement)>
           Excluded = if instrumented then Nothing else ByType
           ClassSeq = 0
           ClassBr = 0
@@ -253,7 +254,7 @@ module internal OpenCover =
          XAttribute("crapScore".X, 0)
        ))
 
-    let addMethodContent (element: XElement) (methodDef: MethodDefinition) instrumented =
+    let addMethodContent names (element: XElement) (methodDef: MethodDefinition) instrumented =
       element.Add(summary ())
 
       element.Add(
@@ -264,6 +265,17 @@ module internal OpenCover =
 
       let name = XElement("Name".X, baseName)
 
+      let newNames = match Map.tryFind baseName names with
+                     | None -> Map.add baseName (methodDef, name) names
+                     | Some (def, xml) ->
+                       let update = sprintf "`%d(" def.GenericParameters.Count
+                       xml.Value <- baseName.Replace("(", update)
+                       let local = sprintf "`%d(" methodDef.GenericParameters.Count
+                       name.Value <- baseName.Replace("(", local)
+                       names
+                       |> Map.add xml.Value (def, xml)
+                       |> Map.add name.Value (methodDef, name)
+
       element.Add(name)
 
       if instrumented then
@@ -273,7 +285,7 @@ module internal OpenCover =
       element.Add(seqpnts)
       element.Add(XElement("BranchPoints".X))
       element.Add(XElement("MethodPoint".X))
-      seqpnts
+      (seqpnts, newNames)
 
     let visitMethod (s: OpenCoverContext) (methodDef: MethodDefinition) included =
       if
@@ -289,10 +301,11 @@ module internal OpenCover =
         let head = s.Stack |> Seq.head
         head.Add element
 
-        let seqpnts =
-          addMethodContent element methodDef instrumented
+        let (seqpnts, names) =
+          addMethodContent s.Names element methodDef instrumented
 
         { s with
+            Names = names
             Stack =
               if instrumented then
                 seqpnts :: s.Stack
