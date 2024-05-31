@@ -749,6 +749,11 @@ module internal OpenCover =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/handleOrdinals@452-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/handleOrdinals@471-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.OpenCover/addMethodContent@258::Invoke(Microsoft.FSharp.Collections.FSharpMap`2<System.String,System.Tuple`2<Mono.Cecil.MethodDefinition,System.Xml.Linq.XElement>>,System.Xml.Linq.XElement,Mono.Cecil.MethodDefinition,System.Boolean)",
+                            Justification = "not netstandard2.0")>]
 ()
