@@ -4342,6 +4342,7 @@ module Targets =
          "_Packaging.fake",
          "./_Generated/altcover.fake.nuspec",
          "altcover.fake") ]
+      |> List.filter (fun (_, _, _, _, p) -> p.Equals("altcover.visualizer") |> not)
       |> List.iter (fun (files, dependencies, output, nuspec, project) ->
         let outputPath = "./" + output
         let workingDir = "./_Binaries/" + output
@@ -8153,6 +8154,7 @@ module Targets =
 
       let c2expect =
         [ "Samples/Sample20/Reports/Cobertura_altcover.xml"
+          "Samples/Sample32/coverlet.cobertura.6.0.2.xml"
           "Samples/Sample20/Reports/Cobertura_coverlet.xml" ]
         |> List.map Path.getFullName
 
@@ -8218,6 +8220,7 @@ module Targets =
           "Samples/Sample16/Test/_Reports/solution.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test2.xml"
           // coverlet
+          "Samples/Sample32/coverlet.opencover.6.0.2.xml"
           "AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
           "AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
           "__AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"

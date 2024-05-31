@@ -90,12 +90,18 @@ module AltCoverTests =
 
   let sample8path =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net8.0/Sample8.dll")
+
+  let sample32path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net8.0/Sample32.dll")
 #else
   let sample4path =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
   let sample8path =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
+
+  let sample32path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net472/Sample32.exe")
 #endif
   let recorderSnk =
     typeof<AltCover.Node>.Assembly
@@ -3399,7 +3405,7 @@ module AltCoverTests =
         "System.Void AltCover.Sample3.Class3+Class4.set_Sample(System.Int32)"
         "System.String[] AltCover.Sample3.Class3+Class4.get_modules()"
         "System.Void AltCover.Sample3.Class3+Class4.set_modules(System.String[])"
-        "System.Collections.Generic.List`1 AltCover.Sample3.Class3+Class4.ToList<T>(T)"
+        "System.Collections.Generic.List`1<T> AltCover.Sample3.Class3+Class4.ToList<T>(T)"
         "System.Void AltCover.Sample3.Class3+Class4.#ctor()"
         "System.String AltCover.Recorder.InstrumentationAttribute.get_Assembly()"
         "System.String AltCover.Recorder.InstrumentationAttribute.get_Configuration()"
@@ -3641,6 +3647,119 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
+  let ShouldGenerateExpectedNCoverReportWithOverloads () =
+    let visitor, document =
+      Report.reportGenerator ()
+
+    let path = sample32path
+
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      // printfn "%A" (makeDocument document)
+
+      let doc = makeDocument document
+
+      let results =
+        doc.Descendants("method".X)
+        |> Seq.map _.Attribute("name".X).Value
+        |> Seq.toList
+
+      //printfn "%A" results
+
+      Assert.That(results |> List.length, Is.EqualTo 7)
+      Assert.That(results |> List.distinct |> List.length, Is.EqualTo 7)
+
+      let expected =
+        [ "Main"
+          "GetService"
+          "AddSingleton`3"
+          "AddSingleton`4"
+          "<AddSingleton>b__1_0"
+          "<AddSingleton>b__2_0"
+          "<AddSingleton>b__2_1" ]
+
+      Assert.That(results, Is.EquivalentTo expected)
+
+      let results =
+        doc.Descendants("method".X)
+        |> Seq.map _.Attribute("fullname".X).Value
+        |> Seq.toList
+
+      let expected =
+        [ "T issue222.Class1+<>c__1`3.<AddSingleton>b__1_0(System.IServiceProvider)"
+          "T issue222.Class1+<>c__2`4.<AddSingleton>b__2_0(System.IServiceProvider)"
+          "T issue222.Class1+<>c__2`4.<AddSingleton>b__2_1(System.IServiceProvider)"
+          "System.Void issue222.Class1.AddSingleton<T1,T2,T>(issue222.IServiceCollection,System.Func`2)"
+          "System.Void issue222.Class1.AddSingleton<T1,T2,T3,T>(issue222.IServiceCollection,System.Func`2)"
+          "System.Void Sample32.Program.Main(System.String[])"
+          "T issue222.Class1.GetService<T>(System.IServiceProvider)" ]
+
+      Assert.That(results, Is.EquivalentTo expected)
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithOverloads () =
+    let visitor, document =
+      OpenCover.reportGenerator ()
+
+    let path = sample32path
+
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      // printfn "%A" (makeDocument document)
+
+      let results =
+        (makeDocument document).Descendants("Name".X)
+        |> Seq.map _.Value
+        |> Seq.toList
+
+      //printfn "%A" results
+
+      Assert.That(results |> List.length, Is.EqualTo 8)
+      Assert.That(results |> List.distinct |> List.length, Is.EqualTo 8)
+
+      let expected =
+        [ "System.Void Sample32.Program::Main(System.String[])"
+          "System.Void Sample32.Program::.ctor()"
+          "T issue222.Class1::GetService(System.IServiceProvider)"
+          "System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "T issue222.Class1/<>c__1`3::<AddSingleton>b__1_0(System.IServiceProvider)"
+          "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_0(System.IServiceProvider)"
+          "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_1(System.IServiceProvider)" ]
+
+      Assert.That(results, Is.EquivalentTo expected)
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
   let ShouldGenerateExpectedXmlReportWithPartials () =
     let visitor, document =
       Report.reportGenerator ()
@@ -3800,6 +3919,56 @@ module AltCoverTests =
           .Trim([| '\u00FF' |]),
         Is.EqualTo expected
       )
+    finally
+      CoverageParameters.trackingNames.Clear()
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedJsonReportWithOverloads () =
+    CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+
+    try
+      let visitor, document =
+        Main.I.selectReportGenerator ()
+
+      let path = sample32path
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      Assert.That(CoverageParameters.reportFormat (), Is.EqualTo(ReportFormat.NativeJson))
+
+      let result = makeJson document
+
+      let json =
+        result |> Manatee.Json.JsonValue.Parse
+
+      let s1 =
+        json.Object |> Seq.map _.Value |> Seq.toList
+
+      let collapse =
+        List.collect (fun (v: Manatee.Json.JsonValue) -> v.Object |> Seq.toList)
+        >> List.map _.Value
+
+      let key =
+        List.collect (fun (v: Manatee.Json.JsonValue) -> v.Object |> Seq.toList)
+        >> List.map _.Key
+
+      let s4 = s1 |> collapse |> collapse |> key
+
+      let expected =
+        [ "T issue222.Class1::GetService(System.IServiceProvider)"
+          "System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "System.Void Sample32.Program::Main(System.String[])" ]
+
+      Assert.That(s4, Is.EquivalentTo expected)
+
     finally
       CoverageParameters.trackingNames.Clear()
       CoverageParameters.nameFilters.Clear()

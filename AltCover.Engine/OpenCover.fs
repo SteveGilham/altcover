@@ -26,6 +26,7 @@ type internal OpenCoverContext =
     Excluded: Exclusion
     Files: Map<string, int>
     Embeds: Map<string, string>
+    Names: Map<string, (MethodDefinition * XElement)>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -47,6 +48,7 @@ type internal OpenCoverContext =
       Excluded = Nothing
       Files = Map.empty<string, int>
       Embeds = Map.empty<string, string>
+      Names = Map.empty<string, (MethodDefinition * XElement)>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -224,6 +226,7 @@ module internal OpenCover =
               methods :: s.Stack
             else
               s.Stack
+          Names = Map.empty<string, (MethodDefinition * XElement)>
           Excluded = if instrumented then Nothing else ByType
           ClassSeq = 0
           ClassBr = 0
@@ -231,7 +234,7 @@ module internal OpenCover =
 
     let boolString b = if b then "true" else "false"
 
-    let methodElement (methodDef: MethodDefinition) =
+    let methodElement (s: OpenCoverContext) (methodDef: MethodDefinition) =
       let cc =
         Gendarme.cyclomaticComplexity methodDef
 
@@ -251,14 +254,41 @@ module internal OpenCover =
          XAttribute("crapScore".X, 0)
        ))
 
-    let addMethodContent (element: XElement) (methodDef: MethodDefinition) instrumented =
+    let addMethodContent
+      names
+      (element: XElement)
+      (methodDef: MethodDefinition)
+      instrumented
+      =
       element.Add(summary ())
 
       element.Add(
         XElement("MetadataToken".X, methodDef.MetadataToken.ToUInt32().ToString())
       )
 
-      element.Add(XElement("Name".X, methodDef.FullName))
+      let baseName = methodDef.FullName
+
+      let name = XElement("Name".X, baseName)
+
+      let newNames =
+        match Map.tryFind baseName names with
+        | None -> Map.add baseName (methodDef, name) names
+        | Some(def, xml) ->
+          let update =
+            sprintf "`%d(" def.GenericParameters.Count
+
+          xml.Value <- baseName.Replace("(", update)
+
+          let local =
+            sprintf "`%d(" methodDef.GenericParameters.Count
+
+          name.Value <- baseName.Replace("(", local)
+
+          names
+          |> Map.add xml.Value (def, xml)
+          |> Map.add name.Value (methodDef, name)
+
+      element.Add(name)
 
       if instrumented then
         element.Add(XElement("FileRef".X))
@@ -267,7 +297,7 @@ module internal OpenCover =
       element.Add(seqpnts)
       element.Add(XElement("BranchPoints".X))
       element.Add(XElement("MethodPoint".X))
-      seqpnts
+      (seqpnts, newNames)
 
     let visitMethod (s: OpenCoverContext) (methodDef: MethodDefinition) included =
       if
@@ -275,7 +305,7 @@ module internal OpenCover =
         && included <> Inspections.TrackOnly
       then
         let instrumented = included.IsInstrumented
-        let cc, element = methodElement methodDef
+        let cc, element = methodElement s methodDef
 
         if instrumented then
           element.SetAttributeValue("skippedDueTo".X, "File")
@@ -283,10 +313,11 @@ module internal OpenCover =
         let head = s.Stack |> Seq.head
         head.Add element
 
-        let seqpnts =
-          addMethodContent element methodDef instrumented
+        let (seqpnts, names) =
+          addMethodContent s.Names element methodDef instrumented
 
         { s with
+            Names = names
             Stack =
               if instrumented then
                 seqpnts :: s.Stack
@@ -730,6 +761,12 @@ module internal OpenCover =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/handleOrdinals@452-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/handleOrdinals@483-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.OpenCover/addMethodContent@263::Invoke(Microsoft.FSharp.Collections.FSharpMap`2<System.String,System.Tuple`2<Mono.Cecil.MethodDefinition,System.Xml.Linq.XElement>>,System.Xml.Linq.XElement,Mono.Cecil.MethodDefinition,System.Boolean)",
+                            Justification = "not netstandard2.0")>]
 ()

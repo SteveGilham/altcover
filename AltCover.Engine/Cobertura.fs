@@ -41,9 +41,10 @@ module internal Cobertura =
       (attribute: string)
       =
       report.Descendants(tag.X)
-      |> Seq.map (fun s ->
-        s.Attribute(attribute.X).Value
-        |> Path.GetDirectoryName)
+      |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
+      |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
+      |> Seq.map Path.GetDirectoryName
+      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
       |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
       |> Seq.sort
       |> Seq.iter (fun f ->
@@ -112,15 +113,18 @@ module internal Cobertura =
               let cname = m.Attribute("class".X).Value
               let mname = m.Attribute("name".X).Value
 
+              let indexmname =
+                mname.Split('`') |> Seq.head
+
               let classAt =
                 fn.IndexOf(cname, StringComparison.Ordinal)
 
               let returnType = fn.Substring(0, classAt)
 
               let methodAt =
-                fn.IndexOf(mname, classAt + cname.Length, StringComparison.Ordinal)
+                fn.IndexOf(indexmname, classAt + cname.Length, StringComparison.Ordinal)
 
-              let argsAt = methodAt + mname.Length
+              let argsAt = methodAt + indexmname.Length
               let args = fn.Substring(argsAt)
               let signature = returnType + args
               (mname, signature)

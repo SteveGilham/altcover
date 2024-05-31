@@ -92,10 +92,30 @@ module internal Report =
       (methodDef: MethodDefinition)
       included
       =
+      let vtype = methodDef.DeclaringType
+
+      let vms =
+        vtype.Methods |> Seq.groupBy _.FullName
+
+      let methodName =
+        let full = methodDef.FullName
+
+        let group =
+          vms
+          |> Seq.find (fun (n, x) -> n.Equals(full, StringComparison.Ordinal))
+          |> snd
+          |> Seq.length
+
+        let tentative = methodDef.Name
+
+        match group with
+        | 1 -> tentative
+        | _ -> sprintf "%s`%d" tentative methodDef.GenericParameters.Count
+
       let element =
         XElement(
           "method".X,
-          XAttribute("name".X, methodDef.Name),
+          XAttribute("name".X, methodName),
           // /// Mono.Cecil emits names in the form outer/inner rather than outer+inner
           XAttribute("class".X, Naming.fullTypeName methodDef.DeclaringType),
           XAttribute("metadataToken".X, methodDef.MetadataToken.ToUInt32().ToString()),
