@@ -98,6 +98,8 @@
     <EmbeddedResource Include="issue37.pd_" />
     <EmbeddedResource Include="issue122.xml" />
     <EmbeddedResource Include="issue122.cobertura" />
+    <Content Include="Issue222.json" />
+    <Content Include="Issue222.OpenCover.xml" />
     <EmbeddedResource Include="$(ProjectDir)../_Binaries/AltCover.Recorder/Release+AnyCPU/net20\/AltCover.Recorder.dll">
       <Link>AltCover.Recorder.net20.dll</Link>
     </EmbeddedResource>
