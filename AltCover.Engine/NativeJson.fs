@@ -1297,18 +1297,26 @@ module
 
     let getMethodRecord (s: JsonContext) (doc: string) (record: Cil.Document) =
       let vtype = s.VisibleMethod.DeclaringType
-      let vms = vtype.Methods |> Seq.groupBy _.FullName
+
+      let vms =
+        vtype.Methods |> Seq.groupBy _.FullName
 
       let visibleMethodName =
         let tentative = s.VisibleMethod.FullName
-        let group = vms
-                    |> Seq.find (fun (n, x) -> n.Equals(tentative, StringComparison.Ordinal))
-                    |> snd
-                    |> Seq.length
+
+        let group =
+          vms
+          |> Seq.find (fun (n, x) -> n.Equals(tentative, StringComparison.Ordinal))
+          |> snd
+          |> Seq.length
+
         match group with
         | 1 -> tentative
-        | _ -> let update = sprintf "`%d(" s.VisibleMethod.GenericParameters.Count
-               tentative.Replace("(", update)
+        | _ ->
+          let update =
+            sprintf "`%d(" s.VisibleMethod.GenericParameters.Count
+
+          tentative.Replace("(", update)
 
       let visibleTypeName =
         s.VisibleMethod.DeclaringType.FullName
@@ -1521,7 +1529,8 @@ type internal DocumentType =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
-                            Target = "AltCover.NativeJson/getMethodRecord@1299::Invoke(AltCover.NativeJson/JsonContext,System.String,Mono.Cecil.Cil.Document)",
+                            Target =
+                              "AltCover.NativeJson/getMethodRecord@1299::Invoke(AltCover.NativeJson/JsonContext,System.String,Mono.Cecil.Cil.Document)",
                             Justification = "not at netstandard2.0")>]
 ()
 #endif

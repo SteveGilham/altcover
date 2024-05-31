@@ -254,7 +254,12 @@ module internal OpenCover =
          XAttribute("crapScore".X, 0)
        ))
 
-    let addMethodContent names (element: XElement) (methodDef: MethodDefinition) instrumented =
+    let addMethodContent
+      names
+      (element: XElement)
+      (methodDef: MethodDefinition)
+      instrumented
+      =
       element.Add(summary ())
 
       element.Add(
@@ -265,16 +270,23 @@ module internal OpenCover =
 
       let name = XElement("Name".X, baseName)
 
-      let newNames = match Map.tryFind baseName names with
-                     | None -> Map.add baseName (methodDef, name) names
-                     | Some (def, xml) ->
-                       let update = sprintf "`%d(" def.GenericParameters.Count
-                       xml.Value <- baseName.Replace("(", update)
-                       let local = sprintf "`%d(" methodDef.GenericParameters.Count
-                       name.Value <- baseName.Replace("(", local)
-                       names
-                       |> Map.add xml.Value (def, xml)
-                       |> Map.add name.Value (methodDef, name)
+      let newNames =
+        match Map.tryFind baseName names with
+        | None -> Map.add baseName (methodDef, name) names
+        | Some(def, xml) ->
+          let update =
+            sprintf "`%d(" def.GenericParameters.Count
+
+          xml.Value <- baseName.Replace("(", update)
+
+          let local =
+            sprintf "`%d(" methodDef.GenericParameters.Count
+
+          name.Value <- baseName.Replace("(", local)
+
+          names
+          |> Map.add xml.Value (def, xml)
+          |> Map.add name.Value (methodDef, name)
 
       element.Add(name)
 
@@ -754,6 +766,7 @@ module internal OpenCover =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
-                            Target = "AltCover.OpenCover/addMethodContent@258::Invoke(Microsoft.FSharp.Collections.FSharpMap`2<System.String,System.Tuple`2<Mono.Cecil.MethodDefinition,System.Xml.Linq.XElement>>,System.Xml.Linq.XElement,Mono.Cecil.MethodDefinition,System.Boolean)",
+                            Target =
+                              "AltCover.OpenCover/addMethodContent@258::Invoke(Microsoft.FSharp.Collections.FSharpMap`2<System.String,System.Tuple`2<Mono.Cecil.MethodDefinition,System.Xml.Linq.XElement>>,System.Xml.Linq.XElement,Mono.Cecil.MethodDefinition,System.Boolean)",
                             Justification = "not netstandard2.0")>]
 ()

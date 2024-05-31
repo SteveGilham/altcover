@@ -3677,14 +3677,14 @@ module AltCoverTests =
       Assert.That(results |> List.distinct |> List.length, Is.EqualTo 8)
 
       let expected =
-          ["System.Void Sample32.Program::Main(System.String[])";
-           "System.Void Sample32.Program::.ctor()";
-           "T issue222.Class1::GetService(System.IServiceProvider)";
-           "System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)";
-           "System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)";
-           "T issue222.Class1/<>c__1`3::<AddSingleton>b__1_0(System.IServiceProvider)";
-           "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_0(System.IServiceProvider)";
-           "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_1(System.IServiceProvider)"]
+        [ "System.Void Sample32.Program::Main(System.String[])"
+          "System.Void Sample32.Program::.ctor()"
+          "T issue222.Class1::GetService(System.IServiceProvider)"
+          "System.Void issue222.Class1::AddSingleton`3(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "System.Void issue222.Class1::AddSingleton`4(issue222.IServiceCollection,System.Func`2<System.IServiceProvider,T>)"
+          "T issue222.Class1/<>c__1`3::<AddSingleton>b__1_0(System.IServiceProvider)"
+          "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_0(System.IServiceProvider)"
+          "T issue222.Class1/<>c__2`4::<AddSingleton>b__2_1(System.IServiceProvider)" ]
 
       Assert.That(results, Is.EquivalentTo expected)
 
