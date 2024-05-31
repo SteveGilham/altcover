@@ -40,6 +40,12 @@ module internal LCov =
       )
       |> Seq.min
 
+    let getVC (mp: XElement) =
+      mp.Attribute("vc".X)
+      |> Option.ofObj
+      |> Option.map _.Value
+      |> Option.defaultValue "0"
+
     let internal multiSort (by: 'a -> int) (l: (string * 'a seq) seq) =
       l
       |> Seq.map (fun (f, ms) -> (f, ms |> Seq.sortBy by |> Seq.toList))
@@ -314,10 +320,10 @@ FN:4,(anonymous_0)
 
                     let sl = s.Attribute("sl".X).Value
 
+                    let vc = I.getVC mp
+
                     if sl |> String.IsNullOrWhiteSpace |> not then
-                      writer.WriteLine(
-                        "FNDA:" + mp.Attribute("vc".X).Value + "," + n
-                      )))
+                      writer.WriteLine("FNDA:" + vc + "," + n)))
 
               FNDA methods
               // This  list  is followed by two lines containing the number of functions
@@ -339,7 +345,7 @@ FN:4,(anonymous_0)
                        m.Descendants("MethodPoint".X) ]
                      |> Seq.concat
                      |> Seq.exists (fun s ->
-                       let v = s.Attribute("vc".X).Value
+                       let v = I.getVC s
                        v.IsNotNull && v != "0"))
 
               writer.WriteLine(
