@@ -8142,7 +8142,8 @@ module Targets =
         |> List.filter (fun (x, _) ->
           Path
             .GetFileName(x)
-            .Equals("coverage.cobertura.xml", StringComparison.Ordinal))
+            .Equals("coverage.cobertura.xml", StringComparison.Ordinal)
+          |> not)
         |> List.filter (fun x ->
           let root = (snd x).Root
 
