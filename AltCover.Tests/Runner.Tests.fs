@@ -6151,6 +6151,20 @@ module AltCoverRunnerTests =
     xmlDocument.Validate(null)
 
   [<Test>]
+  let PathsSplitOK () =
+    let cases =
+      [
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg", ["C:\\"; "Users"; "anon"; "OneDrive"; "Pictures"; "wallpaper.jpg"])
+        ("/usr/home/anon/project/src/code.cs", [String([|Path.DirectorySeparatorChar|]); "usr"; "home"; "anon"; "project"; "src"; "code.cs"])
+        ("partial/path/OK", ["partial"; "path"; "OK"])
+        (String.Empty, [String.Empty])
+        (null, [String.Empty])
+      ]
+
+    cases
+    |> List.iter (fun (case, expect) -> test <@ Cobertura.I.splitPath case = expect @>)
+
+  [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
     Runner.init ()
 

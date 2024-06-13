@@ -30,6 +30,21 @@ module internal Cobertura =
         String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ratio)
       )
 
+    let splitPath path =
+      let rec facets path bits =
+        let npath = Path.GetDirectoryName path
+        let facet = if String.IsNullOrWhiteSpace npath then path else (Path.GetFileName path)
+        let wfacet = facet :: bits
+        if String.IsNullOrWhiteSpace npath then
+          wfacet
+        else
+          facets npath wfacet
+
+      if String.IsNullOrWhiteSpace path then
+        [String.Empty]
+      else
+        facets path []
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification =
