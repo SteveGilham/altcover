@@ -8139,6 +8139,10 @@ module Targets =
 
       let cobertura2Files =
         xml
+        |> List.filter (fun (x, _) ->
+          Path
+            .GetFileName(x)
+            .Equals("coverage.cobertura.xml", StringComparison.Ordinal))
         |> List.filter (fun x ->
           let root = (snd x).Root
 

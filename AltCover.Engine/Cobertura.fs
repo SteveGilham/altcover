@@ -32,19 +32,27 @@ module internal Cobertura =
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
                                                       "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Temporary to validate")>]
+                                                      Justification =
+                                                        "Temporary to validate")>]
     let splitPath path =
       let rec facets path bits =
         let npath = Path.GetDirectoryName path
-        let facet = if String.IsNullOrWhiteSpace npath then path else (Path.GetFileName path)
+
+        let facet =
+          if String.IsNullOrWhiteSpace npath then
+            path
+          else
+            (Path.GetFileName path)
+
         let wfacet = facet :: bits
+
         if String.IsNullOrWhiteSpace npath then
           wfacet
         else
           facets npath wfacet
 
       if String.IsNullOrWhiteSpace path then
-        [String.Empty]
+        [ String.Empty ]
       else
         facets path []
 

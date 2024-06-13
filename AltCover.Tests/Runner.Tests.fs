@@ -6155,21 +6155,44 @@ module AltCoverRunnerTests =
     let cases =
       [
 #if WINDOWS
-        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg", ["C:\\"; "Users"; "anon"; "OneDrive"; "Pictures"; "wallpaper.jpg"])
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg",
+         [ "C:\\"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ])
 #else
-        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg", ["C:"; "Users"; "anon"; "OneDrive"; "Pictures"; "wallpaper.jpg"])
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg",
+         [ "C:"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ])
 #endif
-        ("/usr/home/anon/project/src/code.cs", [String([|Path.DirectorySeparatorChar|]); "usr"; "home"; "anon"; "project"; "src"; "code.cs"])
-        ("partial/path/OK", ["partial"; "path"; "OK"])
-        (String.Empty, [String.Empty])
-        (null, [String.Empty])
-      ]
+        ("/usr/home/anon/project/src/code.cs",
+         [ String([| Path.DirectorySeparatorChar |])
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ])
+        ("partial/path/OK", [ "partial"; "path"; "OK" ])
+        (String.Empty, [ String.Empty ])
+        (null, [ String.Empty ]) ]
 
     cases
     |> List.iter (fun (case, expect) ->
       test <@ Cobertura.I.splitPath case = expect @>
+
       if case.IsNotNull then
-       test <@ case = (Path.Combine (List.toArray expect)).Replace ("\\", "/") @>)
+        test
+          <@
+            case = (Path.Combine(List.toArray expect))
+              .Replace("\\", "/")
+          @>)
 
   [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
