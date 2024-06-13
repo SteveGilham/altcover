@@ -6166,7 +6166,10 @@ module AltCoverRunnerTests =
       ]
 
     cases
-    |> List.iter (fun (case, expect) -> test <@ Cobertura.I.splitPath case = expect @>)
+    |> List.iter (fun (case, expect) ->
+      test <@ Cobertura.I.splitPath case = expect @>
+      if case.IsNotNull then
+       test <@ case = (Path.Combine (List.toArray expect)).Replace ("\\", "/") @>)
 
   [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
