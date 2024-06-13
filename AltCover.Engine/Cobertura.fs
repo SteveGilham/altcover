@@ -30,6 +30,9 @@ module internal Cobertura =
         String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ratio)
       )
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+                                                      "AvoidUncalledPrivateCodeRule",
+                                                      Justification = "Temporary to validate")>]
     let splitPath path =
       let rec facets path bits =
         let npath = Path.GetDirectoryName path
