@@ -6154,7 +6154,11 @@ module AltCoverRunnerTests =
   let PathsSplitOK () =
     let cases =
       [
+#if WINDOWS
         ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg", ["C:\\"; "Users"; "anon"; "OneDrive"; "Pictures"; "wallpaper.jpg"])
+#else
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg", ["C:"; "Users"; "anon"; "OneDrive"; "Pictures"; "wallpaper.jpg"])
+#endif
         ("/usr/home/anon/project/src/code.cs", [String([|Path.DirectorySeparatorChar|]); "usr"; "home"; "anon"; "project"; "src"; "code.cs"])
         ("partial/path/OK", ["partial"; "path"; "OK"])
         (String.Empty, [String.Empty])
