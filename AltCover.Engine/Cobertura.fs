@@ -66,18 +66,26 @@ module internal Cobertura =
       (tag: string)
       (attribute: string)
       =
-      report.Descendants(tag.X)
-      |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
-      |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
-      |> Seq.map Path.GetDirectoryName
-      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-      |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
-      |> Seq.sort
+      let rawsources =
+        report.Descendants(tag.X)
+        |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
+        |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
+        |> Seq.map Path.GetDirectoryName
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.distinct
+        |> Seq.sort
+
+      rawsources
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(f))))
 
+      rawsources
+
     let internal nCover (report: XDocument) (packages: XElement) =
+
+      let sources = addSources report packages.Parent "seqpnt" "document"
+
       let processSeqPnts document (method: XElement) (lines: XElement) =
         method.Descendants("seqpnt".X)
         |> Seq.filter (fun s ->
@@ -228,9 +236,10 @@ module internal Cobertura =
       p.Attribute("lines-valid".X).Value <- total.ToString(CultureInfo.InvariantCulture)
       p.Attribute("lines-covered".X).Value <- hits.ToString(CultureInfo.InvariantCulture)
 
-      addSources report packages.Parent "seqpnt" "document"
-
     let internal openCover (report: XDocument) (packages: XElement) =
+
+      let sources = addSources report packages.Parent "File" "fullPath"
+
       let extract (owner: XElement) (target: XElement) =
         let summary =
           owner.Elements("Summary".X) |> Seq.head
@@ -503,8 +512,6 @@ module internal Cobertura =
         (report.Descendants("CoverageSession".X)
          |> Seq.head)
         packages.Parent
-
-      addSources report packages.Parent "File" "fullPath"
 
   let internal convertReport (report: XDocument) (format: ReportFormat) =
     let rewrite =
