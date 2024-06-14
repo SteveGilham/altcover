@@ -275,6 +275,7 @@ module ExpectoTestManifest =
        Tests.AltCoverRunnerTests.NCoverShouldGenerateMorePlausibleCobertura,
        "Runner.NCoverShouldGenerateMorePlausibleCobertura"
        Tests.AltCoverRunnerTests.PathsSplitOK, "Runner.PathsSplitOK"
+       Tests.AltCoverRunnerTests.PathsGroupOK, "Runner.PathsGroupOK"
        Tests.AltCoverRunnerTests.DegenerateCasesShouldNotGenerateCobertura,
        "Runner.DegenerateCasesShouldNotGenerateCobertura"
        Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName,

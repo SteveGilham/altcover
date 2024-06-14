@@ -56,6 +56,19 @@ module internal Cobertura =
       else
         facets path []
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Globalization",
+                                                      "PreferStringComparisonOverrideRule",
+                                                      Justification =
+                                                        "Compiler generated comparisons")>]
+    let grouping path =
+      match path with
+      | [ "\\" ]
+      | [ "/" ] -> "/"
+      | "\\" :: x :: _
+      | "/" :: x :: _ -> "/" + x
+      | [] -> String.Empty
+      | _ -> path |> Seq.head
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification =
@@ -75,6 +88,12 @@ module internal Cobertura =
         |> Seq.distinct
         |> Seq.sort
 
+      let groupable =
+        rawsources |> Seq.map (fun x -> (x, splitPath x))
+
+      let groups =
+        groupable |> Seq.groupBy (snd >> grouping)
+
       rawsources
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
@@ -84,7 +103,8 @@ module internal Cobertura =
 
     let internal nCover (report: XDocument) (packages: XElement) =
 
-      let sources = addSources report packages.Parent "seqpnt" "document"
+      let sources =
+        addSources report packages.Parent "seqpnt" "document"
 
       let processSeqPnts document (method: XElement) (lines: XElement) =
         method.Descendants("seqpnt".X)
@@ -238,7 +258,8 @@ module internal Cobertura =
 
     let internal openCover (report: XDocument) (packages: XElement) =
 
-      let sources = addSources report packages.Parent "File" "fullPath"
+      let sources =
+        addSources report packages.Parent "File" "fullPath"
 
       let extract (owner: XElement) (target: XElement) =
         let summary =

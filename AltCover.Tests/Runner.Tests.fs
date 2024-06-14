@@ -6195,6 +6195,41 @@ module AltCoverRunnerTests =
           @>)
 
   [<Test>]
+  let PathsGroupOK () =
+    let cases =
+      [ ([ "C:\\"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ],
+         "C:\\")
+        ([ "/"
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ],
+         "/usr")
+        ([ "\\"
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ],
+         "/usr")
+        ([ "/" ], "/")
+        ([ "\\" ], "/")
+        ([ "partial"; "path"; "OK" ], "partial")
+        ([], String.Empty)
+        ([ String.Empty ], String.Empty) ]
+
+    cases
+    |> List.iter (fun (case, expect) -> test <@ Cobertura.I.grouping case = expect @>)
+
+  [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
     Runner.init ()
 
