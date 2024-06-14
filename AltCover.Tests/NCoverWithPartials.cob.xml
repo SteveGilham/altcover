@@ -3,7 +3,6 @@
 <coverage line-rate="0.89" branch-rate="1" lines-covered="24" lines-valid="27" branches-covered="0" branches-valid="0" complexity="1" version="8.2.0.0" timestamp="xx">
   <sources>
     <source>C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include</source>
-    <source>C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix</source>
     <source>d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt</source>
   </sources>
   <packages>

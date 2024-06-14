@@ -69,6 +69,15 @@ module internal Cobertura =
       | [] -> String.Empty
       | _ -> path |> Seq.head
 
+    let extractSource x =
+      let key = fst x
+      let values = snd x
+
+      match Seq.length values with
+      | 1 -> (key, values |> Seq.head |> fst )
+      | _ -> // extract longest common prefix
+         (key, values |> Seq.head |> fst ) // TODO
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification =
@@ -94,12 +103,17 @@ module internal Cobertura =
       let groups =
         groupable |> Seq.groupBy (snd >> grouping)
 
-      rawsources
+      let results =
+        groups
+        |> Seq.map extractSource
+
+      results
+      |> Seq.map snd
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(f))))
 
-      rawsources
+      results
 
     let internal nCover (report: XDocument) (packages: XElement) =
 
