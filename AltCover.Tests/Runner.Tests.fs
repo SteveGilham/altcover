@@ -6231,21 +6231,26 @@ module AltCoverRunnerTests =
 
   [<Test>]
   let ExtractSourcesOK () =
+    let sep =
+      String([| Path.DirectorySeparatorChar |])
+
     let cases =
       [ ([ "a" ], "a")
-        ([ "a/b/"; "a/b/c" ], "a/b")
-        ([ "a/b/x/y"; "a/c/d" ], "a")
-        ([ "c:\\b\\x\\y"; "c:\\b\\c\\d" ], "c:\\b") ]
+        ([ "a/b/"; "a/b/c" ], "a/b" + sep)
+        ([ "a/b/x/y"; "a/c/d" ], "a" + sep)
+        ([ "c:\\b\\x\\y"; "c:\\b\\c\\d" ], "c:\\b" + sep) ]
       |> List.map (fun (inputs, expect) ->
         (inputs
          |> Seq.map (fun x -> (x, Cobertura.I.splitPath x))),
         expect)
 
-    cases
-    |> Seq.iter (fun (case, expect) ->
-      test <@ Cobertura.I.extractSource case = expect.Replace('\\', '/') + "/" @>)
+    Assert.Multiple(fun () ->
+      cases
+      |> Seq.iter (fun (case, expect) ->
+        test
+          <@ Cobertura.I.extractSource case = expect
 
-    ()
+          @>))
 
   [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =

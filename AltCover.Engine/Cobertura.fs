@@ -6,6 +6,7 @@ open System.Xml.Linq
 open System.Globalization
 
 open AltCover.Shared
+open System.Diagnostics.CodeAnalysis
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
@@ -69,16 +70,22 @@ module internal Cobertura =
       | [] -> String.Empty
       | _ -> path |> Seq.head
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "InstantiateArgumentExceptionCorrectlyRule",
+                      Justification = "Compiler inlines")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidRepetitiveCallsToPropertiesRule",
+                      Justification = "Compiler inlines")>]
     let extractSource (values: (string * #(string seq)) seq) =
+      let starter = values |> Seq.head
+
       match Seq.length values with
-      | 1 -> values |> Seq.head |> fst
+      | 1 -> starter |> fst
       | _ -> // extract longest common prefix
         let l =
           values
           |> Seq.map (fun (_, split) -> Seq.length split)
           |> Seq.min
-
-        let starter = values |> Seq.head
 
         let parts =
           values
@@ -94,7 +101,7 @@ module internal Cobertura =
           |> Seq.takeWhile (fun (i, facet) ->
             parts
             |> Seq.map (fun x -> x[i])
-            |> Seq.forall (fun x -> x = facet))
+            |> Seq.forall (fun x -> x.Equals(facet, StringComparison.Ordinal)))
           |> Seq.map snd
           |> Seq.toArray
           |> Path.Combine
@@ -139,6 +146,7 @@ module internal Cobertura =
         |> Seq.iter _.Add(XElement("source".X, XText(f))))
 
       results
+      |> Seq.map (fun p -> p.Replace('\\', '/').Trim('/'))
 
     let internal nCover (report: XDocument) (packages: XElement) =
 
@@ -226,12 +234,24 @@ module internal Cobertura =
         |> LCov.sortByFirst
         |> Seq.fold (processMethod document methods) (0, 0)
 
-      let processClass (classes: XElement) (hits, total) ((name, document), method) =
+      let processClass
+        (classes: XElement)
+        (hits, total)
+        ((name, document: string), method)
+        =
+        let normalized = document.Replace('\\', '/')
+
+        let filename =
+          sources
+          |> Seq.tryFind (fun s -> normalized.StartsWith(s, StringComparison.Ordinal))
+          |> Option.map (fun start -> document.Substring(start.Length + 1))
+          |> Option.defaultValue document
+
         let ``class`` =
           XElement(
             "class".X,
             XAttribute("name".X, name),
-            XAttribute("filename".X, document)
+            XAttribute("filename".X, filename)
           )
 
         classes.Add(``class``)
@@ -485,18 +505,25 @@ module internal Cobertura =
         |> Seq.fold (processMethod fileid methods) (0, 0, 0, 0, 0, 0)
 
       let processClass
-        files
+        (files: Map<string, string>)
         (classes: XElement)
         (cvcum, ccum)
         ((name, fileid), methodSet)
         =
         let document = files |> Map.find fileid
+        let normalized = document.Replace('\\', '/')
+
+        let filename =
+          sources
+          |> Seq.tryFind (fun s -> normalized.StartsWith(s, StringComparison.Ordinal))
+          |> Option.map (fun start -> document.Substring(start.Length + 1))
+          |> Option.defaultValue document
 
         let ``class`` =
           XElement(
             "class".X,
             XAttribute("name".X, name),
-            XAttribute("filename".X, document)
+            XAttribute("filename".X, filename)
           )
 
         classes.Add(``class``)

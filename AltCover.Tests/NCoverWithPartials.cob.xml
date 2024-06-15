@@ -8,7 +8,7 @@
   <packages>
     <package name="SimpleMix.exe" line-rate="0.89" branch-rate="1" complexity="1">
       <classes>
-        <class name="&lt;Module&gt;" filename="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" line-rate="1" branch-rate="1" complexity="1">
+        <class name="&lt;Module&gt;" filename="Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" line-rate="1" branch-rate="1" complexity="1">
           <methods>
             <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="1" complexity="1">
               <lines>
@@ -24,7 +24,7 @@
             <line number="43" hits="1" branch="false" />
           </lines>
         </class>
-        <class name="&lt;Module&gt;" filename="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" line-rate="0.86" branch-rate="1" complexity="1">
+        <class name="&lt;Module&gt;" filename="Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" line-rate="0.86" branch-rate="1" complexity="1">
           <methods>
             <method name="main" signature="System.Int32 (System.String[])" line-rate="0.86" branch-rate="1" complexity="1">
               <lines>
@@ -48,7 +48,7 @@
             <line number="49" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="&lt;Module&gt;" filename="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" line-rate="0.78" branch-rate="1" complexity="1">
+        <class name="&lt;Module&gt;" filename="mcrtexe.cpp" line-rate="0.78" branch-rate="1" complexity="1">
           <methods>
             <method name="mainCRTStartupStrArray" signature="System.Int32 (System.String[])" line-rate="0.78" branch-rate="1" complexity="1">
               <lines>
@@ -76,7 +76,7 @@
             <line number="288" hits="1" branch="false" />
           </lines>
         </class>
-        <class name="Example" filename="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" line-rate="1" branch-rate="1" complexity="1">
+        <class name="Example" filename="Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" line-rate="1" branch-rate="1" complexity="1">
           <methods>
             <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="1" complexity="1">
               <lines>
@@ -92,7 +92,7 @@
             <line number="43" hits="1" branch="false" />
           </lines>
         </class>
-        <class name="Example" filename="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" line-rate="1" branch-rate="1" complexity="1">
+        <class name="Example" filename="Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" line-rate="1" branch-rate="1" complexity="1">
           <methods>
             <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="1" complexity="1">
               <lines>
