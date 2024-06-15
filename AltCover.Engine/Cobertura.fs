@@ -55,7 +55,7 @@ module internal Cobertura =
       if String.IsNullOrWhiteSpace path then
         [ String.Empty ]
       else
-        facets path []
+        facets (path.Replace('\\', '/')) []
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Globalization",
                                                       "PreferStringComparisonOverrideRule",
