@@ -6230,6 +6230,24 @@ module AltCoverRunnerTests =
     |> List.iter (fun (case, expect) -> test <@ Cobertura.I.grouping case = expect @>)
 
   [<Test>]
+  let ExtractSourcesOK () =
+    let cases =
+      [ ([ "a" ], "a")
+        ([ "a/b/"; "a/b/c" ], "a/b")
+        ([ "a/b/x/y"; "a/c/d" ], "a")
+        ([ "c:\\b\\x\\y"; "c:\\b\\c\\d" ], "c:\\b") ]
+      |> List.map (fun (inputs, expect) ->
+        (inputs
+         |> Seq.map (fun x -> (x, Cobertura.I.splitPath x))),
+        expect)
+
+    cases
+    |> Seq.iter (fun (case, expect) ->
+      test <@ Cobertura.I.extractSource case = expect.Replace('\\', '/') + "/" @>)
+
+    ()
+
+  [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
     Runner.init ()
 

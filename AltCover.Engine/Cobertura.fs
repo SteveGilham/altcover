@@ -69,14 +69,41 @@ module internal Cobertura =
       | [] -> String.Empty
       | _ -> path |> Seq.head
 
-    let extractSource x =
-      let key = fst x
-      let values = snd x
-
+    let extractSource (values: (string * #(string seq)) seq) =
       match Seq.length values with
-      | 1 -> (key, values |> Seq.head |> fst )
+      | 1 -> values |> Seq.head |> fst
       | _ -> // extract longest common prefix
-         (key, values |> Seq.head |> fst ) // TODO
+        let l =
+          values
+          |> Seq.map (fun (_, split) -> Seq.length split)
+          |> Seq.min
+
+        let starter = values |> Seq.head
+
+        let parts =
+          values
+          |> Seq.map (fun (_, split) -> split |> Seq.take l |> Seq.toArray)
+
+        let tokens =
+          (snd starter)
+          |> Seq.mapi (fun i facet -> (i, facet))
+          |> Seq.take l
+
+        let prefix =
+          tokens
+          |> Seq.takeWhile (fun (i, facet) ->
+            parts
+            |> Seq.map (fun x -> x[i])
+            |> Seq.forall (fun x -> x = facet))
+          |> Seq.map snd
+          |> Seq.toArray
+          |> Path.Combine
+
+        let trimmed = prefix.Length
+        let source = fst starter
+
+        source.Substring(0, trimmed).Trim('\\')
+        + String([| Path.DirectorySeparatorChar |])
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
@@ -104,11 +131,9 @@ module internal Cobertura =
         groupable |> Seq.groupBy (snd >> grouping)
 
       let results =
-        groups
-        |> Seq.map extractSource
+        groups |> Seq.map (snd >> extractSource)
 
       results
-      |> Seq.map snd
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(f))))
