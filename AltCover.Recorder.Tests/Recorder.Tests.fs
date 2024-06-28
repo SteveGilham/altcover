@@ -7,6 +7,7 @@ namespace Tests.Recorder.Core
 #else
 namespace Tests.Recorder.Clr4
 #endif
+#nowarn "3559"
 
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 

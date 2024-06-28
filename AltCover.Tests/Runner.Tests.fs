@@ -2157,7 +2157,7 @@ module AltCoverRunnerTests =
               .GetExecutingAssembly()
               .GetManifestResourceNames()
             |> Seq.find
-              _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
+              _.EndsWith("AltCover.Recorder.net46.dll", StringComparison.Ordinal)
 
           use frombytes =
             Assembly
@@ -2408,7 +2408,7 @@ module AltCoverRunnerTests =
                 .GetExecutingAssembly()
                 .GetManifestResourceNames()
               |> Seq.find
-                _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
+                _.EndsWith("AltCover.Recorder.net46.dll", StringComparison.Ordinal)
 
             use frombytes =
               Assembly

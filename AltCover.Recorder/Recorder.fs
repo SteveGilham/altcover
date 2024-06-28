@@ -12,9 +12,7 @@ open System.Reflection
 
 open System.Resources
 open System.Runtime.CompilerServices
-#if !NET20
 open System.Threading
-#endif
 
 open AltCover.Shared
 
@@ -247,6 +245,9 @@ module Instance =
     /// <summary>
     /// This method flushes hit count buffers.
     /// </summary>
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Required signature")>]
     let internal flushAll _ =
       let counts = visits
       clear ()
@@ -460,6 +461,9 @@ module Instance =
     let internal visitSelection track moduleId hitPointId =
       visitImpl moduleId hitPointId track
 
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Required signature")>]
     let internal flushCounter (finish: Close) _ =
       match finish with
       | Resume -> flushResume ()

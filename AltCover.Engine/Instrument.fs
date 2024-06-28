@@ -133,7 +133,7 @@ module internal Instrument =
     use stream =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
+        .GetManifestResourceStream("AltCover.AltCover.Recorder.net46.dll")
 
     use def =
       AssemblyResolver.ReadAssembly stream
@@ -1139,7 +1139,7 @@ module internal Instrument =
       let stream =
         Assembly
           .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
+          .GetManifestResourceStream("AltCover.AltCover.Recorder.net46.dll")
 
       let recordingAssembly =
         prepareAssembly (stream)

@@ -399,9 +399,6 @@ module AltCoverCoreTests =
         Assert.That(Instance.I.trace.Equals expected, Is.False)
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
 
-        let formatter =
-          System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-
         let (a, b, c) = expected |> Seq.head
         Adapter.tracePush (a, b, c)
         Instance.FlushFinish()
