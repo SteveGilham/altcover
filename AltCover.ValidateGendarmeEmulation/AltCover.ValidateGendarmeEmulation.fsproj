@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <GendarmeVersion>2023.12.27.19054</GendarmeVersion>
+    <GendarmeVersion>2024.6.28.12460</GendarmeVersion>
     <GendarmeToolDir>..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
