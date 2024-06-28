@@ -1,11 +1,7 @@
-﻿#if !NET472
-#if NET20
-namespace Tests.Recorder.Clr2
+﻿#if NET472
+namespace Tests.Recorder.Clr4
 #else
 namespace Tests.Recorder.Core
-#endif
-#else
-namespace Tests.Recorder.Clr4
 #endif
 #nowarn "3559"
 
@@ -31,11 +27,7 @@ module AltCoverTests =
   let private getMyMethodName tag = ignore tag
   //    let st = StackTrace(StackFrame(1))
   //    st.GetFrame(0).GetMethod().Name |>
-  //#if NET20
-  //    printfn "%s %s 2" tag
-  //#else
   //    printfn "%s %s" tag
-  //#endif
 
   let resource =
     Assembly
@@ -553,7 +545,7 @@ module AltCoverTests =
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
-#if !NET472 && !NET20
+#if !NET472
   [<Test>]
   let NullRefShouldBeHandled () =
     getMyMethodName "=>"
@@ -1777,7 +1769,6 @@ module AltCoverTests =
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
-#if !NET20
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenDiverted () =
     let saved = Console.Out
@@ -1872,7 +1863,6 @@ module AltCoverTests =
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
-#endif
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken () =
@@ -2018,7 +2008,6 @@ module AltCoverTests =
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
-#if !NET20
   [<Test>]
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
@@ -2140,7 +2129,6 @@ module AltCoverTests =
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
     getMyMethodName "<="
-#endif
 
   [<Test>]
   let ShouldCreateDummyAttribute () =
