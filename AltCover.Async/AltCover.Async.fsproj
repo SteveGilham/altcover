@@ -8,7 +8,10 @@
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <FSharpTargetsPath>$(FscToolPath)\Microsoft.FSharp.Targets</FSharpTargetsPath>
   </PropertyGroup>
+
+  <Import Project="$(FSharpTargetsPath)" />
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE</DefineConstants>

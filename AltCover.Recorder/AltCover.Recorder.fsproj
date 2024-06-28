@@ -8,7 +8,10 @@
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <DefineConstants>RECORDER</DefineConstants>
+    <FSharpTargetsPath>$(FscToolPath)\Microsoft.FSharp.Targets</FSharpTargetsPath>
   </PropertyGroup>
+
+  <Import Project="$(FSharpTargetsPath)" />
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
@@ -51,5 +54,4 @@
       <HintPath>..\ThirdParty\ziplib.net20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>

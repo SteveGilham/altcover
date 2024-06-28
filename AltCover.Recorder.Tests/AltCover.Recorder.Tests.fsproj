@@ -9,7 +9,10 @@
     <NoWarn>NU1702</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <FSharpTargetsPath>$(FscToolPath)\Microsoft.FSharp.Targets</FSharpTargetsPath>
   </PropertyGroup>
+
+  <Import Project="$(FSharpTargetsPath)" />
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
@@ -72,6 +75,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="System.IO.Compression"/>
+    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>

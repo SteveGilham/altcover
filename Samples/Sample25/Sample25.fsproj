@@ -5,7 +5,10 @@
     <AssemblyName>Sample25</AssemblyName>
     <RootNamespace>Sample25</RootNamespace>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <FSharpTargetsPath>$(FscToolPath)\Microsoft.FSharp.Targets</FSharpTargetsPath>
   </PropertyGroup>
+
+  <Import Project="$(FSharpTargetsPath)" />
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE</DefineConstants>
