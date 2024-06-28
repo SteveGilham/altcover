@@ -104,6 +104,7 @@ module Instance =
       n.Name == "AltCover.DataCollector"
       && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
     && Token <> "AltCover"
+    // AltCover.DataCollector, Version=8.8.0.0, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8
 
   type internal Sampled =
     | Visit of int
@@ -420,8 +421,7 @@ module Instance =
     /// <param name="hitPointId">Sequence Point identifier</param>
     let internal visitImpl moduleId hitPointId context =
       if
-        (Sample = Sampling.All
-         || takeSample Sample moduleId hitPointId context)
+        takeSample Sample moduleId hitPointId context
       then
         let adder =
           if Defer || supervision || (trace.IsConnected |> not) then
