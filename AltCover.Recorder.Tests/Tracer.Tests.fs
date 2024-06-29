@@ -172,6 +172,7 @@ module AltCoverCoreTests =
   [<Test>]
   let VisitShouldSignal () =
     let save = Instance.I.trace
+    let save2 = Instance.Sample
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -194,14 +195,17 @@ module AltCoverCoreTests =
 
       try
         Adapter.HardReset()
+        Instance.I.samples.Add("name", Dictionary<Instance.Sampled, bool>())
         Instance.I.trace <- client.OnStart()
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
+        Instance.Sample <- Sampling.Single
         Instance.I.isRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
         Instance.I.trace.Close()
         Instance.I.trace.Close()
         Instance.I.trace.Close()
+        Instance.Sample <- save2
         Instance.I.trace <- save
 
       use stream = // fsharplint:disable-next-line  RedundantNewKeyword

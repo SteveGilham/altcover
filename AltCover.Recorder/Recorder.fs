@@ -70,7 +70,12 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal Sample = Sampling.All // fsharplint:disable-line NonPublicValuesNames
+  let
+#if DEBUG
+      mutable
+#endif
+      internal Sample = // fsharplint:disable-line NonPublicValuesNames
+    Sampling.All
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -104,7 +109,7 @@ module Instance =
       n.Name == "AltCover.DataCollector"
       && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
     && Token <> "AltCover"
-    // AltCover.DataCollector, Version=8.8.0.0, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8
+  // AltCover.DataCollector, Version=8.8.0.0, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8
 
   type internal Sampled =
     | Visit of int
@@ -421,7 +426,8 @@ module Instance =
     /// <param name="hitPointId">Sequence Point identifier</param>
     let internal visitImpl moduleId hitPointId context =
       if
-        takeSample Sample moduleId hitPointId context
+        (Sample = Sampling.All
+         || takeSample Sample moduleId hitPointId context)
       then
         let adder =
           if Defer || supervision || (trace.IsConnected |> not) then
@@ -543,4 +549,27 @@ module Instance =
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder",
                             Justification =
                               "Compiler generated doExit@453 and :doUnload@450")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUncalledPrivateCodeRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "Coverage test toggle")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Recorder.Instance::get_Sample()",
+                            Justification = "It's a property")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "It's a property")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "It's a property")>]
 ()
