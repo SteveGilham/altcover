@@ -8203,6 +8203,7 @@ module Targets =
           "_Reports/MonitorTestWithAltCoverCoreRunner.net9.0.xml"
           "_Reports/ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.net9.0.xml"
           "_Reports/VisualizerTestWithAltCoverCoreRunner.net9.0.xml"
+          "_Reports/RecorderTestWithAltCoverCoreRunner.net9.0.xml"
           "_DotnetTest/coverage.xml"
           "_Binaries/_DotnetGlobalTest/Debug+AnyCPU/net9.0/DotnetGlobalIntegration.xml"
           "_Cake/_DotnetTest/coverage.build.cake.--version 2.0.0.xml"
