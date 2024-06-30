@@ -14,8 +14,6 @@ open System.Resources
 open System.Runtime.CompilerServices
 open System.Threading
 
-open AltCover.Shared
-
 module Instance =
   // Public "fields"
 
@@ -102,12 +100,14 @@ module Instance =
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
   let mutable internal supervision =
+    let pattern =
+      System.Text.RegularExpressions.Regex(
+        "^AltCover\.DataCollector, Version=.*, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8$"
+      )
     //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
-    |> Seq.exists (fun n ->
-      n.Name == "AltCover.DataCollector"
-      && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
+    |> Seq.exists (fun n -> pattern.IsMatch(n.FullName))
     && Token <> "AltCover"
   // AltCover.DataCollector, Version=8.8.0.0, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8
 

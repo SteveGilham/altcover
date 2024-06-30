@@ -8,14 +8,14 @@ open System.Runtime.CompilerServices
                   "AvoidSpeculativeGeneralityRule",
                   Justification = "Delegation is DRYing the codebase")>]
 module internal StringExtension =
-#if !DEBUG && !NET20
+#if !DEBUG
   [<MethodImplAttribute(MethodImplOptions.AggressiveInlining)>]
 #endif
   let (==) (x: string) (y: string) =
     x.Equals(y, System.StringComparison.Ordinal)
 
-#if !FAKEAPI && !RECORDER
-#if !DEBUG && !NET20
+#if !FAKEAPI
+#if !DEBUG
   [<MethodImplAttribute(MethodImplOptions.AggressiveInlining)>]
 #endif
   let (!=) (x: string) (y: string) = (x == y) |> not
