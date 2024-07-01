@@ -5695,7 +5695,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      printfn "%s" result
+      //printfn "%s" result
 
       let resource2 =
         Assembly
@@ -5900,7 +5900,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      printfn "%s" result
+      //printfn "%s" result
 
       let resource2 =
         Assembly
