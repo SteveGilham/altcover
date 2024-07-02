@@ -661,7 +661,7 @@ a:hover {color: #ecc;}
     let trackedFormat =
       """<TrackedMethods>
         <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" entry="{0}" exit="{1}" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" entry="{2}" exit="{3}" />
+        <TrackedMethod uid="2" token="100663346" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" entry="{2}" exit="{3}" />
       </TrackedMethods>"""
 
     coverageDocument.Descendants(XName.Get("TrackedMethods"))
