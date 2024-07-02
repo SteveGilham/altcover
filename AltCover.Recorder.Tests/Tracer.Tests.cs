@@ -67,6 +67,7 @@ namespace Tests.Recorder.Clr4
       maybeIOException(() => { maybeReraise(() => { throw new IOException(); }, ignore); });
     }
 
+    [Test]
     public static void WillNotConnectSpontaneously()
     {
       var where =
@@ -84,6 +85,28 @@ namespace Tests.Recorder.Clr4
           Assert.True(!client.IsConnected());
           close();
         }, close);
+    }
+
+    [Test]
+    public static void ValidTokenWillConnect()
+    {
+      var where =
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+      var unique = Path.Combine(where, Guid.NewGuid().ToString());
+
+      using (var stream = File.Create(unique))
+      { }
+
+      var client = Tracer.Create(unique);
+
+      try
+      {
+        client = client.OnStart();
+        Assert.True(client.IsConnected());
+      }
+      finally
+      { client.Close(); }
     }
   }
 }

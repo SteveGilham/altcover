@@ -66,15 +66,32 @@ namespace AltCover.Recorder
       return running;
     }
 
+    private Tracer MakeConnection(string f)
+    {
+      var fs = File.OpenWrite(f);
+
+      var s =
+        new DeflateStream(fs, CompressionMode.Compress);
+
+      Stream = s;
+      Formatter = new BinaryWriter(s);
+      Runner = true;
+
+      return this;
+    }
+
     internal Tracer Connect()
     {
       if (File.Exists(this.TracerName))
       {
-        throw new NotImplementedException();
-        //    Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
-        //|> Seq.filter (File.Exists >> not)
-        //|> Seq.map this.MakeConnection
-        //|> Seq.head
+        for (var i = 0; true; ++i)
+        {
+          var extension = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+          var path = Path.ChangeExtension(this.TracerName, "." + extension + ".acv");
+          if (File.Exists(path)) { continue; }
+          MakeConnection(path);
+          return this;
+        }
       }
       else
       { return this; }
