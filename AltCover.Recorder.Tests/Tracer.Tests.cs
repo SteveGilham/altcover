@@ -82,7 +82,7 @@ namespace Tests.Recorder.Clr4
         () =>
         {
           client = client.OnStart();
-          Assert.True(!client.IsConnected());
+          Assert.True(!client.IsConnected);
           close();
         }, close);
     }
@@ -103,7 +103,7 @@ namespace Tests.Recorder.Clr4
       try
       {
         client = client.OnStart();
-        Assert.True(client.IsConnected());
+        Assert.True(client.IsConnected);
       }
       finally
       { client.Close(); }

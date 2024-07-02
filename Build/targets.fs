@@ -938,6 +938,13 @@ module Targets =
   let BuildDebug =
     (fun () ->
       Directory.ensure "./_SourceLink"
+      Directory.ensure "./_Repack"
+
+      let repackdir =
+        ("./_Repack" |> Path.getFullName)
+
+      Shell.cleanDir repackdir
+
       Shell.copyFile "./_SourceLink/Class2.cs" "./Samples/Sample14/Sample14/Class2.txt"
 
       (if Environment.isWindows then
@@ -947,6 +954,41 @@ module Targets =
          Directory.ensure "/tmp/.AltCover_SourceLink"
          Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
         "./Samples/Sample14/Sample14/Class3.txt"
+
+      // net20 and such
+      dotnetBuildRelease "./AltCover.Recorder/AltCover.Recorder.csproj"
+      dotnetBuildRelease "./AltCover.Async/AltCover.Async.csproj"
+
+      Shell.copyFile
+        (Path.Join(repackdir, "AltCover.Async.dll"))
+        ("./_Binaries/AltCover.Async/Release+AnyCPU/net46/AltCover.Async.dll"
+         |> Path.getFullName)
+
+      let ilrepack =
+        ("./packages/"
+         + (packageVersion "ILRepack")
+         + "/tools/ILRepack.exe")
+        |> Path.getFullName
+
+      let keyfile =
+        "./Build/Infrastructure.snk" |> Path.getFullName
+
+      let cmd =
+        [ "/keyfile:" + keyfile
+          "/ver:"
+          + (String.Join(".", VersionTemplate.Split('.') |> Seq.take 2))
+          + ".0.0"
+          "/target:library"
+          "/targetplatform:v2"
+          "/internalize"
+          "/out:"
+          + Path.Join(repackdir, "AltCover.Recorder.dll")
+          "./_Binaries/AltCover.Recorder/Release+AnyCPU/net20/AltCover.Recorder.dll"
+          |> Path.getFullName
+          "./_Binaries/AltCover.Recorder/Release+AnyCPU/net20/ICSharpCode.SharpZipLib.dll"
+          |> Path.getFullName ]
+
+      Actions.Run (ilrepack, ".", cmd) "ILRepack failed"
 
       [ "./AltCover.sln"
         "./AltCover.Visualizer.sln"
@@ -1745,13 +1787,6 @@ module Targets =
               :: p.Properties
             DoRestore = true }
 
-      let msbuildDebug = doMSBuild withTagDebug
-      msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-
-      msbuildDebug
-        MSBuildPath
-        "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-
       let buildIt =
         DotNet.build (fun p ->
           { p.WithCommon dotnetOptions with
@@ -1760,7 +1795,9 @@ module Targets =
           |> (buildWithCLITaggedArguments "UnitTestDotNet"))
 
       !!(@"./*Test*/*Tests.fsproj")
-      |> Seq.filter (_.Contains("Recorder") >> not) // net20
+      |> Seq.iter buildIt
+
+      !!(@"./*Test*/*Tests.csproj")
       |> Seq.iter buildIt
 
       !!(@"./*.Valid*/*Valid*.fsproj")
@@ -1802,16 +1839,10 @@ module Targets =
               :: p.Properties
             DoRestore = true }
 
-      let msbuildDebug = doMSBuild withTagDebug
-
-      msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-
-      msbuildDebug
-        MSBuildPath
-        "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-
       [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+        Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.csproj"
+        Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.csproj"
         //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
         Path.getFullName
           "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
@@ -1833,8 +1864,8 @@ module Targets =
           [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
             Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
             //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
-            Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-            Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+            Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.csproj"
+            Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.csproj"
             Path.getFullName
               "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj"
             Path.getFullName

@@ -12,6 +12,7 @@ namespace AltCover.Recorder
 
   //using AltCover.Shared;
 
+  [Serializable]
   internal enum Close
   {
     DomainUnload,
@@ -20,6 +21,9 @@ namespace AltCover.Recorder
     Resume,
   }
 
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "OverrideValueTypeDefaultsRule",
+                   Justification = "Not actually used/NoComparison")]
   internal struct Tracer
   {
     public string TracerName;
@@ -54,9 +58,12 @@ namespace AltCover.Recorder
       catch (NullReferenceException) { }
     }
 
-    internal bool IsConnected()
+    internal bool IsConnected
     {
-      return (this.Stream != null) && this.Runner;
+      get
+      {
+        return (this.Stream != null) && this.Runner;
+      }
     }
 
     internal Tracer OnStart()
@@ -66,6 +73,9 @@ namespace AltCover.Recorder
       return running;
     }
 
+    [SuppressMessage("Gendarme.Rules.Correctness",
+                     "EnsureLocalDisposalRule",
+                     Justification = "s, fs : Closed as recording ends")]
     private Tracer MakeConnection(string f)
     {
       var fs = File.OpenWrite(f);
