@@ -6,7 +6,7 @@
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
     <!-- see https://github.com/NuGet/Home/issues/8797 -->
-    <NoWarn>NU1702</NoWarn>
+    <NoWarn>NU1702;CS1591</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
@@ -19,14 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.fs">
-      <Link>AssemblyVersion.fs</Link>
+    <Compile Include="..\_Generated\AssemblyVersion.cs">
+      <Link>AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Adapter.fs" />
-    <Compile Include="Tracer.Tests.fs" />
-    <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <None Include="Program.cs" Condition="'$(TargetFramework)' != 'net8.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,19 +55,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-
-    <PackageReference Include="FSharp.Core" Condition="'$(TargetFramework)' != 'net20'">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
-    <PackageReference Include="FSharp.Compiler.Tools" />
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="System.IO.Compression"/>
+    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>

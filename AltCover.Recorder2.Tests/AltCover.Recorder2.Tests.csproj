@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>AltCover.RecorderModern.Tests</AssemblyName>
+    <AssemblyName>AltCover.Recorder2.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <NoWarn>NU1702, 3559</NoWarn>
+    <NoWarn>NU1702;CS1591</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
-    <ExtraDefines>RECORDERMODERN</ExtraDefines>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -21,15 +20,16 @@
   <ItemGroup>
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
-    <Compile Include="..\_Generated\AssemblyVersion.fs">
-      <Link>AssemblyVersion.fs</Link>
+    <Compile Include="..\_Generated\AssemblyVersion.cs">
+      <Link>AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Adapter.fs" Link="Adapter.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.fs" Link="Tracer.Tests.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Adapter.cs" Link="Adapter.cs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.cs" Link="Tracer.Tests.cs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.cs" Link="Recorder.Tests.cs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Program.cs" Link="Program.cs" />
   </ItemGroup>
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector">
@@ -42,14 +42,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
     <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.RecorderModern\AltCover.RecorderModern.fsproj" />
+    <Reference Include="AltCover.Recorder">
+      <HintPath>..\_Binaries\AltCover.Recorder\Debug+AnyCPU\net20\AltCover.Recorder.dll</HintPath>
+    </Reference>
   </ItemGroup>
-
 </Project>

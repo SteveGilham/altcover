@@ -935,12 +935,6 @@ module Targets =
         printfn "%A" x
         reraise ())
 
-  let BuildRecorder =
-    (fun () -> msbuildDebug MSBuildPath "./AltCover.Recorder.sln")
-
-  let BuildReleaseRecorder =
-    (fun () -> msbuildRelease MSBuildPath "./AltCover.Recorder.sln")
-
   let BuildDebug =
     (fun () ->
       Directory.ensure "./_SourceLink"
@@ -953,11 +947,6 @@ module Targets =
          Directory.ensure "/tmp/.AltCover_SourceLink"
          Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
         "./Samples/Sample14/Sample14/Class3.txt"
-
-      // net20 and such
-      [ msbuildDebug MSBuildPath
-        msbuildRelease MSBuildPath ]
-      |> List.iter (fun f -> f "./AltCover.Recorder.sln")
 
       [ "./AltCover.sln"
         "./AltCover.Visualizer.sln"
@@ -8350,8 +8339,6 @@ module Targets =
     _Target "SetVersion" SetVersion
     _Target "Compilation" ignore
     _Target "BuildRelease" BuildRelease
-    _Target "BuildRecorder" BuildRecorder
-    _Target "BuildReleaseRecorder" BuildReleaseRecorder
     _Target "BuildDebug" BuildDebug
     _Target "BuildMonoSamples" BuildMonoSamples
     _Target "BuildSample31" BuildSample31
@@ -8442,9 +8429,6 @@ module Targets =
     |> ignore
 
     "Preparation" ==> "BuildDebug" |> ignore
-
-    "BuildRecorder" ==> "JustRecorderUnitTest"
-    |> ignore
 
     "BuildDebug" ==> "BuildRelease" ==> "Compilation"
     |> ignore
