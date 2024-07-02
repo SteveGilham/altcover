@@ -12,9 +12,11 @@ namespace Tests.Recorder.Clr4
 {
   using System;
   using System.Collections.Generic;
+  using System.Diagnostics;
   using System.IO;
   using System.IO.Compression;
   using System.Reflection;
+  using System.Runtime.InteropServices;
   using AltCover.Recorder;
   using NUnit.Framework;
   using NUnit.Framework.Constraints;
@@ -63,6 +65,25 @@ namespace Tests.Recorder.Clr4
       maybeDeleteFile(unique);
       maybeIOException(() => { maybeReraise(() => { File.Delete(unique); }, ignore); });
       maybeIOException(() => { maybeReraise(() => { throw new IOException(); }, ignore); });
+    }
+
+    public static void WillNotConnectSpontaneously()
+    {
+      var where =
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+      var unique = Path.Combine(where, Guid.NewGuid().ToString());
+
+      var client = Tracer.Create(unique);
+      Action close = (() => client.Close());
+
+      maybeReraise(
+        () =>
+        {
+          client = client.OnStart();
+          Assert.True(!client.IsConnected());
+          close();
+        }, close);
     }
   }
 }
