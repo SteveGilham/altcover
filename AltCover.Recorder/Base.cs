@@ -1,5 +1,9 @@
 #if RUNNER
 
+using AltCover;
+using System.Drawing;
+using System;
+
 namespace AltCover
 #else
 namespace AltCover.Recorder
@@ -69,6 +73,219 @@ namespace AltCover.Recorder
     public static Pair Create(long time, int call)
     {
       return new Pair { Time = time, Call = call };
+    }
+
+    public override string ToString()
+    {
+      return "AltCover.Pair(Time=" + Time.ToString(CultureInfo.InvariantCulture)
+        + ", Call=" + Call.ToString(CultureInfo.InvariantCulture) + ")";
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is Pair b)
+      {
+        return Call == b.Call
+          && Time == b.Time;
+      }
+
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Call.GetHashCode() ^ Time.GetHashCode();
+    }
+  }
+
+  internal abstract class Track
+  {
+    internal static readonly string Entry = "\u2611"; // BALLOT BOX WITH CHECK
+    internal static readonly string Exit = "\u2612"; // BALLOT BOX WITH X
+
+    public override bool Equals(object obj)
+    {
+      return (obj is Track);
+    }
+
+    public override int GetHashCode()
+    {
+      return 0;
+    }
+  }
+
+  internal class Null : Track
+  {
+    public override string ToString()
+    {
+      return "AltCover.Null";
+    }
+  }
+
+  internal class Time : Track
+  {
+    public readonly long Value;
+
+    public Time(long time)
+    {
+      Value = time;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is Time)
+      {
+        return Value == ((Time)obj).Value;
+      }
+
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Value.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+      return "AltCover.Time : " + Value.ToString(CultureInfo.InvariantCulture);
+    }
+  }
+
+  internal class Call : Track
+  {
+    public readonly int Value;
+
+    public Call(int call)
+    {
+      Value = call;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is Call)
+      {
+        return Value == ((Call)obj).Value;
+      }
+
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Value.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+      return "AltCover.Call : " + Value.ToString(CultureInfo.InvariantCulture);
+    }
+  }
+
+  internal class Both : Track
+  {
+    public readonly Pair Value;
+
+    public Both(Pair both)
+    {
+      Value = both;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is Both b)
+      {
+        var ok = Value.Equals(b.Value);
+        return ok;
+      }
+
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Value.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+      return "AltCover.Both : " + Value.ToString();
+    }
+  }
+
+  internal class Table : Track
+  {
+    public readonly Dictionary<string, Dictionary<int, PointVisit>> Value;
+
+    public Table(Dictionary<string, Dictionary<int, PointVisit>> table)
+    {
+      Value = table;
+    }
+  }
+
+  internal class PointVisit
+  {
+    public long Count;
+    public readonly List<Track> Tracks;
+
+    public override bool Equals(object obj)
+    {
+      if (obj is PointVisit b)
+      {
+        var ok = Count == b.Count && Tracks.Count == b.Tracks.Count;
+        for (var i = 0; ok && i < Tracks.Count; i++)
+        {
+          ok = ok && Tracks[i].Equals(b.Tracks[i]);
+        }
+
+        return ok;
+      }
+
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Count.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+      var tracks = new string[Tracks.Count];
+      for (int i = 0; i < Tracks.Count; ++i)
+        tracks[i] = Tracks[i].ToString();
+
+      return "AltCover.PointVisit : Count = " + Count.ToString(CultureInfo.InvariantCulture) +
+        "Tracks = " + String.Join("; ", tracks);
+    }
+
+    private PointVisit(long count)
+    {
+      Count = count;
+      Tracks = new List<Track>();
+    }
+
+    internal static PointVisit Create()
+    {
+      return new PointVisit(0);
+    }
+
+    internal void Step()
+    {
+      System.Threading.Interlocked.Increment(ref this.Count);
+    }
+
+    internal void Track(Track something)
+    {
+      lock (this.Tracks)
+      {
+        this.Tracks.Add(something);
+      }
+    }
+
+    internal long Total
+    {
+      get { return this.Count + this.Tracks.Count; }
     }
   }
 }

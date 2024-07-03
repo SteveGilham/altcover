@@ -181,7 +181,7 @@ module internal PostProcess =
       |> Seq.head
 
     let vc =
-      (lookUpVisitsByToken token dict).Total()
+      (lookUpVisitsByToken token dict).Total
 
     mp
     |> Seq.iter (fun m ->
@@ -226,7 +226,7 @@ module internal PostProcess =
           tracks.[index].Tracks
           |> Seq.map (fun t ->
             match t with
-            | Time tx -> sprintf "%d" tx
+            | :? Time as tx -> sprintf "%d" tx.Value
             | _ -> String.Empty) // never happens
           |> Seq.filter (fun s -> s.Length > 0)
 

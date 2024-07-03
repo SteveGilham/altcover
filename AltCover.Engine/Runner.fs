@@ -1026,8 +1026,8 @@ module internal Runner =
                     id,
                     strike,
                     match enum tag with
-                    | Tag.Time -> Time <| formatter.ReadInt64()
-                    | Tag.Call -> Call <| formatter.ReadInt32()
+                    | Tag.Time -> (Time <| formatter.ReadInt64()) :> Track
+                    | Tag.Call -> (Call <| formatter.ReadInt32()) :> Track
                     | Tag.Both ->
                       let time = formatter.ReadInt64()
                       let call = formatter.ReadInt32()
@@ -1057,7 +1057,7 @@ module internal Runner =
                               if p |> t.[m].ContainsKey |> not then
                                 t.[m].Add(p, PointVisit.Create())
 
-                              let pv = t.[m].[p]
+                              let mutable pv = t.[m].[p]
                               pv.Count <- pv.Count + n
 
                               // [<TailCall>]
@@ -1090,7 +1090,7 @@ module internal Runner =
 
                       ``module`` ()
                       Table t
-                    | _ -> Null
+                    | _ -> new Null()
                   )
                 with :? EndOfStreamException ->
                   None
@@ -1190,11 +1190,11 @@ module internal Runner =
 
     let internal extractTracks tracks =
       tracks
-      |> Seq.map (fun t ->
+      |> Seq.map (fun (t:Track) ->
         match t with
-        | Time x -> (Some x, None)
-        | Both b -> (Some b.Time, Some b.Call)
-        | Call y -> (None, Some y)
+        | :? Time as x -> (Some x.Value, None)
+        | :? Both as b -> (Some b.Value.Time, Some b.Value.Call)
+        | :? Call as y -> (None, Some y.Value)
         | _ -> (None, None))
       |> Seq.toList
       |> List.unzip
@@ -1226,7 +1226,7 @@ module internal Runner =
             entrypoint.Tracks
             |> Seq.iter (fun t ->
               match t with
-              | Time tx -> tx |> NativeJson.fromTracking |> m.Entry.Add
+              | :? Time as tx -> tx.Value |> NativeJson.fromTracking |> m.Entry.Add
               | _ -> ())
 
         let e3, exits = hits.TryGetValue Track.Exit
@@ -1239,7 +1239,7 @@ module internal Runner =
             exitpoint.Tracks
             |> Seq.iter (fun t ->
               match t with
-              | Time tx -> tx |> NativeJson.fromTracking |> m.Exit.Add
+              | :? Time as tx -> tx.Value |> NativeJson.fromTracking |> m.Exit.Add
               | _ -> ())
 
       let fillTracks tracks calls =
@@ -1279,7 +1279,7 @@ module internal Runner =
             let calls = calls' |> Seq.choose id
 
             { sp with
-                VC = (int <| count.Total()) + Math.Max(0, sp.VC)
+                VC = (int <| count.Total) + Math.Max(0, sp.VC)
                 Tracks = fillTracks sp.Tracks calls
                 Times = fillTimes sp.Times times }
           else
@@ -1303,7 +1303,7 @@ module internal Runner =
             let calls = calls' |> Seq.choose id
 
             { bp with
-                Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
+                Hits = (int <| count.Total) + Math.Max(0, bp.Hits)
                 Tracks = fillTracks bp.Tracks calls
                 Times = fillTimes bp.Times times }
           else
