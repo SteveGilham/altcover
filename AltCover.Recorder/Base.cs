@@ -288,4 +288,37 @@ namespace AltCover.Recorder
       get { return this.Count + this.Tracks.Count; }
     }
   }
+
+  internal static class Counter
+  {
+    // // <summary>
+    // // The time at which coverage run began
+    // // </summary>
+    internal static DateTime startTime = DateTime.UtcNow;
+
+    // // <summary>
+    // // The finishing time taken of the coverage run
+    // // </summary>
+    internal static DateTime measureTime = DateTime.UtcNow;
+
+    // // <summary>
+    // // The offset flag for branch counts
+    // // </summary>
+    internal const int branchFlag = unchecked((int)0x80000000);
+
+    internal const int branchMask = unchecked((int)0x7FFFFFFF);
+
+    internal static long totalVisits = 0;
+
+    internal static long branchVisits = 0;
+
+#if DEBUG
+
+    internal static class I
+#else
+    static private class I
+#endif
+    {
+    }
+  }
 }

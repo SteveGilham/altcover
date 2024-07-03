@@ -26,7 +26,7 @@
     <Compile Include="Output.fs" />
     <Compile Include="Canonical.fs" />
     <Compile Include="Augment.fs" />
-    <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
+    <None Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Metadata.fs" />
