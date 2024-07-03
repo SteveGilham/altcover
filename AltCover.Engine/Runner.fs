@@ -1104,8 +1104,7 @@ module internal Runner =
                     key |> String.IsNullOrWhiteSpace |> not
                     || ((String.IsNullOrEmpty key)
                         && hitPointId = 0
-                        && visit.GetType().ToString()
-                           == "AltCover.Table") // TODO better than this
+                        && visit.GetType()= typeof<AltCover.Table>)
                   then
                     if
                       hits.ContainsKey key |> not
