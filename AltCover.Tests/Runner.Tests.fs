@@ -2690,7 +2690,7 @@ module AltCoverRunnerTests =
         [| Null
            Call 0
            Time t
-           Both { Time = t; Call = 0 } |]
+           Both (Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -2988,7 +2988,7 @@ module AltCoverRunnerTests =
         [| Null
            Call 0
            Time t
-           Both { Time = t; Call = 0 } |]
+           Both (Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3260,7 +3260,7 @@ module AltCoverRunnerTests =
         [| Null
            Call 0
            Time t
-           Both { Time = t; Call = 0 } |]
+           Both (Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3578,7 +3578,7 @@ module AltCoverRunnerTests =
         [| Null
            Call 0
            Time t
-           Both { Time = t; Call = 0 } |]
+           Both (Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3900,7 +3900,7 @@ module AltCoverRunnerTests =
       [ Null
         Call 17
         Time 23L
-        Both { Time = 5L; Call = 42 }
+        Both (Pair.Create(5, 42))
         Time 42L
         Call 5 ]
 
@@ -4012,7 +4012,7 @@ module AltCoverRunnerTests =
     let d =
       Dictionary<int, int64 * Track list>()
 
-    d.Add(4, (0L, [ Both { Time = 5L; Call = 42 } ]))
+    d.Add(4, (0L, [ Both (Pair.Create(5, 42)) ]))
 
     let e =
       Dictionary<int, int64 * Track list>()
@@ -4062,7 +4062,7 @@ module AltCoverRunnerTests =
       [ Null
         Call 17
         Time 23L
-        Both { Time = 5L; Call = 42 }
+        Both (Pair.Create(5, 42))
         Time 42L
         Time 5L ]
 

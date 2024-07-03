@@ -1031,7 +1031,7 @@ module internal Runner =
                     | Tag.Both ->
                       let time = formatter.ReadInt64()
                       let call = formatter.ReadInt32()
-                      Both { Time = time; Call = call }
+                      Both (Pair.Create(time, call))
                     | Tag.Table ->
                       let t =
                         Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1075,7 +1075,7 @@ module internal Runner =
                                   pv.Tracks.Add(
                                     let time = formatter.ReadInt64()
                                     let call = formatter.ReadInt32()
-                                    Both { Time = time; Call = call }
+                                    Both (Pair.Create(time, call))
                                   )
 
                                   tracking ()

@@ -11,55 +11,6 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-[<Flags>]
-[<SuppressMessage("Gendarme.Rules.Design",
-                  "FlagsShouldNotDefineAZeroValueRule",
-                  Justification = "Zero is meaningful")>]
-[<SuppressMessage("Gendarme.Rules.Naming",
-                  "UsePluralNameInEnumFlagsRule",
-                  Justification = "Not meaningful to do so")>]
-type internal ReportFormat =
-  | NCover = 0
-  | OpenCover = 1
-  | NativeJson = 2
-  | TrackMask = 63
-  | WithTracking = 64
-  | ZipMask = 127
-  | Zipped = 128
-
-#if !RUNNER
-open ICSharpCode.SharpZipLib.Zip
-
-[<AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)>]
-[<Sealed>]
-[<SuppressMessage("Gendarme.Rules.Performance",
-                  "AvoidUninstantiatedInternalClassesRule",
-                  Justification = "Looks like a bug, not detecting its use")>]
-type internal ExcludeFromCodeCoverageAttribute() =
-  inherit Attribute()
-#endif
-
-type internal Sampling =
-  | All = 0
-  | Single = 1
-
-// TODO isolate where
-#if RUNNER
-[<SuppressMessage("Gendarme.Rules.Performance",
-                  "AvoidUninstantiatedInternalClassesRule",
-                  Justification = "Used as pattern match and compiled away")>]
-#endif
-type internal Tag =
-  | Null = 0
-  | Time = 1
-  | Call = 2
-  | Both = 3
-  | Table = 4
-
-[<ExcludeFromCodeCoverage>]
-[<NoComparison>]
-type internal Pair = { Time: int64; Call: int }
-
 [<ExcludeFromCodeCoverage>]
 [<NoComparison>]
 type internal Track =

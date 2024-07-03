@@ -5,6 +5,7 @@ MinimumVisualStudioVersion = 15.0.26124.0
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Engine", "AltCover.Engine\AltCover.Engine.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5D4A7DFE-688D-4D1B-804C-A06743FFC4BC} = {5D4A7DFE-688D-4D1B-804C-A06743FFC4BC}
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB} = {79E50E5A-381F-4C9A-8F1D-3603CE9247BB}
 	EndProjectSection
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.PowerShell", "AltCover.PowerShell\AltCover.PowerShell.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
@@ -156,6 +157,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.Recorder2.Tests", 
 	ProjectSection(ProjectDependencies) = postProject
 		{5D4A7DFE-688D-4D1B-804C-A06743FFC4BC} = {5D4A7DFE-688D-4D1B-804C-A06743FFC4BC}
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.Base", "AltCover.Base\AltCover.Base.csproj", "{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -389,6 +392,12 @@ Global
 		{2079F388-81AE-4A76-9428-3C8D7F86825B}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{2079F388-81AE-4A76-9428-3C8D7F86825B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2079F388-81AE-4A76-9428-3C8D7F86825B}.Release|x86.ActiveCfg = Release|Any CPU
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79E50E5A-381F-4C9A-8F1D-3603CE9247BB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
