@@ -387,31 +387,29 @@ namespace AltCover.Recorder
         )
       {
         long hitcount = 0;
-        //let internal addTable
-        //  (counts: Dictionary<string, Dictionary<int, PointVisit>>)
-        //  (t: Dictionary<string, Dictionary<int, PointVisit>>)
-        //  =
-        //  let mutable hitcount = 0L
 
-        //  t.Keys
-        //  |> Seq.iter (fun m ->
-        //    if counts.ContainsKey m |> not then
-        //      counts.Add(m, Dictionary<int, PointVisit>())
+        foreach (var key in t.Keys)
+        {
+          if (!counts.ContainsKey(key))
+          {
+            counts.Add(key, new Dictionary<int, PointVisit>());
+            var next = counts[key];
+            var here = t[key];
 
-        //    let next = counts.[m]
-        //    let here = t.[m]
-
-        //    here.Keys
-        //    |> Seq.iter (fun p ->
-        //      ensurePoint next p
-        //      let mutable v = next.[p]
-        //      let add = here.[p]
-        //      hitcount <- hitcount + add.Total
-
-        //      lock v (fun () ->
-        //        v.Count <- v.Count + add.Count
-        //        v.Tracks.AddRange(add.Tracks))))
-
+            foreach (var p in here.Keys)
+            {
+              ensurePoint(next, p);
+              var v = next[p];
+              var add = here[p];
+              hitcount += add.Total;
+              lock (v)
+              {
+                v.Count += add.Count;
+                v.Tracks.AddRange(add.Tracks);
+              }
+            }
+          }
+        }
         return hitcount;
       }
 
