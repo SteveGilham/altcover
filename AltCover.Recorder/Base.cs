@@ -362,8 +362,24 @@ namespace AltCover.Recorder
         return f ? (c | flag) : -1;
       }
 
-      internal static void ensurePoint(Dictionary<int, PointVisit> next, int hitPointId)
-      { }
+      internal static void ensurePoint(Dictionary<int, PointVisit> counts, int hitPointId)
+      {
+        if (!counts.ContainsKey(hitPointId))
+        {
+          lock (counts)
+          {
+            if (!counts.ContainsKey(hitPointId))
+            {
+              System.Threading.Interlocked.Increment(ref Counter.totalVisits);
+
+              if (hitPointId < 0)
+              { System.Threading.Interlocked.Increment(ref Counter.branchVisits); }
+
+              counts.Add(hitPointId, PointVisit.Create());
+            }
+          }
+        }
+      }
 
       internal static long addTable(
               Dictionary<string, Dictionary<int, PointVisit>> counts,
