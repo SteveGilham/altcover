@@ -1140,7 +1140,8 @@ module Targets =
       Directory.ensure "./_Reports"
 
       [ ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ])
+         [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
+           "_Binaries/AltCover.Base/Debug+AnyCPU/netstandard2.0/AltCover.Base.dll" ])
         ("./Build/build-rules.xml",
          [ "$Binaries/Setup/Debug+AnyCPU/net8.0/Setup.dll"
            "$Binaries/Build/Debug+AnyCPU/net8.0/Build.dll" ])
@@ -1406,7 +1407,8 @@ module Targets =
          defaultRules)
         (dixon,
          Option.get refdir,
-         [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
+         [ "_Binaries/AltCover.Base/Debug+AnyCPU/netstandard2.0/AltCover.Base.dll"
+           "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
          [],
          List.concat
            [ defaultRules
@@ -1794,11 +1796,9 @@ module Targets =
               Framework = Some "net8.0" }
           |> (buildWithCLITaggedArguments "UnitTestDotNet"))
 
-      !!(@"./*Test*/*Tests.fsproj")
-      |> Seq.iter buildIt
+      !!(@"./*Test*/*Tests.fsproj") |> Seq.iter buildIt
 
-      !!(@"./*Test*/*Tests.csproj")
-      |> Seq.iter buildIt
+      !!(@"./*Test*/*Tests.csproj") |> Seq.iter buildIt
 
       !!(@"./*.Valid*/*Valid*.fsproj")
       |> Seq.iter buildIt)
