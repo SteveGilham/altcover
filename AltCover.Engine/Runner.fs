@@ -1031,7 +1031,7 @@ module internal Runner =
                     | Tag.Both ->
                       let time = formatter.ReadInt64()
                       let call = formatter.ReadInt32()
-                      Both (Pair.Create(time, call))
+                      Both(Pair.Create(time, call))
                     | Tag.Table ->
                       let t =
                         Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1075,7 +1075,7 @@ module internal Runner =
                                   pv.Tracks.Add(
                                     let time = formatter.ReadInt64()
                                     let call = formatter.ReadInt32()
-                                    Both (Pair.Create(time, call))
+                                    Both(Pair.Create(time, call))
                                   )
 
                                   tracking ()
@@ -1104,7 +1104,7 @@ module internal Runner =
                     key |> String.IsNullOrWhiteSpace |> not
                     || ((String.IsNullOrEmpty key)
                         && hitPointId = 0
-                        && visit.GetType()= typeof<AltCover.Table>)
+                        && visit.GetType() = typeof<AltCover.Table>)
                   then
                     if
                       hits.ContainsKey key |> not
@@ -1112,7 +1112,7 @@ module internal Runner =
                     then
                       hits.Add(key, Dictionary<int, PointVisit>())
 
-                    Counter.addVisit(hits, key, hitPointId, visit)
+                    Counter.addVisit (hits, key, hitPointId, visit)
                   else
                     0L
 
@@ -1189,7 +1189,7 @@ module internal Runner =
 
     let internal extractTracks tracks =
       tracks
-      |> Seq.map (fun (t:Track) ->
+      |> Seq.map (fun (t: Track) ->
         match t with
         | :? Time as x -> (Some x.Value, None)
         | :? Both as b -> (Some b.Value.Time, Some b.Value.Call)
@@ -1391,14 +1391,15 @@ module internal Runner =
             | _ -> new MemoryStream() :> Stream
 
           let result =
-            AltCover.Counter.doFlushStream
-              ((postProcess hits format),
+            AltCover.Counter.doFlushStream (
+              (postProcess hits format),
               pointProcess,
               true,
               hits,
               format,
               file,
-              outputFile)
+              outputFile
+            )
 
           match arg with
           | None -> ()

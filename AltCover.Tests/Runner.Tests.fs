@@ -92,7 +92,7 @@ module AltCoverRunnerTests =
     let key = " "
 
     let index =
-      Counter.I.findIndexFromUspid(0, key)
+      Counter.I.findIndexFromUspid (0, key)
 
     test <@ index < 0 @>
 
@@ -106,7 +106,10 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v1 = Counter.addVisit(visits, key, 23, new Null())
+
+    let v1 =
+      Counter.addVisit (visits, key, 23, new Null())
+
     Assert.That(v1, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -127,7 +130,7 @@ module AltCoverRunnerTests =
     let payload = Time DateTime.UtcNow.Ticks
 
     let v2 =
-      Counter.addVisit(visits, key, 23, payload)
+      Counter.addVisit (visits, key, 23, payload)
 
     Assert.That(v2, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
@@ -147,7 +150,10 @@ module AltCoverRunnerTests =
     visits.Add("key", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v3 = Counter.addVisit (visits, key, 23, new Null())
+
+    let v3 =
+      Counter.addVisit (visits, key, 23, new Null())
+
     Assert.That(v3, Is.EqualTo 1)
 
     let v4 =
@@ -166,9 +172,15 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v5 = Counter.addVisit(visits, key, 23, new Null())
+
+    let v5 =
+      Counter.addVisit (visits, key, 23, new Null())
+
     Assert.That(v5, Is.EqualTo 1)
-    let v6 = Counter.addVisit(visits, key, 42, new Null())
+
+    let v6 =
+      Counter.addVisit (visits, key, 42, new Null())
+
     Assert.That(v6, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 2)
@@ -183,9 +195,15 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v7 = Counter.addVisit(visits, key, 23, new Null())
+
+    let v7 =
+      Counter.addVisit (visits, key, 23, new Null())
+
     Assert.That(v7, Is.EqualTo 1)
-    let v8 = Counter.addVisit(visits, key, 23, new Null())
+
+    let v8 =
+      Counter.addVisit (visits, key, 23, new Null())
+
     Assert.That(v8, Is.EqualTo 1)
     let x = visits.[key].[23]
     Assert.That(x.Count, Is.EqualTo 2)
@@ -202,11 +220,14 @@ module AltCoverRunnerTests =
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
-    let v9 = Counter.addVisit(visits, key, 23, new Null())
+
+    let v9 =
+      Counter.addVisit (visits, key, 23, new Null())
+
     Assert.That(v9, Is.EqualTo 1)
 
     let v10 =
-      Counter.addVisit(visits, key, 23, payload)
+      Counter.addVisit (visits, key, 23, payload)
 
     Assert.That(v10, Is.EqualTo 1)
     let x = visits.[key].[23]
@@ -263,14 +284,15 @@ module AltCoverRunnerTests =
 
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
-    Counter.I.updateReport
-      (ignore,
+    Counter.I.updateReport (
+      ignore,
       (fun _ _ -> ()),
       true,
       item,
       ReportFormat.OpenCover,
       worker,
-      worker2)
+      worker2
+    )
     |> ignore
 
     worker2.Position <- 0L
@@ -2688,9 +2710,9 @@ module AltCoverRunnerTests =
 
       let tracks t : Track array =
         [| Null() :> Track
-           Call (0) :> Track
-           Time (t) :> Track
-           Both (Pair.Create(t, 0)) |]
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -2986,9 +3008,9 @@ module AltCoverRunnerTests =
 
       let tracks t : Track array =
         [| Null() :> Track
-           Call (0) :> Track
-           Time (t) :> Track
-           Both (Pair.Create(t, 0)) |]
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3258,9 +3280,9 @@ module AltCoverRunnerTests =
 
       let tracks t : Track array =
         [| Null() :> Track
-           Call (0) :> Track
-           Time (t) :> Track
-           Both (Pair.Create(t, 0)) |]
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3576,9 +3598,9 @@ module AltCoverRunnerTests =
 
       let tracks t : Track array =
         [| Null() :> Track
-           Call (0) :> Track
-           Time (t) :> Track
-           Both (Pair.Create(t, 0)) |]
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3897,12 +3919,12 @@ module AltCoverRunnerTests =
       Path.Combine(where, Guid.NewGuid().ToString())
 
     let payloads0 =
-      [ Null () :> Track
-        Call (17) :> Track
-        Time (23L) :> Track
-        Both (Pair.Create(5, 42)) :> Track
-        Time (42L) :> Track
-        Call (5) :> Track ]
+      [ Null() :> Track
+        Call(17) :> Track
+        Time(23L) :> Track
+        Both(Pair.Create(5, 42)) :> Track
+        Time(42L) :> Track
+        Call(5) :> Track ]
 
     let pv = init 42L (payloads0 |> List.tail)
 
@@ -3911,7 +3933,9 @@ module AltCoverRunnerTests =
 
     table.Add("Extra", Dictionary<int, PointVisit>())
     table.["Extra"].Add(3, pv)
-    let payloads = ((Table table) :> Track) :: payloads0
+
+    let payloads =
+      ((Table table) :> Track) :: payloads0
 
     let inputs =
       [ String.Empty
@@ -4012,7 +4036,7 @@ module AltCoverRunnerTests =
     let d =
       Dictionary<int, int64 * Track list>()
 
-    d.Add(4, (0L, [ Both (Pair.Create(5, 42)) ]))
+    d.Add(4, (0L, [ Both(Pair.Create(5, 42)) ]))
 
     let e =
       Dictionary<int, int64 * Track list>()
@@ -4060,11 +4084,11 @@ module AltCoverRunnerTests =
 
     let hits =
       [ Null() :> Track
-        Call (17) :> Track
-        Time (23L) :> Track
-        Both (Pair.Create(5, 42)) :> Track
-        Time (42L) :> Track
-        Time (5L) :> Track ]
+        Call(17) :> Track
+        Time(23L) :> Track
+        Both(Pair.Create(5, 42)) :> Track
+        Time(42L) :> Track
+        Time(5L) :> Track ]
 
     Runner.J.pointProcess root hits
 
