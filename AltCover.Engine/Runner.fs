@@ -1112,7 +1112,7 @@ module internal Runner =
                     then
                       hits.Add(key, Dictionary<int, PointVisit>())
 
-                    Counter.addVisit hits key hitPointId visit
+                    Counter.addVisit(hits, key, hitPointId, visit)
                   else
                     0L
 
@@ -1392,13 +1392,13 @@ module internal Runner =
 
           let result =
             AltCover.Counter.doFlushStream
-              (postProcess hits format)
-              pointProcess
-              true
-              hits
-              format
-              file
-              outputFile
+              ((postProcess hits format),
+              pointProcess,
+              true,
+              hits,
+              format,
+              file,
+              outputFile)
 
           match arg with
           | None -> ()

@@ -16,6 +16,7 @@ open Microsoft.FSharp.Reflection
 open Mono.Options
 
 #nowarn "25" // partial pattern match
+#nowarn "3559" // TODO
 
 module AltCoverUsage =
   let internal usageText =
@@ -65,25 +66,25 @@ module AltCoverRunnerTests =
   let MaxTimeFirst () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.maxTime now ago) = now @>
+    test <@ (Counter.I.maxTime (now, ago)) = now @>
 
   [<Test>]
   let MaxTimeLast () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.maxTime ago now) = now @>
+    test <@ (Counter.I.maxTime (ago, now)) = now @>
 
   [<Test>]
   let MinTimeFirst () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.minTime ago now) = ago @>
+    test <@ (Counter.I.minTime (ago, now)) = ago @>
 
   [<Test>]
   let MinTimeLast () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.minTime now ago) = ago @>
+    test <@ (Counter.I.minTime (now, ago)) = ago @>
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
@@ -91,7 +92,7 @@ module AltCoverRunnerTests =
     let key = " "
 
     let index =
-      Counter.I.findIndexFromUspid 0 key
+      Counter.I.findIndexFromUspid(0, key)
 
     test <@ index < 0 @>
 
@@ -105,7 +106,7 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v1 = Counter.addVisit visits key 23 (new Null())
+    let v1 = Counter.addVisit(visits, key, 23, new Null())
     Assert.That(v1, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -126,7 +127,7 @@ module AltCoverRunnerTests =
     let payload = Time DateTime.UtcNow.Ticks
 
     let v2 =
-      Counter.addVisit visits key 23 payload
+      Counter.addVisit(visits, key, 23, payload)
 
     Assert.That(v2, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
@@ -146,11 +147,11 @@ module AltCoverRunnerTests =
     visits.Add("key", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v3 = Counter.addVisit visits key 23 (new Null())
+    let v3 = Counter.addVisit (visits, key, 23, new Null())
     Assert.That(v3, Is.EqualTo 1)
 
     let v4 =
-      Counter.addVisit visits "key" 42 (new Null())
+      Counter.addVisit (visits, "key", 42, new Null())
 
     Assert.That(visits.Count, Is.EqualTo 2)
     Assert.That(v4, Is.EqualTo 1)
@@ -165,9 +166,9 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v5 = Counter.addVisit visits key 23 (new Null())
+    let v5 = Counter.addVisit(visits, key, 23, new Null())
     Assert.That(v5, Is.EqualTo 1)
-    let v6 = Counter.addVisit visits key 42 (new Null())
+    let v6 = Counter.addVisit(visits, key, 42, new Null())
     Assert.That(v6, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 2)
@@ -182,9 +183,9 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v7 = Counter.addVisit visits key 23 (new Null())
+    let v7 = Counter.addVisit(visits, key, 23, new Null())
     Assert.That(v7, Is.EqualTo 1)
-    let v8 = Counter.addVisit visits key 23 (new Null())
+    let v8 = Counter.addVisit(visits, key, 23, new Null())
     Assert.That(v8, Is.EqualTo 1)
     let x = visits.[key].[23]
     Assert.That(x.Count, Is.EqualTo 2)
@@ -201,11 +202,11 @@ module AltCoverRunnerTests =
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
-    let v9 = Counter.addVisit visits key 23 (new Null())
+    let v9 = Counter.addVisit(visits, key, 23, new Null())
     Assert.That(v9, Is.EqualTo 1)
 
     let v10 =
-      Counter.addVisit visits key 23 payload
+      Counter.addVisit(visits, key, 23, payload)
 
     Assert.That(v10, Is.EqualTo 1)
     let x = visits.[key].[23]
@@ -263,13 +264,13 @@ module AltCoverRunnerTests =
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
     Counter.I.updateReport
-      ignore
-      (fun _ _ -> ())
-      true
-      item
-      ReportFormat.OpenCover
-      worker
-      worker2
+      (ignore,
+      (fun _ _ -> ()),
+      true,
+      item,
+      ReportFormat.OpenCover,
+      worker,
+      worker2)
     |> ignore
 
     worker2.Position <- 0L
@@ -2586,7 +2587,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case
@@ -2709,7 +2710,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -2833,7 +2834,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case 1
@@ -3007,7 +3008,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3152,7 +3153,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case
@@ -3279,7 +3280,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3415,7 +3416,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case 1
@@ -3597,7 +3598,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.addVisit (counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()

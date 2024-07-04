@@ -11,10 +11,13 @@ namespace AltCover.Recorder
 {
   using System;
   using System.Collections.Generic;
+  using System.ComponentModel;
   using System.Diagnostics.CodeAnalysis;
   using System.Globalization;
   using System.IO;
+  using System.Text.RegularExpressions;
   using System.Xml;
+  using static System.Net.Mime.MediaTypeNames;
 
 #if !RUNNER
   using ICSharpCode.SharpZipLib.Zip;
@@ -51,10 +54,6 @@ namespace AltCover.Recorder
     Single = 1,
   };
 
-  // TODO isolate where
-  [SuppressMessage("Gendarme.Rules.Performance",
-                    "AvoidUninstantiatedInternalClassesRule",
-                    Justification = "Used as pattern match and compiled away")]
   internal enum Tag
   {
     Null = 0,
@@ -319,6 +318,295 @@ namespace AltCover.Recorder
     static private class I
 #endif
     {
+      //  let internal openCoverXml =
+      //  ("//Module",
+      //   "hash",
+      //   "Classes/Class/Methods/Method",
+      //   [ ("SequencePoints/SequencePoint", 0)
+      //     ("BranchPoints/BranchPoint", branchFlag) ],
+      //   "vc")
+
+      //let internal IEnumerable<string> nCoverXml =
+      //  ("//module", "moduleId", "method", [ ("seqpnt", 0)], "visitcount")
+      internal static readonly object openCoverXml = "//Module";//TODO
+
+      internal static readonly object nCoverXml = "//module";//TODO
+
+      internal static object xmlByFormat(ReportFormat format)
+      {
+        switch (format & ReportFormat.TrackMask)
+        {
+          case ReportFormat.OpenCover: return openCoverXml;
+          case ReportFormat.NCover: return nCoverXml;
+          default: throw new NotSupportedException(format.ToString());
+        }
+      }
+
+      internal static DateTime minTime(DateTime t1, DateTime t2)
+      {
+        return t1 < t2 ? t1 : t2;
+      }
+
+      internal static DateTime maxTime(DateTime t1, DateTime t2)
+      {
+        return t1 > t2 ? t1 : t2;
+      }
+
+      internal static int findIndexFromUspid(int flag, string uspid)
+      {
+        var f = Int32.TryParse(
+              uspid,
+              NumberStyles.Integer,
+              CultureInfo.InvariantCulture,
+              out int c);
+        return f ? (c | flag) : -1;
+      }
+
+      internal static void ensurePoint(Dictionary<int, PointVisit> next, int hitPointId)
+      { }
+
+      internal static long addTable(
+              Dictionary<string, Dictionary<int, PointVisit>> counts,
+              Dictionary<string, Dictionary<int, PointVisit>> t
+        )
+      {
+        long hitcount = 0;
+        //let internal addTable
+        //  (counts: Dictionary<string, Dictionary<int, PointVisit>>)
+        //  (t: Dictionary<string, Dictionary<int, PointVisit>>)
+        //  =
+        //  let mutable hitcount = 0L
+
+        //  t.Keys
+        //  |> Seq.iter (fun m ->
+        //    if counts.ContainsKey m |> not then
+        //      counts.Add(m, Dictionary<int, PointVisit>())
+
+        //    let next = counts.[m]
+        //    let here = t.[m]
+
+        //    here.Keys
+        //    |> Seq.iter (fun p ->
+        //      ensurePoint next p
+        //      let mutable v = next.[p]
+        //      let add = here.[p]
+        //      hitcount <- hitcount + add.Total
+
+        //      lock v (fun () ->
+        //        v.Count <- v.Count + add.Count
+        //        v.Tracks.AddRange(add.Tracks))))
+
+        return hitcount;
+      }
+
+      public static DateTime updateReport(
+      Action<XmlDocument> postProcess,
+      /*Action<XmlElement, IEnumerable<Track>>*/ object pointProcess,
+      bool own,
+      Dictionary<string, Dictionary<int, PointVisit>> counts,
+      ReportFormat format,
+      Stream coverageFile,
+      Stream outputFile
+      )
+      {
+        var flushStart = DateTime.UtcNow;
+        //  let flushStart =
+        //    updateReport postProcess pointProcess own counts format coverageFile outputFile
+
+        //  TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+        return flushStart;
+      }
+
+      public static TimeSpan doFlush(
+      Action<XmlDocument> postProcess,
+      /*Action<XmlElement, IEnumerable<Track>>*/ object pointProcess,
+      bool own,
+      Dictionary<string, Dictionary<int, PointVisit>> counts,
+      ReportFormat format,
+      Stream coverageFile,
+      Stream outputFile
+      )
+      {
+        var flushStart =
+          updateReport(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+
+        return new TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks);
+      }
     }
+
+    // "Public" API
+    internal static void addSingleVisit(
+      Dictionary<string, Dictionary<int, PointVisit>> counts,
+      string moduleId,
+      int hitPointId,
+      Track context
+      )
+    {
+      if (counts.ContainsKey(moduleId))
+      {
+        var next = counts[moduleId];
+        I.ensurePoint(next, hitPointId);
+        var v = next[hitPointId];
+
+        if (context is Null n)
+        { v.Step(); }
+        else { v.Track(context); }
+      }
+    }
+
+#if RUNNER
+
+    internal static long addVisit(
+      Dictionary<string, Dictionary<int, PointVisit>> counts,
+      string moduleId,
+      int hitPointId,
+      Track context
+      )
+    {
+      if (context is Table t)
+      {
+        return I.addTable(counts, t.Value);
+      }
+
+      addSingleVisit(counts, moduleId, hitPointId, context);
+      return 1;
+    }
+
+    [SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Most of this gets curried away")]
+    public static TimeSpan doFlushStream(
+      Action<XmlDocument> postProcess,
+      Action<XmlElement, IEnumerable<Track>> pointProcess,
+      bool own,
+      Dictionary<string, Dictionary<int, PointVisit>> counts,
+      ReportFormat format,
+      Stream coverageFile,
+      Stream outputFile
+      )
+    {
+      return I.doFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+    }
+
+#else
+  //[<SuppressMessage("Gendarme.Rules.Smells",
+  //                  "AvoidLongParameterListsRule",
+  //                  Justification = "Most of this gets curried away")>]
+  //[<SuppressMessage("Microsoft.Reliability",
+  //                  "CA2000:DisposeObjectsBeforeLosingScope",
+  //                  Justification = "'target' is disposed")>]
+  //let internal doFlushStream
+  //  postProcess
+  //  pointProcess
+  //  own
+  //  counts
+  //  format
+  //  coverageFile
+  //  output
+  //  =
+  //  use target =
+  //    match output with
+  //    | None -> new MemoryStream() :> Stream
+  //    | Some f ->
+  //      new FileStream(
+  //        f,
+  //        FileMode.OpenOrCreate,
+  //        FileAccess.Write,
+  //        FileShare.None,
+  //        4096,
+  //        FileOptions.SequentialScan
+  //      )
+  //      :> Stream
+
+  //  let outputFile =
+  //    if Option.isSome output then
+  //      target
+  //    else
+  //      coverageFile :> Stream
+
+  //  I.doFlush postProcess pointProcess own counts format coverageFile outputFile
+
+  //[<SuppressMessage("Gendarme.Rules.Smells",
+  //                  "AvoidLongParameterListsRule",
+  //                  Justification = "Most of this gets curried away")>]
+  //[<SuppressMessage("Gendarme.Rules.Correctness",
+  //                  "EnsureLocalDisposalRule",
+  //                  Justification = "'zip' owns 'container' and is 'Close()'d")>]
+  //[<SuppressMessage("Microsoft.Reliability",
+  //                  "CA2000:DisposeObjectsBeforeLosingScope",
+  //                  Justification = "ald also 'target' is disposed")>]
+  //let internal doFlushFile postProcess pointProcess own counts format report output =
+  //  let zipped =
+  //    int (format &&& ReportFormat.Zipped) <> 0
+
+  //  if not zipped then
+  //    use coverageFile =
+  //      new FileStream(
+  //        report,
+  //        FileMode.Open,
+  //        FileAccess.ReadWrite,
+  //        FileShare.None,
+  //        4096,
+  //        FileOptions.SequentialScan
+  //      )
+
+  //    doFlushStream postProcess pointProcess own counts format coverageFile output
+  //  else
+  //    let container =
+  //      new FileStream(
+  //        report + ".zip",
+  //        FileMode.Open,
+  //        FileAccess.ReadWrite,
+  //        FileShare.None,
+  //        4096,
+  //        FileOptions.SequentialScan
+  //      )
+
+  //    use target =
+  //      match output with
+  //      | None -> new MemoryStream() :> Stream
+  //      | Some f ->
+  //        new FileStream(
+  //          f,
+  //          FileMode.OpenOrCreate,
+  //          FileAccess.Write,
+  //          FileShare.None,
+  //          4096,
+  //          FileOptions.SequentialScan
+  //        )
+  //        :> Stream
+
+  //    try
+  //      ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
+  //      let zip = new ZipFile(container)
+
+  //      try
+  //        let entryName = report |> Path.GetFileName
+  //        let entry = zip.GetEntry(entryName)
+
+  //        let result =
+  //          use reader = zip.GetInputStream(entry)
+  //          I.doFlush postProcess pointProcess own counts format reader target
+
+  //        if output.IsNone then
+  //          zip.BeginUpdate()
+  //          zip.Delete entry
+  //          target.Seek(0L, SeekOrigin.Begin) |> ignore
+
+  //          let source =
+  //            { new IStaticDataSource with
+  //                member self.GetSource() = target }
+
+  //          zip.Add(source, entryName)
+  //          zip.CommitUpdate()
+
+  //        result
+  //      finally
+  //        zip.Close()
+  //    with :? ZipException ->
+  //      use reader = new MemoryStream()
+  //      I.doFlush postProcess pointProcess own counts format reader target
+
+#endif // !RUNNER
   }
 }
