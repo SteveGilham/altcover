@@ -936,15 +936,22 @@ module Targets =
         reraise ())
 
   let BuildRecorder =
-    (fun () -> msbuildDebug MSBuildPath "./AltCover.Recorder.sln")
+    (fun () -> dotnetBuildDebug "./AltCover.Recorder.sln")
 
   let BuildReleaseRecorder =
-    (fun () -> msbuildRelease MSBuildPath "./AltCover.Recorder.sln")
+    (fun () -> dotnetBuildRelease "./AltCover.Recorder.sln")
 
   let BuildDebug =
     (fun () ->
       Directory.ensure "./_SourceLink"
       Shell.copyFile "./_SourceLink/Class2.cs" "./Samples/Sample14/Sample14/Class2.txt"
+
+      Directory.ensure "./_Repack"
+
+      let repackdir =
+        ("./_Repack" |> Path.getFullName)
+
+      Shell.cleanDir repackdir
 
       (if Environment.isWindows then
          let temp = Environment.environVar "TEMP"
@@ -955,9 +962,40 @@ module Targets =
         "./Samples/Sample14/Sample14/Class3.txt"
 
       // net20 and such
-      [ msbuildDebug MSBuildPath
-        msbuildRelease MSBuildPath ]
+      [ dotnetBuildDebug
+        dotnetBuildRelease ]
       |> List.iter (fun f -> f "./AltCover.Recorder.sln")
+
+      Shell.copyFile
+        (Path.Join(repackdir, "AltCover.Async.dll"))
+        ("./_Binaries/AltCover.Async/Release+AnyCPU/net46/AltCover.Async.dll"
+         |> Path.getFullName)
+
+      let ilrepack =
+        ("./packages/"
+         + (packageVersion "ILRepack")
+         + "/tools/ILRepack.exe")
+        |> Path.getFullName
+
+      let keyfile =
+        "./Build/Infrastructure.snk" |> Path.getFullName
+
+      let cmd =
+        [ "/keyfile:" + keyfile
+          "/ver:"
+          + (String.Join(".", VersionTemplate.Split('.') |> Seq.take 2))
+          + ".0.0"
+          "/target:library"
+          "/targetplatform:v2"
+          "/internalize"
+          "/out:"
+          + Path.Join(repackdir, "AltCover.Recorder.dll")
+          "./_Binaries/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.dll"
+          |> Path.getFullName
+          "./_Binaries/AltCover.Recorder/Release+AnyCPU/net46/ICSharpCode.SharpZipLib.dll"
+          |> Path.getFullName]
+
+      Actions.Run (ilrepack, ".", cmd) "ILRepack failed"
 
       [ "./AltCover.sln"
         "./AltCover.Visualizer.sln"

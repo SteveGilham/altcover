@@ -12,9 +12,6 @@ open System.Reflection
 
 open System.Resources
 open System.Runtime.CompilerServices
-#if !NET20
-open System.Threading
-#endif
 
 open AltCover.Shared
 
@@ -160,7 +157,6 @@ module Instance =
 
     let internal synchronize = Object()
 
-#if NET20
     // class needed for "[ThreadStatic] static val mutable"
     [<Sealed>]
     type private AsyncLocal<'a>() =
@@ -173,7 +169,6 @@ module Instance =
       member this.Value
         with get () = AsyncLocal<'a>.item
         and set (value) = AsyncLocal<'a>.item <- value
-#endif
 
     /// <summary>
     /// Gets or sets the current test method

@@ -105,7 +105,7 @@
     <EmbeddedResource Include="Issue222.NCover.lcov" />
     <EmbeddedResource Include="Issue222.OpenCover.xml" />
     <EmbeddedResource Include="Issue222.OpenCover.cobertura" />
-    <EmbeddedResource Include="$(ProjectDir)../_Binaries/AltCover.Recorder/Release+AnyCPU/net20\/AltCover.Recorder.dll">
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Repack\AltCover.Recorder.dll">
       <Link>AltCover.Recorder.net20.dll</Link>
     </EmbeddedResource>
   </ItemGroup>

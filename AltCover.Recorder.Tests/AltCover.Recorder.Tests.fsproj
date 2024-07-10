@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472;net20</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -64,11 +64,10 @@
 
   <ItemGroup>
 
-    <PackageReference Include="FSharp.Core" Condition="'$(TargetFramework)' != 'net20'">
+    <PackageReference Include="FSharp.Core" Condition="'$(TargetFramework)' != 'net472'">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
-    <PackageReference Include="FSharp.Compiler.Tools" />
+    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net20'">

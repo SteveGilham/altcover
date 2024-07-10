@@ -1,9 +1,5 @@
 ﻿#if !NET472
-#if NET20
-namespace Tests.Recorder.Clr2
-#else
 namespace Tests.Recorder.Core
-#endif
 #else
 namespace Tests.Recorder.Clr4
 #endif
@@ -23,6 +19,7 @@ open AltCover.Recorder
 open NUnit.Framework
 
 #nowarn "25" // partial pattern match
+#nowarn "3559"
 
 module AltCoverTests =
 

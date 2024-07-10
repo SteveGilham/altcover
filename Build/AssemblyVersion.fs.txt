@@ -3,7 +3,7 @@ namespace AltCover
 open System.Reflection
 
 [<assembly: AssemblyProductAttribute("AltCover")>]
-#if NET20 || DEBUG
+#if NET46 || DEBUG
 [<assembly: AssemblyVersionAttribute("{0}.0.0")>]
 [<assembly: AssemblyFileVersionAttribute("{1}")>]
 [<assembly: AssemblyInformationalVersionAttribute("{2} {3}")>]
@@ -11,7 +11,7 @@ open System.Reflection
 [<assembly: AssemblyCompanyAttribute("Steve Gilham")>]
 [<assembly: AssemblyTrademarkAttribute("")>]
 [<assembly: AssemblyCopyrightAttribute("© 2010-{4} by Steve Gilham <SteveGilham@users.noreply.github.com>")>]
-#if !NET20
+#if !NET46
 [<assembly: AssemblyMetadataAttribute("RepositoryUrl","https://github.com/SteveGilham/altcover")>]
 [<assembly: AssemblyMetadataAttribute("CommitHash","{2}")>]
 [<assembly: AssemblyMetadataAttribute("Branch","{3}")>]

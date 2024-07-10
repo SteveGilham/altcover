@@ -26,7 +26,9 @@
     <PackageReference Include="Pester" />
     <PackageReference Include="AltCode.Dixon" />
     <PackageReference Include="altcode.gendarme" />
+    <PackageReference Include="ILRepack"/>
     <PackageReference Include="XmlDoc2CmdletDoc" />
     <PackageReference Include="System.ValueTuple" VersionOverride="4.0.0-rc3-24212-01"/>
+    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" />
   </ItemGroup>
 </Project>

@@ -45,6 +45,7 @@
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
+    <PackageVersion Include="ILRepack" Version="2.0.34" />
     <PackageVersion Include="Markdig" Version="0.35.0" />
     <PackageVersion Include="MessageBox.Avalonia" Version="3.1.5.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
