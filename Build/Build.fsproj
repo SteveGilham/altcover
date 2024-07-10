@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <LocalCecil>false</LocalCecil>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
     <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
@@ -37,6 +41,7 @@
     <PackageReference Include="Fake.Tools.git" VersionOverride="6.0.0" />
     <PackageReference Include="FuChu" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="Unquote" />
   </ItemGroup>

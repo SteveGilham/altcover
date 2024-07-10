@@ -242,6 +242,9 @@ module Instance =
     /// <summary>
     /// This method flushes hit count buffers.
     /// </summary>
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Could be void I guess")>]
     let internal flushAll _ =
       let counts = visits
       clear ()
@@ -455,6 +458,9 @@ module Instance =
     let internal visitSelection track moduleId hitPointId =
       visitImpl moduleId hitPointId track
 
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Could be void I guess")>]
     let internal flushCounter (finish: Close) _ =
       match finish with
       | Resume -> flushResume ()
