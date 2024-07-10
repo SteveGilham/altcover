@@ -997,6 +997,21 @@ module Targets =
 
       Actions.Run (ilrepack, ".", cmd) "ILRepack failed"
 
+// Detected TargetFramework-Id: .NETFramework,Version=v2.0
+// Detected RuntimePack: Microsoft.NETCore.App
+
+// Referenced assemblies (in metadata order):
+// mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+// Assembly reference loading information:
+// Info: Success - Loading from: C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll
+
+// System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089 (unresolved)
+// System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089 (unresolved)
+
+// Assembly load log including transitive references:
+// mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+// Info: Success - Loading from: C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll
+
       [ "./AltCover.sln"
         "./AltCover.Visualizer.sln"
         "./MCS.sln"
