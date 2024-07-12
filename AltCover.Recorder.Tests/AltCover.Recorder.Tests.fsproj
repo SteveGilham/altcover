@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472;net20</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
     <!-- see https://github.com/NuGet/Home/issues/8797 -->
-    <NoWarn>NU1702;CS1591</NoWarn>
+    <NoWarn>NU1702</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
@@ -19,10 +19,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.cs">
-      <Link>AssemblyVersion.cs</Link>
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <None Include="Program.cs" Condition="'$(TargetFramework)' != 'net8.0'" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Adapter.fs" />
+    <Compile Include="Tracer.Tests.fs" />
+    <Compile Include="Recorder.Tests.fs" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net8.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +62,10 @@
     <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" >
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>
