@@ -37,8 +37,8 @@ module Adapter =
       Instance.I.visits.Add(name, entry)
 
   let internal init (n, l) =
-    let tmp =
-      { PointVisit.Create() with Count = n }
+    let tmp = PointVisit.Create()
+    tmp.Count <- n
 
     tmp.Tracks.AddRange l
     tmp
