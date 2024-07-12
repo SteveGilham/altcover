@@ -356,6 +356,10 @@ namespace AltCover.Recorder
       //                      "AvoidLongParameterListsRule",
       //                      Justification = "Self-contained internal decorator")>]
 
+      internal static void issue71Wrapper(object visits, string moduleId, int hitPointId,
+        Track context, object handler, object add)
+      { }
+
       //      let
       //#if !DEBUG
       //      inline
@@ -376,6 +380,10 @@ namespace AltCover.Recorder
       //        | :? NullReferenceException
       //        | :? ArgumentNullException -> handler moduleId hitPointId context x
       //        | _ -> reraise()
+
+      internal static void curriedIssue71Wrapper(object visits, string moduleId, int hitPointId,
+        Track context, object add)
+      { }
 
       //    let
       //#if !DEBUG
@@ -472,6 +480,9 @@ namespace AltCover.Recorder
       //    let internal granularity() = Timer
       //    let internal clock() = DateTime.UtcNow.Ticks
 
+      internal static Track payloadSelection(object clock, object frquency, object wantPayload)
+      { return default; }
+
       //    let internal payloadSelection clock frequency wantPayload =
       //      if wantPayload() then
       //        match(frequency (), callerId ()) with
@@ -486,8 +497,14 @@ namespace AltCover.Recorder
       //      else
       //        Null
 
+      internal static Track payloadControl(object frquency, object wantPayload)
+      { return default; }
+
       //    let internal payloadControl =
       //      payloadSelection clock
+
+      internal static Track payloadSelector(object enable)
+      { return default; }
 
       //    let internal payloadSelector enable = payloadControl granularity enable
 

@@ -6,6 +6,7 @@ using System;
 
 namespace AltCover
 #else
+
 namespace AltCover.Recorder
 #endif
 {
@@ -20,6 +21,7 @@ namespace AltCover.Recorder
   using static System.Net.Mime.MediaTypeNames;
 
 #if !RUNNER
+
   using ICSharpCode.SharpZipLib.Zip;
 
   [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
@@ -27,7 +29,8 @@ namespace AltCover.Recorder
                     "AvoidUninstantiatedInternalClassesRule",
                     Justification = "Looks like a bug, not detecting its use")]
   internal sealed class ExcludeFromCodeCoverageAttribute : Attribute
-  {}
+  { }
+
 #endif
 
   [Flags]
@@ -668,123 +671,136 @@ namespace AltCover.Recorder
     }
 
 #else
-  //[<SuppressMessage("Gendarme.Rules.Smells",
-  //                  "AvoidLongParameterListsRule",
-  //                  Justification = "Most of this gets curried away")>]
-  //[<SuppressMessage("Microsoft.Reliability",
-  //                  "CA2000:DisposeObjectsBeforeLosingScope",
-  //                  Justification = "'target' is disposed")>]
-  //let internal doFlushStream
-  //  postProcess
-  //  pointProcess
-  //  own
-  //  counts
-  //  format
-  //  coverageFile
-  //  output
-  //  =
-  //  use target =
-  //    match output with
-  //    | None -> new MemoryStream() :> Stream
-  //    | Some f ->
-  //      new FileStream(
-  //        f,
-  //        FileMode.OpenOrCreate,
-  //        FileAccess.Write,
-  //        FileShare.None,
-  //        4096,
-  //        FileOptions.SequentialScan
-  //      )
-  //      :> Stream
+    //[<SuppressMessage("Gendarme.Rules.Smells",
+    //                  "AvoidLongParameterListsRule",
+    //                  Justification = "Most of this gets curried away")>]
+    //[<SuppressMessage("Microsoft.Reliability",
+    //                  "CA2000:DisposeObjectsBeforeLosingScope",
+    //                  Justification = "'target' is disposed")>]
+    //let internal doFlushStream
+    //  postProcess
+    //  pointProcess
+    //  own
+    //  counts
+    //  format
+    //  coverageFile
+    //  output
+    //  =
+    //  use target =
+    //    match output with
+    //    | None -> new MemoryStream() :> Stream
+    //    | Some f ->
+    //      new FileStream(
+    //        f,
+    //        FileMode.OpenOrCreate,
+    //        FileAccess.Write,
+    //        FileShare.None,
+    //        4096,
+    //        FileOptions.SequentialScan
+    //      )
+    //      :> Stream
 
-  //  let outputFile =
-  //    if Option.isSome output then
-  //      target
-  //    else
-  //      coverageFile :> Stream
+    //  let outputFile =
+    //    if Option.isSome output then
+    //      target
+    //    else
+    //      coverageFile :> Stream
 
-  //  I.doFlush postProcess pointProcess own counts format coverageFile outputFile
+    //  I.doFlush postProcess pointProcess own counts format coverageFile outputFile
 
-  //[<SuppressMessage("Gendarme.Rules.Smells",
-  //                  "AvoidLongParameterListsRule",
-  //                  Justification = "Most of this gets curried away")>]
-  //[<SuppressMessage("Gendarme.Rules.Correctness",
-  //                  "EnsureLocalDisposalRule",
-  //                  Justification = "'zip' owns 'container' and is 'Close()'d")>]
-  //[<SuppressMessage("Microsoft.Reliability",
-  //                  "CA2000:DisposeObjectsBeforeLosingScope",
-  //                  Justification = "ald also 'target' is disposed")>]
-  //let internal doFlushFile postProcess pointProcess own counts format report output =
-  //  let zipped =
-  //    int (format &&& ReportFormat.Zipped) <> 0
+    //[<SuppressMessage("Gendarme.Rules.Smells",
+    //                  "AvoidLongParameterListsRule",
+    //                  Justification = "Most of this gets curried away")>]
+    //[<SuppressMessage("Gendarme.Rules.Correctness",
+    //                  "EnsureLocalDisposalRule",
+    //                  Justification = "'zip' owns 'container' and is 'Close()'d")>]
+    //[<SuppressMessage("Microsoft.Reliability",
+    //                  "CA2000:DisposeObjectsBeforeLosingScope",
+    //                  Justification = "ald also 'target' is disposed")>]
 
-  //  if not zipped then
-  //    use coverageFile =
-  //      new FileStream(
-  //        report,
-  //        FileMode.Open,
-  //        FileAccess.ReadWrite,
-  //        FileShare.None,
-  //        4096,
-  //        FileOptions.SequentialScan
-  //      )
+    internal static void doFlushFile(
+        Action<XmlDocument> postProcess,
+      /*Action<XmlElement, IEnumerable<Track>>*/ object pointProcess,
+        bool own,
+        Dictionary<string, Dictionary<int, PointVisit>> counts,
+        ReportFormat format,
+        Stream report,
+        object output
+      )
+    {
+    }
 
-  //    doFlushStream postProcess pointProcess own counts format coverageFile output
-  //  else
-  //    let container =
-  //      new FileStream(
-  //        report + ".zip",
-  //        FileMode.Open,
-  //        FileAccess.ReadWrite,
-  //        FileShare.None,
-  //        4096,
-  //        FileOptions.SequentialScan
-  //      )
+    //let internal doFlushFile postProcess pointProcess own counts format report output =
+    //  let zipped =
+    //    int (format &&& ReportFormat.Zipped) <> 0
 
-  //    use target =
-  //      match output with
-  //      | None -> new MemoryStream() :> Stream
-  //      | Some f ->
-  //        new FileStream(
-  //          f,
-  //          FileMode.OpenOrCreate,
-  //          FileAccess.Write,
-  //          FileShare.None,
-  //          4096,
-  //          FileOptions.SequentialScan
-  //        )
-  //        :> Stream
+    //  if not zipped then
+    //    use coverageFile =
+    //      new FileStream(
+    //        report,
+    //        FileMode.Open,
+    //        FileAccess.ReadWrite,
+    //        FileShare.None,
+    //        4096,
+    //        FileOptions.SequentialScan
+    //      )
 
-  //    try
-  //      ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
-  //      let zip = new ZipFile(container)
+    //    doFlushStream postProcess pointProcess own counts format coverageFile output
+    //  else
+    //    let container =
+    //      new FileStream(
+    //        report + ".zip",
+    //        FileMode.Open,
+    //        FileAccess.ReadWrite,
+    //        FileShare.None,
+    //        4096,
+    //        FileOptions.SequentialScan
+    //      )
 
-  //      try
-  //        let entryName = report |> Path.GetFileName
-  //        let entry = zip.GetEntry(entryName)
+    //    use target =
+    //      match output with
+    //      | None -> new MemoryStream() :> Stream
+    //      | Some f ->
+    //        new FileStream(
+    //          f,
+    //          FileMode.OpenOrCreate,
+    //          FileAccess.Write,
+    //          FileShare.None,
+    //          4096,
+    //          FileOptions.SequentialScan
+    //        )
+    //        :> Stream
 
-  //        let result =
-  //          use reader = zip.GetInputStream(entry)
-  //          I.doFlush postProcess pointProcess own counts format reader target
+    //    try
+    //      ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
+    //      let zip = new ZipFile(container)
 
-  //        if output.IsNone then
-  //          zip.BeginUpdate()
-  //          zip.Delete entry
-  //          target.Seek(0L, SeekOrigin.Begin) |> ignore
+    //      try
+    //        let entryName = report |> Path.GetFileName
+    //        let entry = zip.GetEntry(entryName)
 
-  //          let source =
-  //            { new IStaticDataSource with
-  //                member self.GetSource() = target }
+    //        let result =
+    //          use reader = zip.GetInputStream(entry)
+    //          I.doFlush postProcess pointProcess own counts format reader target
 
-  //          zip.Add(source, entryName)
-  //          zip.CommitUpdate()
+    //        if output.IsNone then
+    //          zip.BeginUpdate()
+    //          zip.Delete entry
+    //          target.Seek(0L, SeekOrigin.Begin) |> ignore
 
-  //        result
-  //      finally
-  //        zip.Close()
-  //    with :? ZipException ->
-  //      use reader = new MemoryStream()
-  //      I.doFlush postProcess pointProcess own counts format reader target
+    //          let source =
+    //            { new IStaticDataSource with
+    //                member self.GetSource() = target }
+
+    //          zip.Add(source, entryName)
+    //          zip.CommitUpdate()
+
+    //        result
+    //      finally
+    //        zip.Close()
+    //    with :? ZipException ->
+    //      use reader = new MemoryStream()
+    //      I.doFlush postProcess pointProcess own counts format reader target
 
 #endif // !RUNNER
   }

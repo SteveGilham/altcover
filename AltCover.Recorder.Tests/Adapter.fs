@@ -93,7 +93,7 @@ module Adapter =
     let r = List<System.Int64>()
 
     match at with
-    | :? Time as t -> r.Add(t)
+    | :? Time as t -> r.Add(t.Value)
     | _ -> ()
 
     r
@@ -104,8 +104,9 @@ module Adapter =
   let internal untable t =
     let r = List<System.Object>()
 
-    match t with
-    | (n, p, Table d) ->
+    let n, p, (t':Track) = t
+    match t' with
+    | :? Table as d ->
       r.Add(n)
       r.Add(p)
       r.Add(d)
@@ -120,39 +121,36 @@ module Adapter =
       else
         Some output
 
-    Counter.doFlushFile ignore (fun _ _ -> ()) true visits format report output'
+    Counter.doFlushFile(ignore, (fun _ _ -> ()), true, visits, format, report, output')
 
   let internal updateReport (counts, format, coverageFile, outputFile) =
     Counter.I.updateReport
-      ignore
-      (fun _ _ -> ())
-      true
-      counts
-      format
-      coverageFile
-      outputFile
+      (ignore,
+      (fun _ _ -> ()),
+      true,
+      counts,
+      format,
+      coverageFile,
+      outputFile);
 
   let internal payloadSelector x = Instance.I.payloadSelector (fun _ -> x)
 
   let internal payloadControl (x, y) =
-    Instance.I.payloadControl (fun _ -> x) (fun _ -> y)
+    Instance.I.payloadControl ((fun _ -> x), (fun _ -> y))
 
   let internal payloadSelection (x, y, z) =
-    Instance.I.payloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
+    Instance.I.payloadSelection ((fun _ -> x), (fun _ -> y), (fun _ -> z))
 
   let internal makeNullTrace name =
-    { Tracer = name
-      Stream = null
-      Formatter = null
-      Runner = false
-      Definitive = false }
+    Tracer.Create(name)
 
   let internal makeStreamTrace s1 =
-    { Tracer = null
-      Stream = new System.IO.MemoryStream()
-      Formatter = new System.IO.BinaryWriter(s1)
-      Runner = true
-      Definitive = false }
+    let mutable t = Tracer.Create(null)
+    t.Stream <- new System.IO.MemoryStream()
+    t.Formatter <- new System.IO.BinaryWriter(s1)
+    t.Runner <- true
+    t.Definitive <- false
+    t
 
   let internal invokeIssue71Wrapper<'T when 'T :> System.Exception>
     ((unique: string), (called: bool array))
@@ -175,7 +173,7 @@ module Adapter =
           | :? System.ArgumentNullException as ane -> ane.ParamName = unique
           | _ -> x.Message = unique
 
-    Instance.I.issue71Wrapper () () () () catcher pitcher
+    Instance.I.issue71Wrapper ((), (), (), (), catcher, pitcher)
 
   let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
     (unique: string)
@@ -189,7 +187,7 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.curriedIssue71Wrapper "a" "b" "c" "d" pitcher
+    Instance.I.curriedIssue71Wrapper ("a", "b", "c", "d", pitcher)
 
   let internal tracePush (a, b, c) = Instance.I.trace.Push a b c
 //let LogException (a, b, c, d) = Instance.I.logException a b c d
