@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <TargetFrameworks>net9.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -26,7 +26,7 @@
     <Compile Include="Adapter.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net9.0'" />
   </ItemGroup>
 
   <ItemGroup>

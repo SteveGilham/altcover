@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <NoWarn>NU1902,NU1903,NU1904</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
     <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
