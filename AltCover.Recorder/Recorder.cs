@@ -402,6 +402,9 @@ namespace AltCover.Recorder
       //        |> InvalidDataException
       //        |> raise
 
+      internal static void takeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
+      { }
+
       //    let internal takeSample strategy moduleId hitPointId(context: Track) =
       //      match strategy with
       //      | Sampling.All -> true
@@ -443,6 +446,10 @@ namespace AltCover.Recorder
       //    /// </summary>
       //    /// <param name="moduleId">Assembly being visited</param>
       //    /// <param name="hitPointId">Sequence Point identifier</param>
+      internal static void visitImpl(string moduleId, int hitPointId, Track context)
+      {
+      }
+
       //    let internal visitImpl moduleId hitPointId context =
       //      if
       //        (Sample = Sampling.All

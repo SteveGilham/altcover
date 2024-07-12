@@ -56,8 +56,8 @@ module Adapter =
     let v2 =
       init (
         (number + 1L),
-        [ Time 17L
-          Both { Time = 42L; Call = 23 } ]
+        [ Time(17L)
+          Both(Pair.Create(42L,23)) ]
       )
 
     Instance.I.visits.[name].Add(line + 1, v2)
@@ -71,29 +71,29 @@ module Adapter =
   let Lock = Instance.I.visits :> obj
 
   let VisitImplNone (moduleId, hitPointId) =
-    Instance.I.visitImpl moduleId hitPointId Track.Null
+    Instance.I.visitImpl(moduleId, hitPointId, Null())
 
   let VisitImplMethod (moduleId, hitPointId, mId) =
-    Instance.I.visitImpl moduleId hitPointId (Call mId)
+    Instance.I.visitImpl (moduleId, hitPointId, (Call mId))
   //let internal VisitImpl (a, b, c) =
   //  Instance.I.visitImpl a b c
 
   let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.takeSample Sampling.Single moduleId hitPointId context
+    Instance.I.takeSample(Sampling.Single, moduleId, hitPointId, context)
 
   let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.takeSample Sampling.All moduleId hitPointId context
+    Instance.I.takeSample(Sampling.All, moduleId, hitPointId, context)
 
-  let internal newBoth (time, call) = Both { Time = time; Call = call }
+  let internal newBoth (time, call) = Both(Pair.Create(time, call))
 
   let internal asCall track = Call track
   let internal time at = Time at
 
-  let internal untime at =
+  let internal untime (at:Track) =
     let r = List<System.Int64>()
 
     match at with
-    | Time t -> r.Add(t)
+    | :? Time as t -> r.Add(t)
     | _ -> ()
 
     r
