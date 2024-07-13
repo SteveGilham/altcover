@@ -107,7 +107,7 @@ module AltCoverCoreTests =
          strike,
          match enum tag with
          //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
-         | Tag.Call -> Adapter.asCall <| formatter.ReadInt32()
+         | Tag.Call -> (Adapter.asCall <| formatter.ReadInt32()) :> Track
          //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
          | Tag.Table ->
            Assert.True((id = String.Empty))
@@ -250,10 +250,11 @@ module AltCoverCoreTests =
 
     let expect23 =
       [ Adapter.asCall 17; Adapter.asCall 42 ]
+      |> Seq.cast<Track>
 
     let expect24 =
-      [ Adapter.time 17L
-        Adapter.newBoth (42L, 23) ]
+      [ (Adapter.time 17L) :> Track
+        (Adapter.newBoth (42L, 23)) :> Track ]
 
     t.["name"].[23] <- Adapter.init (1L, expect23)
     t.["name"].[24] <- Adapter.init (2L, expect24)

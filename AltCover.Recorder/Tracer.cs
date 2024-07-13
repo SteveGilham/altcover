@@ -46,31 +46,12 @@ namespace AltCover.Recorder
       return new Tracer(name);
     }
 
-    internal void Close()
-    {
-      try
-      {
-        this.Stream.Flush();
-
-        this.Formatter.Close();
-      }
-      catch (ObjectDisposedException) { }
-      catch (NullReferenceException) { }
-    }
-
     internal bool IsConnected
     {
       get
       {
         return (this.Stream != null) && this.Runner;
       }
-    }
-
-    internal Tracer OnStart()
-    {
-      var running = this.Connect();
-      running.Definitive = true;
-      return running;
     }
 
     [SuppressMessage("Gendarme.Rules.Correctness",
@@ -106,5 +87,82 @@ namespace AltCover.Recorder
       else
       { return this; }
     }
+
+    internal void Close()
+    {
+      try
+      {
+        this.Stream.Flush();
+
+        this.Formatter.Close();
+      }
+      catch (ObjectDisposedException) { }
+      catch (NullReferenceException) { }
+    }
+
+    private void PushContext(Track context)
+    {
+      //member private this.PushContext context =
+      //  match context with
+      //  | Null -> this.Formatter.Write(Tag.Null |> byte)
+      //  | Time t ->
+      //    this.Formatter.Write(Tag.Time |> byte)
+      //    this.Formatter.Write(t)
+      //  | Call t ->
+      //    this.Formatter.Write(Tag.Call |> byte)
+      //    this.Formatter.Write(t)
+      //  | Both b ->
+      //    this.Formatter.Write(Tag.Both |> byte)
+      //    this.Formatter.Write(b.Time)
+      //    this.Formatter.Write(b.Call)
+      //  | Table t ->
+      //    this.Formatter.Write(Tag.Table |> byte)
+
+      //    t.Keys
+      //    |> Seq.filter (fun k -> t.[k].Count > 0)
+      //    |> Seq.iter (fun m ->
+      //      this.Formatter.Write m
+      //      this.Formatter.Write t.[m].Count
+
+      //      t.[m].Keys
+      //      |> Seq.iter (fun p ->
+      //        this.Formatter.Write p
+      //        let v = t.[m].[p]
+      //        this.Formatter.Write v.Count
+      //        v.Tracks |> Seq.iter this.PushContext
+      //        this.PushContext Null))
+
+      //    this.Formatter.Write String.Empty
+    }
+
+    internal void Push(string moduleId, int hitPointId, Track context)
+    {
+      this.Formatter.Write(moduleId);
+      this.Formatter.Write(hitPointId);
+      this.PushContext(context);
+    }
+
+    //member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
+    //  if visits.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
+    //    visits |> Table |> this.Push String.Empty 0
+
+    internal Tracer OnStart()
+    {
+      var running = this.Connect();
+      running.Definitive = true;
+      return running;
+    }
+
+    //member internal this.OnConnected f g = if this.IsConnected then f () else g ()
+
+    //member internal this.OnFinish visits =
+    //  this.CatchUp visits
+    //  this.Close()
+
+    //member internal this.OnVisit visits moduleId hitPointId context =
+    //  this.CatchUp visits
+    //  this.Push moduleId hitPointId context
+    //  this.Formatter.Flush()
+    //  this.Stream.Flush()
   }
 }

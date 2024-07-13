@@ -122,6 +122,16 @@ namespace AltCover.Recorder
     {
       return "AltCover.Null";
     }
+
+    public override bool Equals(object obj)
+    {
+      return obj is Null n;
+    }
+
+    public override int GetHashCode()
+    {
+      return string.Empty.GetHashCode();
+    }
   }
 
   internal class Time : Track

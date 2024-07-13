@@ -31,77 +31,99 @@ namespace AltCover.Recorder
     /// Gets the location of coverage xml file
     /// This property's IL code is modified to store the actual file location
     /// </summary>
-    public static string ReportFile
+    internal static string ReportFile
     {
       [MethodImpl(MethodImplOptions.NoInlining)]
       get { return "Coverage.Default.xml"; }
     }
 
-    //    let ReportFilePath =
-    //      Path.Combine(
-    //        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-    //        ReportFile
-    //      )
-    //      |> AltCover.Canonical.canonicalPath
+    internal static string ReportFilePath
+    {
+      get
+      {
+        return canonicalPath(Path.Combine(
+            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+            ReportFile));
+      }
+    }
 
-    //    /// <summary>
-    //    /// Gets whether to defer output until process exit
-    //    /// This property's IL code is modified to store the actual value
-    //    /// </summary>
-    //    [< MethodImplAttribute(MethodImplOptions.NoInlining) >]
-    //  let Defer = false
+    internal static string canonicalPath(string path)
+    // Mono+Linux barfs at a path of "/_" without the "file://" prefix
+    {
+      var u = new Uri("file://" + Path.GetFullPath(path), UriKind.Absolute);
+      return u.LocalPath;
+    }
 
-    //  /// <summary>
-    //  /// Gets the style of the associated report
-    //  /// This property's IL code is modified to store the user chosen override if applicable
-    //  /// </summary>
-    //  [< MethodImplAttribute(MethodImplOptions.NoInlining) >]
-    //  [< SuppressMessage("Gendarme.Rules.Performance",
-    //                    "AvoidUncalledPrivateCodeRule",
-    //                    Justification = "Unit test accessor") >]
-    //  [< SuppressMessage("Gendarme.Rules.Naming",
-    //                    "UseCorrectCasingRule",
-    //                    Justification = "Code rewritten") >]
-    //  let
-    //#if DEBUG
-    //      mutable
-    //#endif
-    //      internal CoverageFormat = // fsharplint:disable-line NonPublicValuesNames
-    //    ReportFormat.NCover
+    /// <summary>
+    /// Gets whether to defer output until process exit
+    /// This property's IL code is modified to store the actual value
+    /// </summary>
+    internal static bool Defer
+    {
+      [MethodImpl(MethodImplOptions.NoInlining)]
+      get { return false; }
+    }
 
-    //  /// <summary>
-    //  /// Gets the frequency of time sampling
-    //  /// This property's IL code is modified to store the user chosen override if applicable
-    //  /// </summary>
-    //  [< MethodImplAttribute(MethodImplOptions.NoInlining) >]
-    //  let Timer = 0L
+    /// <summary>
+    /// Gets the style of the associated report
+    /// This property's IL code is modified to store the user chosen override if applicable
+    /// </summary>
+    private static ReportFormat __coverageFormat = ReportFormat.NCover;
 
-    //  /// <summary>
-    //  /// Gets the sampling strategy
-    //  /// This property's IL code is modified to store the user chosen override if applicable
-    //  /// </summary>
-    //  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-    //    let internal Sample = Sampling.All // fsharplint:disable-line NonPublicValuesNames
+    internal static ReportFormat CoverageFormat
+    {
+#if DEBUG
+      set { __coverageFormat = value; }
+#endif
+      [MethodImpl(MethodImplOptions.NoInlining)]
+      get { return __coverageFormat; }
+    }
 
-    //    /// <summary>
-    //    /// Gets the unique token for this instance
-    //    /// This property's IL code is modified to store a GUID-based token
-    //    /// </summary>
-    //    [< MethodImplAttribute(MethodImplOptions.NoInlining) >]
-    //    let Token = "AltCover"
+    /// <summary>
+    /// Gets the frequency of time sampling
+    /// This property's IL code is modified to store the user chosen override if applicable
+    /// </summary>
+    public static long Timer
+    {
+      [MethodImpl(MethodImplOptions.NoInlining)]
+      get { return 0; }
+    }
+
+    /// <summary>
+    /// Gets the sampling strategy
+    /// This property's IL code is modified to store the user chosen override if applicable
+    /// </summary>
+    internal static Sampling Sample
+    {
+      [MethodImpl(MethodImplOptions.NoInlining)]
+      get { return Sampling.All; }
+    }
+
+    /// <summary>
+    /// Gets the unique token for this instance
+    /// This property's IL code is modified to store a GUID-based token
+    /// </summary>
+    internal static string Token
+    {
+      [MethodImpl(MethodImplOptions.NoInlining)]
+      get { return "AltCover"; }
+    }
 
     //  /// <summary>
     //  /// Gets the indexed module tokens
     //  /// This property's IL code is modified to store instrumentation results
     //  /// </summary>
-    //  [<SuppressMessage("Gendarme.Rules.Performance",
-    //                    "AvoidUncalledPrivateCodeRule",
-    //                    Justification = "Unit test accessor")>]
-    //    [<SuppressMessage("Gendarme.Rules.Performance",
-    //                    "AvoidReturningArraysOnPropertiesRule",
-    //                    Justification = "Code more easily rewritten thus")>]
+    private static IEnumerable<string> __modules = new string[] { string.Empty };
 
-    internal static IEnumerable<string> modules;
+    internal static IEnumerable<string> modules
+    {
+#if DEBUG
+      set { __modules = value; }
+#endif
+      [MethodImpl(MethodImplOptions.NoInlining)]
+      get { return __modules; }
+    }
+
     //    [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
     //    let mutable internal modules =
     //    [| String.Empty |]
@@ -181,7 +203,7 @@ namespace AltCover.Recorder
 
       internal static bool isRunner = false;
 
-      //    let internal synchronize = Object()
+      internal static readonly object synchronize = new Object();
 
       //#if NET20
       //    // class needed for "[ThreadStatic] static val mutable"
@@ -225,23 +247,47 @@ namespace AltCover.Recorder
 
       //      let pop () = look(fun i->i.Pop())
 
-      //    let internal callerId() = CallTrack.peek()
+      internal static int callerID
+      {
+        get { return default; } //CallTrack.peek()
+      }
+
+      internal static void push(int i)
+      { }
+
       //    let internal push x = CallTrack.push x
+
+      internal static int pop()
+      { return default; }
+
       //    let internal pop() = CallTrack.pop()
 
-      //    /// <summary>
-      //    /// Serialize access to the report file across AppDomains for the classic mode
-      //    /// </summary>
-      //    let internal mutex =
-      //      new System.Threading.Mutex(false, Token + ".mutex")
+      /// <summary>
+      /// Serialize access to the report file across AppDomains for the classic mode
+      /// </summary>
+      internal static readonly Mutex mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
-      //    let internal signalFile() = ReportFilePath + ".acv"
+      internal static string signalFile
+      {
+        get { return ReportFilePath + ".acv"; }
+      }
 
-      //    /// <summary>
-      //    /// Reporting back to the mother-ship
-      //    /// </summary>
+      /// <summary>
+      /// Reporting back to the mother-ship
+      /// </summary>
       //    let mutable internal trace =
       //      Tracer.Create(signalFile ())
+
+      private static Tracer __trace = Tracer.Create(signalFile);
+
+      internal static Tracer trace
+      {
+#if DEBUG
+        set { __trace = value; }
+#endif
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        get { return __trace; }
+      }
 
       //    let internal withMutex(f: bool -> 'a) =
       //      let own = mutex.WaitOne(1000)
@@ -260,7 +306,16 @@ namespace AltCover.Recorder
       //    let internal watcher =
       //      new FileSystemWatcher()
 
-      //    let mutable internal recording = true
+      private static bool __recording = true;
+
+      internal static bool recording
+      {
+#if DEBUG
+        set { __recording = value; }
+#endif
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        get { return __recording; }
+      }
 
       internal static void clear()
       { }
@@ -270,30 +325,33 @@ namespace AltCover.Recorder
       //      Counter.branchVisits<- 0L
       //      Counter.totalVisits<- 0L
 
-      //    /// <summary>
-      //    /// This method flushes hit count buffers.
-      //    /// </summary>
-      //    let internal flushAll _ =
-      //      let counts = visits
-      //      clear()
+      /// <summary>
+      /// This method flushes hit count buffers.
+      /// </summary>
+      internal static void flushAll(Close _)
+      {
+        //    let internal flushAll _ =
+        //      let counts = visits
+        //      clear()
 
-      //      trace.OnConnected(fun () -> trace.OnFinish counts) (fun () ->
-      //        match counts.Values |> Seq.sumBy (fun x -> x.Count) with
-      //        | 0 -> ()
-      //        | _ ->
-      //          withMutex(fun own ->
-      //            let delta =
-      //              Counter.doFlushFile
-      //                ignore
-      //                (fun _ _ -> ())
-      //                own
-      //                counts
-      //                CoverageFormat
-      //                ReportFilePath
-      //                None
+        //      trace.OnConnected(fun () -> trace.OnFinish counts) (fun () ->
+        //        match counts.Values |> Seq.sumBy (fun x -> x.Count) with
+        //        | 0 -> ()
+        //        | _ ->
+        //          withMutex(fun own ->
+        //            let delta =
+        //              Counter.doFlushFile
+        //                ignore
+        //                (fun _ _ -> ())
+        //                own
+        //                counts
+        //                CoverageFormat
+        //                ReportFilePath
+        //                None
 
-      //            getResource "Coverage statistics flushing took {0:N} seconds"
-      //            |> Option.iter(fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+        //            getResource "Coverage statistics flushing took {0:N} seconds"
+        //            |> Option.iter(fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+      }
 
       //    let internal flushPause() =
       //      ("PauseHandler")
@@ -410,8 +468,10 @@ namespace AltCover.Recorder
       //        |> InvalidDataException
       //        |> raise
 
-      internal static void takeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
-      { }
+      internal static bool takeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
+      {
+        return false;
+      }
 
       //    let internal takeSample strategy moduleId hitPointId(context: Track) =
       //      match strategy with
@@ -478,30 +538,42 @@ namespace AltCover.Recorder
       //    let internal isTrackingRunner() = isTracking() && isRunner
 
       //    let internal granularity() = Timer
-      //    let internal clock() = DateTime.UtcNow.Ticks
+      internal static long granularity
+      {
+        get { return Timer; }
+      }
 
-      internal static Track payloadSelection(object clock, object frquency, object wantPayload)
-      { return default; }
+      internal static long clock()
+      { return DateTime.UtcNow.Ticks; }
 
-      //    let internal payloadSelection clock frequency wantPayload =
-      //      if wantPayload() then
-      //        match(frequency (), callerId ()) with
-      //        | (0L, None) -> Null
-      //        | (t, None) -> Time(t* (clock () / t))
-      //        | (0L, n) -> Call n.Value
-      //        | (t, n) ->
-      //          Both
-      //            {
-      //        Time = t * (clock() / t)
-      //              Call = n.Value }
-      //      else
-      //        Null
+      internal delegate long ClockProvider();
 
-      internal static Track payloadControl(object frquency, object wantPayload)
-      { return default; }
+      internal delegate long FrequencyProvider();
 
-      //    let internal payloadControl =
-      //      payloadSelection clock
+      internal delegate bool PayloadProvider();
+
+      internal static Track payloadSelection(ClockProvider clock,
+        FrequencyProvider frequency, PayloadProvider wantPayload)
+      {
+        if (wantPayload())
+        {
+          //        match(frequency (), callerId ()) with
+          //        | (0L, None) -> Null
+          //        | (t, None) -> Time(t* (clock () / t))
+          //        | (0L, n) -> Call n.Value
+          //        | (t, n) ->
+          //          Both
+          //            {
+          //        Time = t * (clock() / t)
+          //              Call = n.Value }
+        }
+        return new Null();
+      }
+
+      internal static Track payloadControl(FrequencyProvider frequency, PayloadProvider wantPayload)
+      {
+        return payloadSelection(clock, frequency, wantPayload);
+      }
 
       internal static Track payloadSelector(object enable)
       { return default; }
@@ -549,31 +621,43 @@ namespace AltCover.Recorder
       //  signalFile () |> Tracer.Create |> initialiseTrace
     }
 
-    //  // Public API
-    //  let Visit moduleId hitPointId =
-    //    if I.recording then
-    //    I.visitSelection
-    //      (if I.isTracking() then
-    //         I.payloadSelector I.isTrackingRunner
-    //       else
-    //         Null)
-    //      moduleId
-    //      hitPointId
+    // Public API
+    public static void Visit(string moduleId, int hitPointId)
+    {
+      //  let Visit moduleId hitPointId =
+      //    if I.recording then
+      //    I.visitSelection
+      //      (if I.isTracking() then
+      //         I.payloadSelector I.isTrackingRunner
+      //       else
+      //         Null)
+      //      moduleId
+      //      hitPointId
+    }
 
     //// The moduleId strings are not the hash or guids normally found there
-    //let Push caller =
-    //  I.push caller
+    public static void Push(Action<string> caller)
+    {
+      //let Push caller =
+      //  I.push caller
 
-    //  if I.isTrackingRunner() then
-    //    I.visitSelection(Time DateTime.UtcNow.Ticks) Track.Entry caller
+      //  if I.isTrackingRunner() then
+      //    I.visitSelection(Time DateTime.UtcNow.Ticks) Track.Entry caller
+    }
 
-    //let Pop() =
-    //  let caller = I.pop()
+    public static void Pop()
+    {
+      //let Pop() =
+      //  let caller = I.pop()
 
-    //  if I.isTrackingRunner() && caller.IsSome then
-    //    I.visitSelection(Time DateTime.UtcNow.Ticks) Track.Exit caller.Value
+      //  if I.isTrackingRunner() && caller.IsSome then
+      //    I.visitSelection(Time DateTime.UtcNow.Ticks) Track.Exit caller.Value
+    }
 
     //// Used by the datacollector
-    //let FlushFinish () = I.flushAll ProcessExit
+    internal static void FlushFinish()
+    {
+      I.flushAll(Close.ProcessExit);
+    }
   }
 }

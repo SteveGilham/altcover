@@ -98,8 +98,8 @@ module Adapter =
 
     r
 
-  let internal asNull () = Null
-  let internal table t = Table t
+  let internal asNull () = new Null() :> Track
+  let internal table t = Table t :> Track
 
   let internal untable t =
     let r = List<System.Object>()
@@ -189,7 +189,7 @@ module Adapter =
 
     Instance.I.curriedIssue71Wrapper ("a", "b", "c", "d", pitcher)
 
-  let internal tracePush (a, b, c) = Instance.I.trace.Push a b c
+  let internal tracePush (a, b, c) = Instance.I.trace.Push (a, b, c)
 //let LogException (a, b, c, d) = Instance.I.logException a b c d
 //let FindIndexFromUspid (a,b) = Counter.I.findIndexFromUspid a b
 #endif

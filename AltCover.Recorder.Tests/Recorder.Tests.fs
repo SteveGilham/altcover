@@ -82,7 +82,7 @@ module AltCoverTests =
     let v1 = DateTime.UtcNow.Ticks
     let probe = Instance.I.clock ()
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Instance.I.granularity () = 0L)
+    Assert.True(Instance.I.granularity = 0L)
     Assert.True(probe >= v1)
     Assert.True(probe <= v2)
 
@@ -111,31 +111,32 @@ module AltCoverTests =
     lock Adapter.Lock (fun () ->
       try
         Adapter.ModuleReset [| "module"; "newmodule" |]
+        let n = Null() :> Track
 
-        Assert.True(Adapter.addSample ("module", 23, Null), "Test 1")
-        Assert.True(Adapter.addSample ("module", 24, Null), "Test 2")
-        Assert.True(Adapter.addSample ("newmodule", 23, Null), "Test 3")
-        Assert.True(Adapter.addSample ("module", 23, Null) |> not, "Test 4")
-        Assert.True(Adapter.addSampleUnconditional ("module", 23, Null), "Test 5")
+        Assert.True(Adapter.addSample ("module", 23, n), "Test 1")
+        Assert.True(Adapter.addSample ("module", 24, n), "Test 2")
+        Assert.True(Adapter.addSample ("newmodule", 23, n), "Test 3")
+        Assert.True(Adapter.addSample ("module", 23, n) |> not, "Test 4")
+        Assert.True(Adapter.addSampleUnconditional ("module", 23, n), "Test 5")
         Assert.True(Adapter.addSample ("module", 23, Call 1), "Test 6")
         Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
 
         Assert.True(
-          Adapter.addSample ("module", 24, Both { Call = 1; Time = 0L }),
+          Adapter.addSample ("module", 24, new Both(Pair.Create(1,0))),
           "Test 8"
         )
 
         Assert.True(
-          Adapter.addSample ("module", 25, Both { Call = 1; Time = 0L }),
+          Adapter.addSample ("module", 25, new Both(Pair.Create(1,0))),
           "Test 9"
         )
 
         Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 10")
         Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 11")
-        Assert.True(Adapter.addSample ("module", 25, Null) |> not, "Test 12")
+        Assert.True(Adapter.addSample ("module", 25, n) |> not, "Test 12")
 
         // out of band example
-        Assert.True(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
+        Assert.True(Adapter.addSample ("nonesuch", 25, n) |> not, "Test 12a")
 
         Assert.Throws<InvalidDataException>(fun () ->
           Adapter.addSample ("module", 23, Table null)
@@ -159,16 +160,16 @@ module AltCoverTests =
         Instance.I.trace <- Adapter.makeNullTrace null
 
         Instance.I.recording <- false
-        Instance.Visit "key" 17
+        Instance.Visit ("key", 17)
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit key -23
+        Instance.Visit (key, -23)
 
         Instance.CoverageFormat <-
           ReportFormat.OpenCover
           ||| ReportFormat.WithTracking
 
-        Instance.Visit key -23
+        Instance.Visit (key, -23)
 
         let vs = Adapter.VisitsSeq()
         Assert.True(vs |> Seq.length = 3, sprintf "Adapter.VisitsSeq() = %A" vs)
@@ -196,7 +197,7 @@ module AltCoverTests =
     let key = " "
 
     let index =
-      Counter.I.findIndexFromUspid 0 key
+      Counter.I.findIndexFromUspid (0, key)
 
     Assert.True(index < 0)
 
@@ -571,7 +572,7 @@ module AltCoverTests =
         let before =
           Directory.GetFiles(where, "*.exn")
 
-        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl (key, 23, Adapter.asNull ())
 
         let after =
           Directory.GetFiles(where, "*.exn")
