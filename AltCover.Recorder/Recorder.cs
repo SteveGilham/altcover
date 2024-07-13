@@ -15,13 +15,8 @@ namespace AltCover.Recorder
   using System.Runtime.Remoting.Contexts;
   using System.Security.Policy;
   using System.Text.RegularExpressions;
-
-#if !NET20
   using System.Threading;
   using static System.Net.Mime.MediaTypeNames;
-#endif
-
-  //using AltCover.Shared;
 
   public static class Instance
   {
@@ -265,7 +260,7 @@ namespace AltCover.Recorder
       /// <summary>
       /// Serialize access to the report file across AppDomains for the classic mode
       /// </summary>
-      internal static readonly Mutex mutex = new System.Threading.Mutex(false, Token + ".mutex");
+      internal static readonly Mutex mutex = new Mutex(false, Token + ".mutex");
 
       internal static string signalFile
       {
