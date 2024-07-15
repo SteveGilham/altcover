@@ -677,52 +677,32 @@ namespace AltCover.Recorder
     }
 
 #else
-    //[<SuppressMessage("Gendarme.Rules.Smells",
-    //                  "AvoidLongParameterListsRule",
-    //                  Justification = "Most of this gets curried away")>]
-    //[<SuppressMessage("Microsoft.Reliability",
-    //                  "CA2000:DisposeObjectsBeforeLosingScope",
-    //                  Justification = "'target' is disposed")>]
-    //let internal doFlushStream
-    //  postProcess
-    //  pointProcess
-    //  own
-    //  counts
-    //  format
-    //  coverageFile
-    //  output
-    //  =
-    //  use target =
-    //    match output with
-    //    | None -> new MemoryStream() :> Stream
-    //    | Some f ->
-    //      new FileStream(
-    //        f,
-    //        FileMode.OpenOrCreate,
-    //        FileAccess.Write,
-    //        FileShare.None,
-    //        4096,
-    //        FileOptions.SequentialScan
-    //      )
-    //      :> Stream
 
-    //  let outputFile =
-    //    if Option.isSome output then
-    //      target
-    //    else
-    //      coverageFile :> Stream
-
-    //  I.doFlush postProcess pointProcess own counts format coverageFile outputFile
-
-    //[<SuppressMessage("Gendarme.Rules.Smells",
-    //                  "AvoidLongParameterListsRule",
-    //                  Justification = "Most of this gets curried away")>]
-    //[<SuppressMessage("Gendarme.Rules.Correctness",
-    //                  "EnsureLocalDisposalRule",
-    //                  Justification = "'zip' owns 'container' and is 'Close()'d")>]
-    //[<SuppressMessage("Microsoft.Reliability",
-    //                  "CA2000:DisposeObjectsBeforeLosingScope",
-    //                  Justification = "ald also 'target' is disposed")>]
+    internal static void doFlushStream(
+        Action<XmlDocument> postProcess,
+        PointProcessor pointProcess,
+        bool own,
+        Dictionary<string, Dictionary<int, PointVisit>> counts,
+        ReportFormat format,
+        Stream coverageFile,
+        string output) // option
+    {
+      using (var target = string.IsNullOrEmpty(output) ?
+                         new MemoryStream() as Stream :
+            new FileStream(
+              output,
+              FileMode.OpenOrCreate,
+              FileAccess.Write,
+              FileShare.None,
+              4096,
+              FileOptions.SequentialScan
+            ))
+      {
+        var outputFile = string.IsNullOrEmpty(output) ?
+          coverageFile : target;
+        I.doFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+      }
+    }
 
     internal static void doFlushFile(
         Action<XmlDocument> postProcess,
@@ -734,6 +714,19 @@ namespace AltCover.Recorder
         string output // option
       )
     {
+      var zipped = (format & ReportFormat.Zipped) != 0;
+      if (!zipped)
+      {
+        using (var coverageFile = new FileStream(
+            report,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.None,
+            4096,
+            FileOptions.SequentialScan
+          ))
+          doFlushStream(postProcess, pointProcess, own, counts, format, coverageFile, output);
+      }
     }
 
     //let internal doFlushFile postProcess pointProcess own counts format report output =
