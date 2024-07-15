@@ -142,13 +142,21 @@ namespace AltCover.Recorder
       this.PushContext(context);
     }
 
-    //member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
-    //  if visits.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
-    //    visits |> Table |> this.Push String.Empty 0
+    internal void CatchUp(Dictionary<string, Dictionary<int, PointVisit>> visits)
+    {
+      foreach (var item in visits.Values)
+      {
+        if (item.Count > 0)
+        {
+          Push(String.Empty, 0, new Table(visits));
+          return;
+        }
+      }
+    }
 
     internal Tracer OnStart()
     {
-      var running = this.Connect();
+      var running = Connect();
       running.Definitive = true;
       return running;
     }
@@ -159,10 +167,13 @@ namespace AltCover.Recorder
     //  this.CatchUp visits
     //  this.Close()
 
-    //member internal this.OnVisit visits moduleId hitPointId context =
-    //  this.CatchUp visits
-    //  this.Push moduleId hitPointId context
-    //  this.Formatter.Flush()
-    //  this.Stream.Flush()
+    internal void OnVisit(Dictionary<string, Dictionary<int, PointVisit>> visits,
+      string moduleId, int hitPointId, Track context)
+    {
+      CatchUp(visits);
+      Push(moduleId, hitPointId, context);
+      Formatter.Flush();
+      Stream.Flush();
+    }
   }
 }

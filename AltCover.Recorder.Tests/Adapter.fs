@@ -187,9 +187,7 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.curriedIssue71Wrapper<string, string, string, string, obj> ("a", "b", "c", "d", pitcher) |> ignore
+    Instance.I.curriedIssue71Wrapper<string, string, string, string> ("a", "b", "c", "d", pitcher) |> ignore
 
   let internal tracePush (a, b, c) = Instance.I.trace.Push (a, b, c)
-//let LogException (a, b, c, d) = Instance.I.logException a b c d
-//let FindIndexFromUspid (a,b) = Counter.I.findIndexFromUspid a b
 #endif

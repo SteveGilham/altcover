@@ -162,20 +162,19 @@ namespace AltCover.Recorder
       //      |> Seq.map(fun l -> resources.GetString(s + "." + l))
       //      |> Seq.tryFind(String.IsNullOrEmpty >> not)
 
-      internal static Dictionary<string, Dictionary<int, PointVisit>> makeVisits()
+      private static Dictionary<string, Dictionary<int, PointVisit>> makeVisits()
       {
-        return default;
+        var d = new Dictionary<string, Dictionary<int, PointVisit>>
+        {
+          { Track.Entry, new Dictionary<int, PointVisit>() },
+          { Track.Exit, new Dictionary<int, PointVisit>() }
+        };
+        foreach (var item in modules)
+        {
+          d.Add(item, new Dictionary<int, PointVisit>());
+        }
+        return d;
       }
-
-      //    let private makeVisits() =
-      //      [modules
-      //        [| Track.Entry; Track.Exit |] ]
-      //      |> Seq.concat
-      //      |> Seq.fold
-      //        (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
-      //          d.Add(k, Dictionary<int, PointVisit>())
-      //          d)
-      //        (Dictionary<string, Dictionary<int, PointVisit>>())
 
       /// <summary>
       /// Accumulation of visit records
@@ -184,16 +183,13 @@ namespace AltCover.Recorder
 
       internal static Dictionary<string, Dictionary<Sampled, bool>> makeSamples()
       {
-        return default;
+        var d = new Dictionary<string, Dictionary<Sampled, bool>>();
+        foreach (var item in modules)
+        {
+          d.Add(item, new Dictionary<Sampled, bool>());
+        }
+        return d;
       }
-
-      //    let internal makeSamples() =
-      //      modules
-      //      |> Seq.fold
-      //        (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
-      //          d.Add(k, Dictionary<Sampled, bool>())
-      //          d)
-      //        (Dictionary<string, Dictionary<Sampled, bool>>())
 
       internal static Dictionary<string, Dictionary<Sampled, bool>> samples = makeSamples();
 
@@ -314,12 +310,11 @@ namespace AltCover.Recorder
       }
 
       internal static void clear()
-      { }
-
-      //    let internal clear() =
-      //      visits<- makeVisits ()
-      //      Counter.branchVisits<- 0L
-      //      Counter.totalVisits<- 0L
+      {
+        visits = makeVisits();
+        Counter.branchVisits = 0;
+        Counter.totalVisits = 0;
+      }
 
       /// <summary>
       /// This method flushes hit count buffers.
@@ -372,14 +367,24 @@ namespace AltCover.Recorder
 
       //      recording <- true
 
-      //    let internal traceVisit moduleId hitPointId context =
-      //      lock synchronize(fun () ->
-      //        let counts = visits
+      internal static void traceVisit(string moduleId, int hitPointId, Track context)
+      {
+        lock (synchronize)
+        {
+          var counts = visits;
+          //if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
+          foreach (var item in counts.Values)
+          {
+            if (item.Count > 0)
+            {
+              clear();
+              break;
+            }
+          }
 
-      //        if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
-      //          clear()
-
-      //        trace.OnVisit counts moduleId hitPointId context)
+          trace.OnVisit(counts, moduleId, hitPointId, context);
+        }
+      }
 
       //    [<SuppressMessage("Microsoft.Usage",
       //                      "CA2202:DisposeObjectsBeforeLosingScope",
@@ -415,10 +420,10 @@ namespace AltCover.Recorder
 
       internal delegate T HandlerFunction<T1, T2, T3, T>(T1 a, T2 b, T3 c, Exception x);
 
-      internal delegate T Adder<T1, T2, T3, T4, T>(T1 a, T2 b, T3 c, T4 d);
+      internal delegate void Adder<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d);
 
       internal static T issue71Wrapper<T1, T2, T3, T4, T>(T1 visits, T2 moduleId, T3 hitPointId,
-        T4 context, HandlerFunction<T1, T2, T3, T> handler, Adder<T1, T2, T3, T4, T> add)
+        T4 context, HandlerFunction<T1, T2, T3, T> handler, Adder<T1, T2, T3, T4> add)
       {
         return default;
       }
@@ -444,11 +449,11 @@ namespace AltCover.Recorder
       //        | :? ArgumentNullException -> handler moduleId hitPointId context x
       //        | _ -> reraise()
 
-      internal static T curriedIssue71Wrapper<T1, T2, T3, T4, T>(T1 visits, T2 moduleId,
+      internal static void curriedIssue71Wrapper<T1, T2, T3, T4>(T1 visits, T2 moduleId,
         T3 hitPointId,
-        T4 context, Adder<T1, T2, T3, T4, T> add)
+        T4 context, Adder<T1, T2, T3, T4> add)
       {
-        return default;
+        return;
       }
 
       //    let
@@ -463,6 +468,11 @@ namespace AltCover.Recorder
       //        add
       //        =
       //      issue71Wrapper visits moduleId hitPointId context logException add
+
+      internal static void addVisit(string moduleId, int hitPointId, Track context)
+      {
+        curriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.addSingleVisit);
+      }
 
       //    let internal addVisit moduleId hitPointId context =
       //      curriedIssue71Wrapper visits moduleId hitPointId context Counter.addSingleVisit
@@ -524,20 +534,33 @@ namespace AltCover.Recorder
       //    /// <param name="hitPointId">Sequence Point identifier</param>
       internal static void visitImpl(string moduleId, int hitPointId, Track context)
       {
+        if
+          (Sample == Sampling.All
+           || takeSample(Sample, moduleId, hitPointId, context))
+        {
+          if (Defer || supervision || !trace.IsConnected)
+          {
+            addVisit(moduleId, hitPointId, context);
+          }
+          else
+          {
+            traceVisit(moduleId, hitPointId, context);
+          }
+        }
+
+        //    let internal visitImpl moduleId hitPointId context =
+        //      if
+        //        (Sample = Sampling.All
+        //         || takeSample Sample moduleId hitPointId context)
+        //      then
+        //        let adder =
+        //          if Defer || supervision || (trace.IsConnected |> not) then
+        //            addVisit
+        //          else
+        //            traceVisit
+
+        //        adder moduleId hitPointId context
       }
-
-      //    let internal visitImpl moduleId hitPointId context =
-      //      if
-      //        (Sample = Sampling.All
-      //         || takeSample Sample moduleId hitPointId context)
-      //      then
-      //        let adder =
-      //          if Defer || supervision || (trace.IsConnected |> not) then
-      //            addVisit
-      //          else
-      //            traceVisit
-
-      //        adder moduleId hitPointId context
 
       //    let internal isTracking() =
       //      (int (CoverageFormat &&& ReportFormat.WithTracking)
