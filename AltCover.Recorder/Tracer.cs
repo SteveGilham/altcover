@@ -144,9 +144,8 @@ namespace AltCover.Recorder
             PushContext(new Null());
           }
         }
+        Formatter.Write(String.Empty);
       }
-
-      Formatter.Write(String.Empty);
     }
 
     internal void Push(string moduleId, int hitPointId, Track context)
