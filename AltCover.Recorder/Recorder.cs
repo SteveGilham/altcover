@@ -197,62 +197,71 @@ namespace AltCover.Recorder
 
       internal static readonly object synchronize = new Object();
 
-      //#if NET20
-      //    // class needed for "[ThreadStatic] static val mutable"
-      //    [<Sealed>]
-      //    type private AsyncLocal<'a>() =
-      //      [<ThreadStatic; DefaultValue>]
-      //      static val mutable private item: 'a
+#if NET20
 
-      //      [<SuppressMessage("Gendarme.Rules.Correctness",
-      //                        "MethodCanBeMadeStaticRule",
-      //                        Justification = "It's a compatibility hack")>]
-      //      member this.Value
-      //        with get () = AsyncLocal<'a>.item
-      //        and set (value) = AsyncLocal<'a>.item <- value
-      //#endif
+      // class needed for "[ThreadStatic] static val mutable"
+      private sealed class AsyncLocal<T>
+      {
+        private static T item;
 
-      //      /// <summary>
-      //      /// Gets or sets the current test method
-      //      /// </summary>
-      //    module private CallTrack =
-      //      let value = AsyncLocal<Stack<int>>()
+        public T Value
+        {
+          get { return item; }
+          set { item = value; }
+        }
+      }
 
-      //      // no race conditions here
-      //      let instance() =
-      //        match value.Value with
-      //        | null -> value.Value<- Stack<int>()
-      //        | _ -> ()
+#endif
 
-      //        value.Value
+      /// <summary>
+      /// Gets or sets the current test method
+      /// </summary>
+      private static class CallTrack
+      {
+        private static AsyncLocal<Stack<int>> value = new AsyncLocal<Stack<int>>();
 
-      //      let private look op =
-      //        let i = instance()
+        //    module private CallTrack =
+        //      let value = AsyncLocal<Stack<int>>()
 
-      //        match i.Count with
-      //        | 0 -> None
-      //        | _ -> Some(op i)
+        // no race conditions here
+        private static Stack<int> instance()
+        {
+          if (value.Value == null)
+            value.Value = new Stack<int>();
 
-      //      let peek () = look(fun i->i.Peek())
+          return value.Value;
+        }
 
-      //      let push x = instance().Push x
+        public static Nullable<int> peek()
+        {
+          var i = instance();
+          return (i.Count > 0) ? (Nullable<int>)i.Peek() : null;
+        }
 
-      //      let pop () = look(fun i->i.Pop())
+        public static void push(int x)
+        {
+          instance().Push(x);
+        }
+
+        public static Nullable<int> pop()
+        {
+          var i = instance();
+          return (i.Count > 0) ? (Nullable<int>)i.Pop() : null;
+        }
+      }
 
       internal static Nullable<int> callerId
       {
-        get { return default; } //CallTrack.peek()
+        get { return CallTrack.peek(); }
       }
 
       internal static void push(int i)
-      { }
+      {
+        CallTrack.push(i);
+      }
 
-      //    let internal push x = CallTrack.push x
-
-      internal static int pop()
-      { return default; }
-
-      //    let internal pop() = CallTrack.pop()
+      internal static Nullable<int> pop()
+      { return CallTrack.pop(); }
 
       /// <summary>
       /// Serialize access to the report file across AppDomains for the classic mode

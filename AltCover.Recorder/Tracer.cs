@@ -102,37 +102,47 @@ namespace AltCover.Recorder
 
     private void PushContext(Track context)
     {
-      //member private this.PushContext context =
-      //  match context with
-      //  | Null -> this.Formatter.Write(Tag.Null |> byte)
-      //  | Time t ->
-      //    this.Formatter.Write(Tag.Time |> byte)
-      //    this.Formatter.Write(t)
-      //  | Call t ->
-      //    this.Formatter.Write(Tag.Call |> byte)
-      //    this.Formatter.Write(t)
-      //  | Both b ->
-      //    this.Formatter.Write(Tag.Both |> byte)
-      //    this.Formatter.Write(b.Time)
-      //    this.Formatter.Write(b.Call)
-      //  | Table t ->
-      //    this.Formatter.Write(Tag.Table |> byte)
+      if (context is Null)
+        Formatter.Write((byte)Tag.Null);
+      else if (context is Time)
+      {
+        var t = (Time)context;
+        Formatter.Write((byte)Tag.Time);
+        Formatter.Write(t.Value);
+      }
+      else if (context is Call)
+      {
+        var c = (Call)context;
+        Formatter.Write((byte)Tag.Call);
+        Formatter.Write(c.Value);
+      }
+      else if (context is Both)
+      {
+        var b = (Both)context;
+        Formatter.Write((byte)Tag.Both);
+        Formatter.Write(b.Value.Time);
+        Formatter.Write(b.Value.Call);
+      }
+      else
+      {
+        var t = (Table)context;
+        Formatter.Write((byte)Tag.Table);
+        //    t.Keys
+        //    |> Seq.filter (fun k -> t.[k].Count > 0)
+        //    |> Seq.iter (fun m ->
+        //      this.Formatter.Write m
+        //      this.Formatter.Write t.[m].Count
 
-      //    t.Keys
-      //    |> Seq.filter (fun k -> t.[k].Count > 0)
-      //    |> Seq.iter (fun m ->
-      //      this.Formatter.Write m
-      //      this.Formatter.Write t.[m].Count
+        //      t.[m].Keys
+        //      |> Seq.iter (fun p ->
+        //        this.Formatter.Write p
+        //        let v = t.[m].[p]
+        //        this.Formatter.Write v.Count
+        //        v.Tracks |> Seq.iter this.PushContext
+        //        this.PushContext Null))
+      }
 
-      //      t.[m].Keys
-      //      |> Seq.iter (fun p ->
-      //        this.Formatter.Write p
-      //        let v = t.[m].[p]
-      //        this.Formatter.Write v.Count
-      //        v.Tracks |> Seq.iter this.PushContext
-      //        this.PushContext Null))
-
-      //    this.Formatter.Write String.Empty
+      Formatter.Write(String.Empty);
     }
 
     internal void Push(string moduleId, int hitPointId, Track context)
@@ -161,11 +171,19 @@ namespace AltCover.Recorder
       return running;
     }
 
-    //member internal this.OnConnected f g = if this.IsConnected then f () else g ()
+    public delegate void Act();
 
-    //member internal this.OnFinish visits =
-    //  this.CatchUp visits
-    //  this.Close()
+    //member internal this.OnConnected f g = if this.IsConnected then f () else g ()
+    internal void OnConnected(Act f, Act g)
+    {
+      if (IsConnected) f(); else g();
+    }
+
+    internal void OnFinish(Dictionary<string, Dictionary<int, PointVisit>> visits)
+    {
+      CatchUp(visits);
+      Close();
+    }
 
     internal void OnVisit(Dictionary<string, Dictionary<int, PointVisit>> visits,
       string moduleId, int hitPointId, Track context)
