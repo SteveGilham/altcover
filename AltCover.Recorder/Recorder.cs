@@ -118,31 +118,59 @@ namespace AltCover.Recorder
       get { return __modules; }
     }
 
-    //    [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-    //    let mutable internal modules =
-    //    [| String.Empty |]
+    private static bool IsSupervised()
+    {
+      bool maybe = false;
+      foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+      {
+        var n = a.GetName();
+        maybe = maybe ||
+         n.Name == "AltCover.DataCollector"
+        && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal);
+      }
 
-    //    [<SuppressMessage("Gendarme.Rules.Performance",
-    //                    "AvoidUncalledPrivateCodeRule",
-    //                    Justification = "Access by reflection in the data collector")>]
+      return maybe && !Token.Equals("AltCover", StringComparison.Ordinal);
+    }
 
-    internal static bool supervision;
-    //    let mutable internal supervision =
+    internal static bool supervision = IsSupervised();
     //    //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
-    //    AppDomain.CurrentDomain.GetAssemblies()
-    //    |> Seq.map(fun a -> a.GetName())
-    //    |> Seq.exists(fun n ->
-    //      n.Name == "AltCover.DataCollector"
-    //      && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
-    //    && Token<> "AltCover"
 
     internal abstract class Sampled
-    { }
+    {
+      protected Sampled(int visit)
+      {
+        this.visit = visit;
+      }
 
-    //  type internal Sampled =
-    //    | Visit of int
-    //    | CallVisit of(int* int)
-    //    | TimeVisit of(int* int64)
+      public readonly int visit;
+    }
+
+    internal class SimpleVisit : Sampled
+    {
+      public SimpleVisit(int visit) : base(visit)
+      {
+      }
+    }
+
+    internal class CallVisit : Sampled
+    {
+      public readonly int call;
+
+      public CallVisit(int visit, int call) : base(visit)
+      {
+        this.call = call;
+      }
+    }
+
+    internal class TimeVisit : Sampled
+    {
+      public readonly long time;
+
+      public TimeVisit(int visit, long time) : base(visit)
+      {
+        this.time = time;
+      }
+    }
 
 #if DEBUG
 
@@ -151,8 +179,8 @@ namespace AltCover.Recorder
      private static class I
 #endif
     {
-      //      let internal resources =
-      //      ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
+      internal static readonly ResourceManager resources =
+            new ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly());
 
       //    let internal getResource s =
       //      let cc =
@@ -220,9 +248,6 @@ namespace AltCover.Recorder
       {
         private static AsyncLocal<Stack<int>> value = new AsyncLocal<Stack<int>>();
 
-        //    module private CallTrack =
-        //      let value = AsyncLocal<Stack<int>>()
-
         // no race conditions here
         private static Stack<int> instance()
         {
@@ -276,9 +301,6 @@ namespace AltCover.Recorder
       /// <summary>
       /// Reporting back to the mother-ship
       /// </summary>
-      //    let mutable internal trace =
-      //      Tracer.Create(signalFile ())
-
       private static Tracer __trace = Tracer.Create(signalFile);
 
       internal static Tracer trace
@@ -462,6 +484,8 @@ namespace AltCover.Recorder
 
       internal static bool takeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
       {
+        if (strategy == Sampling.All)
+          return true;
         return false;
       }
 
@@ -501,11 +525,12 @@ namespace AltCover.Recorder
       //            false)
       //        |> Seq.fold(||) false // true if any are novel -- all must be evaluated
 
-      //    /// <summary>
-      //    /// This method is executed from instrumented assemblies.
-      //    /// </summary>
-      //    /// <param name="moduleId">Assembly being visited</param>
-      //    /// <param name="hitPointId">Sequence Point identifier</param>
+      /// <summary>
+      /// This method is executed from instrumented assemblies.
+      /// </summary>
+      /// <param name="moduleId">Assembly being visited</param>
+      /// <param name="hitPointId">Sequence Point identifier</param>
+      /// <param name="context">What sort of visit</param>
       internal static void visitImpl(string moduleId, int hitPointId, Track context)
       {
         if
@@ -521,28 +546,18 @@ namespace AltCover.Recorder
             traceVisit(moduleId, hitPointId, context);
           }
         }
-
-        //    let internal visitImpl moduleId hitPointId context =
-        //      if
-        //        (Sample = Sampling.All
-        //         || takeSample Sample moduleId hitPointId context)
-        //      then
-        //        let adder =
-        //          if Defer || supervision || (trace.IsConnected |> not) then
-        //            addVisit
-        //          else
-        //            traceVisit
-
-        //        adder moduleId hitPointId context
       }
 
-      //    let internal isTracking() =
-      //      (int (CoverageFormat &&& ReportFormat.WithTracking)
-      //       <> 0)
+      internal static bool isTracking
+      {
+        get { return (CoverageFormat & ReportFormat.WithTracking) != 0; }
+      }
 
-      //    let internal isTrackingRunner() = isTracking() && isRunner
+      internal static bool isTrackingRunner()
+      {
+        return isTracking && isRunner;
+      }
 
-      //    let internal granularity() = Timer
       internal static long granularity
       {
         get { return Timer; }
@@ -587,11 +602,10 @@ namespace AltCover.Recorder
 
       //    let internal payloadSelector enable = payloadControl granularity enable
 
-      internal static void visitSelection<T>(T track, string moduleId, int hitPointId)
-      { }
-
-      //    let internal visitSelection track moduleId hitPointId =
-      //      visitImpl moduleId hitPointId track
+      internal static void visitSelection(Track track, string moduleId, int hitPointId)
+      {
+        visitImpl(moduleId, hitPointId, track);
+      }
 
       //    let internal flushCounter(finish: Close) _ =
       //      match finish with
@@ -634,34 +648,30 @@ namespace AltCover.Recorder
     // Public API
     public static void Visit(string moduleId, int hitPointId)
     {
-      //  let Visit moduleId hitPointId =
-      //    if I.recording then
-      //    I.visitSelection
-      //      (if I.isTracking() then
-      //         I.payloadSelector I.isTrackingRunner
-      //       else
-      //         Null)
-      //      moduleId
-      //      hitPointId
+      if (I.recording)
+      {
+        var track = I.isTracking ?
+                           I.payloadSelector(I.isTrackingRunner) :
+                           new Null();
+        I.visitSelection(track, moduleId, hitPointId);
+      }
     }
 
     //// The moduleId strings are not the hash or guids normally found there
     public static void Push(int caller)
     {
-      //let Push caller =
-      //  I.push caller
+      I.push(caller);
 
-      //  if I.isTrackingRunner() then
-      //    I.visitSelection(Time DateTime.UtcNow.Ticks) Track.Entry caller
+      if (I.isTrackingRunner())
+        I.visitSelection(new Time(DateTime.UtcNow.Ticks), Track.Entry, caller);
     }
 
     public static void Pop()
     {
-      //let Pop() =
-      //  let caller = I.pop()
+      var caller = I.pop();
 
-      //  if I.isTrackingRunner() && caller.IsSome then
-      //    I.visitSelection(Time DateTime.UtcNow.Ticks) Track.Exit caller.Value
+      if (I.isTrackingRunner() && caller.HasValue)
+        I.visitSelection(new Time(DateTime.UtcNow.Ticks), Track.Exit, caller.Value);
     }
 
     //// Used by the datacollector
