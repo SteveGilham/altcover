@@ -678,7 +678,7 @@ namespace AltCover.Recorder
 
 #else
 
-    internal static void doFlushStream(
+    internal static TimeSpan doFlushStream(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
         bool own,
@@ -700,11 +700,11 @@ namespace AltCover.Recorder
       {
         var outputFile = string.IsNullOrEmpty(output) ?
           coverageFile : target;
-        I.doFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+        return I.doFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
       }
     }
 
-    internal static void doFlushFile(
+    internal static TimeSpan doFlushFile(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
         bool own,
@@ -725,81 +725,84 @@ namespace AltCover.Recorder
             4096,
             FileOptions.SequentialScan
           ))
-          doFlushStream(postProcess, pointProcess, own, counts, format, coverageFile, output);
+          return doFlushStream(postProcess, pointProcess, own, counts, format, coverageFile, output);
+      }
+      else
+      {
+        var container =
+          new FileStream(
+            report + ".zip",
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.None,
+            4096,
+            FileOptions.SequentialScan
+          );
+        using (var target = string.IsNullOrEmpty(output) ?
+          new MemoryStream() as Stream :
+                               new FileStream(
+                                 output,
+                                 FileMode.OpenOrCreate,
+                                 FileAccess.Write,
+                                 FileShare.None,
+                                 4096,
+                                 FileOptions.SequentialScan
+                               ))
+        {
+          try
+          {
+            ZipConstants.DefaultCodePage = 65001; //UTF-8 as System.IO.Compression.ZipFile uses internally
+            var zip = new ZipFile(container);
+
+            try
+            {
+              var entryName = Path.GetFileName(report);
+              var entry = zip.GetEntry(entryName);
+
+              var result = new TimeSpan(0);
+              using (var reader = zip.GetInputStream(entry))
+              {
+                result = I.doFlush(postProcess, pointProcess, own, counts, format, reader, target);
+              }
+
+              if (string.IsNullOrEmpty(output))
+              {
+                zip.BeginUpdate();
+                zip.Delete(entry);
+                target.Seek(0L, SeekOrigin.Begin); //|> ignore
+
+                zip.Add(new Source(target), entryName);
+                zip.CommitUpdate();
+              }
+              return result;
+            }
+            finally { zip.Close(); }
+          }
+          catch (ZipException)
+          {
+            using (var reader = new MemoryStream())
+            { return I.doFlush(postProcess, pointProcess, own, counts, format, reader, target); }
+          }
+        }
       }
     }
 
-    //let internal doFlushFile postProcess pointProcess own counts format report output =
-    //  let zipped =
-    //    int (format &&& ReportFormat.Zipped) <> 0
+#if !RUNNER
 
-    //  if not zipped then
-    //    use coverageFile =
-    //      new FileStream(
-    //        report,
-    //        FileMode.Open,
-    //        FileAccess.ReadWrite,
-    //        FileShare.None,
-    //        4096,
-    //        FileOptions.SequentialScan
-    //      )
+    internal class Source : IStaticDataSource
+    {
+      private readonly Stream _target;
 
-    //    doFlushStream postProcess pointProcess own counts format coverageFile output
-    //  else
-    //    let container =
-    //      new FileStream(
-    //        report + ".zip",
-    //        FileMode.Open,
-    //        FileAccess.ReadWrite,
-    //        FileShare.None,
-    //        4096,
-    //        FileOptions.SequentialScan
-    //      )
+      public Source(Stream t)
+      {
+        _target = t;
+      }
 
-    //    use target =
-    //      match output with
-    //      | None -> new MemoryStream() :> Stream
-    //      | Some f ->
-    //        new FileStream(
-    //          f,
-    //          FileMode.OpenOrCreate,
-    //          FileAccess.Write,
-    //          FileShare.None,
-    //          4096,
-    //          FileOptions.SequentialScan
-    //        )
-    //        :> Stream
+      public Stream GetSource()
+      { return _target; }
+    }
 
-    //    try
-    //      ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
-    //      let zip = new ZipFile(container)
-
-    //      try
-    //        let entryName = report |> Path.GetFileName
-    //        let entry = zip.GetEntry(entryName)
-
-    //        let result =
-    //          use reader = zip.GetInputStream(entry)
-    //          I.doFlush postProcess pointProcess own counts format reader target
-
-    //        if output.IsNone then
-    //          zip.BeginUpdate()
-    //          zip.Delete entry
-    //          target.Seek(0L, SeekOrigin.Begin) |> ignore
-
-    //          let source =
-    //            { new IStaticDataSource with
-    //                member self.GetSource() = target }
-
-    //          zip.Add(source, entryName)
-    //          zip.CommitUpdate()
-
-    //        result
-    //      finally
-    //        zip.Close()
-    //    with :? ZipException ->
-    //      use reader = new MemoryStream()
-    //      I.doFlush postProcess pointProcess own counts format reader target
+#endif
 
 #endif // !RUNNER
   }
