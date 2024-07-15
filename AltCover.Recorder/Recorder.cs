@@ -418,64 +418,38 @@ namespace AltCover.Recorder
       //                      "AvoidLongParameterListsRule",
       //                      Justification = "Self-contained internal decorator")>]
 
-      internal delegate T HandlerFunction<T1, T2, T3, T>(T1 a, T2 b, T3 c, Exception x);
+      internal delegate void HandlerFunction<T1, T2, T3>(T1 a, T2 b, T3 c, Exception x);
 
       internal delegate void Adder<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d);
 
-      internal static T issue71Wrapper<T1, T2, T3, T4, T>(T1 visits, T2 moduleId, T3 hitPointId,
-        T4 context, HandlerFunction<T1, T2, T3, T> handler, Adder<T1, T2, T3, T4> add)
+      internal static void issue71Wrapper<T1, T2, T3, T4>(T1 visits, T2 moduleId, T3 hitPointId,
+        T4 context, HandlerFunction<T2, T3, T4> handler, Adder<T1, T2, T3, T4> add)
       {
-        return default;
+        try
+        {
+          add(visits, moduleId, hitPointId, context);
+        }
+        catch (Exception x)
+        {
+          if (x is KeyNotFoundException || x is NullReferenceException || x is ArgumentNullException)
+          {
+            handler(moduleId, hitPointId, context, x);
+          }
+          else throw;
+        }
       }
-
-      //      let
-      //#if !DEBUG
-      //      inline
-      //#endif
-      //      internal issue71Wrapper
-      //        visits
-      //        moduleId
-      //        hitPointId
-      //        context
-      //        handler
-      //        add
-      //        =
-      //      try
-      //        add visits moduleId hitPointId context
-      //      with x ->
-      //        match x with
-      //        | :? KeyNotFoundException
-      //        | :? NullReferenceException
-      //        | :? ArgumentNullException -> handler moduleId hitPointId context x
-      //        | _ -> reraise()
 
       internal static void curriedIssue71Wrapper<T1, T2, T3, T4>(T1 visits, T2 moduleId,
         T3 hitPointId,
         T4 context, Adder<T1, T2, T3, T4> add)
       {
-        return;
+        issue71Wrapper(visits, moduleId, hitPointId, context, logException, add);
       }
-
-      //    let
-      //#if !DEBUG
-      //      inline
-      //#endif
-      //      internal curriedIssue71Wrapper
-      //        visits
-      //        moduleId
-      //        hitPointId
-      //        context
-      //        add
-      //        =
-      //      issue71Wrapper visits moduleId hitPointId context logException add
 
       internal static void addVisit(string moduleId, int hitPointId, Track context)
       {
         curriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.addSingleVisit);
       }
-
-      //    let internal addVisit moduleId hitPointId context =
-      //      curriedIssue71Wrapper visits moduleId hitPointId context Counter.addSingleVisit
 
       //    type InvalidDataException with
       //      [< SuppressMessage("Gendarme.Rules.Design.Generic",
