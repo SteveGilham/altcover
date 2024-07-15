@@ -125,21 +125,25 @@ namespace AltCover.Recorder
       }
       else
       {
-        var t = (Table)context;
+        var t = ((Table)context).Value;
         Formatter.Write((byte)Tag.Table);
-        //    t.Keys
-        //    |> Seq.filter (fun k -> t.[k].Count > 0)
-        //    |> Seq.iter (fun m ->
-        //      this.Formatter.Write m
-        //      this.Formatter.Write t.[m].Count
+        foreach (var key in t.Keys)
+        {
+          if (t[key].Count == 0)
+            continue;
+          Formatter.Write(key);
+          Formatter.Write(t[key].Count);
 
-        //      t.[m].Keys
-        //      |> Seq.iter (fun p ->
-        //        this.Formatter.Write p
-        //        let v = t.[m].[p]
-        //        this.Formatter.Write v.Count
-        //        v.Tracks |> Seq.iter this.PushContext
-        //        this.PushContext Null))
+          foreach (var p in t[key].Keys)
+          {
+            Formatter.Write(p);
+            var v = t[key][p];
+            Formatter.Write(v.Count);
+            foreach (var x in v.Tracks)
+              PushContext(x);
+            PushContext(new Null());
+          }
+        }
       }
 
       Formatter.Write(String.Empty);

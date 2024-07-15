@@ -323,7 +323,7 @@ module AltCoverCoreTests =
       let p = p' :?> int
 
       let d =
-        d' :?> Dictionary<string, Dictionary<int, PointVisit>>
+        (d' :?> Table).Value
 
       Assert.True(n |> Seq.isEmpty)
       Assert.True((p = 0))
