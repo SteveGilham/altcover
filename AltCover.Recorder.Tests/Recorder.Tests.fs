@@ -590,11 +590,11 @@ module AltCoverTests =
         lines
         |> Seq.take 4
         |> Seq.zip
-          [ "ModuleId = \" \""
+          [ "ModuleId =  "
             "hitPointId = 23"
-            "context = Null"
+            "context = AltCover.Null"
             "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
-        |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
+        |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo(b)))
 
         let third =
           Directory.GetFiles(where, "*.exn")
