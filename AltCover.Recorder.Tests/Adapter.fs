@@ -117,9 +117,9 @@ module Adapter =
   let internal doFlush (visits, format, report, output) =
     let output' =
       if System.String.IsNullOrEmpty output then
-        None
+        null
       else
-        Some output
+        output
 
     Counter.doFlushFile(ignore, (fun _ _ -> ()), true, visits, format, report, output')
 
@@ -173,7 +173,7 @@ module Adapter =
           | :? System.ArgumentNullException as ane -> ane.ParamName = unique
           | _ -> x.Message = unique
 
-    Instance.I.issue71Wrapper ((), (), (), (), catcher, pitcher)
+    Instance.I.issue71Wrapper ((), (), (), (), catcher, pitcher) |> ignore
 
   let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
     (unique: string)
@@ -187,7 +187,7 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.curriedIssue71Wrapper ("a", "b", "c", "d", pitcher)
+    Instance.I.curriedIssue71Wrapper<string, string, string, string, obj> ("a", "b", "c", "d", pitcher) |> ignore
 
   let internal tracePush (a, b, c) = Instance.I.trace.Push (a, b, c)
 //let LogException (a, b, c, d) = Instance.I.logException a b c d

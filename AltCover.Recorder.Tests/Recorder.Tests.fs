@@ -210,7 +210,7 @@ module AltCoverTests =
         ReportFormat.OpenCover
         ||| ReportFormat.WithTracking
 
-      Assert.True(Instance.I.callerId () |> Option.isNone)
+      Assert.False(Instance.I.callerId.HasValue)
       Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
       Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
@@ -256,9 +256,9 @@ module AltCoverTests =
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
     Assert.True(probe >= (1000L * (v1 / 1000L)))
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.True(Instance.I.callerId.HasValue |> not)
     Instance.Pop()
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.True(Instance.I.callerId.HasValue |> not)
 
   [<Test>]
   let PayloadWithEntryExitGeneratedIsAsExpected () =
@@ -273,7 +273,7 @@ module AltCoverTests =
 
       Adapter.VisitsClear()
 
-      Assert.True(Instance.I.callerId () |> Option.isNone)
+      Assert.True(Instance.I.callerId.HasValue |> not)
       Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
       Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
@@ -320,9 +320,9 @@ module AltCoverTests =
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
     Assert.True(probe >= (1000L * (v1 / 1000L)))
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.True(Instance.I.callerId.HasValue |> not)
     Instance.Pop()
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.True(Instance.I.callerId.HasValue |> not)
 
     Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [ Track.Entry; Track.Exit ])
 
@@ -385,7 +385,7 @@ module AltCoverTests =
       try
         Instance.I.trace <- Adapter.makeNullTrace null
 
-        Instance.I.visitSelection (Adapter.asNull ()) key 23
+        Instance.I.visitSelection (Adapter.asNull (), key, 23)
 
         Assert.That(
           Instance.I.visits.Keys,
@@ -435,7 +435,7 @@ module AltCoverTests =
     let before =
       Directory.GetFiles(where, "*.exn")
 
-    Instance.I.logException "a" "b" "c" "ex"
+    Instance.I.logException ("a", "b", "c", "ex")
 
     let after =
       Directory.GetFiles(where, "*.exn")
@@ -615,8 +615,8 @@ module AltCoverTests =
       try
         let key = " "
         Adapter.ModuleReset [| key; "key" |]
-        Instance.I.visitImpl key 23 (Adapter.asNull ())
-        Instance.I.visitImpl "key" 42 (Adapter.asNull ())
+        Instance.I.visitImpl ( key, 23, Adapter.asNull ())
+        Instance.I.visitImpl ("key", 42, Adapter.asNull ())
 
         Assert.That(
           Instance.I.visits.Keys,
@@ -635,8 +635,8 @@ module AltCoverTests =
       try
         let key = " "
         Adapter.ModuleReset [| key |]
-        Instance.I.visitImpl key 23 (Adapter.asNull ())
-        Instance.I.visitImpl key 42 (Adapter.asNull ())
+        Instance.I.visitImpl (key, 23, Adapter.asNull ())
+        Instance.I.visitImpl (key, 42, Adapter.asNull ())
 
         Assert.That(
           Instance.I.visits.Keys,
@@ -658,8 +658,8 @@ module AltCoverTests =
       Adapter.ModuleReset [| key |]
 
       try
-        Instance.I.visitImpl key 23 (Adapter.asNull ())
-        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl (key, 23, Adapter.asNull ())
+        Instance.I.visitImpl (key, 23, Adapter.asNull ())
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
@@ -679,8 +679,8 @@ module AltCoverTests =
         let payload =
           Adapter.time DateTime.UtcNow.Ticks
 
-        Instance.I.visitImpl key 23 (Adapter.asNull ())
-        Instance.I.visitImpl key 23 payload
+        Instance.I.visitImpl (key, 23, Adapter.asNull ())
+        Instance.I.visitImpl (key, 23, payload)
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
       finally
@@ -1269,7 +1269,8 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          Adapter.DoPause().Invoke(null, null)
+          let NullObj:obj = null
+          Adapter.DoPause().Invoke(NullObj, null)
 
           Adapter.VisitsSeq()
           |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
@@ -1369,7 +1370,8 @@ module AltCoverTests =
           [ 0..9 ]
           |> Seq.iter (fun i -> Adapter.VisitsAdd(key, i, (int64 (i + 1))))
 
-          Adapter.DoResume().Invoke(null, null)
+          let NullObj:obj = null
+          Adapter.DoResume().Invoke(NullObj, null)
 
           Adapter.VisitsSeq()
           |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
@@ -1474,7 +1476,8 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          Adapter.DoExit().Invoke(null, null)
+          let NullObj:obj = null
+          Adapter.DoExit().Invoke(NullObj, null)
 
           let head =
             "Coverage statistics flushing took "
@@ -1580,7 +1583,8 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          Adapter.DoUnload().Invoke(null, null)
+          let NullObj:obj = null
+          Adapter.DoUnload().Invoke(NullObj, null)
 
           let head =
             "Coverage statistics flushing took "
@@ -2083,7 +2087,8 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          Adapter.DoExit().Invoke(null, null)
+          let NullObj:obj = null
+          Adapter.DoExit().Invoke(NullObj, null)
 
           let head =
             "Coverage statistics flushing took "

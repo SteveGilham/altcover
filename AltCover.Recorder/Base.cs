@@ -303,6 +303,8 @@ namespace AltCover.Recorder
 
   internal static class Counter
   {
+    public delegate void PointProcessor(XmlElement doc, IEnumerable<Track> tracking);
+
     // // <summary>
     // // The time at which coverage run began
     // // </summary>
@@ -485,7 +487,7 @@ namespace AltCover.Recorder
 
       public static DateTime updateReport(
       Action<XmlDocument> postProcess,
-      /*Action<XmlElement, IEnumerable<Track>>*/ object pointProcess,
+      PointProcessor pointProcess,
       bool own,
       Dictionary<string, Dictionary<int, PointVisit>> counts,
       ReportFormat format,
@@ -611,7 +613,7 @@ namespace AltCover.Recorder
 
       public static TimeSpan doFlush(
         Action<XmlDocument> postProcess,
-      /*Action<XmlElement, IEnumerable<Track>>*/ object pointProcess,
+        PointProcessor pointProcess,
         bool own,
         Dictionary<string, Dictionary<int, PointVisit>> counts,
         ReportFormat format,
@@ -669,7 +671,7 @@ namespace AltCover.Recorder
                       Justification = "Most of this gets curried away")]
     public static TimeSpan doFlushStream(
       Action<XmlDocument> postProcess,
-      Action<XmlElement, IEnumerable<Track>> pointProcess,
+      PointProcessor pointProcess,
       bool own,
       Dictionary<string, Dictionary<int, PointVisit>> counts,
       ReportFormat format,
@@ -730,12 +732,12 @@ namespace AltCover.Recorder
 
     internal static void doFlushFile(
         Action<XmlDocument> postProcess,
-      /*Action<XmlElement, IEnumerable<Track>>*/ object pointProcess,
+        PointProcessor pointProcess,
         bool own,
         Dictionary<string, Dictionary<int, PointVisit>> counts,
         ReportFormat format,
-        Stream report,
-        object output
+        string report,
+        string output // option
       )
     {
     }

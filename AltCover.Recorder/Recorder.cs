@@ -16,6 +16,7 @@ namespace AltCover.Recorder
   using System.Security.Policy;
   using System.Text.RegularExpressions;
   using System.Threading;
+  using static AltCover.Recorder.Instance.I;
   using static System.Net.Mime.MediaTypeNames;
 
   public static class Instance
@@ -126,6 +127,8 @@ namespace AltCover.Recorder
     //    [<SuppressMessage("Gendarme.Rules.Performance",
     //                    "AvoidUncalledPrivateCodeRule",
     //                    Justification = "Access by reflection in the data collector")>]
+
+    internal static bool supervision;
     //    let mutable internal supervision =
     //    //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     //    AppDomain.CurrentDomain.GetAssemblies()
@@ -242,7 +245,7 @@ namespace AltCover.Recorder
 
       //      let pop () = look(fun i->i.Pop())
 
-      internal static int callerID
+      internal static Nullable<int> callerId
       {
         get { return default; } //CallTrack.peek()
       }
@@ -383,6 +386,9 @@ namespace AltCover.Recorder
       //    [<SuppressMessage("Microsoft.Usage",
       //                      "CA2202:DisposeObjectsBeforeLosingScope",
       //                      Justification = "Damned if you do, damned if you don't Dispose()")>]
+      internal static void logException<T1, T2, T3, T4>(T1 moduleId, T2 hitPointId, T3 context, T4 x)
+      { }
+
       //      let internal logException moduleId hitPointId context x =
       //      let text =
       //        [| sprintf "ModuleId = %A" moduleId
@@ -409,9 +415,15 @@ namespace AltCover.Recorder
       //                      "AvoidLongParameterListsRule",
       //                      Justification = "Self-contained internal decorator")>]
 
-      internal static void issue71Wrapper(object visits, string moduleId, int hitPointId,
-        Track context, object handler, object add)
-      { }
+      internal delegate T HandlerFunction<T1, T2, T3, T>(T1 a, T2 b, T3 c, Exception x);
+
+      internal delegate T Adder<T1, T2, T3, T4, T>(T1 a, T2 b, T3 c, T4 d);
+
+      internal static T issue71Wrapper<T1, T2, T3, T4, T>(T1 visits, T2 moduleId, T3 hitPointId,
+        T4 context, HandlerFunction<T1, T2, T3, T> handler, Adder<T1, T2, T3, T4, T> add)
+      {
+        return default;
+      }
 
       //      let
       //#if !DEBUG
@@ -434,9 +446,12 @@ namespace AltCover.Recorder
       //        | :? ArgumentNullException -> handler moduleId hitPointId context x
       //        | _ -> reraise()
 
-      internal static void curriedIssue71Wrapper(object visits, string moduleId, int hitPointId,
-        Track context, object add)
-      { }
+      internal static T curriedIssue71Wrapper<T1, T2, T3, T4, T>(T1 visits, T2 moduleId,
+        T3 hitPointId,
+        T4 context, Adder<T1, T2, T3, T4, T> add)
+      {
+        return default;
+      }
 
       //    let
       //#if !DEBUG
@@ -570,10 +585,15 @@ namespace AltCover.Recorder
         return payloadSelection(clock, frequency, wantPayload);
       }
 
-      internal static Track payloadSelector(object enable)
+      internal delegate T PayloadEnabler<T>();
+
+      internal static Track payloadSelector<T>(PayloadEnabler<T> enable)
       { return default; }
 
       //    let internal payloadSelector enable = payloadControl granularity enable
+
+      internal static void visitSelection<T>(T track, string moduleId, int hitPointId)
+      { }
 
       //    let internal visitSelection track moduleId hitPointId =
       //      visitImpl moduleId hitPointId track
@@ -631,7 +651,7 @@ namespace AltCover.Recorder
     }
 
     //// The moduleId strings are not the hash or guids normally found there
-    public static void Push(Action<string> caller)
+    public static void Push(int caller)
     {
       //let Push caller =
       //  I.push caller

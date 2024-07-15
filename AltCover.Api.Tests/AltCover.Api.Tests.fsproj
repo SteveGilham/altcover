@@ -9,6 +9,7 @@
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

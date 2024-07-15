@@ -9,6 +9,7 @@
     <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
     <OtherFlags />
     <SignAssembly>false</SignAssembly>
+    <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277</NoWarn>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
