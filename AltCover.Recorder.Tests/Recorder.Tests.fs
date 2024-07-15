@@ -211,11 +211,11 @@ module AltCoverTests =
         ||| ReportFormat.WithTracking
 
       Assert.False(Instance.I.callerId.HasValue)
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector false, Is.EqualTo <| Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true, Is.EqualTo <| Adapter.asNull ())
       Instance.Push 4321
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
+      Assert.That(Adapter.payloadSelector false, Is.EqualTo <| Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true, Is.EqualTo <| (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
@@ -230,7 +230,7 @@ module AltCoverTests =
       finally
         Instance.Pop()
 
-      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
+      Assert.That(Adapter.payloadSelector true, Is.EqualTo(Adapter.asCall 4321))
     finally
       Instance.Pop()
       Instance.CoverageFormat <- ReportFormat.NCover
@@ -293,7 +293,7 @@ module AltCoverTests =
       finally
         Instance.Pop()
 
-      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
+      Assert.That(Adapter.payloadSelector true, Is.EqualTo(Adapter.asCall 4321))
     finally
       Instance.Pop()
       Instance.I.isRunner <- false
