@@ -82,7 +82,7 @@ module AltCoverTests =
     let v1 = DateTime.UtcNow.Ticks
     let probe = Instance.I.clock ()
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Instance.I.granularity = 0L)
+    Assert.True(Instance.I.granularity () = 0L)
     Assert.True(probe >= v1)
     Assert.True(probe <= v2)
 
@@ -181,7 +181,7 @@ module AltCoverTests =
           sprintf "Adapter.VisitsEntrySeq %A = %A" key vesk
         )
 
-        Assert.True(Adapter.VisitCount(key, -23) = 2L)
+        Assert.That(Adapter.VisitCount(key, -23), Is.EqualTo 2L)
         Assert.That(Counter.totalVisits, Is.EqualTo 1L)
         Assert.That(Counter.branchVisits, Is.EqualTo 1L)
       finally
@@ -274,11 +274,11 @@ module AltCoverTests =
       Adapter.VisitsClear()
 
       Assert.True(Instance.I.callerId.HasValue |> not)
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector false, Is.EqualTo <| Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true, Is.EqualTo <| Adapter.asNull ())
       Instance.Push 4321
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
+      Assert.That(Adapter.payloadSelector false, Is.EqualTo <| Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true, Is.EqualTo(Adapter.asCall 4321))
 
       try
         Instance.Push 6789

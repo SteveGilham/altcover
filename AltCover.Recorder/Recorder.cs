@@ -558,9 +558,9 @@ namespace AltCover.Recorder
         return isTracking && isRunner;
       }
 
-      internal static long granularity
+      internal static long granularity()
       {
-        get { return Timer; }
+        return Timer;
       }
 
       internal static long clock()
@@ -595,12 +595,10 @@ namespace AltCover.Recorder
         return payloadSelection(clock, frequency, wantPayload);
       }
 
-      internal delegate T PayloadEnabler<T>();
-
-      internal static Track payloadSelector<T>(PayloadEnabler<T> enable)
-      { return default; }
-
-      //    let internal payloadSelector enable = payloadControl granularity enable
+      internal static Track payloadSelector(PayloadProvider enable)
+      {
+        return payloadControl(granularity, enable);
+      }
 
       internal static void visitSelection(Track track, string moduleId, int hitPointId)
       {
