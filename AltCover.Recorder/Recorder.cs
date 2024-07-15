@@ -16,8 +16,6 @@ namespace AltCover.Recorder
   using System.Security.Policy;
   using System.Text.RegularExpressions;
   using System.Threading;
-  using static AltCover.Recorder.Instance.I;
-  using static System.Net.Mime.MediaTypeNames;
 
   public static class Instance
   {
