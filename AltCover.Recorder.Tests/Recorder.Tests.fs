@@ -122,12 +122,12 @@ module AltCoverTests =
         Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
 
         Assert.True(
-          Adapter.addSample ("module", 24, new Both(Pair.Create(1,0))),
+          Adapter.addSample ("module", 24, new Both(Pair.Create(1, 0))),
           "Test 8"
         )
 
         Assert.True(
-          Adapter.addSample ("module", 25, new Both(Pair.Create(1,0))),
+          Adapter.addSample ("module", 25, new Both(Pair.Create(1, 0))),
           "Test 9"
         )
 
@@ -160,16 +160,16 @@ module AltCoverTests =
         Instance.I.trace <- Adapter.makeNullTrace null
 
         Instance.I.recording <- false
-        Instance.Visit ("key", 17)
+        Instance.Visit("key", 17)
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit (key, -23)
+        Instance.Visit(key, -23)
 
         Instance.CoverageFormat <-
           ReportFormat.OpenCover
           ||| ReportFormat.WithTracking
 
-        Instance.Visit (key, -23)
+        Instance.Visit(key, -23)
 
         let vs = Adapter.VisitsSeq()
         Assert.True(vs |> Seq.length = 3, sprintf "Adapter.VisitsSeq() = %A" vs)
@@ -615,7 +615,7 @@ module AltCoverTests =
       try
         let key = " "
         Adapter.ModuleReset [| key; "key" |]
-        Instance.I.visitImpl ( key, 23, Adapter.asNull ())
+        Instance.I.visitImpl (key, 23, Adapter.asNull ())
         Instance.I.visitImpl ("key", 42, Adapter.asNull ())
 
         Assert.That(
@@ -1269,7 +1269,7 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          let NullObj:obj = null
+          let NullObj: obj = null
           Adapter.DoPause().Invoke(NullObj, null)
 
           Adapter.VisitsSeq()
@@ -1370,7 +1370,7 @@ module AltCoverTests =
           [ 0..9 ]
           |> Seq.iter (fun i -> Adapter.VisitsAdd(key, i, (int64 (i + 1))))
 
-          let NullObj:obj = null
+          let NullObj: obj = null
           Adapter.DoResume().Invoke(NullObj, null)
 
           Adapter.VisitsSeq()
@@ -1476,7 +1476,7 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          let NullObj:obj = null
+          let NullObj: obj = null
           Adapter.DoExit().Invoke(NullObj, null)
 
           let head =
@@ -1583,7 +1583,7 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          let NullObj:obj = null
+          let NullObj: obj = null
           Adapter.DoUnload().Invoke(NullObj, null)
 
           let head =
@@ -2087,7 +2087,7 @@ module AltCoverTests =
               (int64 (i + 1))
             ))
 
-          let NullObj:obj = null
+          let NullObj: obj = null
           Adapter.DoExit().Invoke(NullObj, null)
 
           let head =

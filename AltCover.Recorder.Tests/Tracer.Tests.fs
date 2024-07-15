@@ -322,8 +322,7 @@ module AltCoverCoreTests =
       let n = n' :?> String
       let p = p' :?> int
 
-      let d =
-        (d' :?> Table).Value
+      let d = (d' :?> Table).Value
 
       Assert.True(n |> Seq.isEmpty)
       Assert.True((p = 0))

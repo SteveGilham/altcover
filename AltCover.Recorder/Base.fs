@@ -326,7 +326,7 @@ module internal Counter =
     (counts: Dictionary<string, Dictionary<int, PointVisit>>)
     moduleId
     hitPointId
-    (context:Track)
+    (context: Track)
     =
     if counts.ContainsKey moduleId then
       let next = counts.[moduleId]
@@ -343,7 +343,7 @@ module internal Counter =
     (counts: Dictionary<string, Dictionary<int, PointVisit>>)
     moduleId
     hitPointId
-    (context:Track)
+    (context: Track)
     =
     match context with
     | :? Table as t -> I.addTable counts t.Value

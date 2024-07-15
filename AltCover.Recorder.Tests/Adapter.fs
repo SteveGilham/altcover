@@ -57,7 +57,7 @@ module Adapter =
       init (
         (number + 1L),
         [ Time(17L)
-          Both(Pair.Create(42L,23)) ]
+          Both(Pair.Create(42L, 23)) ]
       )
 
     Instance.I.visits.[name].Add(line + 1, v2)
@@ -71,7 +71,7 @@ module Adapter =
   let Lock = Instance.I.visits :> obj
 
   let VisitImplNone (moduleId, hitPointId) =
-    Instance.I.visitImpl(moduleId, hitPointId, Null())
+    Instance.I.visitImpl (moduleId, hitPointId, Null())
 
   let VisitImplMethod (moduleId, hitPointId, mId) =
     Instance.I.visitImpl (moduleId, hitPointId, (Call mId))
@@ -79,17 +79,17 @@ module Adapter =
   //  Instance.I.visitImpl a b c
 
   let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.takeSample(Sampling.Single, moduleId, hitPointId, context)
+    Instance.I.takeSample (Sampling.Single, moduleId, hitPointId, context)
 
   let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.takeSample(Sampling.All, moduleId, hitPointId, context)
+    Instance.I.takeSample (Sampling.All, moduleId, hitPointId, context)
 
   let internal newBoth (time, call) = Both(Pair.Create(time, call))
 
   let internal asCall track = Call track
   let internal time at = Time at
 
-  let internal untime (at:Track) =
+  let internal untime (at: Track) =
     let r = List<System.Int64>()
 
     match at with
@@ -104,7 +104,8 @@ module Adapter =
   let internal untable t =
     let r = List<System.Object>()
 
-    let n, p, (t':Track) = t
+    let n, p, (t': Track) = t
+
     match t' with
     | :? Table as d ->
       r.Add(n)
@@ -121,17 +122,18 @@ module Adapter =
       else
         output
 
-    Counter.doFlushFile(ignore, (fun _ _ -> ()), true, visits, format, report, output')
+    Counter.doFlushFile (ignore, (fun _ _ -> ()), true, visits, format, report, output')
 
   let internal updateReport (counts, format, coverageFile, outputFile) =
-    Counter.I.updateReport
-      (ignore,
+    Counter.I.updateReport (
+      ignore,
       (fun _ _ -> ()),
       true,
       counts,
       format,
       coverageFile,
-      outputFile);
+      outputFile
+    )
 
   let internal payloadSelector x = Instance.I.payloadSelector (fun _ -> x)
 
@@ -141,8 +143,7 @@ module Adapter =
   let internal payloadSelection (x, y, z) =
     Instance.I.payloadSelection ((fun _ -> x), (fun _ -> y), (fun _ -> z))
 
-  let internal makeNullTrace name =
-    Tracer.Create(name)
+  let internal makeNullTrace name = Tracer.Create(name)
 
   let internal makeStreamTrace s1 =
     let mutable t = Tracer.Create(null)
@@ -173,7 +174,8 @@ module Adapter =
           | :? System.ArgumentNullException as ane -> ane.ParamName = unique
           | _ -> x.Message = unique
 
-    Instance.I.issue71Wrapper ((), (), (), (), catcher, pitcher) |> ignore
+    Instance.I.issue71Wrapper ((), (), (), (), catcher, pitcher)
+    |> ignore
 
   let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
     (unique: string)
@@ -187,7 +189,14 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.curriedIssue71Wrapper<string, string, string, string> ("a", "b", "c", "d", pitcher) |> ignore
+    Instance.I.curriedIssue71Wrapper<string, string, string, string> (
+      "a",
+      "b",
+      "c",
+      "d",
+      pitcher
+    )
+    |> ignore
 
-  let internal tracePush (a, b, c) = Instance.I.trace.Push (a, b, c)
+  let internal tracePush (a, b, c) = Instance.I.trace.Push(a, b, c)
 #endif
