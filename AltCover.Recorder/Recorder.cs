@@ -417,9 +417,6 @@ namespace AltCover.Recorder
         }
       }
 
-      //    [<SuppressMessage("Microsoft.Usage",
-      //                      "CA2202:DisposeObjectsBeforeLosingScope",
-      //                      Justification = "Damned if you do, damned if you don't Dispose()")>]
       internal static void logException<T1, T2, T3, T4>(T1 moduleId, T2 hitPointId, T3 context, T4 x)
       {
         var text = new string[] {
@@ -472,15 +469,6 @@ namespace AltCover.Recorder
       {
         curriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.addSingleVisit);
       }
-
-      //    type InvalidDataException with
-      //      [< SuppressMessage("Gendarme.Rules.Design.Generic",
-      //                        "AvoidMethodWithUnusedGenericTypeRule",
-      //                        Justification = "Matches clause type") >]
-      //      static member Throw<'T>(message: obj) : 'T =
-      //        message.ToString()
-      //        |> InvalidDataException
-      //        |> raise
 
       internal static bool takeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
       {
@@ -577,15 +565,19 @@ namespace AltCover.Recorder
       {
         if (wantPayload())
         {
-          //        match(frequency (), callerId ()) with
-          //        | (0L, None) -> Null
-          //        | (t, None) -> Time(t* (clock () / t))
-          //        | (0L, n) -> Call n.Value
-          //        | (t, n) ->
-          //          Both
-          //            {
-          //        Time = t * (clock() / t)
-          //              Call = n.Value }
+          var f = frequency();
+          var id = callerId;
+          if (f == 0)
+          {
+            return id.HasValue ?
+              (Track)new Call(id.Value) :
+                     new Null();
+          }
+
+          var t = f * (clock() / f);
+          return id.HasValue ?
+              (Track)new Both(Pair.Create(t, id.Value)) :
+                     new Time(t);
         }
         return new Null();
       }

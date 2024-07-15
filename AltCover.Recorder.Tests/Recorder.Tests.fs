@@ -97,11 +97,9 @@ module AltCoverTests =
 
     let n =
       tracer.GetType().Assembly.GetName().Name
-#if RECORDERMODERN
-    Assert.That(n, Is.EqualTo "AltCover.RecorderModern")
-#else
+
     Assert.That(n, Is.EqualTo "AltCover.Recorder")
-#endif
+
     getMyMethodName "<="
 
   [<Test>]
