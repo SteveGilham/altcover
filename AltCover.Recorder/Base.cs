@@ -25,9 +25,6 @@ namespace AltCover.Recorder
   using ICSharpCode.SharpZipLib.Zip;
 
   [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
-  [SuppressMessage("Gendarme.Rules.Performance",
-                    "AvoidUninstantiatedInternalClassesRule",
-                    Justification = "Looks like a bug, not detecting its use")]
   internal sealed class ExcludeFromCodeCoverageAttribute : Attribute
   { }
 
@@ -305,19 +302,19 @@ namespace AltCover.Recorder
   {
     public delegate void PointProcessor(XmlElement doc, IEnumerable<Track> tracking);
 
-    // // <summary>
-    // // The time at which coverage run began
-    // // </summary>
+    // <summary>
+    // The time at which coverage run began
+    // </summary>
     internal static DateTime startTime = DateTime.UtcNow;
 
-    // // <summary>
-    // // The finishing time taken of the coverage run
-    // // </summary>
+    // <summary>
+    // The finishing time taken of the coverage run
+    // </summary>
     internal static DateTime measureTime = DateTime.UtcNow;
 
-    // // <summary>
-    // // The offset flag for branch counts
-    // // </summary>
+    // <summary>
+    // The offset flag for branch counts
+    // </summary>
     internal const int branchFlag = unchecked((int)0x80000000);
 
     internal const int branchMask = unchecked((int)0x7FFFFFFF);
@@ -454,16 +451,16 @@ namespace AltCover.Recorder
         return result;
       }
 
-      // // <summary>
-      // // Load the XDocument
-      // // </summary>
-      // // <param name="path">The XML file to load</param>
-      // // <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
-      // // If this is ever a problem, we will need mutability and two streams, with explicit
-      // // stream disposal if and only if the reader or writer doesn't take ownership
-      // // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-      // // Also, this rule is deprecated
-      // // </remarks>
+      // <summary>
+      // Load the XDocument
+      // </summary>
+      // <param name="path">The XML file to load</param>
+      // <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
+      // If this is ever a problem, we will need mutability and two streams, with explicit
+      // stream disposal if and only if the reader or writer doesn't take ownership
+      // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+      // Also, this rule is deprecated
+      // </remarks>
       private static XmlDocument readXDocument(Stream stream)
       {
         var doc = new XmlDocument();
@@ -476,12 +473,12 @@ namespace AltCover.Recorder
         return doc;
       }
 
-      // // <summary>
-      // // Write the XDocument
-      // // </summary>
-      // // <param name="coverageDocument">The XML document to write</param>
-      // // <param name="path">The XML file to write to</param>
-      // // <remarks>Idiom to work with CA2202 as above</remarks>
+      // <summary>
+      // Write the XDocument
+      // </summary>
+      // <param name="coverageDocument">The XML document to write</param>
+      // <param name="path">The XML file to write to</param>
+      // <remarks>Idiom to work with CA2202 as above</remarks>
       private static void writeXDocument(XmlDocument coverageDocument, Stream stream)
       { coverageDocument.Save(stream); }
 
@@ -497,7 +494,6 @@ namespace AltCover.Recorder
       {
         var flushStart = DateTime.UtcNow;
         var xmlformat = xmlByFormat(format);// throw early on unsupported
-        //let (m, i, m', s, v)
 
         var coverageDocument = readXDocument(coverageFile);
 
@@ -542,55 +538,60 @@ namespace AltCover.Recorder
 
         var moduleNodes = selectNodes(coverageDocument, xmlformat.m);
 
-        //moduleNodes
-        //|> Seq.cast<XmlElement>
-        //|> Seq.map (fun el -> el.GetAttribute(i), el)
-        //|> Seq.filter (fun (k, _) -> counts.ContainsKey k)
-        //|> Seq.iter (fun (k, affectedModule) ->
-        //  let moduleHits = counts.[k]
-        //  // Don't do this in one leap like --
-        //  // affectedModule.Descendants(XName.Get("seqpnt"))
-        //  // Get the methods, then flip their
-        //  // contents before concatenating
-        //  let nn = selectNodes affectedModule m'
+        foreach (var el in moduleNodes)
+        {
+          var k = el.GetAttribute(xmlformat.i);
+          if (!counts.ContainsKey(k)) continue;
 
-        //  nn
-        //  |> Seq.cast<XmlElement>
-        //  |> Seq.collect (fun (method: XmlElement) ->
-        //    s
-        //    |> Seq.collect (fun (name, flag) ->
-        //      let nodes = selectNodes method name
+          var moduleHits = counts[k];
 
-        //      nodes
-        //      |> Seq.cast<XmlElement>
-        //      |> Seq.map (fun x -> (x, flag))
-        //      |> Seq.toList
-        //      |> List.rev))
-        //  |> Seq.mapi (fun counter (pt, flag) ->
-        //    ((match format &&& ReportFormat.TrackMask with
-        //      | ReportFormat.OpenCover ->
-        //        "uspid"
-        //        |> pt.GetAttribute
-        //        |> (findIndexFromUspid flag)
-        //      | _ -> counter),
-        //     pt))
-        //  |> Seq.filter (fst >> moduleHits.ContainsKey)
-        //  |> Seq.iter (fun x ->
-        //    let pt = snd x
-        //    let counter = fst x
+          // Don't do this in one leap like --
+          // affectedModule.Descendants(XName.Get("seqpnt"))
+          // Get the methods, then flip their
+          // contents before concatenating
+          var nn = selectNodes(el, xmlformat.m2);
+          foreach (var method in nn)
+          {
+            var nodes = new List<KeyValuePair<XmlElement, int>>();
+            foreach (var nameflag in xmlformat.s)
+            {
+              foreach (var node in selectNodes(method, nameflag.Key))
+              {
+                nodes.Insert(0, new KeyValuePair<XmlElement, int>(node, nameflag.Value));
+              }
+            }
 
-        //    let vc =
-        //      Int64.TryParse(
-        //        pt.GetAttribute(v),
-        //        System.Globalization.NumberStyles.Integer,
-        //        System.Globalization.CultureInfo.InvariantCulture
-        //      )
-        //      |> snd
-        //    // Treat -ve visit counts (an exemption added in analysis) as zero
-        //    let count = moduleHits.[counter]
-        //    let visits = (max 0L vc) + count.Total
-        //    pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
-        //    pointProcess pt count.Tracks))
+            int counter = -1;
+            foreach (var node in nodes)
+            {
+              ++counter;
+              var index = counter;
+              if ((format & ReportFormat.TrackMask) ==
+                ReportFormat.OpenCover)
+              {
+                index = findIndexFromUspid(node.Value, node.Key.GetAttribute("uspid"));
+              }
+
+              if (!moduleHits.ContainsKey(index))
+                continue;
+
+              var pt = node.Key;
+
+              Int64.TryParse(
+                pt.GetAttribute(xmlformat.v),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var vc
+              );
+
+              // Treat -ve visit counts (an exemption added in analysis) as zero
+              var count = moduleHits[index];
+              var visits = Math.Max(vc, 0) + count.Total;
+              pt.SetAttribute(xmlformat.v, visits.ToString(CultureInfo.InvariantCulture));
+              pointProcess(pt, count.Tracks);
+            }
+          }
+        }
 
         postProcess(coverageDocument);
 
