@@ -2,19 +2,12 @@ namespace AltCover.Recorder
 {
   using System;
   using System.Collections.Generic;
-  using System.ComponentModel;
   using System.Diagnostics;
-  using System.Diagnostics.CodeAnalysis;
-  using System.Drawing;
   using System.IO;
   using System.Reflection;
 
   using System.Resources;
   using System.Runtime.CompilerServices;
-  using System.Runtime.InteropServices;
-  using System.Runtime.Remoting.Contexts;
-  using System.Security.Policy;
-  using System.Text.RegularExpressions;
   using System.Threading;
 
   public static class Instance
@@ -103,10 +96,10 @@ namespace AltCover.Recorder
       get { return "AltCover"; }
     }
 
-    //  /// <summary>
-    //  /// Gets the indexed module tokens
-    //  /// This property's IL code is modified to store instrumentation results
-    //  /// </summary>
+    /// <summary>
+    /// Gets the indexed module tokens
+    /// This property's IL code is modified to store instrumentation results
+    /// </summary>
     private static IEnumerable<string> __modules = new string[] { string.Empty };
 
     internal static IEnumerable<string> modules
@@ -132,8 +125,8 @@ namespace AltCover.Recorder
       return maybe && !Token.Equals("AltCover", StringComparison.Ordinal);
     }
 
+    //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     internal static bool supervision = IsSupervised();
-    //    //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
 
     internal abstract class Sampled
     {
@@ -182,13 +175,16 @@ namespace AltCover.Recorder
       internal static readonly ResourceManager resources =
             new ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly());
 
-      //    let internal getResource s =
-      //      let cc =
-      //        System.Globalization.CultureInfo.CurrentUICulture
+      internal static string getResource(string s)
+      {
+        throw new NotImplementedException("getResource");
+        //      let cc =
+        //        System.Globalization.CultureInfo.CurrentUICulture
 
-      //      [cc.Name; cc.Parent.Name; "en" ]
-      //      |> Seq.map(fun l -> resources.GetString(s + "." + l))
-      //      |> Seq.tryFind(String.IsNullOrEmpty >> not)
+        //      [cc.Name; cc.Parent.Name; "en" ]
+        //      |> Seq.map(fun l -> resources.GetString(s + "." + l))
+        //      |> Seq.tryFind(String.IsNullOrEmpty >> not)
+      }
 
       private static Dictionary<string, Dictionary<int, PointVisit>> makeVisits()
       {
@@ -312,22 +308,35 @@ namespace AltCover.Recorder
         get { return __trace; }
       }
 
-      //    let internal withMutex(f: bool -> 'a) =
-      //      let own = mutex.WaitOne(1000)
+      internal delegate T MutexHandler<T>(bool own);
 
-      //      try
-      //        f (own)
-      //      finally
-      //        if own then
-      //          mutex.ReleaseMutex()
+      internal static T withMutex<T>(MutexHandler<T> f)
+      {
+        var own = mutex.WaitOne(1000);
 
-      //    let internal initialiseTrace(t: Tracer) =
-      //      withMutex(fun _ ->
-      //        trace<- t.OnStart()
-      //        isRunner <- isRunner || trace.IsConnected)
+        try
+        {
+          return f(own);
+        }
+        finally
+        {
+          if (own) mutex.ReleaseMutex();
+        }
+      }
 
-      //    let internal watcher =
-      //      new FileSystemWatcher()
+      internal static void initialiseTrace(Tracer t)
+      {
+        withMutex(
+          x =>
+          {
+            trace = t.OnStart();
+            isRunner = isRunner || trace.IsConnected;
+            return true; // dummy
+          }
+          );
+      }
+
+      internal static FileSystemWatcher watcher = new FileSystemWatcher();
 
       private static bool __recording = true;
 
@@ -352,6 +361,8 @@ namespace AltCover.Recorder
       /// </summary>
       internal static void flushAll(Close _)
       {
+        throw new NotImplementedException("flushAll");
+
         //    let internal flushAll _ =
         //      let counts = visits
         //      clear()
@@ -375,28 +386,34 @@ namespace AltCover.Recorder
         //            |> Option.iter(fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
       }
 
-      //    let internal flushPause() =
-      //      ("PauseHandler")
-      //      |> getResource
-      //      |> Option.iter Console.Out.WriteLine
+      internal static void flushPause()
+      {
+        throw new NotImplementedException("flushPause");
+        //      ("PauseHandler")
+        //      |> getResource
+        //      |> Option.iter Console.Out.WriteLine
 
-      //      recording<- false
-      //      flushAll Pause
-      //      trace<- signalFile () |> Tracer.Create
+        //      recording<- false
+        //      flushAll Pause
+        //      trace<- signalFile () |> Tracer.Create
+      }
 
-      //    let internal flushResume() =
-      //      ("ResumeHandler")
-      //      |> getResource
-      //      |> Option.iter Console.Out.WriteLine
+      internal static void flushResume()
+      {
+        throw new NotImplementedException("flushResume");
+        //      ("ResumeHandler")
+        //      |> getResource
+        //      |> Option.iter Console.Out.WriteLine
 
-      //      let wasConnected = isRunner
-      //      initialiseTrace trace
+        //      let wasConnected = isRunner
+        //      initialiseTrace trace
 
-      //      if (wasConnected<> isRunner) then
-      //        samples<- makeSamples ()
-      //        clear ()
+        //      if (wasConnected<> isRunner) then
+        //        samples<- makeSamples ()
+        //        clear ()
 
-      //      recording <- true
+        //      recording <- true
+      }
 
       internal static void traceVisit(string moduleId, int hitPointId, Track context)
       {
@@ -474,44 +491,44 @@ namespace AltCover.Recorder
       {
         if (strategy == Sampling.All)
           return true;
-        return false;
+        throw new NotImplementedException("takeSample");
+
+        //    let internal takeSample strategy moduleId hitPointId(context: Track) =
+        //      match strategy with
+        //      | Sampling.All -> true
+        //      | _ ->
+        //        (match context with
+        //         | Null -> [Visit hitPointId]
+        //         | Time t ->
+        //           [Visit hitPointId
+        //             TimeVisit(hitPointId, t)]
+        //         | Call c ->
+        //           [Visit hitPointId
+        //             CallVisit(hitPointId, c)]
+        //         | Both b ->
+        //           [Visit hitPointId
+        //             TimeVisit(hitPointId, b.Time)
+        //             CallVisit(hitPointId, b.Call)]
+        //         | _ -> context |> InvalidDataException.Throw)
+        //        |> Seq.map(fun hit ->
+        //          if samples.ContainsKey(moduleId) then
+        //            let next = samples.[moduleId]
+
+        //            let mutable hasPointKey =
+        //              next.ContainsKey(hit)
+
+        //            if hasPointKey |> not then
+        //              lock next(fun () ->
+        //                hasPointKey<- next.ContainsKey(hit)
+
+        //                if hasPointKey |> not then
+        //                  next.Add(hit, true))
+
+        //            not hasPointKey
+        //          else
+        //            false)
+        //        |> Seq.fold(||) false // true if any are novel -- all must be evaluated
       }
-
-      //    let internal takeSample strategy moduleId hitPointId(context: Track) =
-      //      match strategy with
-      //      | Sampling.All -> true
-      //      | _ ->
-      //        (match context with
-      //         | Null -> [Visit hitPointId]
-      //         | Time t ->
-      //           [Visit hitPointId
-      //             TimeVisit(hitPointId, t)]
-      //         | Call c ->
-      //           [Visit hitPointId
-      //             CallVisit(hitPointId, c)]
-      //         | Both b ->
-      //           [Visit hitPointId
-      //             TimeVisit(hitPointId, b.Time)
-      //             CallVisit(hitPointId, b.Call)]
-      //         | _ -> context |> InvalidDataException.Throw)
-      //        |> Seq.map(fun hit ->
-      //          if samples.ContainsKey(moduleId) then
-      //            let next = samples.[moduleId]
-
-      //            let mutable hasPointKey =
-      //              next.ContainsKey(hit)
-
-      //            if hasPointKey |> not then
-      //              lock next(fun () ->
-      //                hasPointKey<- next.ContainsKey(hit)
-
-      //                if hasPointKey |> not then
-      //                  next.Add(hit, true))
-
-      //            not hasPointKey
-      //          else
-      //            false)
-      //        |> Seq.fold(||) false // true if any are novel -- all must be evaluated
 
       /// <summary>
       /// This method is executed from instrumented assemblies.
@@ -597,42 +614,66 @@ namespace AltCover.Recorder
         visitImpl(moduleId, hitPointId, track);
       }
 
-      //    let internal flushCounter(finish: Close) _ =
-      //      match finish with
-      //      | Resume -> flushResume()
-      //      | Pause -> flushPause()
-      //      | _ ->
-      //        recording<- false
+      internal static void flushCounter(Close finish, EventArgs _)
+      {
+        throw new NotImplementedException("flushCounter");
+        //      match finish with
+        //      | Resume -> flushResume()
+        //      | Pause -> flushPause()
+        //      | _ ->
+        //        recording<- false
 
-      //        if supervision |> not then
-      //          flushAll finish
+        //        if supervision |> not then
+        //          flushAll finish
+      }
 
       // Register event handling
-      internal static FileSystemEventHandler doPause = default;
+      internal static FileSystemEventHandler doPause = PauseHandler;
 
-      //(FileSystemEventHandlerfun _ a -> flushCounter Pause a)
+      internal static void PauseHandler(object sender, FileSystemEventArgs e)
+      {
+        flushCounter(Close.Pause, e);
+      }
 
-      internal static FileSystemEventHandler doResume = default;
-      //FileSystemEventHandler(fun _ a -> flushCounter Resume a)
+      internal static FileSystemEventHandler doResume = ResumeHandler;
 
-      internal static EventHandler doUnload = default;
-      //EventHandler(fun _ a -> flushCounter DomainUnload a)
+      internal static void ResumeHandler(object sender, FileSystemEventArgs e)
+      {
+        flushCounter(Close.Resume, e);
+      }
 
-      internal static EventHandler doExit = default;
-      //EventHandler(fun _ a -> flushCounter ProcessExit a)
+      internal static EventHandler doUnload = UnloadHandler;
 
-      //  let internal startWatcher() =
-      //  watcher.Path<- Path.GetDirectoryName<| signalFile ()
-      //  watcher.Filter<- Path.GetFileName<| signalFile ()
-      //  watcher.add_Created doResume
-      //  watcher.add_Deleted doPause
-      //  watcher.EnableRaisingEvents<- watcher.Path |> String.IsNullOrEmpty |> not
+      internal static void UnloadHandler(object sender, EventArgs e)
+      {
+        flushCounter(Close.DomainUnload, e);
+      }
 
-      //do
-      //  AppDomain.CurrentDomain.add_DomainUnload doUnload
-      //  AppDomain.CurrentDomain.add_ProcessExit doExit
-      //  startWatcher ()
-      //  signalFile () |> Tracer.Create |> initialiseTrace
+      internal static EventHandler doExit = ExitHandler;
+
+      internal static void ExitHandler(object sender, EventArgs e)
+      {
+        flushCounter(Close.ProcessExit, e);
+      }
+
+      internal static void startWatcher()
+      {
+        watcher.Path = Path.GetDirectoryName(signalFile);
+        watcher.Filter = Path.GetFileName(signalFile);
+        watcher.Created += doResume;
+        watcher.Deleted += doPause;
+        watcher.EnableRaisingEvents = !String.IsNullOrEmpty(watcher.Path);
+      }
+
+      static I()
+      {
+        AppDomain.CurrentDomain.DomainUnload += doUnload;
+        AppDomain.CurrentDomain.ProcessExit += doExit;
+        startWatcher();
+        initialiseTrace(
+          Tracer.Create(signalFile)
+           );
+      }
     }
 
     // Public API
