@@ -507,44 +507,37 @@ namespace AltCover.Recorder
 
         if ((format == ReportFormat.NCover) && !Object.ReferenceEquals(startTimeNode, null))
         {
-          //then
-          //  let startTimeAttr = startTimeNode.Value
+          var startTimeAttr = startTimeNode.Value;
+          var measureTimeAttr = root.GetAttribute("measureTime");
+          var oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null);
+          var oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null);
 
-          //  let measureTimeAttr =
-          //    root.GetAttribute("measureTime")
+          var st = minTime(startTime, oldStartTime);
+          startTime = st.ToUniversalTime(); // Min
+          var mt = maxTime(measureTime, oldMeasureTime);
+          measureTime = mt.ToUniversalTime(); // Max
 
-          //  let oldStartTime =
-          //    DateTime.ParseExact(startTimeAttr, "o", null)
+          root.SetAttribute(
+            "startTime",
+            startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture)
+          );
 
-          //  let oldMeasureTime =
-          //    DateTime.ParseExact(measureTimeAttr, "o", null)
+          root.SetAttribute(
+            "measureTime",
+            measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture)
+          );
 
-          //  let st = minTime startTime oldStartTime
-          //  startTime <- st.ToUniversalTime() // Min
-          //  let mt = maxTime measureTime oldMeasureTime
-          //  measureTime <- mt.ToUniversalTime() // Max
-
-          //  root.SetAttribute(
-          //    "startTime",
-          //    startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture)
-          //  )
-
-          //  root.SetAttribute(
-          //    "measureTime",
-          //    measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture)
-          //  )
-
-          //  root.SetAttribute(
-          //    "driverVersion",
-          //    "AltCover.Recorder "
-          //    + System.Diagnostics.FileVersionInfo
-          //      .GetVersionInfo(
-          //        System.Reflection.Assembly
-          //          .GetExecutingAssembly()
-          //          .Location
-          //      )
-          //      .FileVersion
-          //  )
+          root.SetAttribute(
+            "driverVersion",
+            "AltCover.Recorder "
+            + System.Diagnostics.FileVersionInfo
+              .GetVersionInfo(
+                System.Reflection.Assembly
+                  .GetExecutingAssembly()
+                  .Location
+              )
+              .FileVersion
+          );
         }
 
         var moduleNodes = selectNodes(coverageDocument, xmlformat.m);
