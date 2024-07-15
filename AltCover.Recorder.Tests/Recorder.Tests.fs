@@ -452,9 +452,9 @@ module AltCoverTests =
     lines
     |> Seq.take 4
     |> Seq.zip
-      [ "ModuleId = \"a\""
-        "hitPointId = \"b\""
-        "context = \"c\""
+      [ "ModuleId = a"
+        "hitPointId = b"
+        "context = c"
         "exception = ex" ]
     |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo b))
 

@@ -390,33 +390,24 @@ namespace AltCover.Recorder
       //                      "CA2202:DisposeObjectsBeforeLosingScope",
       //                      Justification = "Damned if you do, damned if you don't Dispose()")>]
       internal static void logException<T1, T2, T3, T4>(T1 moduleId, T2 hitPointId, T3 context, T4 x)
-      { }
+      {
+        var text = new string[] {
+          String.Format("ModuleId = {0}", moduleId),
+          String.Format("hitPointId = {0}", hitPointId),
+          String.Format("context = {0}", context),
+          String.Format("exception = {0}", x.ToString()),
+          (new StackTrace()).ToString()
+        };
 
-      //      let internal logException moduleId hitPointId context x =
-      //      let text =
-      //        [| sprintf "ModuleId = %A" moduleId
-      //           sprintf "hitPointId = %A" hitPointId
-      //           sprintf "context = %A" context
-      //           sprintf "exception = %s" (x.ToString())
-      //           StackTrace().ToString() |]
-
-      //      let stamp =
-      //        sprintf "%A" DateTime.UtcNow.Ticks
-
-      //      let filename =
-      //        ReportFilePath + "." + stamp + ".exn"
-
-      //      use file =
-      //        File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write)
-
-      //      use writer = new StreamWriter(file)
-
-      //      text
-      //      |> Seq.iter(fun line -> writer.WriteLine("{0}", line))
-
-      //    [<SuppressMessage("Gendarme.Rules.Smells",
-      //                      "AvoidLongParameterListsRule",
-      //                      Justification = "Self-contained internal decorator")>]
+        var stamp = DateTime.UtcNow.Ticks.ToString();
+        var filename = ReportFilePath + "." + stamp + ".exn";
+        using (var file = File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write))
+        using (var writer = new StreamWriter(file))
+        {
+          foreach (var line in text)
+            writer.WriteLine(line);
+        }
+      }
 
       internal delegate void HandlerFunction<T1, T2, T3>(T1 a, T2 b, T3 c, Exception x);
 
