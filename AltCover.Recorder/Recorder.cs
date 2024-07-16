@@ -552,6 +552,9 @@ namespace AltCover.Recorder
       [SuppressMessage("Gendarme.Rules.Globalization",
                        "PreferIFormatProviderOverrideRule",
                        Justification = "later, perhaps")]
+      [SuppressMessage("Microsoft.Globalization",
+                       "CA1305:SpecifyIFormatProvider",
+                       Justification = "later, perhaps")]
       internal static void LogException<T1, T2, T3, T4>(T1 moduleId, T2 hitPointId, T3 context, T4 x)
       {
         var text = new string[] {
@@ -828,6 +831,9 @@ namespace AltCover.Recorder
       [SuppressMessage("Gendarme.Rules.Performance",
                        "AvoidRepetitiveCallsToPropertiesRule",
                        Justification = "You what, mate?")]
+      [SuppressMessage("Microsoft.Performance",
+                       "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                       Justification = "Simpler this way")]
       static I()
       {
         AppDomain.CurrentDomain.DomainUnload += doUnload;

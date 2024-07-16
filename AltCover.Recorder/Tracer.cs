@@ -57,6 +57,9 @@ namespace AltCover.Recorder
     [SuppressMessage("Gendarme.Rules.Correctness",
                      "EnsureLocalDisposalRule",
                      Justification = "s, fs : Closed as recording ends")]
+    [SuppressMessage("Microsoft.Reliability",
+                     "CA2000:Dispose objects before losing scope",
+                     Justification = "s, fs : Closed as recording ends")]
     private Tracer MakeConnection(string f)
     {
       var fs = File.OpenWrite(f);

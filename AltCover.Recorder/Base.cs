@@ -541,6 +541,9 @@ namespace AltCover.Recorder
       [SuppressMessage("Gendarme.Rules.Smells",
                        "AvoidLongParameterListsRule",
                        Justification = "Stable code")]
+      [SuppressMessage("Microsoft.Usage",
+                       "CA1806:DoNotIgnoreMethodResults",
+                       Justification = "TryParse fails safe")]
       public static DateTime UpdateReport(
       Action<XmlDocument> postProcess,
       PointProcessor pointProcess,
@@ -746,6 +749,9 @@ namespace AltCover.Recorder
 
 #else
 
+    [SuppressMessage("Microsoft.Reliability",
+                     "CA2000:Dispose objects before losing scope",
+                     Justification="MemoryStream is 'use'd if created")]
     internal static TimeSpan DoFlushStream(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
@@ -774,6 +780,9 @@ namespace AltCover.Recorder
 
     [SuppressMessage("Gendarme.Rules.Correctness",
                      "EnsureLocalDisposalRule",
+                     Justification = "'zip' owns 'container' and is 'Close()'d")]
+    [SuppressMessage("Microsoft.Reliability",
+                     "CA2000:Dispose objects before losing scope",
                      Justification = "'zip' owns 'container' and is 'Close()'d")]
     internal static TimeSpan DoFlushFile(
         Action<XmlDocument> postProcess,
