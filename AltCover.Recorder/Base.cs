@@ -48,12 +48,24 @@ namespace AltCover.Recorder
     Zipped = 128,
   };
 
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "AvoidUncalledPrivateCodeRule",
+                   Justification = "Internals Visible To")]
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "AvoidUninstantiatedInternalClassesRule",
+                   Justification = "Internals Visible To")]
   internal enum Sampling
   {
     All = 0,
     Single = 1,
   };
 
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "AvoidUncalledPrivateCodeRule",
+                   Justification = "Internals Visible To")]
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "AvoidUninstantiatedInternalClassesRule",
+                   Justification = "Internals Visible To")]
   internal enum Tag
   {
     Null = 0,
@@ -64,11 +76,23 @@ namespace AltCover.Recorder
   }
 
   [ExcludeFromCodeCoverage]
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "No use case")]
+  [SuppressMessage("Gendarme.Rules.Design",
+                   "OperatorEqualsShouldBeOverloadedRule",
+                   Justification = "No use case")]
   internal struct Pair
   {
     public long Time;
     public int Call;
 
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidUncalledPrivateCodeRule",
+                     Justification = "Internals Visible To")]
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "OverrideValueTypeDefaultsRule",
+                     Justification = "You what, mate?")]
     public static Pair Create(long time, int call)
     {
       return new Pair { Time = time, Call = call };
@@ -97,10 +121,13 @@ namespace AltCover.Recorder
     }
   }
 
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "abstract type, No use case")]
   internal abstract class Track
   {
-    internal static readonly string Entry = "\u2611"; // BALLOT BOX WITH CHECK
-    internal static readonly string Exit = "\u2612"; // BALLOT BOX WITH X
+    internal const string Entry = "\u2611"; // BALLOT BOX WITH CHECK
+    internal const string Exit = "\u2612"; // BALLOT BOX WITH X
 
     public override bool Equals(object obj)
     {
@@ -113,6 +140,9 @@ namespace AltCover.Recorder
     }
   }
 
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "No use case")]
   internal class Null : Track
   {
     public override string ToString()
@@ -131,6 +161,9 @@ namespace AltCover.Recorder
     }
   }
 
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "No use case")]
   internal class Time : Track
   {
     public readonly long Value;
@@ -142,9 +175,9 @@ namespace AltCover.Recorder
 
     public override bool Equals(object obj)
     {
-      if (obj is Time)
+      if (obj is Time t)
       {
-        return Value == ((Time)obj).Value;
+        return Value == t.Value;
       }
 
       return false;
@@ -161,7 +194,10 @@ namespace AltCover.Recorder
     }
   }
 
-  internal class Call : Track
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "No use case")]
+  internal sealed class Call : Track
   {
     public readonly int Value;
 
@@ -172,9 +208,9 @@ namespace AltCover.Recorder
 
     public override bool Equals(object obj)
     {
-      if (obj is Call)
+      if (obj is Call c)
       {
-        return Value == ((Call)obj).Value;
+        return Value == c.Value;
       }
 
       return false;
@@ -191,7 +227,10 @@ namespace AltCover.Recorder
     }
   }
 
-  internal class Both : Track
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "No use case")]
+  internal sealed class Both : Track
   {
     public readonly Pair Value;
 
@@ -222,7 +261,7 @@ namespace AltCover.Recorder
     }
   }
 
-  internal class Table : Track
+  internal sealed class Table : Track
   {
     public readonly Dictionary<string, Dictionary<int, PointVisit>> Value;
 
@@ -232,7 +271,10 @@ namespace AltCover.Recorder
     }
   }
 
-  internal class PointVisit
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "ImplementEqualsTypeRule",
+                   Justification = "No use case")]
+  internal sealed class PointVisit
   {
     public long Count;
     public readonly List<Track> Tracks;
@@ -300,6 +342,9 @@ namespace AltCover.Recorder
 
   internal static class Counter
   {
+    [SuppressMessage("Gendarme.Rules.Design.Generic",
+                     "AvoidDeclaringCustomDelegatesRule",
+                     Justification = "Net Framework 2.0")]
     public delegate void PointProcessor(XmlElement doc, IEnumerable<Track> tracking);
 
     // <summary>
@@ -327,7 +372,8 @@ namespace AltCover.Recorder
 
     internal static class I
 #else
-    static private class I
+
+    private static class I
 #endif
     {
       internal struct coverXml
@@ -482,6 +528,12 @@ namespace AltCover.Recorder
       private static void writeXDocument(XmlDocument coverageDocument, Stream stream)
       { coverageDocument.Save(stream); }
 
+      [SuppressMessage("Gendarme.Rules.Smells",
+                       "AvoidLongMethodsRule",
+                       Justification = "Well tested code")]
+      [SuppressMessage("Gendarme.Rules.Smells",
+                       "AvoidLongParameterListsRule",
+                       Justification = "Stable code")]
       public static DateTime updateReport(
       Action<XmlDocument> postProcess,
       PointProcessor pointProcess,
@@ -605,6 +657,9 @@ namespace AltCover.Recorder
         return flushStart;
       }
 
+      [SuppressMessage("Gendarme.Rules.Smells",
+                       "AvoidLongParameterListsRule",
+                       Justification = "Stable code")]
       public static TimeSpan doFlush(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
@@ -644,6 +699,9 @@ namespace AltCover.Recorder
 
 #if RUNNER
 
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidUncalledPrivateCodeRule",
+                     Justification = "Internals Visible To")]
     internal static long addVisit(
       Dictionary<string, Dictionary<int, PointVisit>> counts,
       string moduleId,
@@ -660,9 +718,12 @@ namespace AltCover.Recorder
       return 1;
     }
 
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidUncalledPrivateCodeRule",
+                     Justification = "Internals Visible To")]
     [SuppressMessage("Gendarme.Rules.Smells",
-                      "AvoidLongParameterListsRule",
-                      Justification = "Most of this gets curried away")]
+                       "AvoidLongParameterListsRule",
+                       Justification = "Stable code")]
     public static TimeSpan doFlushStream(
       Action<XmlDocument> postProcess,
       PointProcessor pointProcess,

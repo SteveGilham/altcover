@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Base</AssemblyName>
-    <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
+    <GlobalDefineConstants>RUNNER;LITEVERSION</GlobalDefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
     <Compile Include="..\_Generated\VisibleToTest.cs" Link="VisibleToTest.cs" />
     <Compile Include="..\AltCover.Recorder\Base.cs" Link="Base.cs" />
     <None Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
