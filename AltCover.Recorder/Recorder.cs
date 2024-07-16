@@ -98,7 +98,7 @@ namespace AltCover.Recorder
     }
 
     /// <summary>
-    /// Gets the unique token for this instance
+    /// Gets the unique token for this Instance
     /// This property's IL code is modified to store a GUID-based token
     /// </summary>
     internal static string Token
@@ -341,10 +341,10 @@ namespace AltCover.Recorder
       /// </summary>
       private static class CallTrack
       {
-        private static AsyncLocal<Stack<int>> value = new AsyncLocal<Stack<int>>();
+        private static readonly AsyncLocal<Stack<int>> value = new AsyncLocal<Stack<int>>();
 
         // no race conditions here
-        private static Stack<int> instance()
+        private static Stack<int> Instance()
         {
           if (value.Value == null)
             value.Value = new Stack<int>();
@@ -354,18 +354,18 @@ namespace AltCover.Recorder
 
         public static Nullable<int> Peek()
         {
-          var i = instance();
+          var i = Instance();
           return (i.Count > 0) ? (Nullable<int>)i.Peek() : null;
         }
 
         public static void Push(int x)
         {
-          instance().Push(x);
+          Instance().Push(x);
         }
 
         public static Nullable<int> Pop()
         {
-          var i = instance();
+          var i = Instance();
           return (i.Count > 0) ? (Nullable<int>)i.Pop() : null;
         }
       }
