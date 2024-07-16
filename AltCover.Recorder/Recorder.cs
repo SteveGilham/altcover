@@ -177,13 +177,16 @@ namespace AltCover.Recorder
 
       internal static string getResource(string s)
       {
-        throw new NotImplementedException("getResource");
-        //      let cc =
-        //        System.Globalization.CultureInfo.CurrentUICulture
+        var cc = System.Globalization.CultureInfo.CurrentUICulture;
+        var names = new string[] { cc.Name, cc.Parent.Name, "en" };
+        foreach (var name in names)
+        {
+          var result = resources.GetString(s + "." + name);
+          if (!string.IsNullOrEmpty(result))
+            return result;
+        }
 
-        //      [cc.Name; cc.Parent.Name; "en" ]
-        //      |> Seq.map(fun l -> resources.GetString(s + "." + l))
-        //      |> Seq.tryFind(String.IsNullOrEmpty >> not)
+        return null;
       }
 
       private static Dictionary<string, Dictionary<int, PointVisit>> makeVisits()
@@ -308,15 +311,15 @@ namespace AltCover.Recorder
         get { return __trace; }
       }
 
-      internal delegate T MutexHandler<T>(bool own);
+      internal delegate void MutexHandler(bool own);
 
-      internal static T withMutex<T>(MutexHandler<T> f)
+      internal static void withMutex(MutexHandler f)
       {
         var own = mutex.WaitOne(1000);
 
         try
         {
-          return f(own);
+          f(own);
         }
         finally
         {
@@ -331,7 +334,6 @@ namespace AltCover.Recorder
           {
             trace = t.OnStart();
             isRunner = isRunner || trace.IsConnected;
-            return true; // dummy
           }
           );
       }
@@ -361,58 +363,73 @@ namespace AltCover.Recorder
       /// </summary>
       internal static void flushAll(Close _)
       {
-        throw new NotImplementedException("flushAll");
+        var counts = visits;
+        clear();
 
-        //    let internal flushAll _ =
-        //      let counts = visits
-        //      clear()
+        trace.OnConnected(
+          () => trace.OnFinish(counts),
+          () =>
+          {
+            var any = false;
+            foreach (var n in counts.Values)
+            {
+              if (n.Count > 0)
+              {
+                any = true;
+                break;
+              }
+            }
 
-        //      trace.OnConnected(fun () -> trace.OnFinish counts) (fun () ->
-        //        match counts.Values |> Seq.sumBy (fun x -> x.Count) with
-        //        | 0 -> ()
-        //        | _ ->
-        //          withMutex(fun own ->
-        //            let delta =
-        //              Counter.doFlushFile
-        //                ignore
-        //                (fun _ _ -> ())
-        //                own
-        //                counts
-        //                CoverageFormat
-        //                ReportFilePath
-        //                None
+            if (!any) return;
 
-        //            getResource "Coverage statistics flushing took {0:N} seconds"
-        //            |> Option.iter(fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+            withMutex(own =>
+              {
+                var delta =
+                Counter.doFlushFile(
+                  x => { return; },
+                  (x, y) => { return; },
+                  own,
+                  counts,
+                  CoverageFormat,
+                  ReportFilePath,
+                  null
+                  );
+
+                var message = getResource("Coverage statistics flushing took {0:N} seconds");
+                if (!string.IsNullOrEmpty(message))
+                  Console.Out.WriteLine(message, delta.TotalSeconds);
+              });
+          }
+          );
       }
 
       internal static void flushPause()
       {
-        throw new NotImplementedException("flushPause");
-        //      ("PauseHandler")
-        //      |> getResource
-        //      |> Option.iter Console.Out.WriteLine
+        var message = getResource("PauseHandler");
+        if (!string.IsNullOrEmpty(message))
+          Console.Out.WriteLine(message);
 
-        //      recording<- false
-        //      flushAll Pause
-        //      trace<- signalFile () |> Tracer.Create
+        recording = false;
+        flushAll(Close.Pause);
+        trace = Tracer.Create(signalFile);
       }
 
       internal static void flushResume()
       {
-        throw new NotImplementedException("flushResume");
-        //      ("ResumeHandler")
-        //      |> getResource
-        //      |> Option.iter Console.Out.WriteLine
+        var message = getResource("ResumeHandler");
+        if (!string.IsNullOrEmpty(message))
+          Console.Out.WriteLine(message);
 
-        //      let wasConnected = isRunner
-        //      initialiseTrace trace
+        var wasConnected = isRunner;
+        initialiseTrace(trace);
 
-        //      if (wasConnected<> isRunner) then
-        //        samples<- makeSamples ()
-        //        clear ()
+        if (wasConnected != isRunner)
+        {
+          samples = makeSamples();
+          clear();
+        }
 
-        //      recording <- true
+        recording = true;
       }
 
       internal static void traceVisit(string moduleId, int hitPointId, Track context)
@@ -616,15 +633,18 @@ namespace AltCover.Recorder
 
       internal static void flushCounter(Close finish, EventArgs _)
       {
-        throw new NotImplementedException("flushCounter");
-        //      match finish with
-        //      | Resume -> flushResume()
-        //      | Pause -> flushPause()
-        //      | _ ->
-        //        recording<- false
-
-        //        if supervision |> not then
-        //          flushAll finish
+        switch (finish)
+        {
+          case Close.Resume:
+            flushResume(); break;
+          case Close.Pause:
+            flushPause(); break;
+          default:
+            recording = false;
+            if (!supervision)
+              flushAll(finish);
+            break;
+        }
       }
 
       // Register event handling
