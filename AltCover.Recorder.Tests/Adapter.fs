@@ -11,12 +11,12 @@ module Adapter =
   let DoExit () = Instance.I.doExit
 
   let VisitsClear () =
-    Instance.I.clear ()
+    Instance.I.Clear ()
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
   let SamplesClear () =
-    Instance.I.samples <- Instance.I.makeSamples ()
+    Instance.I.samples <- Instance.I.MakeSamples ()
 
   let private reset () =
     Instance.I.isRunner <- false
@@ -24,11 +24,11 @@ module Adapter =
     SamplesClear()
 
   let ModuleReset (m: string array) =
-    Instance.modules <- m
+    Instance.Modules <- m
     reset ()
 
   let HardReset () =
-    Instance.modules <- [| System.String.Empty |]
+    Instance.Modules <- [| System.String.Empty |]
     reset ()
 
   let internal prepareName name =
@@ -71,18 +71,16 @@ module Adapter =
   let Lock = Instance.I.visits :> obj
 
   let VisitImplNone (moduleId, hitPointId) =
-    Instance.I.visitImpl (moduleId, hitPointId, Null())
+    Instance.I.VisitImpl (moduleId, hitPointId, Null())
 
   let VisitImplMethod (moduleId, hitPointId, mId) =
-    Instance.I.visitImpl (moduleId, hitPointId, (Call mId))
-  //let internal VisitImpl (a, b, c) =
-  //  Instance.I.visitImpl a b c
+    Instance.I.VisitImpl (moduleId, hitPointId, (Call mId))
 
   let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.takeSample (Sampling.Single, moduleId, hitPointId, context)
+    Instance.I.TakeSample (Sampling.Single, moduleId, hitPointId, context)
 
   let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.takeSample (Sampling.All, moduleId, hitPointId, context)
+    Instance.I.TakeSample (Sampling.All, moduleId, hitPointId, context)
 
   let internal newBoth (time, call) = Both(Pair.Create(time, call))
 
@@ -122,10 +120,10 @@ module Adapter =
       else
         output
 
-    Counter.doFlushFile (ignore, (fun _ _ -> ()), true, visits, format, report, output')
+    Counter.DoFlushFile (ignore, (fun _ _ -> ()), true, visits, format, report, output')
 
   let internal updateReport (counts, format, coverageFile, outputFile) =
-    Counter.I.updateReport (
+    Counter.I.UpdateReport (
       ignore,
       (fun _ _ -> ()),
       true,
@@ -135,13 +133,13 @@ module Adapter =
       outputFile
     )
 
-  let internal payloadSelector x = Instance.I.payloadSelector (fun _ -> x)
+  let internal payloadSelector x = Instance.I.PayloadSelector (fun _ -> x)
 
   let internal payloadControl (x, y) =
-    Instance.I.payloadControl ((fun _ -> x), (fun _ -> y))
+    Instance.I.PayloadControl ((fun _ -> x), (fun _ -> y))
 
   let internal payloadSelection (x, y, z) =
-    Instance.I.payloadSelection ((fun _ -> x), (fun _ -> y), (fun _ -> z))
+    Instance.I.PayloadSelection ((fun _ -> x), (fun _ -> y), (fun _ -> z))
 
   let internal makeNullTrace name = Tracer.Create(name)
 
@@ -174,7 +172,7 @@ module Adapter =
           | :? System.ArgumentNullException as ane -> ane.ParamName = unique
           | _ -> x.Message = unique
 
-    Instance.I.issue71Wrapper ((), (), (), (), catcher, pitcher)
+    Instance.I.Issue71Wrapper ((), (), (), (), catcher, pitcher)
     |> ignore
 
   let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
@@ -189,7 +187,7 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.curriedIssue71Wrapper<string, string, string, string> (
+    Instance.I.CurriedIssue71Wrapper<string, string, string, string> (
       "a",
       "b",
       "c",
@@ -198,5 +196,5 @@ module Adapter =
     )
     |> ignore
 
-  let internal tracePush (a, b, c) = Instance.I.trace.Push(a, b, c)
+  let internal tracePush (a, b, c) = Instance.I.Trace.Push(a, b, c)
 #endif

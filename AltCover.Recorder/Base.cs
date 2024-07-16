@@ -1,24 +1,16 @@
 #if RUNNER
 
-using AltCover;
-using System.Drawing;
-using System;
-
 namespace AltCover
 #else
-
 namespace AltCover.Recorder
 #endif
 {
   using System;
   using System.Collections.Generic;
-  using System.ComponentModel;
   using System.Diagnostics.CodeAnalysis;
   using System.Globalization;
   using System.IO;
-  using System.Text.RegularExpressions;
   using System.Xml;
-  using static System.Net.Mime.MediaTypeNames;
 
 #if !RUNNER
 
@@ -37,6 +29,7 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Naming",
                     "UsePluralNameInEnumFlagsRule",
                     Justification = "Not meaningful to do so")]
+  [Serializable]
   internal enum ReportFormat
   {
     NCover = 0,
@@ -54,6 +47,7 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Performance",
                    "AvoidUninstantiatedInternalClassesRule",
                    Justification = "Internals Visible To")]
+  [Serializable]
   internal enum Sampling
   {
     All = 0,
@@ -66,6 +60,7 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Performance",
                    "AvoidUninstantiatedInternalClassesRule",
                    Justification = "Internals Visible To")]
+  [Serializable]
   internal enum Tag
   {
     Null = 0,
@@ -82,6 +77,9 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Design",
                    "OperatorEqualsShouldBeOverloadedRule",
                    Justification = "No use case")]
+  [SuppressMessage("Gendarme.Rules.Performance",
+                    "OverrideValueTypeDefaultsRule",
+                    Justification = "You what, mate?")]
   internal struct Pair
   {
     public long Time;
@@ -90,9 +88,6 @@ namespace AltCover.Recorder
     [SuppressMessage("Gendarme.Rules.Performance",
                      "AvoidUncalledPrivateCodeRule",
                      Justification = "Internals Visible To")]
-    [SuppressMessage("Gendarme.Rules.Performance",
-                     "OverrideValueTypeDefaultsRule",
-                     Justification = "You what, mate?")]
     public static Pair Create(long time, int call)
     {
       return new Pair { Time = time, Call = call };
@@ -143,7 +138,7 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Performance",
                    "ImplementEqualsTypeRule",
                    Justification = "No use case")]
-  internal class Null : Track
+  internal sealed class Null : Track
   {
     public override string ToString()
     {
@@ -164,7 +159,7 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Performance",
                    "ImplementEqualsTypeRule",
                    Justification = "No use case")]
-  internal class Time : Track
+  internal sealed class Time : Track
   {
     public readonly long Value;
 
@@ -340,6 +335,9 @@ namespace AltCover.Recorder
     }
   }
 
+  [SuppressMessage("Gendarme.Rules.Smells",
+                   "AvoidLongParameterListsRule",
+                   Justification = "Stable code")]
   internal static class Counter
   {
     [SuppressMessage("Gendarme.Rules.Design.Generic",
@@ -376,7 +374,13 @@ namespace AltCover.Recorder
     private static class I
 #endif
     {
-      internal struct coverXml
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidLargeStructureRule",
+                       Justification = "No premature work")]
+      [SuppressMessage("Gendarme.Rules.Performance",
+                    "OverrideValueTypeDefaultsRule",
+                    Justification = "You what, mate?")]
+      internal struct CoverXml
       {
         internal string m;
         internal string i;
@@ -385,8 +389,8 @@ namespace AltCover.Recorder
         internal string v;
       }
 
-      internal static readonly coverXml openCoverXml =
-        new coverXml()
+      internal static readonly CoverXml openCoverXml =
+        new CoverXml()
         {
           m = "//Module",
           i = "hash",
@@ -397,8 +401,8 @@ namespace AltCover.Recorder
           v = "vc"
         };
 
-      internal static readonly coverXml nCoverXml =
-        new coverXml()
+      internal static readonly CoverXml nCoverXml =
+        new CoverXml()
         {
           m = "//module",
           i = "moduleId",
@@ -407,7 +411,7 @@ namespace AltCover.Recorder
           v = "visitcount"
         };
 
-      internal static coverXml xmlByFormat(ReportFormat format)
+      internal static CoverXml XmlByFormat(ReportFormat format)
       {
         switch (format & ReportFormat.TrackMask)
         {
@@ -417,17 +421,17 @@ namespace AltCover.Recorder
         }
       }
 
-      internal static DateTime minTime(DateTime t1, DateTime t2)
+      internal static DateTime MinTime(DateTime t1, DateTime t2)
       {
         return t1 < t2 ? t1 : t2;
       }
 
-      internal static DateTime maxTime(DateTime t1, DateTime t2)
+      internal static DateTime MaxTime(DateTime t1, DateTime t2)
       {
         return t1 > t2 ? t1 : t2;
       }
 
-      internal static int findIndexFromUspid(int flag, string uspid)
+      internal static int FindIndexFromUspid(int flag, string uspid)
       {
         var f = Int32.TryParse(
               uspid,
@@ -437,7 +441,7 @@ namespace AltCover.Recorder
         return f ? (c | flag) : -1;
       }
 
-      internal static void ensurePoint(Dictionary<int, PointVisit> counts, int hitPointId)
+      internal static void EnsurePoint(Dictionary<int, PointVisit> counts, int hitPointId)
       {
         if (!counts.ContainsKey(hitPointId))
         {
@@ -456,7 +460,10 @@ namespace AltCover.Recorder
         }
       }
 
-      internal static long addTable(
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidUncalledPrivateCodeRule",
+                       Justification = "Internals Visible To")]
+      internal static long AddTable(
               Dictionary<string, Dictionary<int, PointVisit>> counts,
               Dictionary<string, Dictionary<int, PointVisit>> t
         )
@@ -473,7 +480,7 @@ namespace AltCover.Recorder
 
             foreach (var p in here.Keys)
             {
-              ensurePoint(next, p);
+              EnsurePoint(next, p);
               var v = next[p];
               var add = here[p];
               hitcount += add.Total;
@@ -489,7 +496,7 @@ namespace AltCover.Recorder
       }
 
       // TODO inline in release if possible
-      internal static IEnumerable<XmlElement> selectNodes(XmlNode node, string name)
+      internal static IEnumerable<XmlElement> SelectNodes(XmlNode node, string name)
       {
         var result = new List<XmlElement>();
         foreach (var x in node.SelectNodes(name))
@@ -507,7 +514,7 @@ namespace AltCover.Recorder
       // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
       // Also, this rule is deprecated
       // </remarks>
-      private static XmlDocument readXDocument(Stream stream)
+      private static XmlDocument ReadXDocument(Stream stream)
       {
         var doc = new XmlDocument();
 
@@ -525,7 +532,7 @@ namespace AltCover.Recorder
       // <param name="coverageDocument">The XML document to write</param>
       // <param name="path">The XML file to write to</param>
       // <remarks>Idiom to work with CA2202 as above</remarks>
-      private static void writeXDocument(XmlDocument coverageDocument, Stream stream)
+      private static void WriteXDocument(XmlDocument coverageDocument, Stream stream)
       { coverageDocument.Save(stream); }
 
       [SuppressMessage("Gendarme.Rules.Smells",
@@ -534,7 +541,7 @@ namespace AltCover.Recorder
       [SuppressMessage("Gendarme.Rules.Smells",
                        "AvoidLongParameterListsRule",
                        Justification = "Stable code")]
-      public static DateTime updateReport(
+      public static DateTime UpdateReport(
       Action<XmlDocument> postProcess,
       PointProcessor pointProcess,
       bool own,
@@ -545,9 +552,9 @@ namespace AltCover.Recorder
       )
       {
         var flushStart = DateTime.UtcNow;
-        var xmlformat = xmlByFormat(format);// throw early on unsupported
+        var xmlformat = XmlByFormat(format);// throw early on unsupported
 
-        var coverageDocument = readXDocument(coverageFile);
+        var coverageDocument = ReadXDocument(coverageFile);
 
         var root = coverageDocument.DocumentElement;
 
@@ -560,9 +567,9 @@ namespace AltCover.Recorder
           var oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null);
           var oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null);
 
-          var st = minTime(startTime, oldStartTime);
+          var st = MinTime(startTime, oldStartTime);
           startTime = st.ToUniversalTime(); // Min
-          var mt = maxTime(measureTime, oldMeasureTime);
+          var mt = MaxTime(measureTime, oldMeasureTime);
           measureTime = mt.ToUniversalTime(); // Max
 
           root.SetAttribute(
@@ -588,7 +595,7 @@ namespace AltCover.Recorder
           );
         }
 
-        var moduleNodes = selectNodes(coverageDocument, xmlformat.m);
+        var moduleNodes = SelectNodes(coverageDocument, xmlformat.m);
 
         foreach (var el in moduleNodes)
         {
@@ -601,13 +608,13 @@ namespace AltCover.Recorder
           // affectedModule.Descendants(XName.Get("seqpnt"))
           // Get the methods, then flip their
           // contents before concatenating
-          var nn = selectNodes(el, xmlformat.m2);
+          var nn = SelectNodes(el, xmlformat.m2);
           foreach (var method in nn)
           {
             var nodes = new List<KeyValuePair<XmlElement, int>>();
             foreach (var nameflag in xmlformat.s)
             {
-              foreach (var node in selectNodes(method, nameflag.Key))
+              foreach (var node in SelectNodes(method, nameflag.Key))
               {
                 nodes.Insert(0, new KeyValuePair<XmlElement, int>(node, nameflag.Value));
               }
@@ -621,7 +628,7 @@ namespace AltCover.Recorder
               if ((format & ReportFormat.TrackMask) ==
                 ReportFormat.OpenCover)
               {
-                index = findIndexFromUspid(node.Value, node.Key.GetAttribute("uspid"));
+                index = FindIndexFromUspid(node.Value, node.Key.GetAttribute("uspid"));
               }
 
               if (!moduleHits.ContainsKey(index))
@@ -652,7 +659,7 @@ namespace AltCover.Recorder
         outputFile.SetLength(0);
 
         if (own)
-        { writeXDocument(coverageDocument, outputFile); }
+        { WriteXDocument(coverageDocument, outputFile); }
 
         return flushStart;
       }
@@ -660,7 +667,7 @@ namespace AltCover.Recorder
       [SuppressMessage("Gendarme.Rules.Smells",
                        "AvoidLongParameterListsRule",
                        Justification = "Stable code")]
-      public static TimeSpan doFlush(
+      public static TimeSpan DoFlush(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
         bool own,
@@ -671,14 +678,14 @@ namespace AltCover.Recorder
       )
       {
         var flushStart =
-          updateReport(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+          UpdateReport(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
 
         return new TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks);
       }
     }
 
     // "Public" API
-    internal static void addSingleVisit(
+    internal static void AddSingleVisit(
       Dictionary<string, Dictionary<int, PointVisit>> counts,
       string moduleId,
       int hitPointId,
@@ -688,7 +695,7 @@ namespace AltCover.Recorder
       if (counts.ContainsKey(moduleId))
       {
         var next = counts[moduleId];
-        I.ensurePoint(next, hitPointId);
+        I.EnsurePoint(next, hitPointId);
         var v = next[hitPointId];
 
         if (context is Null n)
@@ -702,7 +709,7 @@ namespace AltCover.Recorder
     [SuppressMessage("Gendarme.Rules.Performance",
                      "AvoidUncalledPrivateCodeRule",
                      Justification = "Internals Visible To")]
-    internal static long addVisit(
+    internal static long AddVisit(
       Dictionary<string, Dictionary<int, PointVisit>> counts,
       string moduleId,
       int hitPointId,
@@ -711,10 +718,10 @@ namespace AltCover.Recorder
     {
       if (context is Table t)
       {
-        return I.addTable(counts, t.Value);
+        return I.AddTable(counts, t.Value);
       }
 
-      addSingleVisit(counts, moduleId, hitPointId, context);
+      AddSingleVisit(counts, moduleId, hitPointId, context);
       return 1;
     }
 
@@ -724,7 +731,7 @@ namespace AltCover.Recorder
     [SuppressMessage("Gendarme.Rules.Smells",
                        "AvoidLongParameterListsRule",
                        Justification = "Stable code")]
-    public static TimeSpan doFlushStream(
+    public static TimeSpan DoFlushStream(
       Action<XmlDocument> postProcess,
       PointProcessor pointProcess,
       bool own,
@@ -734,12 +741,12 @@ namespace AltCover.Recorder
       Stream outputFile
       )
     {
-      return I.doFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+      return I.DoFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
     }
 
 #else
 
-    internal static TimeSpan doFlushStream(
+    internal static TimeSpan DoFlushStream(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
         bool own,
@@ -761,11 +768,14 @@ namespace AltCover.Recorder
       {
         var outputFile = string.IsNullOrEmpty(output) ?
           coverageFile : target;
-        return I.doFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
+        return I.DoFlush(postProcess, pointProcess, own, counts, format, coverageFile, outputFile);
       }
     }
 
-    internal static TimeSpan doFlushFile(
+    [SuppressMessage("Gendarme.Rules.Correctness",
+                     "EnsureLocalDisposalRule",
+                     Justification = "'zip' owns 'container' and is 'Close()'d")]
+    internal static TimeSpan DoFlushFile(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
         bool own,
@@ -786,7 +796,7 @@ namespace AltCover.Recorder
             4096,
             FileOptions.SequentialScan
           ))
-          return doFlushStream(postProcess, pointProcess, own, counts, format, coverageFile, output);
+          return DoFlushStream(postProcess, pointProcess, own, counts, format, coverageFile, output);
       }
       else
       {
@@ -823,7 +833,7 @@ namespace AltCover.Recorder
               var result = new TimeSpan(0);
               using (var reader = zip.GetInputStream(entry))
               {
-                result = I.doFlush(postProcess, pointProcess, own, counts, format, reader, target);
+                result = I.DoFlush(postProcess, pointProcess, own, counts, format, reader, target);
               }
 
               if (string.IsNullOrEmpty(output))
@@ -842,7 +852,7 @@ namespace AltCover.Recorder
           catch (ZipException)
           {
             using (var reader = new MemoryStream())
-            { return I.doFlush(postProcess, pointProcess, own, counts, format, reader, target); }
+            { return I.DoFlush(postProcess, pointProcess, own, counts, format, reader, target); }
           }
         }
       }
@@ -850,7 +860,7 @@ namespace AltCover.Recorder
 
 #if !RUNNER
 
-    internal class Source : IStaticDataSource
+    internal sealed class Source : IStaticDataSource
     {
       private readonly Stream _target;
 
@@ -859,8 +869,13 @@ namespace AltCover.Recorder
         _target = t;
       }
 
+      [SuppressMessage("Gendarme.Rules.Design",
+                       "ConsiderConvertingMethodToPropertyRule",
+                       Justification = "Third party interface")]
       public Stream GetSource()
-      { return _target; }
+      {
+      return _target;
+      }
     }
 
 #endif

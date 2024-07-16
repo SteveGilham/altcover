@@ -175,7 +175,7 @@ module AltCoverCoreTests =
 
   [<Test>]
   let VisitShouldSignal () =
-    let save = Instance.I.trace
+    let save = Instance.I.Trace
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -198,15 +198,15 @@ module AltCoverCoreTests =
 
       try
         Adapter.HardReset()
-        Instance.I.trace <- client.OnStart()
-        Assert.True(Instance.I.trace.IsConnected, "connection failed")
+        Instance.I.Trace <- client.OnStart()
+        Assert.True(Instance.I.Trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
-        Instance.I.trace.Close()
-        Instance.I.trace.Close()
-        Instance.I.trace.Close()
-        Instance.I.trace <- save
+        Instance.I.Trace.Close()
+        Instance.I.Trace.Close()
+        Instance.I.Trace.Close()
+        Instance.I.Trace <- save
 
       use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
@@ -232,7 +232,7 @@ module AltCoverCoreTests =
 
   [<Test>]
   let VisitShouldSignalTrack () =
-    let save = Instance.I.trace
+    let save = Instance.I.Trace
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -271,8 +271,8 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
 
       try
-        Instance.I.trace <- client.OnStart()
-        Assert.True(Instance.I.trace.IsConnected, "connection failed")
+        Instance.I.Trace <- client.OnStart()
+        Assert.True(Instance.I.Trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
 
         Adapter.HardReset()
@@ -280,8 +280,8 @@ module AltCoverCoreTests =
         Adapter.VisitImplMethod("name", 23, 5)
       finally
         Instance.I.isRunner <- false
-        Instance.I.trace.Close()
-        Instance.I.trace <- save
+        Instance.I.Trace.Close()
+        Instance.I.Trace <- save
 
       use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
@@ -371,7 +371,7 @@ module AltCoverCoreTests =
 
   [<Test>]
   let FlushShouldTidyUp () = // also throw a bone to OpenCover 615
-    let save = Instance.I.trace
+    let save = Instance.I.Trace
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -394,18 +394,18 @@ module AltCoverCoreTests =
 
       try
         Adapter.HardReset()
-        Instance.I.trace <- client.OnStart()
-        Assert.That(Instance.I.trace.Equals client, Is.False)
-        Assert.That(Instance.I.trace.Equals expected, Is.False)
-        Assert.True(Instance.I.trace.IsConnected, "connection failed")
+        Instance.I.Trace <- client.OnStart()
+        Assert.That(Instance.I.Trace.Equals client, Is.False)
+        Assert.That(Instance.I.Trace.Equals expected, Is.False)
+        Assert.True(Instance.I.Trace.IsConnected, "connection failed")
 
         let (a, b, c) = expected |> Seq.head
         Adapter.tracePush (a, b, c)
         Instance.FlushFinish()
       finally
-        Instance.I.trace.Close()
+        Instance.I.Trace.Close()
         System.Threading.Thread.Sleep 100
-        Instance.I.trace <- save
+        Instance.I.Trace <- save
 
       use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(root + ".0.acv"), CompressionMode.Decompress)

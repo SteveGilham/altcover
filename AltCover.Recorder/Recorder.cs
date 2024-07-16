@@ -1,3 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnneededFieldInitializationRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Recorder.Instance::.cctor()",
+                            Justification = "Compiler generated")]
+
 namespace AltCover.Recorder
 {
   using System;
@@ -28,13 +36,13 @@ namespace AltCover.Recorder
     {
       get
       {
-        return canonicalPath(Path.Combine(
+        return CanonicalPath(Path.Combine(
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
             ReportFile));
       }
     }
 
-    internal static string canonicalPath(string path)
+    internal static string CanonicalPath(string path)
     // Mono+Linux barfs at a path of "/_" without the "file://" prefix
     {
       var u = new Uri("file://" + Path.GetFullPath(path), UriKind.Absolute);
@@ -60,6 +68,9 @@ namespace AltCover.Recorder
     internal static ReportFormat CoverageFormat
     {
 #if DEBUG
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidUncalledPrivateCodeRule",
+                       Justification = "Test interface")]
       set { __coverageFormat = value; }
 #endif
       [MethodImpl(MethodImplOptions.NoInlining)]
@@ -102,15 +113,21 @@ namespace AltCover.Recorder
     /// </summary>
     private static IEnumerable<string> __modules = new string[] { string.Empty };
 
-    internal static IEnumerable<string> modules
+    internal static IEnumerable<string> Modules
     {
 #if DEBUG
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidUncalledPrivateCodeRule",
+                       Justification = "Test interface")]
       set { __modules = value; }
 #endif
       [MethodImpl(MethodImplOptions.NoInlining)]
       get { return __modules; }
     }
 
+    [SuppressMessage("Gendarme.Rules.Design",
+                     "ConsiderConvertingMethodToPropertyRule",
+                     Justification = "A bit big for that")]
     private static bool IsSupervised()
     {
       bool maybe = false;
@@ -128,8 +145,14 @@ namespace AltCover.Recorder
     //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     internal static bool supervision = IsSupervised();
 
+    [SuppressMessage("Gendarme.Rules.Smells",
+                     "AvoidCodeDuplicatedInSiblingClassesRule",
+                     Justification = "Too trivial")]
     internal abstract class Sampled
     {
+      [SuppressMessage("Gendarme.Rules.Maintainability",
+                       "VariableNamesShouldNotMatchFieldNamesRule",
+                       Justification = "too trivial")]
       protected Sampled(int visit)
       {
         this.visit = visit;
@@ -138,7 +161,10 @@ namespace AltCover.Recorder
       public readonly int visit;
     }
 
-    internal class SimpleVisit : Sampled
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "ImplementEqualsTypeRule",
+                     Justification = "No use case")]
+    internal sealed class SimpleVisit : Sampled
     {
       public SimpleVisit(int visit) : base(visit)
       {
@@ -159,10 +185,16 @@ namespace AltCover.Recorder
       }
     }
 
-    internal class CallVisit : Sampled
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "ImplementEqualsTypeRule",
+                     Justification = "No use case")]
+    internal sealed class CallVisit : Sampled
     {
       public readonly int call;
 
+      [SuppressMessage("Gendarme.Rules.Maintainability",
+                       "VariableNamesShouldNotMatchFieldNamesRule",
+                       Justification = "too trivial")]
       public CallVisit(int visit, int call) : base(visit)
       {
         this.call = call;
@@ -183,10 +215,16 @@ namespace AltCover.Recorder
       }
     }
 
-    internal class TimeVisit : Sampled
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "ImplementEqualsTypeRule",
+                     Justification = "No use case")]
+    internal sealed class TimeVisit : Sampled
     {
       public readonly long time;
 
+      [SuppressMessage("Gendarme.Rules.Maintainability",
+                       "VariableNamesShouldNotMatchFieldNamesRule",
+                       Justification = "too trivial")]
       public TimeVisit(int visit, long time) : base(visit)
       {
         this.time = time;
@@ -209,6 +247,12 @@ namespace AltCover.Recorder
 
 #if DEBUG
 
+    [SuppressMessage("Gendarme.Rules.Smells",
+                     "AvoidLargeClassesRule",
+                     Justification = "No. Go away.")]
+    [SuppressMessage("Gendarme.Rules.Smells",
+                     "AvoidLongParameterListsRule",
+                     Justification = "Stable code")]
     internal static class I
 #else
 
@@ -218,7 +262,7 @@ namespace AltCover.Recorder
       internal static readonly ResourceManager resources =
             new ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly());
 
-      internal static string getResource(string s)
+      internal static string GetResource(string s)
       {
         var cc = System.Globalization.CultureInfo.CurrentUICulture;
         var names = new string[] { cc.Name, cc.Parent.Name, "en" };
@@ -232,14 +276,14 @@ namespace AltCover.Recorder
         return null;
       }
 
-      private static Dictionary<string, Dictionary<int, PointVisit>> makeVisits()
+      private static Dictionary<string, Dictionary<int, PointVisit>> MakeVisits()
       {
         var d = new Dictionary<string, Dictionary<int, PointVisit>>
         {
           { Track.Entry, new Dictionary<int, PointVisit>() },
           { Track.Exit, new Dictionary<int, PointVisit>() }
         };
-        foreach (var item in modules)
+        foreach (var item in Modules)
         {
           d.Add(item, new Dictionary<int, PointVisit>());
         }
@@ -249,19 +293,19 @@ namespace AltCover.Recorder
       /// <summary>
       /// Accumulation of visit records
       /// </summary>
-      internal static Dictionary<string, Dictionary<int, PointVisit>> visits = makeVisits();
+      internal static Dictionary<string, Dictionary<int, PointVisit>> visits = MakeVisits();
 
-      internal static Dictionary<string, Dictionary<Sampled, bool>> makeSamples()
+      internal static Dictionary<string, Dictionary<Sampled, bool>> MakeSamples()
       {
         var d = new Dictionary<string, Dictionary<Sampled, bool>>();
-        foreach (var item in modules)
+        foreach (var item in Modules)
         {
           d.Add(item, new Dictionary<Sampled, bool>());
         }
         return d;
       }
 
-      internal static Dictionary<string, Dictionary<Sampled, bool>> samples = makeSamples();
+      internal static Dictionary<string, Dictionary<Sampled, bool>> samples = MakeSamples();
 
       internal static bool isRunner = false;
 
@@ -276,7 +320,16 @@ namespace AltCover.Recorder
 
         public T Value
         {
+          [SuppressMessage("Gendarme.Rules.Correctness",
+                           "MethodCanBeMadeStaticRule",
+                           Justification = "Whole point of the exercise")]
           get { return item; }
+          [SuppressMessage("Gendarme.Rules.Correctness",
+                           "MethodCanBeMadeStaticRule",
+                           Justification = "Whole point of the exercise")]
+          [SuppressMessage("Gendarme.Rules.Concurrency",
+                           "WriteStaticFieldFromInstanceMethodRule",
+                           Justification = "Whole point of the exercise")]
           set { item = value; }
         }
       }
@@ -299,43 +352,43 @@ namespace AltCover.Recorder
           return value.Value;
         }
 
-        public static Nullable<int> peek()
+        public static Nullable<int> Peek()
         {
           var i = instance();
           return (i.Count > 0) ? (Nullable<int>)i.Peek() : null;
         }
 
-        public static void push(int x)
+        public static void Push(int x)
         {
           instance().Push(x);
         }
 
-        public static Nullable<int> pop()
+        public static Nullable<int> Pop()
         {
           var i = instance();
           return (i.Count > 0) ? (Nullable<int>)i.Pop() : null;
         }
       }
 
-      internal static Nullable<int> callerId
+      internal static Nullable<int> CallerId
       {
-        get { return CallTrack.peek(); }
+        get { return CallTrack.Peek(); }
       }
 
-      internal static void push(int i)
+      internal static void Push(int i)
       {
-        CallTrack.push(i);
+        CallTrack.Push(i);
       }
 
-      internal static Nullable<int> pop()
-      { return CallTrack.pop(); }
+      internal static Nullable<int> Pop()
+      { return CallTrack.Pop(); }
 
       /// <summary>
       /// Serialize access to the report file across AppDomains for the classic mode
       /// </summary>
       internal static readonly Mutex mutex = new Mutex(false, Token + ".mutex");
 
-      internal static string signalFile
+      internal static string SignalFile
       {
         get { return ReportFilePath + ".acv"; }
       }
@@ -343,18 +396,21 @@ namespace AltCover.Recorder
       /// <summary>
       /// Reporting back to the mother-ship
       /// </summary>
-      private static Tracer __trace = Tracer.Create(signalFile);
+      private static Tracer __trace = Tracer.Create(SignalFile);
 
-      internal static Tracer trace
+      internal static Tracer Trace
       {
         set { __trace = value; }
         [MethodImpl(MethodImplOptions.NoInlining)]
         get { return __trace; }
       }
 
+      [SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidDeclaringCustomDelegatesRule",
+                       Justification = "Net Framework 2.0")]
       internal delegate void MutexHandler(bool own);
 
-      internal static void withMutex(MutexHandler f)
+      internal static void WithMutex(MutexHandler f)
       {
         var own = mutex.WaitOne(1000);
 
@@ -368,13 +424,13 @@ namespace AltCover.Recorder
         }
       }
 
-      internal static void initialiseTrace(Tracer t)
+      internal static void InitialiseTrace(Tracer t)
       {
-        withMutex(
+        WithMutex(
           x =>
           {
-            trace = t.OnStart();
-            isRunner = isRunner || trace.IsConnected;
+            Trace = t.OnStart();
+            isRunner = isRunner || Trace.IsConnected;
           }
           );
       }
@@ -383,16 +439,16 @@ namespace AltCover.Recorder
 
       private static bool __recording = true;
 
-      internal static bool recording
+      internal static bool Recording
       {
         set { __recording = value; }
         [MethodImpl(MethodImplOptions.NoInlining)]
         get { return __recording; }
       }
 
-      internal static void clear()
+      internal static void Clear()
       {
-        visits = makeVisits();
+        visits = MakeVisits();
         Counter.branchVisits = 0;
         Counter.totalVisits = 0;
       }
@@ -400,13 +456,16 @@ namespace AltCover.Recorder
       /// <summary>
       /// This method flushes hit count buffers.
       /// </summary>
-      internal static void flushAll(Close _)
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidUnusedParametersRule",
+                       Justification = "Tidying later perhaps")]
+      internal static void FlushAll(Close _)
       {
         var counts = visits;
-        clear();
+        Clear();
 
-        trace.OnConnected(
-          () => trace.OnFinish(counts),
+        Trace.OnConnected(
+          () => Trace.OnFinish(counts),
           () =>
           {
             var any = false;
@@ -421,10 +480,10 @@ namespace AltCover.Recorder
 
             if (!any) return;
 
-            withMutex(own =>
+            WithMutex(own =>
               {
                 var delta =
-                Counter.doFlushFile(
+                Counter.DoFlushFile(
                   x => { return; },
                   (x, y) => { return; },
                   own,
@@ -434,7 +493,7 @@ namespace AltCover.Recorder
                   null
                   );
 
-                var message = getResource("Coverage statistics flushing took {0:N} seconds");
+                var message = GetResource("Coverage statistics flushing took {0:N} seconds");
                 if (!string.IsNullOrEmpty(message))
                   Console.Out.WriteLine(message, delta.TotalSeconds);
               });
@@ -442,36 +501,36 @@ namespace AltCover.Recorder
           );
       }
 
-      internal static void flushPause()
+      internal static void FlushPause()
       {
-        var message = getResource("PauseHandler");
+        var message = GetResource("PauseHandler");
         if (!string.IsNullOrEmpty(message))
           Console.Out.WriteLine(message);
 
-        recording = false;
-        flushAll(Close.Pause);
-        trace = Tracer.Create(signalFile);
+        Recording = false;
+        FlushAll(Close.Pause);
+        Trace = Tracer.Create(SignalFile);
       }
 
-      internal static void flushResume()
+      internal static void FlushResume()
       {
-        var message = getResource("ResumeHandler");
+        var message = GetResource("ResumeHandler");
         if (!string.IsNullOrEmpty(message))
           Console.Out.WriteLine(message);
 
         var wasConnected = isRunner;
-        initialiseTrace(trace);
+        InitialiseTrace(Trace);
 
         if (wasConnected != isRunner)
         {
-          samples = makeSamples();
-          clear();
+          samples = MakeSamples();
+          Clear();
         }
 
-        recording = true;
+        Recording = true;
       }
 
-      internal static void traceVisit(string moduleId, int hitPointId, Track context)
+      internal static void TraceVisit(string moduleId, int hitPointId, Track context)
       {
         lock (synchronize)
         {
@@ -481,16 +540,19 @@ namespace AltCover.Recorder
           {
             if (item.Count > 0)
             {
-              clear();
+              Clear();
               break;
             }
           }
 
-          trace.OnVisit(counts, moduleId, hitPointId, context);
+          Trace.OnVisit(counts, moduleId, hitPointId, context);
         }
       }
 
-      internal static void logException<T1, T2, T3, T4>(T1 moduleId, T2 hitPointId, T3 context, T4 x)
+      [SuppressMessage("Gendarme.Rules.Globalization",
+                       "PreferIFormatProviderOverrideRule",
+                       Justification = "later, perhaps")]
+      internal static void LogException<T1, T2, T3, T4>(T1 moduleId, T2 hitPointId, T3 context, T4 x)
       {
         var text = new string[] {
           String.Format("ModuleId = {0}", moduleId),
@@ -510,16 +572,22 @@ namespace AltCover.Recorder
         }
       }
 
+      [SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidDeclaringCustomDelegatesRule",
+                       Justification = "Net Framework 2.0")]
       internal delegate void HandlerFunction<T1, T2, T3>(T1 a, T2 b, T3 c, Exception x);
 
+      [SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidDeclaringCustomDelegatesRule",
+                       Justification = "Net Framework 2.0")]
       internal delegate void Adder<T1, T2, T3, T4>(T1 a, T2 b, T3 c, T4 d);
 
-      internal static void issue71Wrapper<T1, T2, T3, T4>(T1 visits, T2 moduleId, T3 hitPointId,
+      internal static void Issue71Wrapper<T1, T2, T3, T4>(T1 visitsIn, T2 moduleId, T3 hitPointId,
         T4 context, HandlerFunction<T2, T3, T4> handler, Adder<T1, T2, T3, T4> add)
       {
         try
         {
-          add(visits, moduleId, hitPointId, context);
+          add(visitsIn, moduleId, hitPointId, context);
         }
         catch (Exception x)
         {
@@ -531,19 +599,19 @@ namespace AltCover.Recorder
         }
       }
 
-      internal static void curriedIssue71Wrapper<T1, T2, T3, T4>(T1 visits, T2 moduleId,
+      internal static void CurriedIssue71Wrapper<T1, T2, T3, T4>(T1 visitsIn, T2 moduleId,
         T3 hitPointId,
         T4 context, Adder<T1, T2, T3, T4> add)
       {
-        issue71Wrapper(visits, moduleId, hitPointId, context, logException, add);
+        Issue71Wrapper(visitsIn, moduleId, hitPointId, context, LogException, add);
       }
 
-      internal static void addVisit(string moduleId, int hitPointId, Track context)
+      internal static void AddVisit(string moduleId, int hitPointId, Track context)
       {
-        curriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.addSingleVisit);
+        CurriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.AddSingleVisit);
       }
 
-      internal static bool takeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
+      internal static bool TakeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
       {
         if (strategy == Sampling.All)
           return true;
@@ -551,15 +619,14 @@ namespace AltCover.Recorder
         Sampled[] sampleds = null;
         if (context is Null)
           sampleds = new Sampled[] { new SimpleVisit(hitPointId) };
-        else if (context is Time)
+        else if (context is Time t)
           sampleds = new Sampled[] { new SimpleVisit(hitPointId),
-                                     new TimeVisit(hitPointId, ((Time)context).Value) };
-        else if (context is Call)
+                                     new TimeVisit(hitPointId, t.Value)};
+        else if (context is Call c)
           sampleds = new Sampled[] { new SimpleVisit(hitPointId),
-                                     new CallVisit(hitPointId, ((Call)context).Value) };
-        else if (context is Both)
+                                     new CallVisit(hitPointId, c.Value)};
+        else if (context is Both b)
         {
-          var b = (Both)context;
           sampleds = new Sampled[] { new SimpleVisit(hitPointId),
                                      new TimeVisit(hitPointId, b.Value.Time),
                                      new CallVisit(hitPointId, b.Value.Call)};
@@ -597,96 +664,115 @@ namespace AltCover.Recorder
       /// <param name="moduleId">Assembly being visited</param>
       /// <param name="hitPointId">Sequence Point identifier</param>
       /// <param name="context">What sort of visit</param>
-      internal static void visitImpl(string moduleId, int hitPointId, Track context)
+      internal static void VisitImpl(string moduleId, int hitPointId, Track context)
       {
         if
           (Sample == Sampling.All
-           || takeSample(Sample, moduleId, hitPointId, context))
+           || TakeSample(Sample, moduleId, hitPointId, context))
         {
-          if (Defer || supervision || !trace.IsConnected)
+          if (Defer || supervision || !Trace.IsConnected)
           {
-            addVisit(moduleId, hitPointId, context);
+            AddVisit(moduleId, hitPointId, context);
           }
           else
           {
-            traceVisit(moduleId, hitPointId, context);
+            TraceVisit(moduleId, hitPointId, context);
           }
         }
       }
 
-      internal static bool isTracking
+      internal static bool IsTracking
       {
         get { return (CoverageFormat & ReportFormat.WithTracking) != 0; }
       }
 
-      internal static bool isTrackingRunner()
+      [SuppressMessage("Gendarme.Rules.Design",
+                       "ConsiderConvertingMethodToPropertyRule",
+                       Justification = "No use case")]
+      internal static bool IsTrackingRunner()
       {
-        return isTracking && isRunner;
+        return IsTracking && isRunner;
       }
 
-      internal static long granularity()
+      internal static long Granularity()
       {
         return Timer;
       }
 
-      internal static long clock()
-      { return DateTime.UtcNow.Ticks; }
+      internal static long Clock()
+      {
+        return DateTime.UtcNow.Ticks;
+      }
 
+      [SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidDeclaringCustomDelegatesRule",
+                       Justification = "Net Framework 2.0")]
       internal delegate long ClockProvider();
 
+      [SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidDeclaringCustomDelegatesRule",
+                       Justification = "Net Framework 2.0")]
       internal delegate long FrequencyProvider();
 
+      [SuppressMessage("Gendarme.Rules.Design.Generic",
+                       "AvoidDeclaringCustomDelegatesRule",
+                       Justification = "Net Framework 2.0")]
       internal delegate bool PayloadProvider();
 
-      internal static Track payloadSelection(ClockProvider clock,
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidRepetitiveCallsToPropertiesRule",
+                       Justification = "Separate branches")]
+      internal static Track PayloadSelection(ClockProvider clock,
         FrequencyProvider frequency, PayloadProvider wantPayload)
       {
         if (wantPayload())
         {
           var f = frequency();
-          var id = callerId;
+          var id = CallerId;
           if (f == 0)
           {
             return id.HasValue ?
               (Track)new Call(id.Value) :
                      new Null();
           }
-
-          var t = f * (clock() / f);
-          return id.HasValue ?
-              (Track)new Both(Pair.Create(t, id.Value)) :
-                     new Time(t);
+          else
+          {
+            var t = f * (clock() / f);
+            return id.HasValue ?
+                (Track)new Both(Pair.Create(t, id.Value)) :
+                       new Time(t);
+          }
         }
         return new Null();
       }
 
-      internal static Track payloadControl(FrequencyProvider frequency, PayloadProvider wantPayload)
+      internal static Track PayloadControl(FrequencyProvider frequency, PayloadProvider wantPayload)
       {
-        return payloadSelection(clock, frequency, wantPayload);
+        return PayloadSelection(Clock, frequency, wantPayload);
       }
 
-      internal static Track payloadSelector(PayloadProvider enable)
+      internal static Track PayloadSelector(PayloadProvider enable)
       {
-        return payloadControl(granularity, enable);
+        return PayloadControl(Granularity, enable);
       }
 
-      internal static void visitSelection(Track track, string moduleId, int hitPointId)
+      internal static void VisitSelection(Track track, string moduleId, int hitPointId)
       {
-        visitImpl(moduleId, hitPointId, track);
+        VisitImpl(moduleId, hitPointId, track);
       }
 
-      internal static void flushCounter(Close finish, EventArgs _)
+      internal static void FlushCounter(Close finish, EventArgs _)
       {
         switch (finish)
         {
           case Close.Resume:
-            flushResume(); break;
+            FlushResume(); break;
           case Close.Pause:
-            flushPause(); break;
+            FlushPause(); break;
           default:
-            recording = false;
+            Recording = false;
             if (!supervision)
-              flushAll(finish);
+              FlushAll(finish);
             break;
         }
       }
@@ -696,46 +782,59 @@ namespace AltCover.Recorder
 
       internal static void PauseHandler(object sender, FileSystemEventArgs e)
       {
-        flushCounter(Close.Pause, e);
+        FlushCounter(Close.Pause, e);
       }
 
       internal static FileSystemEventHandler doResume = ResumeHandler;
 
       internal static void ResumeHandler(object sender, FileSystemEventArgs e)
       {
-        flushCounter(Close.Resume, e);
+        FlushCounter(Close.Resume, e);
       }
 
+      [SuppressMessage("Gendarme.Rules.Correctness",
+                       "DeclareEventsExplicitlyRule",
+                       Justification = "Wrong use case")]
       internal static EventHandler doUnload = UnloadHandler;
 
       internal static void UnloadHandler(object sender, EventArgs e)
       {
-        flushCounter(Close.DomainUnload, e);
+        FlushCounter(Close.DomainUnload, e);
       }
 
+      [SuppressMessage("Gendarme.Rules.Correctness",
+                       "DeclareEventsExplicitlyRule",
+                       Justification = "Wrong use case")]
       internal static EventHandler doExit = ExitHandler;
 
       internal static void ExitHandler(object sender, EventArgs e)
       {
-        flushCounter(Close.ProcessExit, e);
+        FlushCounter(Close.ProcessExit, e);
       }
 
-      internal static void startWatcher()
+      internal static void StartWatcher()
       {
-        watcher.Path = Path.GetDirectoryName(signalFile);
-        watcher.Filter = Path.GetFileName(signalFile);
+        var s = SignalFile;
+        watcher.Path = Path.GetDirectoryName(s);
+        watcher.Filter = Path.GetFileName(s);
         watcher.Created += doResume;
         watcher.Deleted += doPause;
         watcher.EnableRaisingEvents = !String.IsNullOrEmpty(watcher.Path);
       }
 
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidUnneededFieldInitializationRule",
+                       Justification = "Simpler this way")]
+      [SuppressMessage("Gendarme.Rules.Performance",
+                       "AvoidRepetitiveCallsToPropertiesRule",
+                       Justification = "You what, mate?")]
       static I()
       {
         AppDomain.CurrentDomain.DomainUnload += doUnload;
         AppDomain.CurrentDomain.ProcessExit += doExit;
-        startWatcher();
-        initialiseTrace(
-          Tracer.Create(signalFile)
+        StartWatcher();
+        InitialiseTrace(
+          Tracer.Create(SignalFile)
            );
       }
     }
@@ -743,36 +842,38 @@ namespace AltCover.Recorder
     // Public API
     public static void Visit(string moduleId, int hitPointId)
     {
-      if (I.recording)
+      if (I.Recording)
       {
-        var track = I.isTracking ?
-                           I.payloadSelector(I.isTrackingRunner) :
+        var track = I.IsTracking ?
+                           I.PayloadSelector(I.IsTrackingRunner) :
                            new Null();
-        I.visitSelection(track, moduleId, hitPointId);
+        I.VisitSelection(track, moduleId, hitPointId);
       }
     }
 
     //// The moduleId strings are not the hash or guids normally found there
     public static void Push(int caller)
     {
-      I.push(caller);
+      I.Push(caller);
 
-      if (I.isTrackingRunner())
-        I.visitSelection(new Time(DateTime.UtcNow.Ticks), Track.Entry, caller);
+      if (I.IsTrackingRunner())
+        I.VisitSelection(new Time(DateTime.UtcNow.Ticks), Track.Entry, caller);
     }
 
     public static void Pop()
     {
-      var caller = I.pop();
+      var caller = I.Pop();
 
-      if (I.isTrackingRunner() && caller.HasValue)
-        I.visitSelection(new Time(DateTime.UtcNow.Ticks), Track.Exit, caller.Value);
+      if (I.IsTrackingRunner() && caller.HasValue)
+        I.VisitSelection(new Time(DateTime.UtcNow.Ticks), Track.Exit, caller.Value);
     }
 
-    //// Used by the datacollector
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidUncalledPrivateCodeRule",
+                     Justification = "Internals Visible To")]
     internal static void FlushFinish()
     {
-      I.flushAll(Close.ProcessExit);
+      I.FlushAll(Close.ProcessExit);
     }
   }
 }

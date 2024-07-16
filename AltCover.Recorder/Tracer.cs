@@ -100,44 +100,44 @@ namespace AltCover.Recorder
       catch (NullReferenceException) { }
     }
 
+    [SuppressMessage("Gendarme.Rules.Smells",
+                     "AvoidLongMethodsRule",
+                     Justification = "Well tested code")]
     private void PushContext(Track context)
     {
       if (context is Null)
         Formatter.Write((byte)Tag.Null);
-      else if (context is Time)
+      else if (context is Time t)
       {
-        var t = (Time)context;
         Formatter.Write((byte)Tag.Time);
         Formatter.Write(t.Value);
       }
-      else if (context is Call)
+      else if (context is Call c)
       {
-        var c = (Call)context;
         Formatter.Write((byte)Tag.Call);
         Formatter.Write(c.Value);
       }
-      else if (context is Both)
+      else if (context is Both b)
       {
-        var b = (Both)context;
         Formatter.Write((byte)Tag.Both);
         Formatter.Write(b.Value.Time);
         Formatter.Write(b.Value.Call);
       }
       else
       {
-        var t = ((Table)context).Value;
+        var tx = ((Table)context).Value;
         Formatter.Write((byte)Tag.Table);
-        foreach (var key in t.Keys)
+        foreach (var key in tx.Keys)
         {
-          if (t[key].Count == 0)
+          if (tx[key].Count == 0)
             continue;
           Formatter.Write(key);
-          Formatter.Write(t[key].Count);
+          Formatter.Write(tx[key].Count);
 
-          foreach (var p in t[key].Keys)
+          foreach (var p in tx[key].Keys)
           {
             Formatter.Write(p);
-            var v = t[key][p];
+            var v = tx[key][p];
             Formatter.Write(v.Count);
             foreach (var x in v.Tracks)
               PushContext(x);
@@ -174,6 +174,9 @@ namespace AltCover.Recorder
       return running;
     }
 
+    [SuppressMessage("Gendarme.Rules.Design.Generic",
+                     "AvoidDeclaringCustomDelegatesRule",
+                     Justification = "Net Framework 2.0")]
     public delegate void Act();
 
     //member internal this.OnConnected f g = if this.IsConnected then f () else g ()
