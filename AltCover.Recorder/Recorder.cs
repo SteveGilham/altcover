@@ -143,6 +143,20 @@ namespace AltCover.Recorder
       public SimpleVisit(int visit) : base(visit)
       {
       }
+
+      public override bool Equals(object obj)
+      {
+        if (obj is SimpleVisit visit1)
+        {
+          return visit == visit1.visit;
+        }
+        return false;
+      }
+
+      public override int GetHashCode()
+      {
+        return visit.GetHashCode();
+      }
     }
 
     internal class CallVisit : Sampled
@@ -152,6 +166,20 @@ namespace AltCover.Recorder
       public CallVisit(int visit, int call) : base(visit)
       {
         this.call = call;
+      }
+
+      public override bool Equals(object obj)
+      {
+        if (obj is CallVisit visit1)
+        {
+          return (visit == visit1.visit) && (call == visit1.call);
+        }
+        return false;
+      }
+
+      public override int GetHashCode()
+      {
+        return visit.GetHashCode() ^ call.GetHashCode();
       }
     }
 
@@ -163,13 +191,28 @@ namespace AltCover.Recorder
       {
         this.time = time;
       }
+
+      public override bool Equals(object obj)
+      {
+        if (obj is TimeVisit visit1)
+        {
+          return (visit == visit1.visit) && (time == visit1.time);
+        }
+        return false;
+      }
+
+      public override int GetHashCode()
+      {
+        return visit.GetHashCode() ^ time.GetHashCode();
+      }
     }
 
 #if DEBUG
 
     internal static class I
 #else
-     private static class I
+
+    private static class I
 #endif
     {
       internal static readonly ResourceManager resources =
@@ -304,9 +347,7 @@ namespace AltCover.Recorder
 
       internal static Tracer trace
       {
-#if DEBUG
         set { __trace = value; }
-#endif
         [MethodImpl(MethodImplOptions.NoInlining)]
         get { return __trace; }
       }
@@ -344,9 +385,7 @@ namespace AltCover.Recorder
 
       internal static bool recording
       {
-#if DEBUG
         set { __recording = value; }
-#endif
         [MethodImpl(MethodImplOptions.NoInlining)]
         get { return __recording; }
       }
@@ -508,43 +547,48 @@ namespace AltCover.Recorder
       {
         if (strategy == Sampling.All)
           return true;
-        throw new NotImplementedException("takeSample");
 
-        //    let internal takeSample strategy moduleId hitPointId(context: Track) =
-        //      match strategy with
-        //      | Sampling.All -> true
-        //      | _ ->
-        //        (match context with
-        //         | Null -> [Visit hitPointId]
-        //         | Time t ->
-        //           [Visit hitPointId
-        //             TimeVisit(hitPointId, t)]
-        //         | Call c ->
-        //           [Visit hitPointId
-        //             CallVisit(hitPointId, c)]
-        //         | Both b ->
-        //           [Visit hitPointId
-        //             TimeVisit(hitPointId, b.Time)
-        //             CallVisit(hitPointId, b.Call)]
-        //         | _ -> context |> InvalidDataException.Throw)
-        //        |> Seq.map(fun hit ->
-        //          if samples.ContainsKey(moduleId) then
-        //            let next = samples.[moduleId]
+        Sampled[] sampleds = null;
+        if (context is Null)
+          sampleds = new Sampled[] { new SimpleVisit(hitPointId) };
+        else if (context is Time)
+          sampleds = new Sampled[] { new SimpleVisit(hitPointId),
+                                     new TimeVisit(hitPointId, ((Time)context).Value) };
+        else if (context is Call)
+          sampleds = new Sampled[] { new SimpleVisit(hitPointId),
+                                     new CallVisit(hitPointId, ((Call)context).Value) };
+        else if (context is Both)
+        {
+          var b = (Both)context;
+          sampleds = new Sampled[] { new SimpleVisit(hitPointId),
+                                     new TimeVisit(hitPointId, b.Value.Time),
+                                     new CallVisit(hitPointId, b.Value.Call)};
+        }
+        else throw new InvalidDataException(context.ToString());
 
-        //            let mutable hasPointKey =
-        //              next.ContainsKey(hit)
+        var wanted = false;
+        foreach (var sample in sampleds)
+        {
+          if (!samples.ContainsKey(moduleId))
+            continue;
+          var next = samples[moduleId];
+          var hasPointKey = next.ContainsKey(sample);
+          if (!hasPointKey)
+          {
+            lock (next)
+            {
+              hasPointKey = next.ContainsKey(sample);
+              if (!hasPointKey)
+              {
+                next.Add(sample, true);
+              }
+            }
 
-        //            if hasPointKey |> not then
-        //              lock next(fun () ->
-        //                hasPointKey<- next.ContainsKey(hit)
+            wanted = wanted || !hasPointKey;
+          }
+        }
 
-        //                if hasPointKey |> not then
-        //                  next.Add(hit, true))
-
-        //            not hasPointKey
-        //          else
-        //            false)
-        //        |> Seq.fold(||) false // true if any are novel -- all must be evaluated
+        return wanted;
       }
 
       /// <summary>

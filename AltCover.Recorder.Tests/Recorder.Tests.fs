@@ -120,12 +120,12 @@ module AltCoverTests =
         Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
 
         Assert.True(
-          Adapter.addSample ("module", 24, new Both(Pair.Create(1, 0))),
+          Adapter.addSample ("module", 24, new Both(Pair.Create(0, 1))),
           "Test 8"
         )
 
         Assert.True(
-          Adapter.addSample ("module", 25, new Both(Pair.Create(1, 0))),
+          Adapter.addSample ("module", 25, new Both(Pair.Create(0, 1))),
           "Test 9"
         )
 
