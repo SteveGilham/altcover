@@ -25,11 +25,11 @@
     </Compile>
     <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Adapter.fs" Link="Adapter.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.fs" Link="Tracer.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
   </ItemGroup>
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector">

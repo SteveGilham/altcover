@@ -12,6 +12,10 @@ module ExpectoTestManifest =
   let simpleTests () =
     [|
 #endif
+       Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
+       Tests.BaseTests.ExerciseTime, "BaseTests.ExerciseTime"
+       Tests.BaseTests.ExerciseCall, "BaseTests.ExerciseCall"
+       Tests.BaseTests.ExerciseNull, "BaseTests.ExerciseNull"
        Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
        Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
        Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"

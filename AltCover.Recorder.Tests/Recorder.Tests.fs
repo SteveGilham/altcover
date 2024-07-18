@@ -117,6 +117,8 @@ module AltCoverTests =
         Assert.True(Adapter.addSampleUnconditional ("module", 23, n), "Test 5")
         Assert.True(Adapter.addSample ("module", 23, Call 1), "Test 6")
         Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
+        Assert.True(Adapter.addSample ("module", 23, Time 1L), "Test 7a")
+        Assert.True(Adapter.addSample ("module", 23, Time 0L) |> not, "Test 7b")
 
         Assert.True(
           Adapter.addSample ("module", 24, new Both(Pair.Create(0, 1))),

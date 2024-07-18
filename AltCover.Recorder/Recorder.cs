@@ -269,14 +269,15 @@ namespace AltCover.Recorder
       {
         var cc = System.Globalization.CultureInfo.CurrentUICulture;
         var names = new string[] { cc.Name, cc.Parent.Name, "en" };
+        string result = null;
         foreach (var name in names)
         {
-          var result = resources.GetString(s + "." + name);
+          result = resources.GetString(s + "." + name);
           if (!string.IsNullOrEmpty(result))
-            return result;
+            break;
         }
 
-        return null;
+        return result;
       }
 
       private static Dictionary<string, Dictionary<int, PointVisit>> MakeVisits()

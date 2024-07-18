@@ -2,6 +2,7 @@
 
 namespace AltCover
 #else
+
 namespace AltCover.Recorder
 #endif
 {
@@ -123,16 +124,6 @@ namespace AltCover.Recorder
   {
     internal const string Entry = "\u2611"; // BALLOT BOX WITH CHECK
     internal const string Exit = "\u2612"; // BALLOT BOX WITH X
-
-    public override bool Equals(object obj)
-    {
-      return (obj is Track);
-    }
-
-    public override int GetHashCode()
-    {
-      return 0;
-    }
   }
 
   [SuppressMessage("Gendarme.Rules.Performance",
@@ -460,6 +451,7 @@ namespace AltCover.Recorder
         }
       }
 
+#if RUNNER
       [SuppressMessage("Gendarme.Rules.Performance",
                        "AvoidUncalledPrivateCodeRule",
                        Justification = "Internals Visible To")]
@@ -494,6 +486,7 @@ namespace AltCover.Recorder
         }
         return hitcount;
       }
+#endif
 
       // TODO inline in release if possible
       internal static IEnumerable<XmlElement> SelectNodes(XmlNode node, string name)
@@ -751,7 +744,7 @@ namespace AltCover.Recorder
 
     [SuppressMessage("Microsoft.Reliability",
                      "CA2000:Dispose objects before losing scope",
-                     Justification="MemoryStream is 'use'd if created")]
+                     Justification = "MemoryStream is 'use'd if created")]
     internal static TimeSpan DoFlushStream(
         Action<XmlDocument> postProcess,
         PointProcessor pointProcess,
@@ -883,7 +876,7 @@ namespace AltCover.Recorder
                        Justification = "Third party interface")]
       public Stream GetSource()
       {
-      return _target;
+        return _target;
       }
     }
 
