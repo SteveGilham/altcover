@@ -1112,7 +1112,7 @@ module internal Runner =
                     then
                       hits.Add(key, Dictionary<int, PointVisit>())
 
-                    Counter.AddVisit (hits, key, hitPointId, visit)
+                    Counter.AddVisit(hits, key, hitPointId, visit)
                   else
                     0L
 
@@ -1391,7 +1391,7 @@ module internal Runner =
             | _ -> new MemoryStream() :> Stream
 
           let result =
-            AltCover.Counter.DoFlushStream (
+            AltCover.Counter.DoFlushStream(
               (postProcess hits format),
               pointProcess,
               true,

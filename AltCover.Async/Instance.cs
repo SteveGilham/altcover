@@ -22,7 +22,15 @@ public static class Instance
       private static readonly TargetFrameworkAttribute attr =
         new TargetFrameworkAttribute(".NETFramework,Version=v4.6");
 
-      private static readonly AsyncLocal<Stack<int>> value = new AsyncLocal<Stack<int>>();
+      private static readonly AsyncLocal<Stack<int>> __value = new AsyncLocal<Stack<int>>();
+
+      private static AsyncLocal<Stack<int>> Value
+      {
+        [SuppressMessage("Microsoft.Performance",
+          "CA1811:AvoidUncalledPrivateCode",
+        Justification = "Template code only")]
+        get { return __value; }
+      }
 
       // no race conditions here
       [SuppressMessage("Gendarme.Rules.Performance",
@@ -36,10 +44,10 @@ public static class Instance
                         Justification = "Initialization")]
       private static Stack<int> Instance()
       {
-        if (value.Value == null)
-          value.Value = new Stack<int>();
+        if (Value.Value == null)
+          Value.Value = new Stack<int>();
 
-        return value.Value;
+        return Value.Value;
       }
     }
   }

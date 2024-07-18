@@ -11,12 +11,12 @@ module Adapter =
   let DoExit () = Instance.I.doExit
 
   let VisitsClear () =
-    Instance.I.Clear ()
+    Instance.I.Clear()
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
   let SamplesClear () =
-    Instance.I.samples <- Instance.I.MakeSamples ()
+    Instance.I.samples <- Instance.I.MakeSamples()
 
   let private reset () =
     Instance.I.isRunner <- false
@@ -71,16 +71,16 @@ module Adapter =
   let Lock = Instance.I.visits :> obj
 
   let VisitImplNone (moduleId, hitPointId) =
-    Instance.I.VisitImpl (moduleId, hitPointId, Null())
+    Instance.I.VisitImpl(moduleId, hitPointId, Null())
 
   let VisitImplMethod (moduleId, hitPointId, mId) =
-    Instance.I.VisitImpl (moduleId, hitPointId, (Call mId))
+    Instance.I.VisitImpl(moduleId, hitPointId, (Call mId))
 
   let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.TakeSample (Sampling.Single, moduleId, hitPointId, context)
+    Instance.I.TakeSample(Sampling.Single, moduleId, hitPointId, context)
 
   let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.TakeSample (Sampling.All, moduleId, hitPointId, context)
+    Instance.I.TakeSample(Sampling.All, moduleId, hitPointId, context)
 
   let internal newBoth (time, call) = Both(Pair.Create(time, call))
 
@@ -120,10 +120,10 @@ module Adapter =
       else
         output
 
-    Counter.DoFlushFile (ignore, (fun _ _ -> ()), true, visits, format, report, output')
+    Counter.DoFlushFile(ignore, (fun _ _ -> ()), true, visits, format, report, output')
 
   let internal updateReport (counts, format, coverageFile, outputFile) =
-    Counter.I.UpdateReport (
+    Counter.I.UpdateReport(
       ignore,
       (fun _ _ -> ()),
       true,
@@ -133,19 +133,21 @@ module Adapter =
       outputFile
     )
 
-  let internal payloadSelector x = Instance.I.PayloadSelector (fun _ -> x)
+  let internal payloadSelector x = Instance.I.PayloadSelector(fun _ -> x)
 
   let internal payloadControl (x, y) =
-    Instance.I.PayloadControl ((fun _ -> x), (fun _ -> y))
+    Instance.I.PayloadControl((fun _ -> x), (fun _ -> y))
 
   let internal payloadSelection (x, y, z) =
-    Instance.I.PayloadSelection ((fun _ -> x), (fun _ -> y), (fun _ -> z))
+    Instance.I.PayloadSelection((fun _ -> x), (fun _ -> y), (fun _ -> z))
 
   let internal makeNullTrace name = Tracer.Create(name)
 
   let internal makeStreamTrace s1 =
     let mutable t = Tracer.Create(null)
+    // fsharplint:disable-next-line  RedundantNewKeyword
     t.Stream <- new System.IO.MemoryStream()
+    // fsharplint:disable-next-line  RedundantNewKeyword
     t.Formatter <- new System.IO.BinaryWriter(s1)
     t.Runner <- true
     t.Definitive <- false
@@ -172,7 +174,7 @@ module Adapter =
           | :? System.ArgumentNullException as ane -> ane.ParamName = unique
           | _ -> x.Message = unique
 
-    Instance.I.Issue71Wrapper ((), (), (), (), catcher, pitcher)
+    Instance.I.Issue71Wrapper((), (), (), (), catcher, pitcher)
     |> ignore
 
   let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
@@ -187,7 +189,7 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.CurriedIssue71Wrapper<string, string, string, string> (
+    Instance.I.CurriedIssue71Wrapper<string, string, string, string>(
       "a",
       "b",
       "c",

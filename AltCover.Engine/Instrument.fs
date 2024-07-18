@@ -1209,7 +1209,7 @@ module internal Instrument =
 
         let value =
           calltrack.Properties
-          |> Seq.find (fun m -> m.Name == "value")
+          |> Seq.find (fun m -> m.Name == "Value")
 
         let getValue = value.GetMethod
 
@@ -1222,7 +1222,7 @@ module internal Instrument =
           GetValue = getValue
           Instance =
             calltrack.Methods
-            |> Seq.find (fun m -> m.Name == "instance")
+            |> Seq.find (fun m -> m.Name == "Instance")
           Field = field
           FieldType = field.FieldType :?> GenericInstanceType
           Maker =
@@ -1336,7 +1336,7 @@ module internal Instrument =
         let getterDef =
           recorder.MainModule.GetTypes()
           |> Seq.collect _.Methods
-          |> Seq.filter (fun m -> m.Name == "get_modules")
+          |> Seq.filter (fun m -> m.Name == "get_Modules")
           |> Seq.head
 
         let body = getterDef.Body

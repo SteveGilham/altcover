@@ -341,15 +341,20 @@ namespace AltCover.Recorder
       /// </summary>
       private static class CallTrack
       {
-        private static readonly AsyncLocal<Stack<int>> value = new AsyncLocal<Stack<int>>();
+        private static readonly AsyncLocal<Stack<int>> __value = new AsyncLocal<Stack<int>>();
+
+        private static AsyncLocal<Stack<int>> Value
+        {
+          get { return __value; }
+        }
 
         // no race conditions here
         private static Stack<int> Instance()
         {
-          if (value.Value == null)
-            value.Value = new Stack<int>();
+          if (Value.Value == null)
+            Value.Value = new Stack<int>();
 
-          return value.Value;
+          return Value.Value;
         }
 
         public static Nullable<int> Peek()
