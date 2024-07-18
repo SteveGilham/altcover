@@ -111,9 +111,12 @@ namespace AltCover.Recorder
     /// Gets the indexed module tokens
     /// This property's IL code is modified to store instrumentation results
     /// </summary>
-    private static IEnumerable<string> __modules = new string[] { string.Empty };
+    private static string[] __modules = new string[] { string.Empty };
 
-    internal static IEnumerable<string> Modules
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidReturningArraysOnPropertiesRule",
+                     Justification = "Controlled use")]
+    internal static string[] Modules
     {
 #if DEBUG
       [SuppressMessage("Gendarme.Rules.Performance",

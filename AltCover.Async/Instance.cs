@@ -12,6 +12,11 @@ namespace AltCover.Recorder;
 
 public static class Instance
 {
+  //internal static IEnumerable<string> Modules
+  //{
+  //  get { return new string[] { "a", "b", "c", "d" }; }
+  //}
+
   public static class I
   {
     internal static class CallTrack
