@@ -1723,15 +1723,6 @@ module Targets =
 
         Actions.Run (nunitConsole, ".", recArgs) "Recorder NUnit failed"
 
-        let rec2Args =
-          [ "--noheader"
-            "--work=."
-            "--result=./_Reports/JustRecorder2UnitTestReport.xml"
-            Path.getFullName
-              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll" ]
-
-        Actions.Run (nunitConsole, ".", rec2Args) "Recorder NUnit failed"
-
       with x ->
         printfn "%A" x
         reraise ())
@@ -1765,15 +1756,6 @@ module Targets =
               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll" ]
 
         Actions.Run (nunitConsole, ".", recArgs) "Recorder NUnit failed"
-
-        let rec2Args =
-          [ "--noheader"
-            "--work=."
-            "--result=./_Reports/Recorder2UnitTestReport.xml"
-            Path.getFullName
-              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll" ]
-
-        Actions.Run (nunitConsole, ".", rec2Args) "Recorder NUnit failed"
 
       with x ->
         printfn "%A" x
@@ -2365,19 +2347,6 @@ module Targets =
            [ Path.getFullName
                "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
            baseFilter,
-           shadowkeyfile)
-          (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20",
-           "./__RecorderTest2WithAltCoverRunner",
-           "RecorderTest2WithAltCoverRunner.xml",
-           "./_Reports/RecorderTest2WithAltCoverRunnerReport.xml",
-           [ Path.getFullName
-               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
-           baseFilter
-           >> (fun p ->
-             { p with
-                 AttributeFilter =
-                   [ TypeSafe.Raw "EntryPoint" ]
-                   |> p.AttributeFilter.Join }),
            shadowkeyfile) ]
 
       tests

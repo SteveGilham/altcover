@@ -1,0 +1,91 @@
+FSharpTypesDotNetCollecter                00:00:11.3171337   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
+ "0"; "1"; "0"; "0"]
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
+  -------------^
+)
+FSharpTypesDotNetRunner   00:00:07.0583183   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
+ "0"; "1"; "0"; "0"]
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
+  -------------^
+)
+ReplayJsonReporting   00:00:05.1513692   (  Bad tracked visit list ["2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"]
+Assert.That(, )
+  String lengths are both 25. Strings differ at index 0.
+  Expected: "1 1 1 1 1 1 1 1 2 2 2 2 2"
+  But was:  "2 2 2 2 2 2 2 2 2 2 2 2 2"
+  -----------^
+)
+Unhandled exception. Fake.Core.BuildFailedException: Target 'ReplayReleaseXUnitFSharpTypesDotNetFullRunner' failed.
+ ---> System.AggregateException: One or more errors occurred. (Object reference not set to an instance of an object.)
+ ---> System.NullReferenceException: Object reference not set to an instance of an object.
+   at AltCover.Actions.Pipe #1 stage #1 at line 674@674.Invoke(XElement m) in C:\Users\email\Documents\Github\altcover\Build\actions.fs:line 675
+DotnetGlobalIntegration 
+Issue114  
+(Issue20 - Net6.0 EOL)
+ReplayIssue72         00:00:12.0468419   (
+
+(found, "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first")
+(["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"], "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first")
+false
+)
+ReplayDotnetTestIntegration   00:00:18.0391875   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
+ "0"; "0"; "0"; "0"] in C:\Users\email\Documents\Github\altcover\_DotnetTest\coverage.net8.0.xml
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+  -------------^
+Cake2Test - System.IO.IOException: The process cannot access the file 'C:\Users\email\Documents\Github\.nuget\packages\microsoft.testplatform.testhost\17.9.0\build\netcoreapp3.1\x64\testhost.dll' because it is being used by another process.
+     at System.IO.FileSystem.CopyFile(String sourceFullPath, String destFullPath, Boolean overwrite)
+     at <StartupCode$AltCover-Engine>.$Tasks.Execute@528.Invoke(String x) in /_//AltCover.Engine/Tasks.fs
+  :line 528
+ 
+
+ReplayApiUse          00:00:16.4179594   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
+ "0"; "0"; "0"; "0"] in C:\Users\email\Documents\Github\altcover\_ApiUse\_DotnetTest\coverage.net8.0.xml
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+  -------------^
+)
+ReplayMSBuildTest     00:00:09.6313753   (  Assert.That(, )
+  Expected: equivalent to < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />"... >
+  But was:  < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />"... >
+  Missing (1): < "<TrackedMethodRef uid="2" vc="2" />" >
+  Extra (1): < "<TrackedMethodRef uid="1" vc="2" />" >
+)
+ReplayReleaseXUnitFSharpTypesShowVisualized   00:00:07.0424524   (  expect [ 0; 1; 2 ]
+Assert.That(, )
+  Expected and actual are both <Microsoft.FSharp.Collections.FSharpList`1[System.Int32]>
+)
+ReplayReleaseFSharpTypesDotNetRunner   00:00:04.2638439   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
+ "0"; "1"; "0"; "0"]
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
+  -------------^
+)
+ReplayReleaseXUnitFSharpTypesDotNetRunner   00:00:04.5455546   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
+ "0"; "1"; "0"; "0"]
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
+  -------------^
+)
+WindowsPowerShell  [-] Invoke-Altcover.instruments and collects 4.56s (4.55s|5ms)
+ Expected strings to be the same, but they were different.
+ String lengths are both 39.
+ Strings differ at index 2.
+ Expected: '0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1'
+ But was:  '0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0'
+            --^
+ at $result | Should -Be "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1", C:\Users\email\Documents\Github\altcover\Build\Pester.Tests.ps1:76
