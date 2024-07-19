@@ -1090,7 +1090,7 @@ module internal Runner =
 
                       ``module`` ()
                       Table t
-                    | _ -> new Null()
+                    | _ -> Null()
                   )
                 with :? EndOfStreamException ->
                   None

@@ -120,6 +120,9 @@ namespace AltCover.Recorder
   [SuppressMessage("Gendarme.Rules.Performance",
                    "ImplementEqualsTypeRule",
                    Justification = "abstract type, No use case")]
+  [SuppressMessage("Gendarme.Rules.Design",
+                   "ConsiderUsingStaticTypeRule",
+                   Justification = "Base class of union")]
   internal abstract class Track
   {
     internal const string Entry = "\u2611"; // BALLOT BOX WITH CHECK
