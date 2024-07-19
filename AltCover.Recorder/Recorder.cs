@@ -628,7 +628,7 @@ namespace AltCover.Recorder
         if (strategy == Sampling.All)
           return true;
 
-        Sampled[] sampleds = null;
+        Sampled[] sampleds;
         if (context is Null)
           sampleds = new Sampled[] { new SimpleVisit(hitPointId) };
         else if (context is Time t)

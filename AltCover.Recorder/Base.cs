@@ -141,7 +141,7 @@ namespace AltCover.Recorder
 
     public override bool Equals(object obj)
     {
-      return obj is Null n;
+      return obj is Null;
     }
 
     public override int GetHashCode()
@@ -559,7 +559,7 @@ namespace AltCover.Recorder
 
         var startTimeNode = root.GetAttributeNode("startTime");
 
-        if ((format == ReportFormat.NCover) && !Object.ReferenceEquals(startTimeNode, null))
+        if ((format == ReportFormat.NCover) && startTimeNode is object)
         {
           var startTimeAttr = startTimeNode.Value;
           var measureTimeAttr = root.GetAttribute("measureTime");
@@ -594,59 +594,86 @@ namespace AltCover.Recorder
           );
         }
 
+        //let moduleNodes =
+        //  selectNodes coverageDocument m
         var moduleNodes = SelectNodes(coverageDocument, xmlformat.m);
 
+        //moduleNodes
+        //|> Seq.cast < XmlElement >
         foreach (var el in moduleNodes)
         {
+          //|> Seq.map(fun el->el.GetAttribute(i), el)
           var k = el.GetAttribute(xmlformat.i);
+
+          // |> Seq.filter(fun(k, _)->counts.ContainsKey k)
           if (!counts.ContainsKey(k)) continue;
 
+          // let moduleHits = counts.[k]
           var moduleHits = counts[k];
 
           // Don't do this in one leap like --
           // affectedModule.Descendants(XName.Get("seqpnt"))
           // Get the methods, then flip their
           // contents before concatenating
+          // let nn = selectNodes affectedModule m'
           var nn = SelectNodes(el, xmlformat.m2);
+
+          //nn
+          //|> Seq.cast < XmlElement >
+          //|> Seq.collect(fun(method: XmlElement)->
+          var nodes = new List<KeyValuePair<XmlElement, int>>();
           foreach (var method in nn)
           {
-            var nodes = new List<KeyValuePair<XmlElement, int>>();
+            //  s
+            //|> Seq.collect(fun(name, flag)->
             foreach (var nameflag in xmlformat.s)
             {
+              //  let nodes = selectNodes method name
+
+              //  nodes
+              //  |> Seq.cast<XmlElement>
+              var nodes1 = new List<KeyValuePair<XmlElement, int>>();
               foreach (var node in SelectNodes(method, nameflag.Key))
               {
-                nodes.Insert(0, new KeyValuePair<XmlElement, int>(node, nameflag.Value));
+                //  |> Seq.map(fun x-> (x, flag))
+                nodes1.Insert(0, new KeyValuePair<XmlElement, int>(node, nameflag.Value));
               }
+
+              nodes1.Reverse();
+              //  |> Seq.toList
+              //  |> List.rev))
+
+              nodes.AddRange(nodes);
+            }
+          }
+
+          int counter = -1;
+          foreach (var node in nodes)
+          {
+            ++counter;
+            var index = counter;
+            if ((format & ReportFormat.TrackMask) ==
+              ReportFormat.OpenCover)
+            {
+              index = FindIndexFromUspid(node.Value, node.Key.GetAttribute("uspid"));
             }
 
-            int counter = -1;
-            foreach (var node in nodes)
+            if (moduleHits.TryGetValue(index, out PointVisit value))
             {
-              ++counter;
-              var index = counter;
-              if ((format & ReportFormat.TrackMask) ==
-                ReportFormat.OpenCover)
-              {
-                index = FindIndexFromUspid(node.Value, node.Key.GetAttribute("uspid"));
-              }
+              var pt = node.Key;
 
-              if (moduleHits.ContainsKey(index))
-              {
-                var pt = node.Key;
+              Int64.TryParse(
+                pt.GetAttribute(xmlformat.v),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var vc
+              );
 
-                Int64.TryParse(
-                  pt.GetAttribute(xmlformat.v),
-                  NumberStyles.Integer,
-                  CultureInfo.InvariantCulture,
-                  out var vc
-                );
-
-                // Treat -ve visit counts (an exemption added in analysis) as zero
-                var count = moduleHits[index];
-                var visits = Math.Max(vc, 0) + count.Total;
-                pt.SetAttribute(xmlformat.v, visits.ToString(CultureInfo.InvariantCulture));
-                pointProcess(pt, count.Tracks);
-              }
+              // Treat -ve visit counts (an exemption added in analysis) as zero
+              var count = value;
+              var visits = Math.Max(vc, 0) + count.Total;
+              pt.SetAttribute(xmlformat.v, visits.ToString(CultureInfo.InvariantCulture));
+              pointProcess(pt, count.Tracks);
             }
           }
         }
@@ -658,7 +685,10 @@ namespace AltCover.Recorder
         outputFile.SetLength(0);
 
         if (own)
-        { WriteXDocument(coverageDocument, outputFile); }
+
+        {
+          WriteXDocument(coverageDocument, outputFile);
+        }
 
         return flushStart;
       }
@@ -684,6 +714,9 @@ namespace AltCover.Recorder
     }
 
     // "Public" API
+    [SuppressMessage("Gendarme.Rules.Maintainability",
+                     "AvoidUnnecessarySpecializationRule",
+                     Justification = "No speculative generalization")]
     internal static void AddSingleVisit(
       Dictionary<string, Dictionary<int, PointVisit>> counts,
       string moduleId,
@@ -691,13 +724,12 @@ namespace AltCover.Recorder
       Track context
       )
     {
-      if (counts.ContainsKey(moduleId))
+      if (counts.TryGetValue(moduleId, out Dictionary<int, PointVisit> value))
       {
-        var next = counts[moduleId];
+        var next = value;
         I.EnsurePoint(next, hitPointId);
         var v = next[hitPointId];
-
-        if (context is Null n)
+        if (context is Null)
         { v.Step(); }
         else { v.Track(context); }
       }
