@@ -1368,12 +1368,8 @@ module internal Instrument =
           bulkInsertBefore worker head addElement true
           |> ignore)
 
-        let store =
-          [ worker.Create(OpCodes.Stsfld, head.Operand :?> FieldReference) ]
-
-        bulkInsertBefore worker head store true |> ignore
-        let re = [ worker.Create OpCodes.Ret ]
-        bulkInsertBefore worker head re true |> ignore
+        let ret = [ worker.Create OpCodes.Ret ]
+        bulkInsertBefore worker head ret true |> ignore
 
         let recorderFileName =
           (extractName state.RecordingAssembly) + ".dll"
