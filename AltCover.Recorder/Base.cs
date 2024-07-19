@@ -293,7 +293,7 @@ namespace AltCover.Recorder
         tracks[i] = Tracks[i].ToString();
 
       return "AltCover.PointVisit : Count = " + Count.ToString(CultureInfo.InvariantCulture) +
-        "Tracks = " + String.Join("; ", tracks);
+        " Tracks = '" + String.Join("; ", tracks) + "'";
     }
 
     private PointVisit(long count)
@@ -627,23 +627,23 @@ namespace AltCover.Recorder
                 index = FindIndexFromUspid(node.Value, node.Key.GetAttribute("uspid"));
               }
 
-              if (!moduleHits.ContainsKey(index))
-                continue;
+              if (moduleHits.ContainsKey(index))
+              {
+                var pt = node.Key;
 
-              var pt = node.Key;
+                Int64.TryParse(
+                  pt.GetAttribute(xmlformat.v),
+                  NumberStyles.Integer,
+                  CultureInfo.InvariantCulture,
+                  out var vc
+                );
 
-              Int64.TryParse(
-                pt.GetAttribute(xmlformat.v),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var vc
-              );
-
-              // Treat -ve visit counts (an exemption added in analysis) as zero
-              var count = moduleHits[index];
-              var visits = Math.Max(vc, 0) + count.Total;
-              pt.SetAttribute(xmlformat.v, visits.ToString(CultureInfo.InvariantCulture));
-              pointProcess(pt, count.Tracks);
+                // Treat -ve visit counts (an exemption added in analysis) as zero
+                var count = moduleHits[index];
+                var visits = Math.Max(vc, 0) + count.Total;
+                pt.SetAttribute(xmlformat.v, visits.ToString(CultureInfo.InvariantCulture));
+                pointProcess(pt, count.Tracks);
+              }
             }
           }
         }
