@@ -1,108 +1,3 @@
-FSharpTypesDotNetCollecter                00:00:11.3171337   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
- "0"; "1"; "0"; "0"]
-Assert.That(, )
-  String lengths are both 39. Strings differ at index 2.
-  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
-  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
-  -------------^
-)
-
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 5, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 1, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId -2147483648, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 4, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 2, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId -2147483646, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 3, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 13, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 12, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId -2147483643, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 11, track AltCover.Null
-
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 18, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 16, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId -2147483640, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 17, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 16, track AltCover.Null
-moduleId f7f80a77-e131-f5c7-da33-cd3b6036778a, hitPointId 19, track AltCover.Null
-
-hitpoint 5 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 1 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint -2147483648 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 4 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 2 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint -2147483646 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 3 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 13 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 12 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint -2147483643 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 11 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 18 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 16 hits AltCover.PointVisit : Count = 2 Tracks = ''
-hitpoint -2147483640 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 17 hits AltCover.PointVisit : Count = 1 Tracks = ''
-hitpoint 19 hits AltCover.PointVisit : Count = 1 Tracks = ''
-
----------------------------------------
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
-<coverage profilerVersion="AltCover 8.8.149.49679" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
-  <module moduleId="f7f80a77-e131-f5c7-da33-cd3b6036778a" name="C:\Users\email\Documents\Github\altcover\_Binaries\FSharpTypesDotNetCollecter_Sample2\Debug+AnyCPU\net8.0\__Saved\Sample2.dll" assembly="Sample2" assemblyIdentity="Sample2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
-    <method name="main" class="N.Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Int32 N.Program.main(System.String[])">
-      <seqpnt visitcount="0" line="63" column="16" endline="63" endcolumn="17" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="returnFoo" class="N.DU" metadataToken="100663298" excluded="false" instrumented="true" fullname="N.DU+MyUnion N.DU.returnFoo(System.Int32)">
-      <seqpnt visitcount="0" line="49" column="21" endline="49" endcolumn="26" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="returnBar" class="N.DU" metadataToken="100663299" excluded="false" instrumented="true" fullname="N.DU+MyUnion N.DU.returnBar(System.String)">
-      <seqpnt visitcount="0" line="50" column="21" endline="50" endcolumn="26" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="testMakeUnion" class="N.DU" metadataToken="100663300" excluded="false" instrumented="true" fullname="System.Void N.DU.testMakeUnion()">
-      <seqpnt visitcount="1" line="56" column="5" endline="56" endcolumn="37" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="1" line="57" column="5" endline="57" endcolumn="39" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="0" line="58" column="5" endline="58" endcolumn="45" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="as_bar" class="N.DU+MyUnion" metadataToken="100663319" excluded="false" instrumented="true" fullname="N.DU+MyUnion N.DU+MyUnion.as_bar()">
-      <seqpnt visitcount="0" line="34" column="7" endline="34" endcolumn="10" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="0" line="35" column="9" endline="35" endcolumn="24" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="1" line="36" column="20" endline="36" endcolumn="33" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="1" line="37" column="20" endline="37" endcolumn="33" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="1" line="38" column="20" endline="38" endcolumn="33" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="1" line="40" column="16" endline="40" endcolumn="20" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="1" line="41" column="7" endline="41" endcolumn="11" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="0" line="42" column="9" endline="42" endcolumn="19" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="get_MyBar" class="N.DU+MyUnion" metadataToken="100663320" excluded="false" instrumented="true" fullname="Microsoft.FSharp.Core.FSharpFunc`2 N.DU+MyUnion.get_MyBar()">
-      <seqpnt visitcount="0" line="44" column="25" endline="44" endcolumn="36" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name=".ctor" class="N.DU+MyClass" metadataToken="100663341" excluded="false" instrumented="true" fullname="System.Void N.DU+MyClass.#ctor()">
-      <seqpnt visitcount="0" line="47" column="27" endline="47" endcolumn="28" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="makeThing" class="N.M" metadataToken="100663344" excluded="false" instrumented="true" fullname="N.M+Thing N.M.makeThing(System.String)">
-      <seqpnt visitcount="0" line="19" column="21" endline="19" endcolumn="34" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="testMakeThing" class="N.M" metadataToken="100663345" excluded="false" instrumented="true" fullname="System.Void N.M.testMakeThing()">
-      <seqpnt visitcount="1" line="23" column="5" endline="23" endcolumn="43" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-      <seqpnt visitcount="0" line="24" column="5" endline="24" endcolumn="54" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-    <method name="bytes" class="N.M+Thing" metadataToken="100663355" excluded="false" instrumented="true" fullname="System.Byte[] N.M+Thing.bytes()">
-      <seqpnt visitcount="0" line="17" column="7" endline="17" endcolumn="53" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
-    </method>
-  </module>
-</coverage>
----------------------------------------
-
-
-
-
-FSharpTypesDotNetRunner   00:00:07.0583183   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
- "0"; "1"; "0"; "0"]
-Assert.That(, )
-  String lengths are both 39. Strings differ at index 2.
-  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
-  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
-  -------------^
-)
 ReplayJsonReporting   00:00:05.1513692   (  Bad tracked visit list ["2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"]
 Assert.That(, )
   String lengths are both 25. Strings differ at index 0.
@@ -110,26 +5,60 @@ Assert.That(, )
   But was:  "2 2 2 2 2 2 2 2 2 2 2 2 2"
   -----------^
 )
-Unhandled exception. Fake.Core.BuildFailedException: Target 'ReplayReleaseXUnitFSharpTypesDotNetFullRunner' failed.
- ---> System.AggregateException: One or more errors occurred. (Object reference not set to an instance of an object.)
+Unhandled exception. Fake.Core.BuildFailedException: Target 'JsonReporting' failed.
+ ---> System.AggregateException: One or more errors occurred. (The input sequence was empty. (Parameter 'source'))
+ ---> System.ArgumentException: The input sequence was empty. (Parameter 'source')
+   at Microsoft.FSharp.Collections.SeqModule.Head[T](IEnumerable`1 source) in D:\a\_work\1\s\src\FSharp.Core\seq.fs:line 1693
+   at AltCover.Targets.checkSample4Visits@5836.Invoke(Int64 from, String path) in C:\Users\email\Documents\Github\altcover\Build\targets.fs:line 5898
+   at AltCover.Targets.JsonReporting() in C:\Users\email\Documents\Github\altcover\Build\targets.fs:line 59
+
+ReleaseXUnitFSharpTypesDotNetFullRunner
+DotnetGlobalIntegration 
+System.AggregateException: One or more errors occurred. (Object reference not set to an instance of an object.)
  ---> System.NullReferenceException: Object reference not set to an instance of an object.
    at AltCover.Actions.Pipe #1 stage #1 at line 674@674.Invoke(XElement m) in C:\Users\email\Documents\Github\altcover\Build\actions.fs:line 675
-DotnetGlobalIntegration 
-Issue114  
+
 (Issue20 - Net6.0 EOL)
-ReplayIssue72         00:00:12.0468419   (
+
+Issue72         00:00:11.7880238   (
 
 (found, "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first")
 (["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"], "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first")
 false
 )
-ReplayDotnetTestIntegration   00:00:18.0391875   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
+
+DotnetTestIntegration   00:00:17.9539171   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
  "0"; "0"; "0"; "0"] in C:\Users\email\Documents\Github\altcover\_DotnetTest\coverage.net8.0.xml
 Assert.That(, )
   String lengths are both 39. Strings differ at index 2.
   Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
   But was:  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
   -------------^
+)
+   at AltCover.Targets.DotnetTestIntegration() in C:\Users\email\Documents\Github\altcover\Build\targets.fs:line 6458
+
+
+ApiUse                                    00:00:00           (skipped)
+MSBuildTest                               00:00:00           (skipped)
+ReleaseXUnitFSharpTypesShowVisualized     00:00:00           (skipped)
+ReleaseFSharpTypesDotNetRunner            00:00:00           (skipped)
+ReleaseDotNetWithFramework                00:00:00           (skipped)
+ReleaseDotNetWithDotNet                   00:00:00           (skipped)
+ReleaseMonoWithDotNet                     00:00:00           (skipped)
+SimpleMonoReleaseTest                     00:00:00           (skipped)
+SimpleZipReleaseTest                      00:00:00           (skipped)
+SimpleReleaseTest                         00:00:00           (skipped)
+OpenCoverForPester                        00:00:00           (skipped)
+ReleaseXUnitFSharpTypesDotNetRunner       00:00:00           (skipped)
+WindowsPowerShell                         00:00:00           (skipped)
+Pester                                    00:00:00           (skipped)
+Deployment                                00:00:00           (skipped)
+UnitTestWithAltCoverCoreRunner            00:00:00           (skipped)
+UnitTest                                  00:00:00           (skipped)
+BulkReport                                00:00:00           (skipped)
+All                                       00:00:00           (skipped)
+R
+
 Cake2Test - System.IO.IOException: The process cannot access the file 'C:\Users\email\Documents\Github\.nuget\packages\microsoft.testplatform.testhost\17.9.0\build\netcoreapp3.1\x64\testhost.dll' because it is being used by another process.
      at System.IO.FileSystem.CopyFile(String sourceFullPath, String destFullPath, Boolean overwrite)
      at <StartupCode$AltCover-Engine>.$Tasks.Execute@528.Invoke(String x) in /_//AltCover.Engine/Tasks.fs

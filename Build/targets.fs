@@ -5881,10 +5881,8 @@ module Targets =
           sprintf "Bad tracked method list %A" trackedFormat
         )
 
-        //let trackedTimes =
         methods
         |> List.filter _.Value.TId.HasValue
-        //                        |> List.collect (fun m -> let first = m.Value.Entry
         |> List.iter (fun m ->
           let first =
             m.Value.Entry
@@ -5903,10 +5901,7 @@ module Targets =
           test <@ from <= first @>
           test <@ first <= second @>
           test <@ second <= Actions.ticksNow () @>)
-        //                                                  [first; second])
-        //  Assert.That
-        //    (x.ToString().Replace("\r\n", "\n"),
-        //     Is.EqualTo <| tracked.Replace("\r\n", "\n"))) ???
+
         printfn "Tracked OK"
 
         let trackedVisits =
