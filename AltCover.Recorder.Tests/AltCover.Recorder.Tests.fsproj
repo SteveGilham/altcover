@@ -32,9 +32,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <EmbeddedResource Include="Sample2NCoverage.xml" />
     <EmbeddedResource Include="SimpleCoverage.xml" />
   </ItemGroup>
 

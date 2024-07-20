@@ -455,6 +455,7 @@ namespace AltCover.Recorder
       }
 
 #if RUNNER
+
       [SuppressMessage("Gendarme.Rules.Performance",
                        "AvoidUncalledPrivateCodeRule",
                        Justification = "Internals Visible To")]
@@ -489,6 +490,7 @@ namespace AltCover.Recorder
         }
         return hitcount;
       }
+
 #endif
 
       // TODO inline in release if possible
@@ -636,14 +638,12 @@ namespace AltCover.Recorder
               foreach (var node in SelectNodes(method, nameflag.Key))
               {
                 //  |> Seq.map(fun x-> (x, flag))
+                //  |> Seq.toList
+                //  |> List.rev))
                 nodes1.Insert(0, new KeyValuePair<XmlElement, int>(node, nameflag.Value));
               }
 
-              nodes1.Reverse();
-              //  |> Seq.toList
-              //  |> List.rev))
-
-              nodes.AddRange(nodes);
+              nodes.AddRange(nodes1);
             }
           }
 

@@ -41,18 +41,24 @@ module AltCoverTests =
       .GetManifestResourceNames()
     |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
-  let private updateReport a b =
-    Adapter.updateReport (a, ReportFormat.NCover, b, b)
-    |> ignore
-
-  let private pointVisitInit a b = Adapter.init (a, b)
-
   let resource2 =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
     |> Seq.find (fun n ->
       n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
+
+  let resource3 =
+    Assembly
+      .GetExecutingAssembly()
+      .GetManifestResourceNames()
+    |> Seq.find (fun n -> n.EndsWith("Sample2NCoverage.xml", StringComparison.Ordinal))
+
+  let private updateReport a b =
+    Adapter.updateReport (a, ReportFormat.NCover, b, b)
+    |> ignore
+
+  let private pointVisitInit a b = Adapter.init (a, b)
 
   [<Test>]
   let ShouldCoverTrivalClass () =
@@ -1084,6 +1090,66 @@ module AltCoverTests =
             "3"
             "2"
             "1" ]
+      ))
+
+    getMyMethodName "<="
+
+  [<Test>]
+  let KnownModuleWithPayloadMakesExpectedComplexChange () =
+    getMyMethodName "=>"
+
+    lock Instance.I.visits (fun () ->
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource3)
+
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      use worker = new MemoryStream()
+      worker.Write(buffer, 0, size)
+      worker.Position <- 0L
+      let payload = Dictionary<int, PointVisit>()
+
+      payload.[5] <- pointVisitInit 1L []
+      payload.[1] <- pointVisitInit 1L []
+      payload.[-2147483648] <- pointVisitInit 1L []
+      payload.[4] <- pointVisitInit 1L []
+      payload.[2] <- pointVisitInit 1L []
+      payload.[-2147483646] <- pointVisitInit 1L []
+      payload.[3] <- pointVisitInit 1L []
+      payload.[13] <- pointVisitInit 1L []
+      payload.[12] <- pointVisitInit 1L []
+      payload.[-2147483643] <- pointVisitInit 1L []
+      payload.[11] <- pointVisitInit 1L []
+      payload.[18] <- pointVisitInit 1L []
+      payload.[16] <- pointVisitInit 2L []
+      payload.[-2147483640] <- pointVisitInit 1L []
+      payload.[17] <- pointVisitInit 1L []
+      payload.[19] <- pointVisitInit 1L []
+
+      let item =
+        Dictionary<string, Dictionary<int, PointVisit>>()
+
+      item.Add("f7f80a77-e131-f5c7-da33-cd3b6036778a", payload)
+      updateReport item worker
+      worker.Position <- 0L
+      let after = XmlDocument()
+      after.Load worker
+
+      let join (x: string seq) = String.Join(" ", x)
+
+      Assert.That(
+        after.SelectNodes("//seqpnt")
+        |> Seq.cast<XmlElement>
+        |> Seq.map (fun x -> x.GetAttribute("visitcount"))
+        |> join,
+        Is.EqualTo "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+
       ))
 
     getMyMethodName "<="

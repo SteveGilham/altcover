@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample2NCoverage.xml" Link="Sample2NCoverage.xml" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
