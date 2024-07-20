@@ -320,7 +320,13 @@ namespace AltCover.Recorder
       // class needed for "[ThreadStatic] static val mutable"
       private sealed class AsyncLocal<T>
       {
+        [ThreadStatic]
         private static T item;
+
+        static AsyncLocal()
+        {
+          item = default(T);
+        }
 
         public T Value
         {
