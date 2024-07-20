@@ -1,33 +1,30 @@
-ReplayJsonReporting   00:00:05.1513692   (  Bad tracked visit list ["2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"; "2"]
-Assert.That(, )
-  String lengths are both 25. Strings differ at index 0.
-  Expected: "1 1 1 1 1 1 1 1 2 2 2 2 2"
-  But was:  "2 2 2 2 2 2 2 2 2 2 2 2 2"
-  -----------^
+JsonReporting                             00:00:05.4703791   (The input sequence was empty. (Parameter 'source'))
+- Exit event not logged.
+
+ReplayReleaseXUnitFSharpTypesDotNetFullRunner   00:00:04.5343187   (  Assert.That(, )
+  Expected: equivalent to < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />"... >
+  But was:  < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />"... >
+  Missing (5): < "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="2" />" >
+  Extra (5): < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="2" />" >
 )
-Unhandled exception. Fake.Core.BuildFailedException: Target 'JsonReporting' failed.
- ---> System.AggregateException: One or more errors occurred. (The input sequence was empty. (Parameter 'source'))
- ---> System.ArgumentException: The input sequence was empty. (Parameter 'source')
-   at Microsoft.FSharp.Collections.SeqModule.Head[T](IEnumerable`1 source) in D:\a\_work\1\s\src\FSharp.Core\seq.fs:line 1693
-   at AltCover.Targets.checkSample4Visits@5836.Invoke(Int64 from, String path) in C:\Users\email\Documents\Github\altcover\Build\targets.fs:line 5898
-   at AltCover.Targets.JsonReporting() in C:\Users\email\Documents\Github\altcover\Build\targets.fs:line 59
+- tracked method IDs
 
-ReleaseXUnitFSharpTypesDotNetFullRunner
-DotnetGlobalIntegration 
-System.AggregateException: One or more errors occurred. (Object reference not set to an instance of an object.)
- ---> System.NullReferenceException: Object reference not set to an instance of an object.
-   at AltCover.Actions.Pipe #1 stage #1 at line 674@674.Invoke(XElement m) in C:\Users\email\Documents\Github\altcover\Build\actions.fs:line 675
+ReplayDotnetGlobalIntegration   00:00:11.9794665   (  Assert.That(, )
+  Expected: equivalent to < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />"... >
+  But was:  < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />"... >
+  Missing (4): < "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="2" />" >
+  Extra (4): < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="2" />" >
+)
+-- ditto
 
-(Issue20 - Net6.0 EOL)
-
-Issue72         00:00:11.7880238   (
+Issue72         00:00:08.1871717   (
 
 (found, "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first")
 (["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"], "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first")
 false
 )
 
-DotnetTestIntegration   00:00:17.9539171   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
+DotnetTestIntegration   00:00:17.4145571   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
  "0"; "0"; "0"; "0"] in C:\Users\email\Documents\Github\altcover\_DotnetTest\coverage.net8.0.xml
 Assert.That(, )
   String lengths are both 39. Strings differ at index 2.
@@ -35,37 +32,26 @@ Assert.That(, )
   But was:  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
   -------------^
 )
-   at AltCover.Targets.DotnetTestIntegration() in C:\Users\email\Documents\Github\altcover\Build\targets.fs:line 6458
 
 
-ApiUse                                    00:00:00           (skipped)
-MSBuildTest                               00:00:00           (skipped)
-ReleaseXUnitFSharpTypesShowVisualized     00:00:00           (skipped)
-ReleaseFSharpTypesDotNetRunner            00:00:00           (skipped)
-ReleaseDotNetWithFramework                00:00:00           (skipped)
-ReleaseDotNetWithDotNet                   00:00:00           (skipped)
-ReleaseMonoWithDotNet                     00:00:00           (skipped)
-SimpleMonoReleaseTest                     00:00:00           (skipped)
-SimpleZipReleaseTest                      00:00:00           (skipped)
-SimpleReleaseTest                         00:00:00           (skipped)
-OpenCoverForPester                        00:00:00           (skipped)
-ReleaseXUnitFSharpTypesDotNetRunner       00:00:00           (skipped)
-WindowsPowerShell                         00:00:00           (skipped)
-Pester                                    00:00:00           (skipped)
-Deployment                                00:00:00           (skipped)
-UnitTestWithAltCoverCoreRunner            00:00:00           (skipped)
-UnitTest                                  00:00:00           (skipped)
-BulkReport                                00:00:00           (skipped)
-All                                       00:00:00           (skipped)
-R
-
-Cake2Test - System.IO.IOException: The process cannot access the file 'C:\Users\email\Documents\Github\.nuget\packages\microsoft.testplatform.testhost\17.9.0\build\netcoreapp3.1\x64\testhost.dll' because it is being used by another process.
+Cake2Test       00:00:43.1579842   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
+ "0"; "0"; "0"; "0"] in C:\Users\email\Documents\Github\altcover\_Cake\_DotnetTest\coverage.build.cake.--version 2.0.0.net8.0.xml
+Assert.That(, )
+  String lengths are both 39. Strings differ at index 2.
+  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+  But was:  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+  -------------^
+)  System.IO.IOException: The process cannot access the file 'C:\Users\email\Documents\Github\.nuget\packa
+  ges\microsoft.testplatform.testhost\17.9.0\build\netcoreapp3.1\x64\testhost.exe' because it is being us
+  ed by another process.
      at System.IO.FileSystem.CopyFile(String sourceFullPath, String destFullPath, Boolean overwrite)
      at <StartupCode$AltCover-Engine>.$Tasks.Execute@528.Invoke(String x) in /_//AltCover.Engine/Tasks.fs
   :line 528
+     at AltCover.CommandLine.I.doRetry[a,b](FSharpFunc`2 action, FSharpFunc`2 log, Int32 limit, Int32 res
+  t, Int32 depth, a f) in /_//AltCover.Engine/CommandLine.fs:line 215
  
 
-ReplayApiUse          00:00:16.4179594   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
+ApiUse          00:00:15.8093949   (  Bad visit list ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0";
  "0"; "0"; "0"; "0"] in C:\Users\email\Documents\Github\altcover\_ApiUse\_DotnetTest\coverage.net8.0.xml
 Assert.That(, )
   String lengths are both 39. Strings differ at index 2.
@@ -73,37 +59,27 @@ Assert.That(, )
   But was:  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
   -------------^
 )
-ReplayMSBuildTest     00:00:09.6313753   (  Assert.That(, )
-  Expected: equivalent to < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />"... >
-  But was:  < "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="1" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />", "<TrackedMethodRef uid="2" vc="1" />"... >
-  Missing (1): < "<TrackedMethodRef uid="2" vc="2" />" >
-  Extra (1): < "<TrackedMethodRef uid="1" vc="2" />" >
-)
-ReplayReleaseXUnitFSharpTypesShowVisualized   00:00:07.0424524   (  expect [ 0; 1; 2 ]
-Assert.That(, )
-  Expected and actual are both <Microsoft.FSharp.Collections.FSharpList`1[System.Int32]>
-)
-ReplayReleaseFSharpTypesDotNetRunner   00:00:04.2638439   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
- "0"; "1"; "0"; "0"]
-Assert.That(, )
-  String lengths are both 39. Strings differ at index 2.
-  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
-  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
-  -------------^
-)
-ReplayReleaseXUnitFSharpTypesDotNetRunner   00:00:04.5455546   (  Bad visit list ["0"; "0"; "0"; "1"; "1"; "0"; "0"; "0"; "1"; "1"; "1"; "1"; "1"; "0"; "0"; "0";
- "0"; "1"; "0"; "0"]
-Assert.That(, )
-  String lengths are both 39. Strings differ at index 2.
-  Expected: "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
-  But was:  "0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0"
-  -------------^
-)
-WindowsPowerShell  [-] Invoke-Altcover.instruments and collects 4.56s (4.55s|5ms)
- Expected strings to be the same, but they were different.
- String lengths are both 39.
- Strings differ at index 2.
- Expected: '0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1'
- But was:  '0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 0'
-            --^
- at $result | Should -Be "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1", C:\Users\email\Documents\Github\altcover\Build\Pester.Tests.ps1:76
+
+yMSBuildTest     00:00:08.6849914   (Object reference not set to an instance of an object.)
+   at AltCover.Actions.Pipe #1 stage #1 at line 674@674.Invoke(XElement m) in C:\Users\email\Documents\Github\altcover\Build\actions.fs:line 675
+    at AltCover.Actions.Check4Visits@670-3.Invoke(XElement x) in C:\Users\email\Documents\Github\altcover\Build\actions.fs:line 690
+    at AltCover.Actions.Check4Visits(String path, Int64 before, XDocument coverageDocument) in C:\Users\email\Documents\Github\altcover\Build\actions.fs:line 670
+ 
+
+WindowsPowerShell
+missing methods
+Void AltCover.LCov.convertReport
+XDocument AltCover.Cobertura.convertReport
+Void AltCover.CoverageParameters.set_theReportFormat
+Void AltCover.PostProcess.action
+String AltCover.Json.xmlToJson
+
+Pester - ditto
+
+UnitTestWithAltCoverCoreRunner 
+  Failed AltCoverMonitorTests.MonitorTests.ShouldRecordPointTotals [417 ms]
+  Error Message:
+   Object reference not set to an instance of an object.
+  Stack Trace:
+     at AltCover.Local.Monitor.TryGetPointTotals(PointCount& totals) in C:\Users\email\Documents\Github\altcover\AltCover.Monitor\Monitor.cs:line 161
+             var xml = i.GetProperty("ReportFile").GetValue(null, Type.EmptyTypes).ToString();
