@@ -26,13 +26,13 @@ namespace AltCover.Recorder
     /// Gets the location of coverage xml file
     /// This property's IL code is modified to store the actual file location
     /// </summary>
-    internal static string ReportFile
+    public static string ReportFile
     {
       [MethodImpl(MethodImplOptions.NoInlining)]
       get { return "Coverage.Default.xml"; }
     }
 
-    internal static string ReportFilePath
+    public static string ReportFilePath
     {
       get
       {
@@ -53,7 +53,7 @@ namespace AltCover.Recorder
     /// Gets whether to defer output until process exit
     /// This property's IL code is modified to store the actual value
     /// </summary>
-    internal static bool Defer
+    public static bool Defer
     {
       [MethodImpl(MethodImplOptions.NoInlining)]
       get { return false; }
@@ -101,7 +101,7 @@ namespace AltCover.Recorder
     /// Gets the unique token for this Instance
     /// This property's IL code is modified to store a GUID-based token
     /// </summary>
-    internal static string Token
+    public static string Token
     {
       [MethodImpl(MethodImplOptions.NoInlining)]
       get { return "AltCover"; }
@@ -892,7 +892,7 @@ namespace AltCover.Recorder
     [SuppressMessage("Gendarme.Rules.Performance",
                      "AvoidUncalledPrivateCodeRule",
                      Justification = "Internals Visible To")]
-    internal static void FlushFinish()
+    public static void FlushFinish()
     {
       I.FlushAll(Close.ProcessExit);
     }
