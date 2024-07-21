@@ -3839,6 +3839,9 @@ module Targets =
       let altCover =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
 
+      let abase =
+        Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Base.dll"
+
       let engine =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Engine.dll"
 
@@ -3899,6 +3902,7 @@ module Targets =
 
       let applicationFiles =
         [ (altCover, Some "tools/net472", None)
+          (abase, Some "tools/net472", None)
           (engine, Some "tools/net472", None)
           (config, Some "tools/net472", None)
           (monitor, Some "lib/net20", None)
@@ -3913,6 +3917,7 @@ module Targets =
 
       let apiFiles =
         [ (altCover, Some "lib/net472", None)
+          (abase, Some "lib/net472", None)
           (engine, Some "lib/net472", None)
           (config, Some "lib/net472", None)
           (monitor, Some "lib/net472", None)
@@ -4483,7 +4488,8 @@ module Targets =
         ((packageVersionPart "PowerShellStandard.Library")
          + "System.Management.Automation.dll")
 
-      [ "AltCover.Cake"
+      [ "AltCover.Base"
+        "AltCover.Cake"
         "AltCover.DotNet"
         "AltCover.Engine" // beware static linkage -- maybe copy from debug?
         "AltCover.Monitor"
@@ -4570,6 +4576,7 @@ module Targets =
                   "AltCover.Monitor"
                   "AltCover.Fake"
                   "AltCover.Cake"
+                  "AltCover.Base"
                   "Recorder"
                   "Mono"
                   "DataCollector"

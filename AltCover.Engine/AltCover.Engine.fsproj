@@ -12,7 +12,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-    <OtherFlags>--staticlink:AltCover.Base</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
