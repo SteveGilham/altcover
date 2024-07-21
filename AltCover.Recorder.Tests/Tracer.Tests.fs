@@ -37,6 +37,89 @@ module AltCoverCoreTests =
       g ()
       reraise ()
 
+  let internal init (n, l) =
+    let tmp = PointVisit.Create()
+    tmp.Count <- n
+
+    tmp.Tracks.AddRange l
+    tmp
+
+  let internal newBoth (time, call) = Both(Pair.Create(time, call))
+
+  let VisitsClear () =
+    Instance.I.Clear()
+    Counter.branchVisits <- 0L
+    Counter.totalVisits <- 0L
+
+  let SamplesClear () =
+    Instance.I.samples <- Instance.I.MakeSamples()
+
+  let private reset () =
+    Instance.I.isRunner <- false
+    VisitsClear()
+    SamplesClear()
+
+  let ModuleReset (m: string array) =
+    Instance.Modules <- m
+    reset ()
+
+  let HardReset () =
+    Instance.Modules <- [| System.String.Empty |]
+    reset ()
+
+  let VisitsSeq () =
+    Instance.I.visits
+    |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+
+  let VisitImplMethod (moduleId, hitPointId, mId) =
+    Instance.I.VisitImpl(moduleId, hitPointId, (Call mId))
+
+  let internal prepareName name =
+    if name |> Instance.I.visits.ContainsKey |> not then
+      let entry = Dictionary<int, PointVisit>()
+      Instance.I.visits.Add(name, entry)
+
+  let VisitsAdd (name, line, number) =
+    prepareName name
+    let v = init (number, [])
+    Instance.I.visits.[name].Add(line, v)
+
+  let VisitsAddTrack (name, line, number) =
+    prepareName name
+    let v1 = init (number, [ Call 17; Call 42 ])
+    Instance.I.visits.[name].Add(line, v1)
+
+    let v2 =
+      init (
+        (number + 1L),
+        [ Time(17L)
+          Both(Pair.Create(42L, 23)) ]
+      )
+
+    Instance.I.visits.[name].Add(line + 1, v2)
+
+  type Untable =
+    | Name of string
+    | Place of int
+    | Token of Track
+
+  let internal untable t =
+    let r = List<Untable>()
+    //let r = System.Collections.ArrayList()
+
+    let n, p, (t': Track) = t
+
+    match t' with
+    | :? Table as d ->
+      r.Add(Untable.Name n) |> ignore
+      r.Add(Untable.Place p) |> ignore
+      r.Add(Untable.Token d) |> ignore
+    | _ -> ()
+
+    r
+
+  //=======================================
+
   [<Test>]
   let ExcerciseItAll () =
     let where =
@@ -106,9 +189,7 @@ module AltCoverCoreTests =
         (id,
          strike,
          match enum tag with
-         //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
-         | Tag.Call -> (Adapter.asCall <| formatter.ReadInt32()) :> Track
-         //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
+         | Tag.Call -> (Call <| formatter.ReadInt32()) :> Track
          | Tag.Table ->
            Assert.True((id = String.Empty))
            Assert.True((strike = 0))
@@ -131,7 +212,7 @@ module AltCoverCoreTests =
                  if pts > 0 then
                    let p = formatter.ReadInt32()
                    let n = formatter.ReadInt64()
-                   let pv = Adapter.init (n, [])
+                   let pv = init (n, [])
                    t.[m].Add(p, pv)
 
                    // [<TailCall>]
@@ -140,17 +221,14 @@ module AltCoverCoreTests =
 
                      match enum track with
                      | Tag.Time ->
-                       pv.Tracks.Add(Adapter.time <| formatter.ReadInt64())
+                       pv.Tracks.Add(Time <| formatter.ReadInt64())
                        tracking ()
                      | Tag.Call ->
-                       pv.Tracks.Add(Adapter.asCall <| formatter.ReadInt32())
+                       pv.Tracks.Add(Call <| formatter.ReadInt32())
                        tracking ()
                      | Tag.Both ->
                        pv.Tracks.Add(
-                         Adapter.newBoth (
-                           (formatter.ReadInt64()),
-                           (formatter.ReadInt32())
-                         )
+                         newBoth ((formatter.ReadInt64()), (formatter.ReadInt32()))
                        )
 
                        tracking ()
@@ -164,8 +242,8 @@ module AltCoverCoreTests =
                sequencePoint points
 
            ``module`` ()
-           Adapter.table t
-         | _ -> Adapter.asNull ())
+           Table t
+         | _ -> Null())
         |> hits.Add
 
         sink ())
@@ -187,7 +265,7 @@ module AltCoverCoreTests =
     let tag = unique + ".acv"
 
     let expected =
-      [ ("name", 23, Adapter.asNull ()) ]
+      [ ("name", 23, Null() :> Track) ]
 
     do
       use stream = File.Create tag
@@ -197,11 +275,11 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
 
       try
-        Adapter.HardReset()
+        HardReset()
         Instance.I.Trace <- client.OnStart()
         Assert.True(Instance.I.Trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
-        Adapter.VisitImplNone("name", 23)
+        Instance.I.VisitImpl("name", 23, Null())
       finally
         Instance.I.Trace.Close()
         Instance.I.Trace.Close()
@@ -214,21 +292,19 @@ module AltCoverCoreTests =
       let results =
         readResults stream |> Seq.toList
 
-      Adapter.VisitsSeq()
-      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      VisitsSeq()
       |> Seq.iter (fun v ->
         Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
 
       Assert.That(
-        Adapter.VisitsSeq() |> Seq.length,
+        VisitsSeq() |> Seq.length,
         Is.EqualTo 3,
-        sprintf "unexpected local write %A"
-        <| Adapter.VisitsSeq()
+        sprintf "unexpected local write %A" <| VisitsSeq()
       )
 
       Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
-      Adapter.HardReset()
+      HardReset()
 
   [<Test>]
   let VisitShouldSignalTrack () =
@@ -249,19 +325,18 @@ module AltCoverCoreTests =
     t.["name"] <- Dictionary<int, PointVisit>()
 
     let expect23 =
-      [ Adapter.asCall 17; Adapter.asCall 42 ]
-      |> Seq.cast<Track>
+      [ Call 17; Call 42 ] |> Seq.cast<Track>
 
     let expect24 =
-      [ (Adapter.time 17L) :> Track
-        (Adapter.newBoth (42L, 23)) :> Track ]
+      [ (Time 17L) :> Track
+        (newBoth (42L, 23)) :> Track ]
 
-    t.["name"].[23] <- Adapter.init (1L, expect23)
-    t.["name"].[24] <- Adapter.init (2L, expect24)
+    t.["name"].[23] <- init (1L, expect23)
+    t.["name"].[24] <- init (2L, expect24)
 
     let expected =
-      [ (String.Empty, 0, Adapter.table t)
-        ("name", 23, Adapter.asCall 5) ]
+      [ (String.Empty, 0, (Table t) :> Track)
+        ("name", 23, Call 5) ]
 
     do
       use stream = File.Create tag
@@ -275,9 +350,9 @@ module AltCoverCoreTests =
         Assert.True(Instance.I.Trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
 
-        Adapter.HardReset()
-        Adapter.VisitsAddTrack("name", 23, 1L)
-        Adapter.VisitImplMethod("name", 23, 5)
+        HardReset()
+        VisitsAddTrack("name", 23, 1L)
+        VisitImplMethod("name", 23, 5)
       finally
         Instance.I.isRunner <- false
         Instance.I.Trace.Close()
@@ -288,22 +363,17 @@ module AltCoverCoreTests =
 
       let results = readResults stream
 
-      Assert.True(
-        ("no", 0, Adapter.asNull ())
-        |> Adapter.untable
-        |> Seq.isEmpty
-      )
+      Assert.True(("no", 0, Null()) |> untable |> Seq.isEmpty)
 
-      Adapter.VisitsSeq()
+      VisitsSeq()
       |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
       |> Seq.iter (fun v ->
         Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
 
       Assert.That(
-        Adapter.VisitsSeq() |> Seq.length,
+        VisitsSeq() |> Seq.length,
         Is.EqualTo 3,
-        sprintf "unexpected local write %A"
-        <| Adapter.VisitsSeq()
+        sprintf "unexpected local write %A" <| VisitsSeq()
       )
 
       Assert.True(results.Count = 2)
@@ -314,15 +384,19 @@ module AltCoverCoreTests =
       )
 
       let [ n'; p'; d' ] =
-        results
-        |> Seq.head
-        |> Adapter.untable
-        |> Seq.toList
+        results |> Seq.head |> untable |> Seq.toList
 
-      let n = n' :?> String
-      let p = p' :?> int
+      let n =
+        match n' with
+        | Untable.Name x -> x
 
-      let d = (d' :?> Table).Value
+      let p =
+        match p' with
+        | Untable.Place x -> x
+
+      let d =
+        match d' with
+        | Untable.Token x -> (x :?> Table).Value
 
       Assert.True(n |> Seq.isEmpty)
       Assert.True((p = 0))
@@ -367,7 +441,7 @@ module AltCoverCoreTests =
 
       Assert.True((left2 = right2))
     finally
-      Adapter.HardReset()
+      HardReset()
 
   [<Test>]
   let FlushShouldTidyUp () = // also throw a bone to OpenCover 615
@@ -390,17 +464,17 @@ module AltCoverCoreTests =
       let client = Tracer.Create unique
 
       let expected =
-        [ ("name", client.GetHashCode(), Adapter.asNull ()) ]
+        [ ("name", client.GetHashCode(), Null() :> Track) ]
 
       try
-        Adapter.HardReset()
+        HardReset()
         Instance.I.Trace <- client.OnStart()
         Assert.That(Instance.I.Trace.Equals client, Is.False)
         Assert.That(Instance.I.Trace.Equals expected, Is.False)
         Assert.True(Instance.I.Trace.IsConnected, "connection failed")
 
         let (a, b, c) = expected |> Seq.head
-        Adapter.tracePush (a, b, c)
+        Instance.I.Trace.Push(a, b, c)
         Instance.FlushFinish()
       finally
         Instance.I.Trace.Close()
@@ -413,18 +487,17 @@ module AltCoverCoreTests =
       let results =
         stream |> readResults |> Seq.toList
 
-      Adapter.VisitsSeq()
+      VisitsSeq()
       |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
       |> Seq.iter (fun v ->
         Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
 
       Assert.That(
-        Adapter.VisitsSeq() |> Seq.length,
+        VisitsSeq() |> Seq.length,
         Is.EqualTo 3,
-        sprintf "unexpected local write %A"
-        <| Adapter.VisitsSeq()
+        sprintf "unexpected local write %A" <| VisitsSeq()
       )
 
       Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
-      Adapter.VisitsClear()
+      VisitsClear()

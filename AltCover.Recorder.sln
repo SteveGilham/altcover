@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk
+		Build\merge-coverage.ps1 = Build\merge-coverage.ps1
 		Build\msbuildtest.proj = Build\msbuildtest.proj
 		OutputBuildProps.props = OutputBuildProps.props
 		OutputBuildTargets.props = OutputBuildTargets.props

@@ -153,7 +153,7 @@
           <Methods>
             <Method visited="true" cyclomaticComplexity="5" nPathComplexity="5" sequenceCoverage="37.5" branchCoverage="33.33" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="11.1">
               <Summary numSequencePoints="8" visitedSequencePoints="3" numBranchPoints="5" visitedBranchPoints="2" sequenceCoverage="37.5" branchCoverage="33.33" maxCyclomaticComplexity="5" minCyclomaticComplexity="5" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="11.1" maxCrapScore="11.1" />
-              <MetadataToken>100663323</MetadataToken>
+              <MetadataToken>100663324</MetadataToken>
               <Name>Tests.DU/MyUnion Tests.DU/MyUnion::AsBar()</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -177,7 +177,7 @@
             </Method>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="True" isSetter="False" isStatic="True" crapScore="2">
               <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100663324</MetadataToken>
+              <MetadataToken>100663325</MetadataToken>
               <Name>Microsoft.FSharp.Core.FSharpFunc`2&lt;Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion&gt; Tests.DU/MyUnion::get_MyBar()</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -194,7 +194,7 @@
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="True" isSetter="False" isStatic="True" crapScore="2">
               <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100663346</MetadataToken>
+              <MetadataToken>100663347</MetadataToken>
               <Name>System.Int32 Tests.DU/MyClass::get_Property()</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -211,7 +211,7 @@
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="2">
               <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100663355</MetadataToken>
+              <MetadataToken>100663356</MetadataToken>
               <Name>System.Tuple`2&lt;System.Double,System.Double&gt; Tests.DU/compute@74::Invoke(System.Double,System.Double,System.Double)</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -228,7 +228,7 @@
           <Methods>
             <Method visited="true" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="1">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
-              <MetadataToken>100663361</MetadataToken>
+              <MetadataToken>100663362</MetadataToken>
               <Name>Tests.M/Thing Tests.M::makeThing(System.String)</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -239,7 +239,7 @@
             </Method>
             <Method visited="true" cyclomaticComplexity="8" nPathComplexity="16" sequenceCoverage="100" branchCoverage="55.56" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="8">
               <Summary numSequencePoints="2" visitedSequencePoints="2" numBranchPoints="8" visitedBranchPoints="5" sequenceCoverage="100" branchCoverage="55.56" maxCyclomaticComplexity="8" minCyclomaticComplexity="8" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="8" maxCrapScore="8" />
-              <MetadataToken>100663362</MetadataToken>
+              <MetadataToken>100663363</MetadataToken>
               <Name>System.Void Tests.M::testMakeThing()</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -266,7 +266,7 @@
           <Methods>
             <Method visited="true" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="1">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
-              <MetadataToken>100663372</MetadataToken>
+              <MetadataToken>100663374</MetadataToken>
               <Name>System.Byte[] Tests.M/Thing::Bytes()</Name>
               <FileRef uid="1" />
               <SequencePoints>
