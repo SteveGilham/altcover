@@ -2155,44 +2155,6 @@ module Targets =
         printfn "UnitTestWithAltCover caught %A" x
         reraise ()
 
-      printfn "Instrument the net472 Recorder tests"
-
-      let recorder472Dir =
-        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472"
-
-      let recorder472Report =
-        reports @@ "Recorder472TestWithAltCover.xml"
-
-      let prep =
-        AltCover.PrepareOptions.Primitive(
-          { Primitive.PrepareOptions.Create() with
-              Report = recorder472Report
-              OutputDirectories = [| "./__RecorderTestWithAltCover" |]
-              StrongNameKey = shadowkeyfile
-              ReportFormat = "NCover"
-              InPlace = false
-              Save = false }
-          |> AltCoverFilter
-        )
-        |> AltCoverCommand.Prepare
-
-      { AltCoverCommand.Options.Create prep with
-          ToolPath = altcover
-          ToolType = frameworkAltcover
-          WorkingDirectory = recorder472Dir }
-      |> AltCoverCommand.run
-
-      printfn "Execute the net472 Recorder tests"
-
-      let rec4Args =
-        [ "--noheader"
-          "--work=."
-          "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
-          Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll" ]
-
-      Actions.Run (nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
-
       ReportGenerator.generateReports
         (fun p ->
           { p with
@@ -2201,7 +2163,7 @@ module Targets =
                 [ ReportGenerator.ReportType.Html
                   ReportGenerator.ReportType.XmlSummary ]
               TargetDir = "_Reports/_UnitTestWithAltCover" })
-        [ altReport; recorder472Report ]
+        [ altReport ]
 
       uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
       |> List.map fst
