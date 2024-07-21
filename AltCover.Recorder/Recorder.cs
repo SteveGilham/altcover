@@ -325,7 +325,7 @@ namespace AltCover.Recorder
 
         static AsyncLocal()
         {
-          item = default(T);
+          item = default;
         }
 
         public T Value

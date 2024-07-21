@@ -1949,9 +1949,6 @@ module Targets =
       let recorder4Files =
         !!(@"_Binaries/*Tests/Debug+AnyCPU/net472/*Recorder.Tests.dll")
 
-      let recorderFiles =
-        !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
-
       let visualizerFiles =
         !!(@"_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Test*.dll")
 
@@ -2005,24 +2002,6 @@ module Targets =
                 TimeOut = TimeSpan(0, 10, 0) })
           (String.Join(" ", testFiles)
            + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
-
-        OpenCover.run
-          (fun p ->
-            { p with
-                WorkingDir = "."
-                ExePath = openCoverConsole
-                TestRunnerExePath = nunitConsole // OK, not on Linux
-                Filter =
-                  "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.* -[AltCover.*]*StartupCode*SolutionRoot"
-                MergeByHash = true
-                ReturnTargetCode =
-                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
-                OptionalArguments =
-                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-                Register = OpenCover.RegisterType.RegisterUser // Path64 doesn't work on my machine
-                Output = scoverage })
-          (String.Join(" ", recorderFiles)
-           + " --result=./_Reports/RecorderTestWithOpenCoverReport.xml")
 
         OpenCover.run
           (fun p ->
@@ -2128,7 +2107,7 @@ module Targets =
               OutputDirectories =
                 [| "./__UnitTestWithAltCover"
                    weakDir
-                   @@ "__ValidateGendarmeEmulationWithAltCover"
+                   @@ "__VGEWithAltCover"
                    recorder4Dir @@ "__RecorderTestWithAltCover"
                    apiDir
                    @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*) |]
@@ -2166,7 +2145,7 @@ module Targets =
             Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
             Path.getFullName
-              "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
+              "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
             //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
@@ -2175,52 +2154,6 @@ module Targets =
       with x ->
         printfn "UnitTestWithAltCover caught %A" x
         reraise ()
-
-      printfn "Instrument the net20 Recorder tests"
-
-      let recorderDir =
-        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
-
-      let recorderReport =
-        reports @@ "RecorderTestWithAltCover.xml"
-
-      let prep =
-        AltCover.PrepareOptions.Primitive(
-          { Primitive.PrepareOptions.Create() with
-              Report = recorderReport
-              OutputDirectories = [| "./__RecorderTestWithAltCover" |]
-              StrongNameKey = shadowkeyfile
-              ReportFormat = "NCover"
-              InPlace = false
-              Save = false }
-          |> AltCoverFilter
-        )
-        |> AltCoverCommand.Prepare
-
-      { AltCoverCommand.Options.Create prep with
-          ToolPath = altcover
-          ToolType = frameworkAltcover
-          WorkingDirectory = recorderDir }
-      |> AltCoverCommand.run
-
-      printfn "Execute the net20 Recorder tests"
-
-      //        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
-      //        |> NUnitRetry
-      //            (fun p ->
-      //                { p with
-      //                      ToolPath = nunitConsole
-      //                      WorkingDir = "." })
-      //            "./_Reports/RecorderTestWithAltCoverReport.xml"
-
-      let recArgs =
-        [ "--noheader"
-          "--work=."
-          "--result=./_Reports/RecorderTestWithAltCoverReport.xml"
-          Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll" ]
-
-      Actions.Run (nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
 
       printfn "Instrument the net472 Recorder tests"
 
@@ -2269,7 +2202,6 @@ module Targets =
                   ReportGenerator.ReportType.XmlSummary ]
               TargetDir = "_Reports/_UnitTestWithAltCover" })
         [ altReport
-          recorderReport
           recorder472Report ]
 
       uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
@@ -2332,11 +2264,11 @@ module Targets =
            keyfile)
           (Path.getFullName
             "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472",
-           "./__ValidateGendarmeEmulationWithAltCoverRunner",
+           "./__VGEWithAltCoverRunner",
            "ValidateGendarmeEmulationWithAltCoverRunner.xml",
            "./_Reports/ValidateGendarmeEmulationWithAltCoverRunnerReport.xml",
            [ Path.getFullName
-               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCoverRunner/AltCover.ValidateGendarmeEmulation.dll" ],
+               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCoverRunner/AltCover.ValidateGendarmeEmulation.dll" ],
            // only use // (* >> (fun x ->  { x with AssemblyExcludeFilter = TypeSafe.Filters [] }) *),
            AltCoverFilterXTypeSafe,
            keyfile)
@@ -2721,23 +2653,11 @@ module Targets =
             AltCover.CollectOptions.Primitive
             <| Primitive.CollectOptions.Create()
 
-          if proj.Contains("Recorder") then
-            doMSBuild
-              (withDebug
-               >> fun p ->
-                 { p with
-                     Properties =
-                       ("AltCoverTag", "UnitTestWithCoreRunner_")
-                       :: p.Properties
-                     Verbosity = Some MSBuildVerbosity.Minimal })
-              MSBuildPath
-              newproj
-
           DotNet.test
             (fun to' ->
               { to'.WithCommon(withWorkingDirectoryVM testdir) with
                   Framework = Some "net8.0"
-                  NoBuild = proj.Contains("Recorder") }
+                  NoBuild = false }
                 .WithAltCoverOptions
                 prep
                 coll
