@@ -2106,8 +2106,7 @@ module Targets =
                    apiDir (*; visDir ; monitorDir*) |]
               OutputDirectories =
                 [| "./__UnitTestWithAltCover"
-                   weakDir
-                   @@ "__VGEWithAltCover"
+                   weakDir @@ "__VGEWithAltCover"
                    recorder4Dir @@ "__RecorderTestWithAltCover"
                    apiDir
                    @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*) |]
@@ -2146,7 +2145,8 @@ module Targets =
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
-            //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+            Path.getFullName
+              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
 
@@ -2167,7 +2167,7 @@ module Targets =
         AltCover.PrepareOptions.Primitive(
           { Primitive.PrepareOptions.Create() with
               Report = recorder472Report
-              OutputDirectories = [| "./__Recorder472TestWithAltCover" |]
+              OutputDirectories = [| "./__RecorderTestWithAltCover" |]
               StrongNameKey = shadowkeyfile
               ReportFormat = "NCover"
               InPlace = false
@@ -2189,7 +2189,7 @@ module Targets =
           "--work=."
           "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
           Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__Recorder472TestWithAltCover/AltCover.Recorder.Tests.dll" ]
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll" ]
 
       Actions.Run (nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
 
@@ -2201,8 +2201,7 @@ module Targets =
                 [ ReportGenerator.ReportType.Html
                   ReportGenerator.ReportType.XmlSummary ]
               TargetDir = "_Reports/_UnitTestWithAltCover" })
-        [ altReport
-          recorder472Report ]
+        [ altReport; recorder472Report ]
 
       uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
       |> List.map fst
