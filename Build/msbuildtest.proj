@@ -20,6 +20,7 @@
       LocalSource="true"
       Report="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
+      All="true"
       AssemblyFilter="@(AssemblyFilter)" />
     <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f net8.0 /p:AltCoverTag=$(AltCoverTag)" EnvironmentVariables="AltCoverTag=$(AltCoverTag)" />
     <AltCover.Collect

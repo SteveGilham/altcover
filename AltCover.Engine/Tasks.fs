@@ -131,7 +131,7 @@ type Prepare() =
   member val CommandLine: string array = [||] with get, set
 
   member val SourceLink = false with get, set
-  member val Eager = true with get, set
+  member val Eager = false with get, set
   member val VisibleBranches = false with get, set
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
