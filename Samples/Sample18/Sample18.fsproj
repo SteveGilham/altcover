@@ -7,7 +7,7 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'!='net472'">
     <NoWarn>988</NoWarn>
   </PropertyGroup>
 

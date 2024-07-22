@@ -23,11 +23,11 @@
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Adapter.fs" />
     <Compile Include="Base.Tests.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
+    <None Include="Program.cs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
