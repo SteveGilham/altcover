@@ -95,6 +95,7 @@ module DriveApi =
       let p2 =
         { Primitive.PrepareOptions.Create() with
             LocalSource = true
+            All = true
             CallContext = [| "[Fact]"; "0" |]
             AssemblyFilter = [| "xunit" |] }
 

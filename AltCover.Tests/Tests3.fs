@@ -3986,8 +3986,7 @@ module AltCoverTests3 =
         Is.EquivalentTo
           [ "--reportFormat"
             "OpenCover"
-            "--save"
-            "--eager" ]
+            "--save" ]
       )
     finally
       Main.effectiveMain <- save
@@ -4044,8 +4043,7 @@ module AltCoverTests3 =
           Is.EquivalentTo(
             [ "--reportFormat"
               "OpenCover"
-              "--save"
-              "--eager" ]
+              "--save" ]
             @ q
           ),
           level
@@ -4095,7 +4093,6 @@ module AltCoverTests3 =
             "--reportFormat"
             "Ncover"
             "--save"
-            "--eager"
             "--"
             "testing"
             "1"
@@ -4138,7 +4135,6 @@ module AltCoverTests3 =
             "--reportFormat"
             "ncover"
             "--save"
-            "--eager"
             "--"
             "testing"
             "1"
