@@ -653,9 +653,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SourceLink: Flag
         ///<summary>
-        /// Corresponds to command line option `--defer`
+        /// Corresponds to command line option `--eager`
         ///</summary>
-        Defer: Flag
+        Eager: Flag
         ///<summary>
         /// Corresponds to command line option `-l, --localSource`
         ///</summary>

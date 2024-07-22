@@ -392,11 +392,11 @@ module AltCover =
       | Abstract a -> a.SourceLink
       | TypeSafe t -> t.SourceLink.AsBool()
 
-    member self.Defer =
+    member self.Eager =
       match self with
-      | Primitive p -> p.Defer
-      | Abstract a -> a.Defer
-      | TypeSafe t -> t.Defer.AsBool()
+      | Primitive p -> p.Eager
+      | Abstract a -> a.Eager
+      | TypeSafe t -> t.Eager.AsBool()
 
     member self.LocalSource =
       match self with
@@ -514,7 +514,7 @@ module AltCover =
         self.ExposeReturnCode
 
       member self.SourceLink = self.SourceLink
-      member self.Defer = self.Defer
+      member self.Eager = self.Eager
       member self.LocalSource = self.LocalSource
 
       member self.VisibleBranches =

@@ -395,8 +395,8 @@ module internal Instrument =
           ("get_Sample",
            (fun (w: ILProcessor) ->
              w.Create(OpCodes.Ldc_I4, CoverageParameters.sampling ())))
-          ("get_Defer",
-           (fun (w: ILProcessor) -> w.Create(CoverageParameters.deferOpCode ()))) ]
+          ("get_Eager",
+           (fun (w: ILProcessor) -> w.Create(CoverageParameters.eagerOpCode ()))) ]
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
             definition.MainModule.GetTypes()

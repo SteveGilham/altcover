@@ -12,7 +12,7 @@ open Microsoft.Build.Framework //// no doc
 open Microsoft.Build.Utilities //// no doc
 // ```
 // ## Task `AltCover.Prepare`
-// This is the instrumentation mode with `--save --inplace --defer` as default.  Associated parameters are
+// This is the instrumentation mode with `--save --inplace` as default.  Associated parameters are
 // ```
 ///<summary>
 /// <para>Description of the `AltCover` command</para>
@@ -146,9 +146,9 @@ type Prepare =
     ///</summary>
     member SourceLink : bool with get, set
     ///<summary>
-    /// Corresponds to command line option `--defer`
+    /// Corresponds to command line option `--eager`
     ///</summary>
-    member Defer : bool with get, set
+    member Eager : bool with get, set
     ///<summary>
     /// Corresponds to command line option `-l, --localSource`
     ///</summary>

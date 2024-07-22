@@ -2445,7 +2445,7 @@ module Targets =
                 OutputDirectories = [| output |]
                 StrongNameKey = keyfile
                 ReportFormat = "NCover"
-                Defer = true
+                Eager = true
                 InPlace = false
                 Save = false }
             |> AltCoverFilter

@@ -238,9 +238,9 @@ module Abstract =
     ///</summary>
     abstract member SourceLink : bool with get
     ///<summary>
-    /// Corresponds to command line option `--defer`
+    /// Corresponds to command line option `--eager`
     ///</summary>
-    abstract member Defer : bool with get
+    abstract member Eager : bool with get
     ///<summary>
     /// Corresponds to command line option `-l, --localSource`
     ///</summary>

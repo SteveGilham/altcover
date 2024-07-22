@@ -348,8 +348,6 @@ or, for the global tool only
 
 * valid arguments for ``--teamcity`` are ``B``, ``R``, ``+B``, ``+R`` or nothing at all (same as ``B``).  The letter indicates which symbol to use in the TeamCity format for branch coverage (``B`` is for ``Block``, which by experiment did show in the build report, and ``R`` is for ``bRanch`` which is documented, but did not show when I tried it), the optional ``+`` indicates that the OpenCover summary should also be emitted.
 
-* valid arguments for ``--defer`` are ``+``, ``-`` or nothing at all (same as ``+``).  ``+`` keeps coverage data in memory until process exit, ``-`` writes promptly to file in runner mode, i.e. acts as in previous releases since 1.6).
-
 * ``ImportModule`` will print a string on Mono/non-Windows, but Windows PowerShell won't be there to make use of it.
 
 #### ``-e`` vs ``-s`` : what gives?

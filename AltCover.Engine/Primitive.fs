@@ -86,7 +86,7 @@ module Primitive =
       CommandLine: String seq
       ExposeReturnCode: bool
       SourceLink: bool
-      Defer: bool
+      Eager: bool
       LocalSource: bool
       VisibleBranches: bool
       ShowStatic: string
@@ -125,7 +125,7 @@ module Primitive =
         CommandLine = []
         ExposeReturnCode = true
         SourceLink = false
-        Defer = false
+        Eager = false
         LocalSource = false
         VisibleBranches = false
         ShowStatic = "-"

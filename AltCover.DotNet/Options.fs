@@ -117,7 +117,7 @@ module Options =
     member val CommandLine = Seq.empty<String> with get, set
     member val ExposeReturnCode = true with get, set
     member val SourceLink = false with get, set
-    member val Defer = false with get, set
+    member val Eager = false with get, set
     member val LocalSource = false with get, set
     member val VisibleBranches = false with get, set
     member val ShowStatic = "-" with get, set
@@ -180,7 +180,7 @@ module Options =
         self.ExposeReturnCode
 
       member self.SourceLink = self.SourceLink
-      member self.Defer = self.Defer
+      member self.Eager = self.Eager
       member self.LocalSource = self.LocalSource
 
       member self.VisibleBranches =

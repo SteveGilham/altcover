@@ -301,7 +301,7 @@ module TypeSafe =
       CommandLine: CommandLine
       ExposeReturnCode: Flag
       SourceLink: Flag
-      Defer: Flag
+      Eager: Flag
       LocalSource: Flag
       VisibleBranches: Flag
       ShowStatic: StaticFormat
@@ -340,7 +340,7 @@ module TypeSafe =
         CommandLine = NoCommand
         ExposeReturnCode = Set
         SourceLink = Clear
-        Defer = Clear
+        Eager = Clear
         LocalSource = Clear
         VisibleBranches = Clear
         ShowStatic = StaticFormat.Default

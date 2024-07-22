@@ -131,7 +131,7 @@ type Prepare() =
   member val CommandLine: string array = [||] with get, set
 
   member val SourceLink = false with get, set
-  member val Defer = true with get, set
+  member val Eager = true with get, set
   member val VisibleBranches = false with get, set
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
@@ -186,7 +186,7 @@ type Prepare() =
           CommandLine = self.CommandLine
           ExposeReturnCode = self.ExposeReturnCode
           SourceLink = self.SourceLink
-          Defer = self.Defer
+          Eager = self.Eager
           LocalSource = self.LocalSource
           VisibleBranches = self.VisibleBranches
           ShowStatic = self.ShowStatic

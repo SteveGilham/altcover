@@ -223,7 +223,7 @@ module AltCoverTests3 =
       |> Seq.sort
       |> Seq.toList
 
-    // dotnet test loses commandline, defer, exposereturncode, save
+    // dotnet test loses commandline, eager, exposereturncode, save
     //                   N/A,         fixed, N/A,              fixed
     // inplace is explicitly hard-coded
     testWithFallback
@@ -2680,12 +2680,12 @@ module AltCoverTests3 =
       CommandLine.dropReturnCode.Value <- false
 
   [<Test>]
-  let ParsingDeferWorks () =
+  let ParsingEagerWorks () =
     Main.init ()
 
     try
       let options = Main.I.declareOptions ()
-      let input = [| "--defer" |]
+      let input = [| "--eager" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2695,18 +2695,18 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
-      Assert.That(CoverageParameters.defer.Value)
-      Assert.That(CoverageParameters.deferOpCode (), Is.EqualTo OpCodes.Ldc_I4_1)
+      Assert.That(CoverageParameters.eager.Value)
+      Assert.That(CoverageParameters.eagerOpCode (), Is.EqualTo OpCodes.Ldc_I4_1)
     finally
-      CoverageParameters.defer.Value <- false
+      CoverageParameters.eager.Value <- false
 
   [<Test>]
-  let ParsingMultipleDeferGivesFailure () =
+  let ParsingMultipleEagerGivesFailure () =
     Main.init ()
 
     try
       let options = Main.I.declareOptions ()
-      let input = [| "--defer"; "--defer" |]
+      let input = [| "--eager"; "--eager" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2718,11 +2718,11 @@ module AltCoverTests3 =
 
         Assert.That(
           CommandLine.error |> Seq.head,
-          Is.EqualTo "--defer : specify this only once"
+          Is.EqualTo "--eager : specify this only once"
         )
 
     finally
-      CoverageParameters.defer.Value <- false
+      CoverageParameters.eager.Value <- false
 
   [<Test>]
   let ParsingQuietWorks () =
@@ -3987,7 +3987,7 @@ module AltCoverTests3 =
           [ "--reportFormat"
             "OpenCover"
             "--save"
-            "--defer" ]
+            "--eager" ]
       )
     finally
       Main.effectiveMain <- save
@@ -4045,7 +4045,7 @@ module AltCoverTests3 =
             [ "--reportFormat"
               "OpenCover"
               "--save"
-              "--defer" ]
+              "--eager" ]
             @ q
           ),
           level
@@ -4095,7 +4095,7 @@ module AltCoverTests3 =
             "--reportFormat"
             "Ncover"
             "--save"
-            "--defer"
+            "--eager"
             "--"
             "testing"
             "1"
@@ -4138,7 +4138,7 @@ module AltCoverTests3 =
             "--reportFormat"
             "ncover"
             "--save"
-            "--defer"
+            "--eager"
             "--"
             "testing"
             "1"

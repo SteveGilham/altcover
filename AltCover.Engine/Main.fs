@@ -34,7 +34,7 @@ module internal Main =
     CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode.Value <- false // ddFlag
-    CoverageParameters.defer.Value <- false // ddflag
+    CoverageParameters.eager.Value <- false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
     CoverageParameters.configurationHash <- None
@@ -300,7 +300,7 @@ module internal Main =
            | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
         (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
         (CommandLine.ddFlag "sourcelink" CoverageParameters.sourcelink)
-        (CommandLine.ddFlag "defer" CoverageParameters.defer)
+        (CommandLine.ddFlag "eager" CoverageParameters.eager)
         (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
         ("showstatic:",
          (fun x ->

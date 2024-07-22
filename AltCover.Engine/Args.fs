@@ -87,7 +87,7 @@ module internal Args =
       ("--branchcover", args.BranchCover)
       ("--dropReturnCode", (args.ExposeReturnCode |> not))
       ("--sourcelink", args.SourceLink)
-      ("--defer", args.Defer)
+      ("--eager", args.Eager)
       ("--localSource", args.LocalSource)
       ("--visibleBranches", args.VisibleBranches)
       ("--showGenerated", args.ShowGenerated)

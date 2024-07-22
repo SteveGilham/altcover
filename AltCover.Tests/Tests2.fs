@@ -892,7 +892,7 @@ module AltCoverTests2 =
     let pathGetterDef =
       ``module``.MainModule.GetTypes()
       |> Seq.collect _.Methods
-      |> Seq.find _.Name.Equals("get_Defer")
+      |> Seq.find _.Name.Equals("get_Eager")
 
     let body = pathGetterDef.Body
     let worker = body.GetILProcessor()
@@ -940,7 +940,7 @@ module AltCoverTests2 =
 
     (* was
     IL_0000: ldarg.0
-    IL_0001: ldfld bool Sample31.Class3/Class4::'<Defer>k__BackingField'
+    IL_0001: ldfld bool Sample31.Class3/Class4::'<Eager>k__BackingField'
     IL_0006: stloc.0
     IL_0007: br IL_000c
 

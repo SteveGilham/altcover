@@ -313,12 +313,12 @@ module internal CoverageParameters =
     |> int
 
   let internal sourcelink = ref false // ddFlag
-  let internal defer = ref false
+  let internal eager = ref false
   let internal trivia = ref false
   let internal portable = ref false
 
-  let internal deferOpCode () =
-    if defer.Value then
+  let internal eagerOpCode () =
+    if eager.Value then
       OpCodes.Ldc_I4_1
     else
       OpCodes.Ldc_I4_0

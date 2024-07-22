@@ -814,9 +814,9 @@ module ExpectoTestManifest =
        Tests.AltCoverTests3.ParsingDropGivesDrop, "Tests3.ParsingDropGivesDrop"
        Tests.AltCoverTests3.ParsingMultipleDropGivesFailure,
        "Tests3.ParsingMultipleDropGivesFailure"
-       Tests.AltCoverTests3.ParsingDeferWorks, "Tests3.ParsingDeferWorks"
-       Tests.AltCoverTests3.ParsingMultipleDeferGivesFailure,
-       "Tests3.ParsingMultipleDeferGivesFailure"
+       Tests.AltCoverTests3.ParsingEagerWorks, "Tests3.ParsingEagerWorks"
+       Tests.AltCoverTests3.ParsingMultipleEagerGivesFailure,
+       "Tests3.ParsingMultipleEagerGivesFailure"
        Tests.AltCoverTests3.ParsingStaticGivesStatic, "Tests3.ParsingStaticGivesStatic"
        Tests.AltCoverTests3.ParsingStaticPlusGivesStatic,
        "Tests3.ParsingStaticPlusGivesStatic"
