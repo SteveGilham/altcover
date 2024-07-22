@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net472</TargetFrameworks>
-    <LangVersion Condition="'$(TargetFramework)' != 'net472'">8.0</LangVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
