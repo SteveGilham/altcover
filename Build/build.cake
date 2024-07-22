@@ -37,6 +37,7 @@ Task("Build")
     public override System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
     public override string Report => "coverage.build.cake." + CakeVersion +".xml";
     public override string OutputRoot => System.IO.Path.GetFullPath($"../_Binaries/cake_dotnettest/OutputRoot");
+    public override bool All => true;
   }
 
 Task("Test")

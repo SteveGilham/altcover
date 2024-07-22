@@ -168,9 +168,9 @@ namespace AltCover.Cake
     public virtual bool MethodPoint => false;
 
     ///<summary>
-    /// Corresponds to command line option `--single`
+    /// Corresponds to command line option `--all`
     ///</summary>
-    public virtual bool SingleVisit => false;
+    public virtual bool All => false;
 
     ///<summary>
     /// Corresponds to command line option `--linecover`

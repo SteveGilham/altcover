@@ -69,7 +69,7 @@ Describe "Invoke-Altcover" {
         $w | Should -Be "A total of 0 visits recorded"
 
         $env:AltCoverTag = "Invoke-Altcover_"
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net8.0", "Sample2.fsproj") #, "/p:AltCoverTag=Invoke-Altcover_")
+        $summary = Invoke-AltCover -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -All -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net8.0", "Sample2.fsproj") #, "/p:AltCoverTag=Invoke-Altcover_")
         $env:AltCoverTag = ""
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)

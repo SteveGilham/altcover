@@ -2321,13 +2321,13 @@ module AltCoverTests3 =
       CoverageParameters.collect.Value <- false
 
   [<Test>]
-  let ParsingSingleGivesSingle () =
+  let ParsingAllGivesAll () =
     Main.init ()
 
     try
-      CoverageParameters.single <- false
+      CoverageParameters.all <- false
       let options = Main.I.declareOptions ()
-      let input = [| "--single" |]
+      let input = [| "--all" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2337,18 +2337,18 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
 
-      Assert.That(CoverageParameters.single, Is.True)
+      Assert.That(CoverageParameters.all, Is.True)
     finally
-      CoverageParameters.single <- false
+      CoverageParameters.all <- false
 
   [<Test>]
-  let ParsingMultipleSingleGivesFailure () =
+  let ParsingMultipleAllGivesFailure () =
     Main.init ()
 
     try
-      CoverageParameters.single <- false
+      CoverageParameters.all <- false
       let options = Main.I.declareOptions ()
-      let input = [| "--single"; "--single" |]
+      let input = [| "--all"; "--all" |]
 
       let parse =
         CommandLine.parseCommandLine input options
@@ -2360,10 +2360,10 @@ module AltCoverTests3 =
 
         Assert.That(
           CommandLine.error |> Seq.head,
-          Is.EqualTo "--single : specify this only once"
+          Is.EqualTo "--all : specify this only once"
         )
     finally
-      CoverageParameters.single <- false
+      CoverageParameters.all <- false
 
   [<Test>]
   let ParsingLineCoverGivesLineCover () =

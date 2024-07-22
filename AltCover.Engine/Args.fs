@@ -82,7 +82,7 @@ module internal Args =
       ("--save", args.Save)
       ("--zipfile", args.ZipFile)
       ("--methodpoint", args.MethodPoint)
-      ("--single", args.SingleVisit)
+      ("--all", args.All)
       ("--linecover", args.LineCover)
       ("--branchcover", args.BranchCover)
       ("--dropReturnCode", (args.ExposeReturnCode |> not))

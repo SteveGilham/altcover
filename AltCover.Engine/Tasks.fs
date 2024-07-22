@@ -121,7 +121,7 @@ type Prepare() =
   member val Save = true with get, set
   member val ZipFile = false with get, set
   member val MethodPoint = false with get, set
-  member val SingleVisit = false with get, set
+  member val All = false with get, set
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
 
@@ -180,7 +180,7 @@ type Prepare() =
           Save = self.Save
           ZipFile = self.ZipFile
           MethodPoint = self.MethodPoint
-          SingleVisit = self.SingleVisit
+          All = self.All
           LineCover = self.LineCover
           BranchCover = self.BranchCover
           CommandLine = self.CommandLine

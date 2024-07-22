@@ -80,7 +80,7 @@ module Primitive =
       Save: bool
       ZipFile: bool
       MethodPoint: bool
-      SingleVisit: bool
+      All: bool
       LineCover: bool
       BranchCover: bool
       CommandLine: String seq
@@ -119,7 +119,7 @@ module Primitive =
         Save = true
         ZipFile = false
         MethodPoint = false
-        SingleVisit = false
+        All = false
         LineCover = false
         BranchCover = false
         CommandLine = []

@@ -33,7 +33,7 @@
       <OutputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/MSBuildTest_Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>
     <Delete Files="@(FSharpXml)" />
-    <AltCover.Prepare Condition="'$(MSBuildTest)' == 'true'" InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" />
+    <AltCover.Prepare Condition="'$(MSBuildTest)' == 'true'" InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" All="true" />
   </Target>
 
   <ItemGroup>

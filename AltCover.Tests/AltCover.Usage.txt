@@ -81,9 +81,8 @@
       --methodpoint          Optional: record only whether a method has been
                                visited or not.  Overrides the --linecover and --
                                branchcover options.
-      --single               Optional: only record the first hit at any
-                               location, or first hit for each context if --
-                               callContext is operating.
+      --all                  Optional: record every hit at any location, and
+                               for each context if --callContext is operating.
       --linecover            Optional: Do not record branch coverage.  Ignored
                                for the --reportFormat=NCover option.
                                    Incompatible with --branchcover.

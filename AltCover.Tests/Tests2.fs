@@ -723,7 +723,7 @@ module AltCoverTests2 =
         CoverageParameters.theReportPath <- Some unique
         CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.OpenCover
         CoverageParameters.theInterval <- Some 1234567890
-        CoverageParameters.single <- true
+        CoverageParameters.all <- false
         CoverageParameters.zipReport.Value <- true
 
         Assert.That(
@@ -827,7 +827,7 @@ module AltCoverTests2 =
         finally
           alc.Unload()
       finally
-        CoverageParameters.single <- false
+        CoverageParameters.all <- false
         CoverageParameters.theReportPath <- save
         CoverageParameters.theReportFormat <- save2
         CoverageParameters.theInterval <- save3
@@ -844,7 +844,7 @@ module AltCoverTests2 =
         )
         |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
-        Assert.That(CoverageParameters.sampling (), Sampling.All |> int |> Is.EqualTo)
+        Assert.That(CoverageParameters.sampling (), Sampling.Single |> int |> Is.EqualTo)
     finally
       CoverageParameters.keys.Clear()
 

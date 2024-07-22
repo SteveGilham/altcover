@@ -65,6 +65,7 @@ module DriveApi =
       let prepare =
         AltCover.PrepareOptions.Primitive
           { Primitive.PrepareOptions.Create() with
+              All = true
               TypeFilter = [| "a"; "b" |] }
 
       // let t = prepare.GetType()

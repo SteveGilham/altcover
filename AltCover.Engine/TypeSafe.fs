@@ -295,7 +295,7 @@ module TypeSafe =
       Save: Flag
       ZipFile: Flag
       MethodPoint: Flag
-      SingleVisit: Flag
+      All: Flag
       LineCover: Flag
       BranchCover: Flag
       CommandLine: CommandLine
@@ -334,7 +334,7 @@ module TypeSafe =
         Save = Set
         ZipFile = Clear
         MethodPoint = Clear
-        SingleVisit = Clear
+        All = Clear
         LineCover = Clear
         BranchCover = Clear
         CommandLine = NoCommand

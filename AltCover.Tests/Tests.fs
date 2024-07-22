@@ -1103,15 +1103,15 @@ module AltCoverTests =
 
   [<Test>]
   let CanSwitchSampling () =
-    let save = CoverageParameters.single
+    let save = CoverageParameters.all
 
     try
-      CoverageParameters.single <- true
+      CoverageParameters.all <- false
       test <@ CoverageParameters.sampling () = 1 @>
-      CoverageParameters.single <- false
+      CoverageParameters.all <- true
       test <@ CoverageParameters.sampling () = 0 @>
     finally
-      CoverageParameters.single <- save
+      CoverageParameters.all <- save
 
   [<Test>]
   let ValidateStaticExemption () =

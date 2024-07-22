@@ -155,7 +155,7 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/r[eport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--eager] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/r[eport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--all] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--eager] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/summary|teamcity[=VALO]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 aŭ
@@ -356,8 +356,8 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
   <data name="Incompatible" xml:space="preserve">
     <value>Komandlinioj opcioj {0} kaj {1} estas reciproke ekskluzivaj.</value>
   </data>
-  <data name="single" xml:space="preserve">
-    <value>Laŭvola: registru la unuan trafon nur en iu ajn loko, aŭ unue trafu por ĉiu kunteksto se --callContext funkcias.</value>
+  <data name="all" xml:space="preserve">
+    <value>Laŭvola: registri ĉiun sukceson en ajna loko, kaj por ĉiu kunteksto se --callContext funkcias.</value>
   </data>
   <data name="linecover" xml:space="preserve">
     <value>Laŭvola: Ne registru branĉan kovradon. Ignorita en la kazo de la opcio --reportFormat = NCover. 

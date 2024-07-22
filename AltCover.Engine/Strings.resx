@@ -155,7 +155,7 @@ See also '--inplace'</value>
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--eager] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--all] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--eager] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
 AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
@@ -360,8 +360,8 @@ Zero/absent values are ignored. If a coverage result is below threshold, or the 
   <data name="Incompatible" xml:space="preserve">
     <value>Command line options {0} and {1} are mutally exclusive.</value>
   </data>
-  <data name="single" xml:space="preserve">
-    <value>Optional: only record the first hit at any location, or first hit for each context if --callContext is operating.</value>
+  <data name="all" xml:space="preserve">
+    <value>Optional: record every hit at any location, and for each context if --callContext is operating.</value>
   </data>
   <data name="linecover" xml:space="preserve">
     <value>Optional: Do not record branch coverage.  Ignored for the --reportFormat=NCover option.

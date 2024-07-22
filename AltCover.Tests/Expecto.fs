@@ -788,9 +788,9 @@ module ExpectoTestManifest =
        Tests.AltCoverTests3.ParsingSaveGivesSave, "Tests3.ParsingSaveGivesSave"
        Tests.AltCoverTests3.ParsingMultipleSaveGivesFailure,
        "Tests3.ParsingMultipleSaveGivesFailure"
-       Tests.AltCoverTests3.ParsingSingleGivesSingle, "Tests3.ParsingSingleGivesSingle"
-       Tests.AltCoverTests3.ParsingMultipleSingleGivesFailure,
-       "Tests3.ParsingMultipleSingleGivesFailure"
+       Tests.AltCoverTests3.ParsingAllGivesAll, "Tests3.ParsingAllGivesAll"
+       Tests.AltCoverTests3.ParsingMultipleAllGivesFailure,
+       "Tests3.ParsingMultipleAllGivesFailure"
        Tests.AltCoverTests3.ParsingLineCoverGivesLineCover,
        "Tests3.ParsingLineCoverGivesLineCover"
        Tests.AltCoverTests3.OpenCoverIsCompatibleWithLineCover,

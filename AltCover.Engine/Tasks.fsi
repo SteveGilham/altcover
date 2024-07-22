@@ -5,7 +5,7 @@
 // For the C# programmer,  attributes have the extra angle-brackets, while `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
 //
 //
-// For `AltCover.Prepare` and `AltCover.Collect`, the task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, `SingleVisit` represents the `--single` option, `ExposeReturnCode` is the converse of the command line option `dropReturnCode`, and `CommandLine` is everything after a `--` .  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
+// For `AltCover.Prepare` and `AltCover.Collect`, the task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, `ExposeReturnCode` is the converse of the command line option `dropReturnCode`, and `CommandLine` is everything after a `--` .  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
 // ```
 namespace AltCover
 open Microsoft.Build.Framework //// no doc
@@ -122,9 +122,9 @@ type Prepare =
     ///</summary>
     member MethodPoint : bool with get, set
     ///<summary>
-    /// Corresponds to command line option `--single`
+    /// Corresponds to command line option `--all`
     ///</summary>
-    member SingleVisit : bool with get, set
+    member All : bool with get, set
     ///<summary>
     /// Corresponds to command line option `--linecover`
     ///</summary>

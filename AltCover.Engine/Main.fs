@@ -70,7 +70,7 @@ module internal Main =
     CoverageParameters.inplace.Value <- false // ddFlag
     CoverageParameters.collect.Value <- false // ddFlag
     CoverageParameters.local.Value <- false // ddFlag
-    CoverageParameters.single <- false // more complicated
+    CoverageParameters.all <- false // more complicated
     CoverageParameters.coverstyle <- CoverStyle.All
     CoverageParameters.sourcelink.Value <- false // ddFlag
     CoverageParameters.coalesceBranches.Value <- false // ddFlag
@@ -266,14 +266,14 @@ module internal Main =
         (CommandLine.ddFlag "save" CoverageParameters.collect)
         (CommandLine.ddFlag "zipfile" CoverageParameters.zipReport)
         (CommandLine.ddFlag "methodpoint" CoverageParameters.methodPoint)
-        ("single",
+        ("all",
          (fun _ ->
-           if CoverageParameters.single then
+           if CoverageParameters.all then
              CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--single")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--all")
                :: CommandLine.error
            else
-             CoverageParameters.single <- true))
+             CoverageParameters.all <- true))
         ("linecover",
          (fun _ ->
            match CoverageParameters.coverstyle with

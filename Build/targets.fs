@@ -2269,7 +2269,7 @@ module Targets =
                   OutputDirectories =
                     TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath outputDirectory |]
                   StrongNameKey = TypeSafe.FilePath signingKey
-                  SingleVisit = TypeSafe.Set
+                  All = TypeSafe.Set
                   InPlace = TypeSafe.Clear
                   //CallContext = TypeSafe.Context [ TypeSafe.TimeItem 3uy ]
                   Save = TypeSafe.Clear }
@@ -2613,7 +2613,7 @@ module Targets =
                   TypeFilter = [ "SolutionRoot"; "Expecto" ]
                   VisibleBranches = true
                   StrongNameKey = keyfile
-                  SingleVisit = true }
+                  All = true }
               |> AltCoverFilter
             )
 
@@ -3066,6 +3066,7 @@ module Targets =
               TypeFilter = [ "System\\."; "Microsoft\\." ]
               InPlace = false
               ReportFormat = "NCover"
+              All = true
               Save = false }
         )
         |> AltCoverCommand.Prepare
@@ -3154,6 +3155,7 @@ module Targets =
               InPlace = true
               ReportFormat = "NCover"
               ZipFile = true
+              All = true
               Save = true }
         )
         |> AltCoverCommand.Prepare
@@ -4923,6 +4925,7 @@ module Targets =
               Report = x
               OutputDirectories = [ o ]
               InputDirectories = [ i ]
+              All = true
               AssemblyFilter =
                 [ "Adapter"
                   "nunit"
@@ -5109,6 +5112,7 @@ module Targets =
               InPlace = false
               LocalSource = true
               ReportFormat = "NCover"
+              All = true
               Save = false }
         )
         |> AltCoverCommand.Prepare
@@ -5310,6 +5314,7 @@ module Targets =
               ReportFormat = "NCover"
               LocalSource = true
               Save = false
+              All = true
               ShowStatic = "+" }
         )
         |> AltCoverCommand.Prepare
@@ -5368,6 +5373,7 @@ module Targets =
               LocalSource = true
               ReportFormat = "NCover"
               Save = false
+              All = true
               ShowStatic = "++" }
         )
         |> AltCoverCommand.Prepare
@@ -5417,6 +5423,7 @@ module Targets =
               LocalSource = true
               ReportFormat = "NCover"
               Save = false
+              All = true
               ShowGenerated = true }
         )
         |> AltCoverCommand.Prepare
@@ -5471,6 +5478,7 @@ module Targets =
               LocalSource = true
               ReportFormat = "NCover"
               Save = false
+              All = true
               ShowGenerated = true }
         )
         |> AltCoverCommand.Prepare
@@ -5571,6 +5579,7 @@ module Targets =
               CallContext = [ "0"; "[Fact]" ]
               AssemblyFilter = [ "xunit" ]
               LocalSource = true
+              All = true
               InPlace = false
               Save = false }
         )
@@ -5649,6 +5658,7 @@ module Targets =
               CallContext = [ "0"; "[Fact]" ]
               AssemblyFilter = [ "xunit" ]
               LocalSource = true
+              All = true
               InPlace = false
               Save = false }
         )
@@ -6288,6 +6298,7 @@ module Targets =
 
         let p1 =
           { p0 with
+              All = true
               CallContext = [ "[Fact]"; "0" ]
               AssemblyFilter =
                 [| "xunit"
@@ -6383,6 +6394,7 @@ module Targets =
                    "Microsoft"
                    "testhost" |]
               StrongNameKey = "./_Reports/nonesuch.junk"
+              All = true
               Report = xx0 }
           |> AltCover.PrepareOptions.Primitive
 
@@ -6395,6 +6407,7 @@ module Targets =
                    "Microsoft"
                    "testhost" |]
               StrongNameKey = "./_Reports/nonesuch.junk"
+              All = true
               Report = xx0a }
           |> AltCover.PrepareOptions.Primitive
 
@@ -6459,6 +6472,7 @@ module Targets =
         let pf1 =
           { p0 with
               AssemblyExcludeFilter = [| "NUnit" |]
+              All = true
               AssemblyFilter =
                 [| "FSharp"
                    "Monitor"
@@ -6468,6 +6482,7 @@ module Targets =
 
         let pf1a =
           { p0a with
+              All = true
               AssemblyFilter =
                 [| "NUnit"
                    "FSharp"
@@ -6523,7 +6538,6 @@ module Targets =
             Is.EqualTo "1;1;1;1;1;1;1;1;1;1;1;1;0;1;1;1;1;1;0",
             xx
           )
-        //"1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;0;1;1;1;1;1;0"
 
         try
           DotNet.test
@@ -6572,7 +6586,6 @@ module Targets =
             Is.EqualTo "1;1;1;1;1;1;1;1;1;1;0;0;1;1;1;1;1;1;0",
             xxa
           )
-        //"1;1;1;1;1;1;1;1;1;1;1;1;1;0;0;1;1;1;1;1;1;0"
 
         printfn
           "optest failing test fast ------------------------------------------------"
@@ -6585,6 +6598,7 @@ module Targets =
 
         let pf1 =
           { p0 with
+              All = true
               AssemblyFilter =
                 [| "NUnit"
                    "FSharp"
@@ -6595,6 +6609,7 @@ module Targets =
 
         let pf1a =
           { p0 with
+              All = true
               AssemblyFilter =
                 [| "NUnit"
                    "FSharp"
@@ -6705,6 +6720,7 @@ module Targets =
         let p2 =
           { p0 with
               LineCover = true
+              All = true
               AssemblyFilter =
                 [| "xunit"
                    "FSharp"
@@ -6811,6 +6827,7 @@ module Targets =
         let p3 =
           { p0 with
               BranchCover = true
+              All = true
               AssemblyFilter =
                 [| "xunit"
                    "FSharp"
@@ -6932,6 +6949,7 @@ module Targets =
 
         let p29 =
           { p0 with
+              All = true
               AssemblyFilter = [ "NUnit"; "Microsoft"; "testhost" ] }
 
         let pp29 =
@@ -6971,6 +6989,7 @@ module Targets =
 
         let p4 =
           { p0 with
+              All = true
               AssemblyFilter =
                 [ "NUnit"
                   "Monitor"
@@ -6999,23 +7018,6 @@ module Targets =
           |> Seq.length,
           Is.EqualTo 2
         )
-
-      // printfn "Regression test issue 94 ------------------------------------------------"
-      // let proj = XDocument.Load "./Samples/Sample22/Sample22.xml"
-      // let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
-      // let inject =
-      //   XElement
-      //     (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-      //      XAttribute(XName.Get "Version", Version))
-      // pack.AddBeforeSelf inject
-      // proj.Save "./Samples/Sample22/Sample22.fsproj"
-
-      // let p4 = { p0 with AssemblyFilter = [ "NUnit" ] }
-      // let pp4 = AltCover.PrepareOptions.Primitive p4
-      // DotNet.test (fun to' ->
-      //   { ((to'.WithCommon(withWorkingDirectoryVM "Samples/Sample22"))    .WithAltCoverOptions
-      //       pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
-      //   |> testWithCLIArguments) ""
 
       finally
         let folder =
@@ -7390,6 +7392,7 @@ module Targets =
           { Primitive.PrepareOptions.Create() with
               LocalSource = true
               VisibleBranches = false
+              All = true
               TypeFilter = [ "UnitTest" ]
               Report = "./original.$(ProjectName).xml" }
 
@@ -7449,11 +7452,6 @@ module Targets =
                                     "5" ],
                                   "first")
             @>
-        // [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ] @>
-        //  Assert.That
-        //    (found,
-        //     Is.EquivalentTo [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ],
-        //     sprintf "original: %A" found)
 
         let p1 =
           { Primitive.PrepareOptions.Create() with
@@ -7516,9 +7514,6 @@ module Targets =
                                      "5" ],
                                    "second")
             @>
-        //  Assert.That
-        //    (found, Is.EquivalentTo [ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ],
-        //     sprintf "combined: %A" found)
 
         // Issue 98 optest
         printfn
@@ -7529,6 +7524,7 @@ module Targets =
         let psln =
           AltCover.PrepareOptions.Primitive
             { p0 with
+                All = true
                 Report = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml" }
 
         DotNet.test
@@ -7653,6 +7649,7 @@ module Targets =
                 LocalSource = true
                 InPlace = true
                 Save = false
+                All = true
                 Portable = true }
           )
           |> AltCoverCommand.Prepare
@@ -7855,7 +7852,7 @@ module Targets =
                    "testhost"
                    "FSharp"
                    "AltCover" |]
-              SingleVisit = true }
+              All = true }
 
         let pp0 =
           AltCover.PrepareOptions.Primitive p0

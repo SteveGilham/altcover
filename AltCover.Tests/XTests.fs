@@ -641,7 +641,7 @@ module AltCoverXTests =
       { Primitive.PrepareOptions.Create() with
           BranchCover = true
           LineCover = true
-          SingleVisit = true
+          All = true
           CallContext = [| "0" |] }
 
     let scan =
@@ -656,7 +656,7 @@ module AltCoverXTests =
       { TypeSafe.PrepareOptions.Create() with
           BranchCover = TypeSafe.Flag true
           LineCover = TypeSafe.Flag true
-          SingleVisit = TypeSafe.Flag true
+          All = TypeSafe.Flag true
           CallContext = TypeSafe.Context [| TypeSafe.TimeItem 0uy |] }
       |> AltCover.PrepareOptions.TypeSafe
 
@@ -671,7 +671,7 @@ module AltCoverXTests =
                      "--reportFormat"
                      "OpenCover"
                      "--save"
-                     "--single"
+                     "--all"
                      "--linecover"
                      "--branchcover" ]
       @>

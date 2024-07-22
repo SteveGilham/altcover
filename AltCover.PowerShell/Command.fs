@@ -505,7 +505,7 @@ type InvokeAltCoverCommand() =
               Mandatory = false,
               ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val Single: SwitchParameter = SwitchParameter(false) with get, set
+  member val All: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
   /// <para type="description">Do not record branch coverage.  Is not compatible with the -ReportFormat "ncover" option. Incompatible with `-BranchCover`.</para>
@@ -711,7 +711,7 @@ type InvokeAltCoverCommand() =
         Save = self.Save.IsPresent
         ZipFile = self.ZipFile.IsPresent
         MethodPoint = self.MethodPoint.IsPresent
-        SingleVisit = self.Single.IsPresent
+        All = self.All.IsPresent
         LineCover = self.LineCover.IsPresent
         BranchCover = self.BranchCover.IsPresent
         CommandLine = self.CommandLine

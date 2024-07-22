@@ -356,11 +356,11 @@ module AltCover =
       | Abstract a -> a.MethodPoint
       | TypeSafe t -> t.MethodPoint.AsBool()
 
-    member self.SingleVisit =
+    member self.All =
       match self with
-      | Primitive p -> p.SingleVisit
-      | Abstract a -> a.SingleVisit
-      | TypeSafe t -> t.SingleVisit.AsBool()
+      | Primitive p -> p.All
+      | Abstract a -> a.All
+      | TypeSafe t -> t.All.AsBool()
 
     member self.LineCover =
       match self with
@@ -503,7 +503,7 @@ module AltCover =
       member self.Save = self.Save
       member self.ZipFile = self.ZipFile
       member self.MethodPoint = self.MethodPoint
-      member self.SingleVisit = self.SingleVisit
+      member self.All = self.All
       member self.LineCover = self.LineCover
       member self.BranchCover = self.BranchCover
 

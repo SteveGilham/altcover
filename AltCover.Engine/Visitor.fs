@@ -303,13 +303,13 @@ module internal CoverageParameters =
   let internal coalesceBranches = ref false // ddFlag
   let internal local = ref false // ddFlag
 
-  let mutable internal single = false // more complicated
+  let mutable internal all = false // more complicated
 
   let internal sampling () =
-    (if single then
-       Sampling.Single
+    (if all then
+       Sampling.All
      else
-       Sampling.All)
+       Sampling.Single)
     |> int
 
   let internal sourcelink = ref false // ddFlag
