@@ -892,7 +892,7 @@ module AltCoverTests2 =
     let pathGetterDef =
       ``module``.MainModule.GetTypes()
       |> Seq.collect _.Methods
-      |> Seq.find _.Name.Equals("get_Eager")
+      |> Seq.find _.Name.Equals("get_Defer")
 
     let body = pathGetterDef.Body
     let worker = body.GetILProcessor()
