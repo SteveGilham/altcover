@@ -7458,6 +7458,7 @@ module Targets =
               LocalSource = true
               VisibleBranches = true
               TypeFilter = [ "UnitTest" ]
+              All = true
               Report = "./combined.$(ProjectName).xml" }
 
         let pp1 =
