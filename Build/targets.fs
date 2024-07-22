@@ -2187,6 +2187,8 @@ module Targets =
 
       // Only use
       let baseFilter = AltCoverFilterTypeSafe
+      let eager (p: TypeSafe.PrepareOptions) = { p with Eager = TypeSafe.Flag true }
+      let eagerfilter = baseFilter >> eager
 
       let tests =
         [ (Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472", // test directory
@@ -2195,7 +2197,12 @@ module Targets =
            "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
            [ Path.getFullName // test assemblies
                "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll" ],
-           baseFilter,
+           eagerfilter,
+           //>> (fun (p: TypeSafe.PrepareOptions) -> { p with Eager = Set }),
+           //TypeFilter =
+           //  [ "ProxyObject" ]
+           //  |> Seq.map TypeSafe.Raw
+           //  |> p.TypeFilter.Join }),
            keyfile)
           (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472", // test directory
            "./__ApiTestWithAltCoverRunner", // relative output
