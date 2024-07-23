@@ -53,8 +53,7 @@ module AltCoverTests =
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceNames()
-    |> Seq.find (fun n ->
-      n.EndsWith("Sample2NCoverage.xml", StringComparison.Ordinal))
+    |> Seq.find (fun n -> n.EndsWith("Sample2NCoverage.xml", StringComparison.Ordinal))
 
   [<Test>]
   let ShouldCoverTrivalClass () =
@@ -98,6 +97,7 @@ module AltCoverTests =
 
     let n =
       tracer.GetType().Assembly.GetName().Name
+
     Assert.That(n, Is.EqualTo "AltCover.Recorder")
 
     getMyMethodName "<="

@@ -948,6 +948,8 @@ module Targets =
          Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
         "./Samples/Sample14/Sample14/Class3.txt"
 
+      dotnetBuildRelease "./AltCover.Recorder/AltCover.Recorder.fsproj"
+
       [ "./AltCover.sln"
         "./AltCover.Visualizer.sln"
         "./MCS.sln"
@@ -1707,8 +1709,7 @@ module Targets =
               Framework = Some "net8.0" }
           |> (buildWithCLITaggedArguments "UnitTestDotNet"))
 
-      !!(@"./*Test*/*Tests.fsproj")
-      |> Seq.iter buildIt
+      !!(@"./*Test*/*Tests.fsproj") |> Seq.iter buildIt
 
       !!(@"./*.Valid*/*Valid*.fsproj")
       |> Seq.iter buildIt)
@@ -1751,7 +1752,7 @@ module Targets =
       [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
         //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
-        Path.getFullName "./AltCover.Monitor.Tests/AltCover.Recorder.Tests.fsproj"
+        Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
         Path.getFullName
           "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
         Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ] // project
@@ -1863,7 +1864,8 @@ module Targets =
             "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
           //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
           //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
-          Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
+          Path.getFullName
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
           Path.getFullName
             "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
           //Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
@@ -2043,7 +2045,8 @@ module Targets =
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
-            Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+            Path.getFullName
+              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
 
