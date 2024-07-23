@@ -3,7 +3,7 @@
 using System.Reflection;
 
 [assembly: AssemblyProduct("AltCover")]
-#if NET20 || DEBUG
+#if DEBUG
 [assembly: AssemblyVersion("{0}.0.0")]
 [assembly: AssemblyFileVersion("{1}")]
 [assembly: AssemblyInformationalVersion("{2} {3}")]
@@ -11,12 +11,10 @@ using System.Reflection;
 [assembly: AssemblyCompany("Steve Gilham")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCopyright("© 2010-{4} by Steve Gilham <SteveGilham@users.noreply.github.com>")]
-#if !NET20
 [assembly: AssemblyMetadata("RepositoryUrl","https://github.com/SteveGilham/altcover")]
 [assembly: AssemblyMetadata("CommitHash","{2}")]
 [assembly: AssemblyMetadata("Branch","{3}")]
 [assembly: AssemblyMetadata("Build Time","{5}")]
-#endif
 
 #if !LITEVERSION
 namespace AltCover {{

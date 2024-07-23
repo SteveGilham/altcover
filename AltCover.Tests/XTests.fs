@@ -1353,7 +1353,7 @@ module AltCoverXTests =
     use from =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.dll")
 
     use recorder =
       AssemblyResolver.ReadAssembly from
@@ -1469,7 +1469,7 @@ module AltCoverXTests =
         use from =
           Assembly
             .GetExecutingAssembly()
-            .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+            .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.dll")
 
         let updated =
           Instrument.I.prepareAssembly from

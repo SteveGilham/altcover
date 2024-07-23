@@ -48,7 +48,7 @@ module AltCoverTests2 =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
+      |> Seq.find _.EndsWith("AltCover.Recorder.dll", StringComparison.Ordinal)
 
     Assembly
       .GetExecutingAssembly()

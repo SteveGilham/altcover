@@ -67,11 +67,8 @@
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Recorder\Release+AnyCPU\net20\AltCover.Recorder.dll">
-      <Link>AltCover.Recorder.net20.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Async\Release+AnyCPU\net46\AltCover.Async.dll">
-      <Link>AltCover.Async.net46.dll</Link>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Recorder\$(Configuration)+AnyCPU\net46\AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
 

@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Engine", "AltCover.Engine\AltCover.Engine.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{219B0218-3289-44DD-9C22-6C14A3D7B5A7} = {219B0218-3289-44DD-9C22-6C14A3D7B5A7}
+	EndProjectSection
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.PowerShell", "AltCover.PowerShell\AltCover.PowerShell.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
 EndProject
@@ -141,9 +144,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample0", "Samples\Sample0\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample32", "Samples\Sample32\Sample32.csproj", "{349B2983-FB15-4D72-B7F6-04FD36C81B90}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.RecorderModern", "AltCover.RecorderModern\AltCover.RecorderModern.fsproj", "{219B0218-3289-44DD-9C22-6C14A3D7B5A7}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{219B0218-3289-44DD-9C22-6C14A3D7B5A7}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.RecorderModern.Tests", "AltCover.RecorderModern.Tests\AltCover.RecorderModern.Tests.fsproj", "{4B905582-3295-463B-A645-7FA6D0844035}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Recorder.Tests", "AltCover.Recorder.Tests\AltCover.Recorder.Tests.fsproj", "{4B905582-3295-463B-A645-7FA6D0844035}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample25", "Samples\Sample25\Sample25.fsproj", "{68B2A6DA-A52B-417A-88FC-CFB8C5225796}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -355,12 +360,18 @@ Global
 		{219B0218-3289-44DD-9C22-6C14A3D7B5A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{219B0218-3289-44DD-9C22-6C14A3D7B5A7}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{219B0218-3289-44DD-9C22-6C14A3D7B5A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{219B0218-3289-44DD-9C22-6C14A3D7B5A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{219B0218-3289-44DD-9C22-6C14A3D7B5A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Release|x86.ActiveCfg = Release|Any CPU
+		{68B2A6DA-A52B-417A-88FC-CFB8C5225796}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68B2A6DA-A52B-417A-88FC-CFB8C5225796}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68B2A6DA-A52B-417A-88FC-CFB8C5225796}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{68B2A6DA-A52B-417A-88FC-CFB8C5225796}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68B2A6DA-A52B-417A-88FC-CFB8C5225796}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -389,6 +400,7 @@ Global
 		{F56DE54A-ABD6-42F7-B61E-7BAFCCF2D787} = {97367D43-64EF-48E1-B6B4-D951C783E6E1}
 		{19CE63CE-3622-409A-974D-3EA01388317E} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 		{349B2983-FB15-4D72-B7F6-04FD36C81B90} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
+		{68B2A6DA-A52B-417A-88FC-CFB8C5225796} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C31111CF-68A2-403F-9B06-9625FCBD48E3}

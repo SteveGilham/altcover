@@ -82,7 +82,7 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 
   let sample1path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
+    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net46/Sample1.exe")
 
 #if !NET472
   let sample4path =
@@ -98,7 +98,7 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
   let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
+    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net46/Sample8.exe")
 
   let sample32path =
     Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net472/Sample32.exe")

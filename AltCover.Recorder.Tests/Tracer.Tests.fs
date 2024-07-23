@@ -1,9 +1,5 @@
 ﻿#if !NET472
-#if NET20
-namespace Tests.Recorder.Clr2
-#else
 namespace Tests.Recorder.Core
-#endif
 #else
 namespace Tests.Recorder.Clr4
 #endif
@@ -65,7 +61,7 @@ module AltCoverCoreTests =
     maybeReraise
       (fun () ->
         client <- client.OnStart()
-        Assert.True(client.IsConnected |> not)
+        Assert.That(client.IsConnected |> not)
         close ())
       close
 
@@ -86,7 +82,7 @@ module AltCoverCoreTests =
 
     try
       client <- client.OnStart()
-      Assert.True(client.IsConnected)
+      Assert.That(client.IsConnected)
     finally
       client.Close()
 
@@ -110,8 +106,8 @@ module AltCoverCoreTests =
          | Tag.Call -> Adapter.asCall <| formatter.ReadInt32()
          //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
          | Tag.Table ->
-           Assert.True((id = String.Empty))
-           Assert.True((strike = 0))
+           Assert.That((id = String.Empty))
+           Assert.That((strike = 0))
 
            let t =
              Dictionary<string, Dictionary<int, PointVisit>>()
@@ -154,7 +150,7 @@ module AltCoverCoreTests =
                        )
 
                        tracking ()
-                     //| Tag.Table -> Assert.True( false, "No nested tables!!")
+                     //| Tag.Table -> Assert.That( false, "No nested tables!!")
                      | _ -> sequencePoint (pts - 1)
 
                    tracking ()
@@ -199,7 +195,7 @@ module AltCoverCoreTests =
       try
         Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
-        Assert.True(Instance.I.trace.IsConnected, "connection failed")
+        Assert.That(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
@@ -226,7 +222,7 @@ module AltCoverCoreTests =
         <| Adapter.VisitsSeq()
       )
 
-      Assert.True((results = expected), sprintf "unexpected result %A" results)
+      Assert.That((results = expected), sprintf "unexpected result %A" results)
     finally
       Adapter.HardReset()
 
@@ -271,7 +267,7 @@ module AltCoverCoreTests =
 
       try
         Instance.I.trace <- client.OnStart()
-        Assert.True(Instance.I.trace.IsConnected, "connection failed")
+        Assert.That(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
 
         Adapter.HardReset()
@@ -287,7 +283,7 @@ module AltCoverCoreTests =
 
       let results = readResults stream
 
-      Assert.True(
+      Assert.That(
         ("no", 0, Adapter.asNull ())
         |> Adapter.untable
         |> Seq.isEmpty
@@ -305,9 +301,9 @@ module AltCoverCoreTests =
         <| Adapter.VisitsSeq()
       )
 
-      Assert.True(results.Count = 2)
+      Assert.That(results.Count = 2)
 
-      Assert.True(
+      Assert.That(
         (results |> Seq.skip 1 |> Seq.head) = (expected |> Seq.skip 1 |> Seq.head),
         sprintf "unexpected result %A" results
       )
@@ -324,11 +320,11 @@ module AltCoverCoreTests =
       let d =
         d' :?> Dictionary<string, Dictionary<int, PointVisit>>
 
-      Assert.True(n |> Seq.isEmpty)
-      Assert.True((p = 0))
-      Assert.True((d.Count = 1))
+      Assert.That(n |> Seq.isEmpty)
+      Assert.That((p = 0))
+      Assert.That((d.Count = 1))
 
-      Assert.True(
+      Assert.That(
         d.["name"]
         |> Seq.sortBy (fun kv -> kv.Key)
         |> Seq.map (fun kv -> kv.Key)
@@ -351,7 +347,7 @@ module AltCoverCoreTests =
         |> Seq.map (fun kv -> kv.Value.Count)
         |> Seq.toList
 
-      Assert.True((left = right))
+      Assert.That((left = right))
 
       let left2 =
         d.["name"]
@@ -365,7 +361,7 @@ module AltCoverCoreTests =
         |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
         |> Seq.toList
 
-      Assert.True((left2 = right2))
+      Assert.That((left2 = right2))
     finally
       Adapter.HardReset()
 
@@ -397,10 +393,7 @@ module AltCoverCoreTests =
         Instance.I.trace <- client.OnStart()
         Assert.That(Instance.I.trace.Equals client, Is.False)
         Assert.That(Instance.I.trace.Equals expected, Is.False)
-        Assert.True(Instance.I.trace.IsConnected, "connection failed")
-
-        let formatter =
-          System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        Assert.That(Instance.I.trace.IsConnected, "connection failed")
 
         let (a, b, c) = expected |> Seq.head
         Adapter.tracePush (a, b, c)
@@ -428,6 +421,6 @@ module AltCoverCoreTests =
         <| Adapter.VisitsSeq()
       )
 
-      Assert.True((results = expected), sprintf "unexpected result %A" results)
+      Assert.That((results = expected), sprintf "unexpected result %A" results)
     finally
       Adapter.VisitsClear()

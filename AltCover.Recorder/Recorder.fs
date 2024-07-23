@@ -9,17 +9,14 @@ open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
-
 open System.Resources
 open System.Runtime.CompilerServices
-#if !NET20
 open System.Threading
-#endif
 
 open AltCover.Shared
 
-module Instance =
   // Public "fields"
+module Instance =
 
   /// <summary>
   /// Gets the location of coverage xml file
@@ -160,21 +157,6 @@ module Instance =
 
     let internal synchronize = Object()
 
-#if NET20
-    // class needed for "[ThreadStatic] static val mutable"
-    [<Sealed>]
-    type private AsyncLocal<'a>() =
-      [<ThreadStatic; DefaultValue>]
-      static val mutable private item: 'a
-
-      [<SuppressMessage("Gendarme.Rules.Correctness",
-                        "MethodCanBeMadeStaticRule",
-                        Justification = "It's a compatibility hack")>]
-      member this.Value
-        with get () = AsyncLocal<'a>.item
-        and set (value) = AsyncLocal<'a>.item <- value
-#endif
-
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
@@ -182,6 +164,9 @@ module Instance =
       let value = AsyncLocal<Stack<int>>()
 
       // no race conditions here
+      [<SuppressMessage("Gendarme.Rules.Performance",
+                        "AvoidRepetitiveCallsToPropertiesRule",
+                        Justification = "Initializetio guard")>]
       let instance () =
         match value.Value with
         | null -> value.Value <- Stack<int>()
@@ -247,6 +232,9 @@ module Instance =
     /// <summary>
     /// This method flushes hit count buffers.
     /// </summary>
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Simpler this way")>]
     let internal flushAll _ =
       let counts = visits
       clear ()
@@ -460,6 +448,9 @@ module Instance =
     let internal visitSelection track moduleId hitPointId =
       visitImpl moduleId hitPointId track
 
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Simpler this way")>]
     let internal flushCounter (finish: Close) _ =
       match finish with
       | Resume -> flushResume ()

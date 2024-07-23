@@ -1,12 +1,10 @@
 ﻿#if !NET472
-#if NET20
-namespace Tests.Recorder.Clr2
-#else
 namespace Tests.Recorder.Core
-#endif
 #else
 namespace Tests.Recorder.Clr4
 #endif
+
+#nowarn "3559"
 
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
@@ -30,11 +28,7 @@ module AltCoverTests =
   let private getMyMethodName tag = ignore tag
   //    let st = StackTrace(StackFrame(1))
   //    st.GetFrame(0).GetMethod().Name |>
-  //#if NET20
-  //    printfn "%s %s 2" tag
-  //#else
   //    printfn "%s %s" tag
-  //#endif
 
   let resource =
     Assembly
@@ -69,8 +63,8 @@ module AltCoverTests =
     Assert.That(mark.Configuration, Is.EqualTo "Uninstrumented!!")
     mark.Assembly <- String.Empty
     mark.Configuration <- String.Empty
-    Assert.True(String.IsNullOrEmpty mark.Assembly)
-    Assert.True(String.IsNullOrEmpty mark.Configuration)
+    Assert.That(String.IsNullOrEmpty mark.Assembly)
+    Assert.That(String.IsNullOrEmpty mark.Configuration)
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
@@ -82,16 +76,16 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldBeAbleToGetTheDefaultReportFileName () =
-    Assert.True(Instance.ReportFile = "Coverage.Default.xml")
+    Assert.That(Instance.ReportFile = "Coverage.Default.xml")
 
   [<Test>]
   let DefaultAccessorsBehaveAsExpected () =
     let v1 = DateTime.UtcNow.Ticks
     let probe = Instance.I.clock ()
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Instance.I.granularity () = 0L)
-    Assert.True(probe >= v1)
-    Assert.True(probe <= v2)
+    Assert.That(Instance.I.granularity () = 0L)
+    Assert.That(probe >= v1)
+    Assert.That(probe <= v2)
 
   [<Test>]
   let ShouldBeLinkingTheCorrectCopyOfThisCode () =
@@ -104,11 +98,8 @@ module AltCoverTests =
 
     let n =
       tracer.GetType().Assembly.GetName().Name
-#if RECORDERMODERN
-    Assert.That(n, Is.EqualTo "AltCover.RecorderModern")
-#else
     Assert.That(n, Is.EqualTo "AltCover.Recorder")
-#endif
+
     getMyMethodName "<="
 
   [<Test>]
@@ -119,30 +110,30 @@ module AltCoverTests =
       try
         Adapter.ModuleReset [| "module"; "newmodule" |]
 
-        Assert.True(Adapter.addSample ("module", 23, Null), "Test 1")
-        Assert.True(Adapter.addSample ("module", 24, Null), "Test 2")
-        Assert.True(Adapter.addSample ("newmodule", 23, Null), "Test 3")
-        Assert.True(Adapter.addSample ("module", 23, Null) |> not, "Test 4")
-        Assert.True(Adapter.addSampleUnconditional ("module", 23, Null), "Test 5")
-        Assert.True(Adapter.addSample ("module", 23, Call 1), "Test 6")
-        Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
+        Assert.That(Adapter.addSample ("module", 23, Null), "Test 1")
+        Assert.That(Adapter.addSample ("module", 24, Null), "Test 2")
+        Assert.That(Adapter.addSample ("newmodule", 23, Null), "Test 3")
+        Assert.That(Adapter.addSample ("module", 23, Null) |> not, "Test 4")
+        Assert.That(Adapter.addSampleUnconditional ("module", 23, Null), "Test 5")
+        Assert.That(Adapter.addSample ("module", 23, Call 1), "Test 6")
+        Assert.That(Adapter.addSample ("module", 23, Time 0L), "Test 7")
 
-        Assert.True(
+        Assert.That(
           Adapter.addSample ("module", 24, Both { Call = 1; Time = 0L }),
           "Test 8"
         )
 
-        Assert.True(
+        Assert.That(
           Adapter.addSample ("module", 25, Both { Call = 1; Time = 0L }),
           "Test 9"
         )
 
-        Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 10")
-        Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 11")
-        Assert.True(Adapter.addSample ("module", 25, Null) |> not, "Test 12")
+        Assert.That(Adapter.addSample ("module", 25, Call 1) |> not, "Test 10")
+        Assert.That(Adapter.addSample ("module", 25, Call 1) |> not, "Test 11")
+        Assert.That(Adapter.addSample ("module", 25, Null) |> not, "Test 12")
 
         // out of band example
-        Assert.True(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
+        Assert.That(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
 
         Assert.Throws<InvalidDataException>(fun () ->
           Adapter.addSample ("module", 23, Table null)
@@ -178,16 +169,16 @@ module AltCoverTests =
         Instance.Visit key -23
 
         let vs = Adapter.VisitsSeq()
-        Assert.True(vs |> Seq.length = 3, sprintf "Adapter.VisitsSeq() = %A" vs)
+        Assert.That(vs |> Seq.length = 3, sprintf "Adapter.VisitsSeq() = %A" vs)
 
         let vesk = Adapter.VisitsEntrySeq key
 
-        Assert.True(
+        Assert.That(
           vesk |> Seq.length = 1,
           sprintf "Adapter.VisitsEntrySeq %A = %A" key vesk
         )
 
-        Assert.True(Adapter.VisitCount(key, -23) = 2L)
+        Assert.That(Adapter.VisitCount(key, -23) = 2L)
         Assert.That(Counter.totalVisits, Is.EqualTo 1L)
         Assert.That(Counter.branchVisits, Is.EqualTo 1L)
       finally
@@ -205,7 +196,7 @@ module AltCoverTests =
     let index =
       Counter.I.findIndexFromUspid 0 key
 
-    Assert.True(index < 0)
+    Assert.That(index < 0)
 
   [<Test>]
   let PayloadGeneratedIsAsExpected () =
@@ -216,12 +207,12 @@ module AltCoverTests =
         ReportFormat.OpenCover
         ||| ReportFormat.WithTracking
 
-      Assert.True(Instance.I.callerId () |> Option.isNone)
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
+      Assert.That(Instance.I.callerId () |> Option.isNone)
+      Assert.That(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
+      Assert.That(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
@@ -232,11 +223,11 @@ module AltCoverTests =
         let expected =
           Adapter.newBoth (1311693406324658000L, 6789)
 
-        Assert.True((result = expected))
+        Assert.That((result = expected))
       finally
         Instance.Pop()
 
-      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
+      Assert.That((Adapter.payloadSelector true = (Adapter.asCall 4321)))
     finally
       Instance.Pop()
       Instance.CoverageFormat <- ReportFormat.NCover
@@ -247,24 +238,24 @@ module AltCoverTests =
     let expected2 =
       Adapter.time 1311693406324658000L
 
-    Assert.True((result2 = expected2))
+    Assert.That((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
 
     let probed =
       Adapter.payloadControl (1000L, true)
 
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
+    Assert.That(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
 
     let [ probe ] =
       Adapter.untime probed |> Seq.toList
 
-    Assert.True(probe % 1000L = 0L)
-    Assert.True(probe <= v2)
-    Assert.True(probe >= (1000L * (v1 / 1000L)))
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.That(probe % 1000L = 0L)
+    Assert.That(probe <= v2)
+    Assert.That(probe >= (1000L * (v1 / 1000L)))
+    Assert.That(Instance.I.callerId () |> Option.isNone)
     Instance.Pop()
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.That(Instance.I.callerId () |> Option.isNone)
 
   [<Test>]
   let PayloadWithEntryExitGeneratedIsAsExpected () =
@@ -279,12 +270,12 @@ module AltCoverTests =
 
       Adapter.VisitsClear()
 
-      Assert.True(Instance.I.callerId () |> Option.isNone)
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
+      Assert.That(Instance.I.callerId () |> Option.isNone)
+      Assert.That(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
-      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
-      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
+      Assert.That(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.That(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
@@ -295,11 +286,11 @@ module AltCoverTests =
         let expected =
           Adapter.newBoth (1311693406324658000L, 6789)
 
-        Assert.True((result = expected))
+        Assert.That((result = expected))
       finally
         Instance.Pop()
 
-      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
+      Assert.That((Adapter.payloadSelector true = (Adapter.asCall 4321)))
     finally
       Instance.Pop()
       Instance.I.isRunner <- false
@@ -311,24 +302,24 @@ module AltCoverTests =
     let expected2 =
       Adapter.time 1311693406324658000L
 
-    Assert.True((result2 = expected2))
+    Assert.That((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
 
     let probed =
       Adapter.payloadControl (1000L, true)
 
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
+    Assert.That(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
 
     let [ probe ] =
       Adapter.untime probed |> Seq.toList
 
-    Assert.True(probe % 1000L = 0L)
-    Assert.True(probe <= v2)
-    Assert.True(probe >= (1000L * (v1 / 1000L)))
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.That(probe % 1000L = 0L)
+    Assert.That(probe <= v2)
+    Assert.That(probe >= (1000L * (v1 / 1000L)))
+    Assert.That(Instance.I.callerId () |> Option.isNone)
     Instance.Pop()
-    Assert.True(Instance.I.callerId () |> Option.isNone)
+    Assert.That(Instance.I.callerId () |> Option.isNone)
 
     Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [ Track.Entry; Track.Exit ])
 
@@ -559,7 +550,7 @@ module AltCoverTests =
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
-#if !NET472 && !NET20
+#if !NET472
   [<Test>]
   let NullRefShouldBeHandled () =
     getMyMethodName "=>"
@@ -600,7 +591,7 @@ module AltCoverTests =
             "hitPointId = 23"
             "context = Null"
             "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
-        |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
+        |> Seq.iter (fun (a, b) -> Assert.That((a = b)))
 
         let third =
           Directory.GetFiles(where, "*.exn")
@@ -1844,7 +1835,6 @@ module AltCoverTests =
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
-#if !NET20
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenDiverted () =
     let saved = Console.Out
@@ -1939,7 +1929,6 @@ module AltCoverTests =
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
-#endif
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken () =
@@ -2085,7 +2074,6 @@ module AltCoverTests =
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
-#if !NET20
   [<Test>]
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
@@ -2207,7 +2195,6 @@ module AltCoverTests =
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
     getMyMethodName "<="
-#endif
 
   [<Test>]
   let ShouldCreateDummyAttribute () =

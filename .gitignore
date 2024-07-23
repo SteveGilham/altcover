@@ -88,3 +88,4 @@ InternalTrace.*.log
 nunit-agent_*.log
 $*/
 *.orig
+AltCover.zip
