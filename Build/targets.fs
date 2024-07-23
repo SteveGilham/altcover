@@ -8064,6 +8064,7 @@ module Targets =
           "RegressionTesting/issue37/coverage.xml"
           "Samples/Sample16/Test/_Issue72/combined.Test.xml"
           "Samples/Sample16/Test/_Issue72/original.Test.xml"
+          "Samples/Sample16/Test/_Issue72/single.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test.xml"
           "Samples/Sample16/Test/_Reports/single.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test2.xml"
