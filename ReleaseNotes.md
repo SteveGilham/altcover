@@ -3,7 +3,7 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 32)
+# (Indori series release 1)
 
 # 8.8.165 (Habu series release 31)
 * [ADVISORY] the Fake.build related assemblies (in the `altcover.api` and `altcover.fake` packages), and the Avalonia 0.10-based visualizer, rely on components with known vulnerabilities. The Fake.build project appears nigh-moribund so has not released an update, whereas Avalonia 11 completely rewrites all the earlier APIs and has not documented anything to assist in the rewrite of the application.
