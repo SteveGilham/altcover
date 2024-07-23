@@ -3,10 +3,12 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 31)
+# (Habu series release 32)
+
+# 8.8.165 (Habu series release 31)
 * [ADVISORY] the Fake.build related assemblies (in the `altcover.api` and `altcover.fake` packages), and the Avalonia 0.10-based visualizer, rely on components with known vulnerabilities. The Fake.build project appears nigh-moribund so has not released an update, whereas Avalonia 11 completely rewrites all the earlier APIs and has not documented anything to assist in the rewrite of the application.
 * [BUGFIX] Issue #197 - correctly split file paths in the Cobertura output
-* [NET9 preparation] Recode the recorder into C# as compiler/build target changes in F#9 make maintaing net2.0 compatibility in F# too much bother.
+* [NET9 preparation] Recode the recorder into C# as compiler/build target changes in F#9 make maintaining net2.0 compatibility in F# too much bother.
 
 # 8.8.74 (Habu series release 30)
 * [BUGFIX] Issue #222 - distinguish methods differing only in number of generic parameters (JSON and cobertura in particular, but with small changes for all all output formats)
