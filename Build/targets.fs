@@ -7516,6 +7516,69 @@ module Targets =
                                    "second")
             @>
 
+        let p1 =
+          { Primitive.PrepareOptions.Create() with
+              LocalSource = true
+              VisibleBranches = true
+              TypeFilter = [ "UnitTest" ]
+              All = false
+              Report = "./single.$(ProjectName).xml" }
+
+        let pp1 =
+          AltCover.PrepareOptions.Primitive p1
+
+        let c0 = Primitive.CollectOptions.Create()
+
+        let cc0 =
+          AltCover.CollectOptions.Primitive c0
+
+        DotNet.test
+          (fun p ->
+            ((p
+              |> debugNoBuildIn "./Samples/Sample16/Test/_Issue72")
+              .WithAltCoverOptions
+              pp1
+              cc0
+              ForceTrue)
+              .WithAltCoverImportModule()
+              .WithAltCoverGetVersion()
+            |> testWithCLIArguments)
+          ""
+
+        do
+          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+            new FileStream(
+              "./Samples/Sample16/Test/_Issue72/single.Test.xml",
+              FileMode.Open,
+              FileAccess.Read,
+              FileShare.None,
+              4096,
+              FileOptions.SequentialScan
+            )
+
+          use reader = XmlReader.Create(coverageFile)
+
+          let coverageDocument =
+            XDocument.Load(reader)
+
+          let found =
+            coverageDocument.Descendants(XName.Get("BranchPoint"))
+            |> Seq.map _.Attribute(XName.Get("vc")).Value
+            |> Seq.toList
+
+          test
+            <@
+              (found, "single") = ([ "1"
+                                     "1"
+                                     "1"
+                                     "1"
+                                     "1"
+                                     "1"
+                                     "1"
+                                     "1" ],
+                                   "single")
+            @>
+
         // Issue 98 optest
         printfn
           "----------------------------- issue 98  ----------------------------------------"
@@ -8100,6 +8163,7 @@ module Targets =
           "Samples/Sample16/Test/_Issue72/combined.Test.xml"
           "Samples/Sample16/Test/_Issue72/original.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test.xml"
+          "Samples/Sample16/Test/_Reports/single.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test2.xml"
           // coverlet
           "Samples/Sample32/coverlet.opencover.6.0.2.xml"
