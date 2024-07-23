@@ -935,16 +935,15 @@ module Targets =
         printfn "%A" x
         reraise ())
 
+  let BuildRecorder =
+    (fun () -> msbuildDebug MSBuildPath "./AltCover.Recorder.sln")
+
+  let BuildReleaseRecorder =
+    (fun () -> msbuildRelease MSBuildPath "./AltCover.Recorder.sln")
+
   let BuildDebug =
     (fun () ->
       Directory.ensure "./_SourceLink"
-      Directory.ensure "./_Repack"
-
-      let repackdir =
-        ("./_Repack" |> Path.getFullName)
-
-      Shell.cleanDir repackdir
-
       Shell.copyFile "./_SourceLink/Class2.cs" "./Samples/Sample14/Sample14/Class2.txt"
 
       (if Environment.isWindows then
@@ -956,39 +955,9 @@ module Targets =
         "./Samples/Sample14/Sample14/Class3.txt"
 
       // net20 and such
-      dotnetBuildRelease "./AltCover.Recorder/AltCover.Recorder.csproj"
-      dotnetBuildRelease "./AltCover.Async/AltCover.Async.csproj"
-
-      Shell.copyFile
-        (Path.Join(repackdir, "AltCover.Async.dll"))
-        ("./_Binaries/AltCover.Async/Release+AnyCPU/net46/AltCover.Async.dll"
-         |> Path.getFullName)
-
-      let ilrepack =
-        ("./packages/"
-         + (packageVersion "ILRepack")
-         + "/tools/ILRepack.exe")
-        |> Path.getFullName
-
-      let keyfile =
-        "./Build/Infrastructure.snk" |> Path.getFullName
-
-      let cmd =
-        [ "/keyfile:" + keyfile
-          "/ver:"
-          + (String.Join(".", VersionTemplate.Split('.') |> Seq.take 2))
-          + ".0.0"
-          "/target:library"
-          "/targetplatform:v2"
-          "/internalize"
-          "/out:"
-          + Path.Join(repackdir, "AltCover.Recorder.dll")
-          "./_Binaries/AltCover.Recorder/Release+AnyCPU/net20/AltCover.Recorder.dll"
-          |> Path.getFullName
-          "./_Binaries/AltCover.Recorder/Release+AnyCPU/net20/ICSharpCode.SharpZipLib.dll"
-          |> Path.getFullName ]
-
-      Actions.Run (ilrepack, ".", cmd) "ILRepack failed"
+      [ msbuildDebug MSBuildPath
+        msbuildRelease MSBuildPath ]
+      |> List.iter (fun f -> f "./AltCover.Recorder.sln")
 
       [ "./AltCover.sln"
         "./AltCover.Visualizer.sln"
@@ -1140,8 +1109,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       [ ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
-           "_Binaries/AltCover.Base/Debug+AnyCPU/netstandard2.0/AltCover.Base.dll" ])
+         [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ])
         ("./Build/build-rules.xml",
          [ "$Binaries/Setup/Debug+AnyCPU/net8.0/Setup.dll"
            "$Binaries/Build/Debug+AnyCPU/net8.0/Build.dll" ])
@@ -1407,8 +1375,7 @@ module Targets =
          defaultRules)
         (dixon,
          Option.get refdir,
-         [ "_Binaries/AltCover.Base/Debug+AnyCPU/netstandard2.0/AltCover.Base.dll"
-           "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
+         [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
          [],
          List.concat
            [ defaultRules
@@ -1723,6 +1690,15 @@ module Targets =
 
         Actions.Run (nunitConsole, ".", recArgs) "Recorder NUnit failed"
 
+        let rec2Args =
+          [ "--noheader"
+            "--work=."
+            "--result=./_Reports/JustRecorder2UnitTestReport.xml"
+            Path.getFullName
+              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll" ]
+
+        Actions.Run (nunitConsole, ".", rec2Args) "Recorder NUnit failed"
+
       with x ->
         printfn "%A" x
         reraise ())
@@ -1757,6 +1733,15 @@ module Targets =
 
         Actions.Run (nunitConsole, ".", recArgs) "Recorder NUnit failed"
 
+        let rec2Args =
+          [ "--noheader"
+            "--work=."
+            "--result=./_Reports/Recorder2UnitTestReport.xml"
+            Path.getFullName
+              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll" ]
+
+        Actions.Run (nunitConsole, ".", rec2Args) "Recorder NUnit failed"
+
       with x ->
         printfn "%A" x
         reraise ())
@@ -1771,6 +1756,13 @@ module Targets =
               :: p.Properties
             DoRestore = true }
 
+      let msbuildDebug = doMSBuild withTagDebug
+      msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+
+      msbuildDebug
+        MSBuildPath
+        "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+
       let buildIt =
         DotNet.build (fun p ->
           { p.WithCommon dotnetOptions with
@@ -1778,9 +1770,9 @@ module Targets =
               Framework = Some "net8.0" }
           |> (buildWithCLITaggedArguments "UnitTestDotNet"))
 
-      !!(@"./*Test*/*Tests.fsproj") |> Seq.iter buildIt
-
-      !!(@"./*Test*/*Tests.csproj") |> Seq.iter buildIt
+      !!(@"./*Test*/*Tests.fsproj")
+      |> Seq.filter (_.Contains("Recorder") >> not) // net20
+      |> Seq.iter buildIt
 
       !!(@"./*.Valid*/*Valid*.fsproj")
       |> Seq.iter buildIt)
@@ -1821,10 +1813,16 @@ module Targets =
               :: p.Properties
             DoRestore = true }
 
+      let msbuildDebug = doMSBuild withTagDebug
+
+      msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+
+      msbuildDebug
+        MSBuildPath
+        "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+
       [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-        Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-        Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
         //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
         Path.getFullName
           "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
@@ -1949,6 +1947,9 @@ module Targets =
       let recorder4Files =
         !!(@"_Binaries/*Tests/Debug+AnyCPU/net472/*Recorder.Tests.dll")
 
+      let recorderFiles =
+        !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
+
       let visualizerFiles =
         !!(@"_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Test*.dll")
 
@@ -2002,6 +2003,24 @@ module Targets =
                 TimeOut = TimeSpan(0, 10, 0) })
           (String.Join(" ", testFiles)
            + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
+
+        OpenCover.run
+          (fun p ->
+            { p with
+                WorkingDir = "."
+                ExePath = openCoverConsole
+                TestRunnerExePath = nunitConsole // OK, not on Linux
+                Filter =
+                  "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.* -[AltCover.*]*StartupCode*SolutionRoot"
+                MergeByHash = true
+                ReturnTargetCode =
+                  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                OptionalArguments =
+                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+                Register = OpenCover.RegisterType.RegisterUser // Path64 doesn't work on my machine
+                Output = scoverage })
+          (String.Join(" ", recorderFiles)
+           + " --result=./_Reports/RecorderTestWithOpenCoverReport.xml")
 
         OpenCover.run
           (fun p ->
@@ -2106,7 +2125,8 @@ module Targets =
                    apiDir (*; visDir ; monitorDir*) |]
               OutputDirectories =
                 [| "./__UnitTestWithAltCover"
-                   weakDir @@ "__VGEWithAltCover"
+                   weakDir
+                   @@ "__ValidateGendarmeEmulationWithAltCover"
                    recorder4Dir @@ "__RecorderTestWithAltCover"
                    apiDir
                    @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*) |]
@@ -2144,9 +2164,8 @@ module Targets =
             Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
             Path.getFullName
-              "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
-            Path.getFullName
-              "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+              "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
+            //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
 
@@ -2154,6 +2173,90 @@ module Targets =
       with x ->
         printfn "UnitTestWithAltCover caught %A" x
         reraise ()
+
+      printfn "Instrument the net20 Recorder tests"
+
+      let recorderDir =
+        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
+
+      let recorderReport =
+        reports @@ "RecorderTestWithAltCover.xml"
+
+      let prep =
+        AltCover.PrepareOptions.Primitive(
+          { Primitive.PrepareOptions.Create() with
+              Report = recorderReport
+              OutputDirectories = [| "./__RecorderTestWithAltCover" |]
+              StrongNameKey = shadowkeyfile
+              ReportFormat = "NCover"
+              InPlace = false
+              Save = false }
+          |> AltCoverFilter
+        )
+        |> AltCoverCommand.Prepare
+
+      { AltCoverCommand.Options.Create prep with
+          ToolPath = altcover
+          ToolType = frameworkAltcover
+          WorkingDirectory = recorderDir }
+      |> AltCoverCommand.run
+
+      printfn "Execute the net20 Recorder tests"
+
+      //        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
+      //        |> NUnitRetry
+      //            (fun p ->
+      //                { p with
+      //                      ToolPath = nunitConsole
+      //                      WorkingDir = "." })
+      //            "./_Reports/RecorderTestWithAltCoverReport.xml"
+
+      let recArgs =
+        [ "--noheader"
+          "--work=."
+          "--result=./_Reports/RecorderTestWithAltCoverReport.xml"
+          Path.getFullName
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll" ]
+
+      Actions.Run (nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
+
+      printfn "Instrument the net472 Recorder tests"
+
+      let recorder472Dir =
+        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472"
+
+      let recorder472Report =
+        reports @@ "Recorder472TestWithAltCover.xml"
+
+      let prep =
+        AltCover.PrepareOptions.Primitive(
+          { Primitive.PrepareOptions.Create() with
+              Report = recorder472Report
+              OutputDirectories = [| "./__Recorder472TestWithAltCover" |]
+              StrongNameKey = shadowkeyfile
+              ReportFormat = "NCover"
+              InPlace = false
+              Save = false }
+          |> AltCoverFilter
+        )
+        |> AltCoverCommand.Prepare
+
+      { AltCoverCommand.Options.Create prep with
+          ToolPath = altcover
+          ToolType = frameworkAltcover
+          WorkingDirectory = recorder472Dir }
+      |> AltCoverCommand.run
+
+      printfn "Execute the net472 Recorder tests"
+
+      let rec4Args =
+        [ "--noheader"
+          "--work=."
+          "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
+          Path.getFullName
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__Recorder472TestWithAltCover/AltCover.Recorder.Tests.dll" ]
+
+      Actions.Run (nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
 
       ReportGenerator.generateReports
         (fun p ->
@@ -2163,7 +2266,9 @@ module Targets =
                 [ ReportGenerator.ReportType.Html
                   ReportGenerator.ReportType.XmlSummary ]
               TargetDir = "_Reports/_UnitTestWithAltCover" })
-        [ altReport ]
+        [ altReport
+          recorderReport
+          recorder472Report ]
 
       uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
       |> List.map fst
@@ -2225,11 +2330,11 @@ module Targets =
            keyfile)
           (Path.getFullName
             "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472",
-           "./__VGEWithAltCoverRunner",
+           "./__ValidateGendarmeEmulationWithAltCoverRunner",
            "ValidateGendarmeEmulationWithAltCoverRunner.xml",
            "./_Reports/ValidateGendarmeEmulationWithAltCoverRunnerReport.xml",
            [ Path.getFullName
-               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCoverRunner/AltCover.ValidateGendarmeEmulation.dll" ],
+               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCoverRunner/AltCover.ValidateGendarmeEmulation.dll" ],
            // only use // (* >> (fun x ->  { x with AssemblyExcludeFilter = TypeSafe.Filters [] }) *),
            AltCoverFilterXTypeSafe,
            keyfile)
@@ -2240,6 +2345,19 @@ module Targets =
            [ Path.getFullName
                "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
            baseFilter,
+           shadowkeyfile)
+          (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20",
+           "./__RecorderTest2WithAltCoverRunner",
+           "RecorderTest2WithAltCoverRunner.xml",
+           "./_Reports/RecorderTest2WithAltCoverRunnerReport.xml",
+           [ Path.getFullName
+               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
+           baseFilter
+           >> (fun p ->
+             { p with
+                 AttributeFilter =
+                   [ TypeSafe.Raw "EntryPoint" ]
+                   |> p.AttributeFilter.Join }),
            shadowkeyfile) ]
 
       tests
@@ -2614,11 +2732,23 @@ module Targets =
             AltCover.CollectOptions.Primitive
             <| Primitive.CollectOptions.Create()
 
+          if proj.Contains("Recorder") then
+            doMSBuild
+              (withDebug
+               >> fun p ->
+                 { p with
+                     Properties =
+                       ("AltCoverTag", "UnitTestWithCoreRunner_")
+                       :: p.Properties
+                     Verbosity = Some MSBuildVerbosity.Minimal })
+              MSBuildPath
+              newproj
+
           DotNet.test
             (fun to' ->
               { to'.WithCommon(withWorkingDirectoryVM testdir) with
                   Framework = Some "net8.0"
-                  NoBuild = false }
+                  NoBuild = proj.Contains("Recorder") }
                 .WithAltCoverOptions
                 prep
                 coll
@@ -3839,9 +3969,6 @@ module Targets =
       let altCover =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
 
-      let abase =
-        Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Base.dll"
-
       let engine =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Engine.dll"
 
@@ -3902,7 +4029,6 @@ module Targets =
 
       let applicationFiles =
         [ (altCover, Some "tools/net472", None)
-          (abase, Some "tools/net472", None)
           (engine, Some "tools/net472", None)
           (config, Some "tools/net472", None)
           (monitor, Some "lib/net20", None)
@@ -3917,7 +4043,6 @@ module Targets =
 
       let apiFiles =
         [ (altCover, Some "lib/net472", None)
-          (abase, Some "lib/net472", None)
           (engine, Some "lib/net472", None)
           (config, Some "lib/net472", None)
           (monitor, Some "lib/net472", None)
@@ -4488,8 +4613,7 @@ module Targets =
         ((packageVersionPart "PowerShellStandard.Library")
          + "System.Management.Automation.dll")
 
-      [ "AltCover.Base"
-        "AltCover.Cake"
+      [ "AltCover.Cake"
         "AltCover.DotNet"
         "AltCover.Engine" // beware static linkage -- maybe copy from debug?
         "AltCover.Monitor"
@@ -4576,7 +4700,6 @@ module Targets =
                   "AltCover.Monitor"
                   "AltCover.Fake"
                   "AltCover.Cake"
-                  "AltCover.Base"
                   "Recorder"
                   "Mono"
                   "DataCollector"
@@ -5769,8 +5892,10 @@ module Targets =
           sprintf "Bad tracked method list %A" trackedFormat
         )
 
+        //let trackedTimes =
         methods
         |> List.filter _.Value.TId.HasValue
+        //                        |> List.collect (fun m -> let first = m.Value.Entry
         |> List.iter (fun m ->
           let first =
             m.Value.Entry
@@ -5789,7 +5914,10 @@ module Targets =
           test <@ from <= first @>
           test <@ first <= second @>
           test <@ second <= Actions.ticksNow () @>)
-
+        //                                                  [first; second])
+        //  Assert.That
+        //    (x.ToString().Replace("\r\n", "\n"),
+        //     Is.EqualTo <| tracked.Replace("\r\n", "\n"))) ???
         printfn "Tracked OK"
 
         let trackedVisits =
@@ -8222,6 +8350,8 @@ module Targets =
     _Target "SetVersion" SetVersion
     _Target "Compilation" ignore
     _Target "BuildRelease" BuildRelease
+    _Target "BuildRecorder" BuildRecorder
+    _Target "BuildReleaseRecorder" BuildReleaseRecorder
     _Target "BuildDebug" BuildDebug
     _Target "BuildMonoSamples" BuildMonoSamples
     _Target "BuildSample31" BuildSample31
@@ -8312,6 +8442,9 @@ module Targets =
     |> ignore
 
     "Preparation" ==> "BuildDebug" |> ignore
+
+    "BuildRecorder" ==> "JustRecorderUnitTest"
+    |> ignore
 
     "BuildDebug" ==> "BuildRelease" ==> "Compilation"
     |> ignore

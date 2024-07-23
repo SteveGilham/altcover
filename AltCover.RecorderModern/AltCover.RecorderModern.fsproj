@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472</TargetFrameworks>
+    <AssemblyName>AltCover.RecorderModern</AssemblyName>
+    <RootNamespace>AltCover.Recorder</RootNamespace>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <DefineConstants>RECORDER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(DefineConstants)</DefineConstants>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.fs" />
+    <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
+    <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
+    <Compile Include="..\AltCover.Recorder\Base.fs" />
+    <Compile Include="..\AltCover.Recorder\Tracer.fs" />
+    <Compile Include="..\AltCover.Recorder\Recorder.fs" />
+    <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" />
+    <EmbeddedResource Include="..\AltCover.Recorder\Strings.resources">
+      <!-- -do "resgen .\Strings.resx"  -->
+      <LogicalName>AltCover.Recorder.Strings.resources</LogicalName>
+    </EmbeddedResource>
+    <None Include="..\AltCover.Recorder\Strings.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\ThirdParty\ziplib.net20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

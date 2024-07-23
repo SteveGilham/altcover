@@ -16,6 +16,7 @@ open System.IO
 open System.IO.Compression
 open System.Reflection
 open System.Runtime.CompilerServices
+open System.Threading
 open System.Xml
 
 open AltCover.Recorder
@@ -35,42 +36,31 @@ module AltCoverTests =
   //    printfn "%s %s" tag
   //#endif
 
-#if RECORDER2
   let resource =
-    "AltCover.Recorder2.Tests.SimpleCoverage.xml"
-
-  let resource2 =
-    "AltCover.Recorder2.Tests.Sample1WithModifiedOpenCover.xml"
-
-  let resource3 =
-    "AltCover.Recorder2.Tests.Sample2NCoverage.xml"
-#else
-  let resource =
-    "AltCover.Recorder.Tests.SimpleCoverage.xml"
-
-  let resource2 =
-    "AltCover.Recorder.Tests.Sample1WithModifiedOpenCover.xml"
-
-  let resource3 =
-    "AltCover.Recorder.Tests.Sample2NCoverage.xml"
-#endif
-
-  let internal updateReport0 (counts, format, coverageFile, outputFile) =
-    Counter.I.UpdateReport(
-      ignore,
-      (fun _ _ -> ()),
-      true,
-      counts,
-      format,
-      coverageFile,
-      outputFile
-    )
+    Assembly
+      .GetExecutingAssembly()
+      .GetManifestResourceNames()
+    |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   let private updateReport a b =
-    updateReport0 (a, ReportFormat.NCover, b, b)
+    Adapter.updateReport (a, ReportFormat.NCover, b, b)
     |> ignore
 
-  let private pointVisitInit a b = AltCoverCoreTests.init (a, b)
+  let private pointVisitInit a b = Adapter.init (a, b)
+
+  let resource2 =
+    Assembly
+      .GetExecutingAssembly()
+      .GetManifestResourceNames()
+    |> Seq.find (fun n ->
+      n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
+
+  let resource3 =
+    Assembly
+      .GetExecutingAssembly()
+      .GetManifestResourceNames()
+    |> Seq.find (fun n ->
+      n.EndsWith("Sample2NCoverage.xml", StringComparison.Ordinal))
 
   [<Test>]
   let ShouldCoverTrivalClass () =
@@ -86,7 +76,7 @@ module AltCoverTests =
   let ShouldFailXmlDataForNativeJson () =
     Assert.Throws<NotSupportedException>(fun () ->
       ReportFormat.NativeJson
-      |> Counter.I.XmlByFormat
+      |> Counter.I.xmlByFormat
       |> ignore)
     |> ignore
 
@@ -97,9 +87,9 @@ module AltCoverTests =
   [<Test>]
   let DefaultAccessorsBehaveAsExpected () =
     let v1 = DateTime.UtcNow.Ticks
-    let probe = Instance.I.Clock()
+    let probe = Instance.I.clock ()
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Instance.I.Granularity() = 0L)
+    Assert.True(Instance.I.granularity () = 0L)
     Assert.True(probe >= v1)
     Assert.True(probe <= v2)
 
@@ -107,132 +97,113 @@ module AltCoverTests =
   let ShouldBeLinkingTheCorrectCopyOfThisCode () =
     getMyMethodName "=>"
 
-    let tracer = Tracer.Create String.Empty
+    let tracer =
+      Adapter.makeNullTrace String.Empty
 
     // whitelist test not recorder.g
 
     let n =
       tracer.GetType().Assembly.GetName().Name
-
+#if RECORDERMODERN
+    Assert.That(n, Is.EqualTo "AltCover.RecorderModern")
+#else
     Assert.That(n, Is.EqualTo "AltCover.Recorder")
-
+#endif
     getMyMethodName "<="
-
-  let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.TakeSample(Sampling.Single, moduleId, hitPointId, context)
-
-  let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.TakeSample(Sampling.All, moduleId, hitPointId, context)
 
   [<Test>]
   let OnlyNewIdPairShouldBeSampled () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       try
-        AltCoverCoreTests.ModuleReset [| "module"; "newmodule" |]
-        let n = Null() :> Track
+        Adapter.ModuleReset [| "module"; "newmodule" |]
 
-        Assert.True(addSample ("module", 23, n), "Test 1")
-        Assert.True(addSample ("module", 24, n), "Test 2")
-        Assert.True(addSample ("newmodule", 23, n), "Test 3")
-        Assert.True(addSample ("module", 23, n) |> not, "Test 4")
-        Assert.True(addSampleUnconditional ("module", 23, n), "Test 5")
-        Assert.True(addSample ("module", 23, Call 1), "Test 6")
-        Assert.True(addSample ("module", 23, Time 0L), "Test 7")
-        Assert.True(addSample ("module", 23, Time 1L), "Test 7a")
-        Assert.True(addSample ("module", 23, Time 0L) |> not, "Test 7b")
+        Assert.True(Adapter.addSample ("module", 23, Null), "Test 1")
+        Assert.True(Adapter.addSample ("module", 24, Null), "Test 2")
+        Assert.True(Adapter.addSample ("newmodule", 23, Null), "Test 3")
+        Assert.True(Adapter.addSample ("module", 23, Null) |> not, "Test 4")
+        Assert.True(Adapter.addSampleUnconditional ("module", 23, Null), "Test 5")
+        Assert.True(Adapter.addSample ("module", 23, Call 1), "Test 6")
+        Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
 
-        Assert.True(addSample ("module", 24, new Both(Pair.Create(0, 1))), "Test 8")
+        Assert.True(
+          Adapter.addSample ("module", 24, Both { Call = 1; Time = 0L }),
+          "Test 8"
+        )
 
-        Assert.True(addSample ("module", 25, new Both(Pair.Create(0, 1))), "Test 9")
+        Assert.True(
+          Adapter.addSample ("module", 25, Both { Call = 1; Time = 0L }),
+          "Test 9"
+        )
 
-        Assert.True(addSample ("module", 25, Call 1) |> not, "Test 10")
-        Assert.True(addSample ("module", 25, Call 1) |> not, "Test 11")
-        Assert.True(addSample ("module", 25, n) |> not, "Test 12")
+        Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 10")
+        Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 11")
+        Assert.True(Adapter.addSample ("module", 25, Null) |> not, "Test 12")
 
         // out of band example
-        Assert.True(addSample ("nonesuch", 25, n) |> not, "Test 12a")
+        Assert.True(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
 
         Assert.Throws<InvalidDataException>(fun () ->
-          addSample ("module", 23, Table null) |> ignore)
+          Adapter.addSample ("module", 23, Table null)
+          |> ignore)
         |> ignore
       finally
-        AltCoverCoreTests.HardReset())
+        Adapter.HardReset())
 
     getMyMethodName "<="
-
-  let VisitsEntrySeq key =
-    Instance.I.visits.[key]
-    |> Seq.cast<KeyValuePair<int, PointVisit>>
-
-  let VisitCount (key, key2) = (Instance.I.visits.[key].[key2]).Count
 
   [<Test>]
   let RealIdShouldIncrementCount () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
-      let save = Instance.I.Trace
+    lock Adapter.Lock (fun () ->
+      let save = Instance.I.trace
 
       try
         let key = " "
-        AltCoverCoreTests.ModuleReset [| key |]
-        Instance.I.Trace <- Tracer.Create null
+        Adapter.ModuleReset [| key |]
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-        Instance.I.Recording <- false
-        Instance.Visit("key", 17)
-        Instance.I.Recording <- true
+        Instance.I.recording <- false
+        Instance.Visit "key" 17
+        Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit(key, -23)
+        Instance.Visit key -23
 
         Instance.CoverageFormat <-
           ReportFormat.OpenCover
           ||| ReportFormat.WithTracking
 
-        Instance.Visit(key, -23)
+        Instance.Visit key -23
 
-        let vs = AltCoverCoreTests.VisitsSeq()
+        let vs = Adapter.VisitsSeq()
+        Assert.True(vs |> Seq.length = 3, sprintf "Adapter.VisitsSeq() = %A" vs)
+
+        let vesk = Adapter.VisitsEntrySeq key
 
         Assert.True(
-          vs |> Seq.length = 3,
-          sprintf "AltCoverCoreTests.VisitsSeq() = %A" vs
+          vesk |> Seq.length = 1,
+          sprintf "Adapter.VisitsEntrySeq %A = %A" key vesk
         )
 
-        let vesk = VisitsEntrySeq key
-
-        Assert.True(vesk |> Seq.length = 1, sprintf "VisitsEntrySeq %A = %A" key vesk)
-
-        Assert.That(VisitCount(key, -23), Is.EqualTo 2L)
+        Assert.True(Adapter.VisitCount(key, -23) = 2L)
         Assert.That(Counter.totalVisits, Is.EqualTo 1L)
         Assert.That(Counter.branchVisits, Is.EqualTo 1L)
       finally
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.I.Recording <- true
-        AltCoverCoreTests.HardReset()
-        Instance.I.Trace <- save)
+        Instance.I.recording <- true
+        Adapter.HardReset()
+        Instance.I.trace <- save)
 
     getMyMethodName "<="
-
-  let internal payloadSelector x = Instance.I.PayloadSelector(fun _ -> x)
-
-  let internal payloadControl (x, y) =
-    Instance.I.PayloadControl((fun _ -> x), (fun _ -> y))
-
-  let internal payloadSelection (x, y, z) =
-    Instance.I.PayloadSelection((fun _ -> x), (fun _ -> y), (fun _ -> z))
-
-  let internal untime (at: Track) =
-    match at with
-    | :? Time as t -> Some t.Value
-    | _ -> None
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
     let key = " "
 
     let index =
-      Counter.I.FindIndexFromUspid(0, key)
+      Counter.I.findIndexFromUspid 0 key
 
     Assert.True(index < 0)
 
@@ -245,56 +216,59 @@ module AltCoverTests =
         ReportFormat.OpenCover
         ||| ReportFormat.WithTracking
 
-      Assert.False(Instance.I.CallerId.HasValue)
-      Assert.That(payloadSelector false, Is.EqualTo <| Null())
-      Assert.That(payloadSelector true, Is.EqualTo <| Null())
+      Assert.True(Instance.I.callerId () |> Option.isNone)
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
-      Assert.That(payloadSelector false, Is.EqualTo <| Null())
-      Assert.That(payloadSelector true, Is.EqualTo <| (Call 4321))
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
         let result =
-          payloadSelection (1311693406324658740L, 1000L, true)
+          Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
         let expected =
-          AltCoverCoreTests.newBoth (1311693406324658000L, 6789)
+          Adapter.newBoth (1311693406324658000L, 6789)
 
         Assert.True((result = expected))
       finally
         Instance.Pop()
 
-      Assert.That(payloadSelector true, Is.EqualTo(Call 4321))
+      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
     finally
       Instance.Pop()
       Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 =
-      payloadSelection (1311693406324658740L, 1000L, true)
+      Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
-    let expected2 = Time 1311693406324658000L
+    let expected2 =
+      Adapter.time 1311693406324658000L
 
     Assert.True((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
 
-    let probed = payloadControl (1000L, true)
+    let probed =
+      Adapter.payloadControl (1000L, true)
 
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Null() |> untime |> Option.isNone)
+    Assert.True(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
 
-    let probe = (untime probed).Value
+    let [ probe ] =
+      Adapter.untime probed |> Seq.toList
 
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
     Assert.True(probe >= (1000L * (v1 / 1000L)))
-    Assert.True(Instance.I.CallerId.HasValue |> not)
+    Assert.True(Instance.I.callerId () |> Option.isNone)
     Instance.Pop()
-    Assert.True(Instance.I.CallerId.HasValue |> not)
+    Assert.True(Instance.I.callerId () |> Option.isNone)
 
   [<Test>]
   let PayloadWithEntryExitGeneratedIsAsExpected () =
-    AltCoverCoreTests.ModuleReset [||]
+    Adapter.ModuleReset [||]
 
     try
       Instance.I.isRunner <- true
@@ -303,55 +277,58 @@ module AltCoverTests =
         ReportFormat.OpenCover
         ||| ReportFormat.WithTracking
 
-      AltCoverCoreTests.VisitsClear()
+      Adapter.VisitsClear()
 
-      Assert.True(Instance.I.CallerId.HasValue |> not)
-      Assert.That(payloadSelector false, Is.EqualTo <| Null())
-      Assert.That(payloadSelector true, Is.EqualTo <| Null())
+      Assert.True(Instance.I.callerId () |> Option.isNone)
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.True(Adapter.payloadSelector true = Adapter.asNull ())
       Instance.Push 4321
-      Assert.That(payloadSelector false, Is.EqualTo <| Null())
-      Assert.That(payloadSelector true, Is.EqualTo(Call 4321))
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
+      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
         let result =
-          payloadSelection (1311693406324658740L, 1000L, true)
+          Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
         let expected =
-          AltCoverCoreTests.newBoth (1311693406324658000L, 6789)
+          Adapter.newBoth (1311693406324658000L, 6789)
 
         Assert.True((result = expected))
       finally
         Instance.Pop()
 
-      Assert.That(payloadSelector true, Is.EqualTo(Call 4321))
+      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
     finally
       Instance.Pop()
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 =
-      payloadSelection (1311693406324658740L, 1000L, true)
+      Adapter.payloadSelection (1311693406324658740L, 1000L, true)
 
-    let expected2 = Time 1311693406324658000L
+    let expected2 =
+      Adapter.time 1311693406324658000L
 
     Assert.True((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
 
-    let probed = payloadControl (1000L, true)
+    let probed =
+      Adapter.payloadControl (1000L, true)
 
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Null() |> untime |> Option.isNone)
+    Assert.True(Adapter.asNull () |> Adapter.untime |> Seq.isEmpty)
 
-    let probe = (untime probed).Value
+    let [ probe ] =
+      Adapter.untime probed |> Seq.toList
 
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
     Assert.True(probe >= (1000L * (v1 / 1000L)))
-    Assert.True(Instance.I.CallerId.HasValue |> not)
+    Assert.True(Instance.I.callerId () |> Option.isNone)
     Instance.Pop()
-    Assert.True(Instance.I.CallerId.HasValue |> not)
+    Assert.True(Instance.I.callerId () |> Option.isNone)
 
     Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [ Track.Entry; Track.Exit ])
 
@@ -383,38 +360,38 @@ module AltCoverTests =
     Assert.That(d.Tracks |> Seq.length, Is.EqualTo 1)
 
     let a2 =
-      (a.Tracks |> Seq.head |> untime).Value
+      a.Tracks |> Seq.head |> Adapter.untime |> Seq.head
 
     let b2 =
-      (b.Tracks |> Seq.head |> untime).Value
+      b.Tracks |> Seq.head |> Adapter.untime |> Seq.head
 
     Assert.That(b2 >= a2)
 
     let c2 =
-      (c.Tracks |> Seq.head |> untime).Value
+      c.Tracks |> Seq.head |> Adapter.untime |> Seq.head
 
     Assert.That(c2 >= b2)
 
     let d2 =
-      (d.Tracks |> Seq.head |> untime).Value
+      d.Tracks |> Seq.head |> Adapter.untime |> Seq.head
 
     Assert.That(d2 >= c2, sprintf "%A >= %A" d2 c2)
 
-    AltCoverCoreTests.HardReset()
+    Adapter.HardReset()
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously () =
     getMyMethodName "=>"
 
     lock Instance.I.visits (fun () ->
-      let save = Instance.I.Trace
+      let save = Instance.I.trace
       let key = " "
-      AltCoverCoreTests.ModuleReset [| key |]
+      Adapter.ModuleReset [| key |]
 
       try
-        Instance.I.Trace <- Tracer.Create null
+        Instance.I.trace <- Adapter.makeNullTrace null
 
-        Instance.I.VisitSelection(Null(), key, 23)
+        Instance.I.visitSelection (Adapter.asNull ()) key 23
 
         Assert.That(
           Instance.I.visits.Keys,
@@ -431,8 +408,8 @@ module AltCoverTests =
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
-        AltCoverCoreTests.HardReset()
-        Instance.I.Trace <- save)
+        Adapter.HardReset()
+        Instance.I.trace <- save)
 
     getMyMethodName "<="
 
@@ -441,51 +418,6 @@ module AltCoverTests =
     |> Seq.iter (fun x ->
       Assert.That(all.Contains x)
       all.Remove x |> ignore)
-
-  let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
-    (unique: string)
-    =
-    let constructor =
-      typeof<'T>
-        .GetConstructor([| typeof<System.String> |])
-
-    let pitcher =
-      fun _ _ _ _ ->
-        constructor.Invoke([| unique |]) :?> System.Exception
-        |> raise
-
-    Instance.I.CurriedIssue71Wrapper<string, string, string, string>(
-      "a",
-      "b",
-      "c",
-      "d",
-      pitcher
-    )
-    |> ignore
-
-  let internal invokeIssue71Wrapper<'T when 'T :> System.Exception>
-    ((unique: string), (called: bool array))
-    =
-    let constructor =
-      typeof<'T>
-        .GetConstructor([| typeof<System.String> |])
-
-    let pitcher =
-      fun _ _ _ _ ->
-        constructor.Invoke([| unique |]) :?> System.Exception
-        |> raise
-
-    let catcher =
-      fun _ _ _ (x: System.Exception) ->
-        called.[0] <- true
-
-        called.[1] <-
-          match x with
-          | :? System.ArgumentNullException as ane -> ane.ParamName = unique
-          | _ -> x.Message = unique
-
-    Instance.I.Issue71Wrapper((), (), (), (), catcher, pitcher)
-    |> ignore
 
   [<Test>]
   let StripWorks () =
@@ -509,7 +441,7 @@ module AltCoverTests =
     let before =
       Directory.GetFiles(where, "*.exn")
 
-    Instance.I.LogException("a", "b", "c", "ex")
+    Instance.I.logException "a" "b" "c" "ex"
 
     let after =
       Directory.GetFiles(where, "*.exn")
@@ -526,9 +458,9 @@ module AltCoverTests =
     lines
     |> Seq.take 4
     |> Seq.zip
-      [ "ModuleId = a"
-        "hitPointId = b"
-        "context = c"
+      [ "ModuleId = \"a\""
+        "hitPointId = \"b\""
+        "context = \"c\""
         "exception = ex" ]
     |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo b))
 
@@ -550,7 +482,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeCurriedIssue71Wrapper<NullReferenceException> unique
+    Adapter.invokeCurriedIssue71Wrapper<NullReferenceException> unique
 
     let after =
       Directory.GetFiles(where, "*.exn")
@@ -567,9 +499,9 @@ module AltCoverTests =
     lines
     |> Seq.take 4
     |> Seq.zip
-      [ "ModuleId = b"
-        "hitPointId = c"
-        "context = d"
+      [ "ModuleId = \"b\""
+        "hitPointId = \"c\""
+        "context = \"d\""
         "exception = System.NullReferenceException: "
         + unique ]
     |> Seq.iter (fun (a, b) -> Assert.That(b, Is.EqualTo a))
@@ -586,7 +518,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeIssue71Wrapper<KeyNotFoundException> (unique, pair)
+    Adapter.invokeIssue71Wrapper<KeyNotFoundException> (unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -597,7 +529,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeIssue71Wrapper<NullReferenceException> (unique, pair)
+    Adapter.invokeIssue71Wrapper<NullReferenceException> (unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -608,7 +540,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeIssue71Wrapper<ArgumentNullException> (unique, pair)
+    Adapter.invokeIssue71Wrapper<ArgumentNullException> (unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -621,7 +553,7 @@ module AltCoverTests =
 
     let exn =
       Assert.Throws<InvalidOperationException>(fun () ->
-        invokeIssue71Wrapper<InvalidOperationException> (unique, pair))
+        Adapter.invokeIssue71Wrapper<InvalidOperationException> (unique, pair))
 
     Assert.That(pair |> Seq.head, Is.False)
     Assert.That(pair |> Seq.last, Is.False)
@@ -646,7 +578,7 @@ module AltCoverTests =
         let before =
           Directory.GetFiles(where, "*.exn")
 
-        Instance.I.VisitImpl(key, 23, Null())
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
 
         let after =
           Directory.GetFiles(where, "*.exn")
@@ -664,11 +596,11 @@ module AltCoverTests =
         lines
         |> Seq.take 4
         |> Seq.zip
-          [ "ModuleId =  "
+          [ "ModuleId = \" \""
             "hitPointId = 23"
-            "context = AltCover.Null"
+            "context = Null"
             "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
-        |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo(b)))
+        |> Seq.iter (fun (a, b) -> Assert.True((a = b)))
 
         let third =
           Directory.GetFiles(where, "*.exn")
@@ -688,16 +620,16 @@ module AltCoverTests =
     lock Instance.I.visits (fun () ->
       try
         let key = " "
-        AltCoverCoreTests.ModuleReset [| key; "key" |]
-        Instance.I.VisitImpl(key, 23, Null())
-        Instance.I.VisitImpl("key", 42, Null())
+        Adapter.ModuleReset [| key; "key" |]
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl "key" 42 (Adapter.asNull ())
 
         Assert.That(
           Instance.I.visits.Keys,
           Is.EquivalentTo [ key; "key"; Track.Entry; Track.Exit ]
         )
       finally
-        AltCoverCoreTests.HardReset())
+        Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -708,9 +640,9 @@ module AltCoverTests =
     lock Instance.I.visits (fun () ->
       try
         let key = " "
-        AltCoverCoreTests.ModuleReset [| key |]
-        Instance.I.VisitImpl(key, 23, Null())
-        Instance.I.VisitImpl(key, 42, Null())
+        Adapter.ModuleReset [| key |]
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl key 42 (Adapter.asNull ())
 
         Assert.That(
           Instance.I.visits.Keys,
@@ -719,7 +651,7 @@ module AltCoverTests =
 
         Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
       finally
-        AltCoverCoreTests.HardReset())
+        Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -729,15 +661,15 @@ module AltCoverTests =
 
     lock Instance.I.visits (fun () ->
       let key = " "
-      AltCoverCoreTests.ModuleReset [| key |]
+      Adapter.ModuleReset [| key |]
 
       try
-        Instance.I.VisitImpl(key, 23, Null())
-        Instance.I.VisitImpl(key, 23, Null())
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
-        AltCoverCoreTests.HardReset())
+        Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -747,17 +679,18 @@ module AltCoverTests =
 
     lock Instance.I.visits (fun () ->
       let key = " "
-      AltCoverCoreTests.ModuleReset [| key |]
+      Adapter.ModuleReset [| key |]
 
       try
-        let payload = Time DateTime.UtcNow.Ticks
+        let payload =
+          Adapter.time DateTime.UtcNow.Ticks
 
-        Instance.I.VisitImpl(key, 23, Null())
-        Instance.I.VisitImpl(key, 23, payload)
+        Instance.I.visitImpl key 23 (Adapter.asNull ())
+        Instance.I.visitImpl key 23 payload
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
       finally
-        AltCoverCoreTests.HardReset())
+        Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -1209,12 +1142,13 @@ module AltCoverTests =
       let after = XmlDocument()
       after.Load worker
 
-      let join (x: string seq) = String.Join(" ", x)
+      let join (x: string array) = String.Join(" ", x)
 
       Assert.That(
         after.SelectNodes("//seqpnt")
         |> Seq.cast<XmlElement>
         |> Seq.map (fun x -> x.GetAttribute("visitcount"))
+        |> Seq.toArray
         |> join,
         Is.EqualTo "0 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
 
@@ -1255,7 +1189,7 @@ module AltCoverTests =
 
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
-      updateReport0 (item, ReportFormat.OpenCover, worker, worker)
+      Adapter.updateReport (item, ReportFormat.OpenCover, worker, worker)
       |> ignore
 
       worker.Position <- 0L
@@ -1292,17 +1226,17 @@ module AltCoverTests =
   let EmptyFlushLeavesNoTrace () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       let saved = Console.Out
 
       try
-        AltCoverCoreTests.VisitsClear()
+        Adapter.VisitsClear()
         use stdout = new StringWriter()
         Console.SetOut stdout
         Instance.FlushFinish()
         Assert.That(stdout.ToString(), Is.Empty)
       finally
-        AltCoverCoreTests.VisitsClear()
+        Adapter.VisitsClear()
         Console.SetOut saved)
 
     getMyMethodName "<="
@@ -1342,21 +1276,11 @@ module AltCoverTests =
     trywithrelease<InvalidOperationException> (fun () ->
       InvalidOperationException() |> raise)
 
-  let internal makeStreamTrace s1 =
-    let mutable t = Tracer.Create(null)
-    // fsharplint:disable-next-line  RedundantNewKeyword
-    t.Stream <- new System.IO.MemoryStream()
-    // fsharplint:disable-next-line  RedundantNewKeyword
-    t.Formatter <- new System.IO.BinaryWriter(s1)
-    t.Runner <- true
-    t.Definitive <- false
-    t
-
   [<Test>]
   let PauseLeavesExpectedTraces () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
@@ -1368,17 +1292,17 @@ module AltCoverTests =
         let unique =
           Path.Combine(where, Guid.NewGuid().ToString())
 
-        let save = Instance.I.Trace
+        let save = Instance.I.trace
         use s = new MemoryStream()
 
         let s1 =
           new Compression.DeflateStream(s, CompressionMode.Compress)
 
-        Instance.I.Trace <- makeStreamTrace s1
+        Instance.I.trace <- Adapter.makeStreamTrace s1
 
         try
           Instance.I.isRunner <- true
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
 
           use stdout = new StringWriter()
           Console.SetOut stdout
@@ -1406,16 +1330,16 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            AltCoverCoreTests.VisitsAdd(
+            Adapter.VisitsAdd(
               "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
               i,
               (int64 (i + 1))
             ))
 
-          let nullObj: obj = null
-          Instance.I.doPause.Invoke(nullObj, null)
+          Adapter.DoPause().Invoke(null, null)
 
-          AltCoverCoreTests.VisitsSeq()
+          Adapter.VisitsSeq()
+          |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
           |> Seq.iter (fun v ->
             Assert.That(v.Value, Is.Empty, sprintf "Unexpected write %A" v))
 
@@ -1445,9 +1369,9 @@ module AltCoverTests =
                 "-1" ]
           )
         finally
-          Instance.I.Trace <- save
+          Instance.I.trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           Instance.I.isRunner <- false
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
@@ -1459,7 +1383,7 @@ module AltCoverTests =
   let ResumeLeavesExpectedTraces () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
@@ -1471,7 +1395,7 @@ module AltCoverTests =
         let unique =
           Path.Combine(where, Guid.NewGuid().ToString())
 
-        let save = Instance.I.Trace
+        let save = Instance.I.trace
         let tag = unique + ".xml.acv"
 
         do
@@ -1482,8 +1406,8 @@ module AltCoverTests =
           let key =
             "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"
 
-          AltCoverCoreTests.ModuleReset [| key |]
-          Instance.I.Trace <- Tracer.Create(tag)
+          Adapter.ModuleReset [| key |]
+          Instance.I.trace <- Tracer.Create(tag)
 
           use stdout = new StringWriter()
           Console.SetOut stdout
@@ -1510,17 +1434,17 @@ module AltCoverTests =
             ()
 
           [ 0..9 ]
-          |> Seq.iter (fun i -> AltCoverCoreTests.VisitsAdd(key, i, (int64 (i + 1))))
+          |> Seq.iter (fun i -> Adapter.VisitsAdd(key, i, (int64 (i + 1))))
 
-          let nullObj: obj = null
-          Instance.I.doResume.Invoke(nullObj, null)
+          Adapter.DoResume().Invoke(null, null)
 
-          AltCoverCoreTests.VisitsSeq()
+          Adapter.VisitsSeq()
+          |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
           |> Seq.iter (fun v ->
             Assert.That(v.Value, Is.Empty, sprintf "Visits should be cleared %A" v))
 
           Assert.That(
-            Object.ReferenceEquals(Instance.I.Trace, save),
+            Object.ReferenceEquals(Instance.I.trace, save),
             Is.False,
             "trace should be replaced"
           )
@@ -1551,10 +1475,10 @@ module AltCoverTests =
                 "-1" ]
           )
         finally
-          AltCoverCoreTests.HardReset()
-          Instance.I.Trace <- save
+          Adapter.HardReset()
+          Instance.I.trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           File.Delete tag
@@ -1566,7 +1490,7 @@ module AltCoverTests =
   let FlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
 
       trywithrelease (fun () ->
@@ -1580,11 +1504,11 @@ module AltCoverTests =
         let unique =
           Path.Combine(where, Guid.NewGuid().ToString())
 
-        let save = Instance.I.Trace
-        Instance.I.Trace <- Tracer.Create null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.makeNullTrace null
 
         try
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           use stdout = new StringWriter()
           Console.SetOut stdout
           Directory.CreateDirectory(unique) |> ignore
@@ -1611,14 +1535,13 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            AltCoverCoreTests.VisitsAdd(
+            Adapter.VisitsAdd(
               "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
               i,
               (int64 (i + 1))
             ))
 
-          let nullObj: obj = null
-          Instance.I.doExit.Invoke(nullObj, null)
+          Adapter.DoExit().Invoke(null, null)
 
           let head =
             "Coverage statistics flushing took "
@@ -1660,9 +1583,9 @@ module AltCoverTests =
                 "1" ]
           )
         finally
-          Instance.I.Trace <- save
+          Instance.I.trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
@@ -1673,7 +1596,7 @@ module AltCoverTests =
   let SupervisedFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
@@ -1685,13 +1608,13 @@ module AltCoverTests =
         let unique =
           Path.Combine(where, Guid.NewGuid().ToString())
 
-        let save = Instance.I.Trace
-        Instance.I.Trace <- Tracer.Create null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.makeNullTrace null
 
         Instance.supervision <- true
 
         try
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           use stdout = new StringWriter()
           Console.SetOut stdout
           Directory.CreateDirectory(unique) |> ignore
@@ -1718,14 +1641,13 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            AltCoverCoreTests.VisitsAdd(
+            Adapter.VisitsAdd(
               "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
               i,
               (int64 (i + 1))
             ))
 
-          let nullObj: obj = null
-          Instance.I.doUnload.Invoke(nullObj, null)
+          Adapter.DoUnload().Invoke(null, null)
 
           let head =
             "Coverage statistics flushing took "
@@ -1760,24 +1682,15 @@ module AltCoverTests =
                 "-1" ]
           )
         finally
-          Instance.I.Trace <- save
+          Instance.I.trace <- save
           Instance.supervision <- false
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
     getMyMethodName "<="
-
-  let internal doFlush (visits, format, report, output) =
-    let output' =
-      if System.String.IsNullOrEmpty output then
-        null
-      else
-        output
-
-    Counter.DoFlushFile(ignore, (fun _ _ -> ()), true, visits, format, report, output')
 
   [<Test>]
   let FlushLeavesExpectedTracesWhenDiverted () =
@@ -1832,7 +1745,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
+      Adapter.doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
       |> ignore
 
       use worker' =
@@ -1916,7 +1829,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
+      Adapter.doFlush (visits, ReportFormat.NCover, reportFile, outputFile)
       |> ignore
 
       use worker' =
@@ -1991,7 +1904,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      doFlush (
+      Adapter.doFlush (
         visits,
         ReportFormat.NCover ||| ReportFormat.Zipped,
         reportFile,
@@ -2082,7 +1995,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      doFlush (
+      Adapter.doFlush (
         visits,
         ReportFormat.NCover ||| ReportFormat.Zipped,
         reportFile,
@@ -2155,7 +2068,12 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      doFlush (visits, ReportFormat.NCover ||| ReportFormat.Zipped, reportFile, null)
+      Adapter.doFlush (
+        visits,
+        ReportFormat.NCover ||| ReportFormat.Zipped,
+        reportFile,
+        null
+      )
       |> ignore
 
       Assert.That(reportFile |> File.Exists |> not)
@@ -2172,7 +2090,7 @@ module AltCoverTests =
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
 
-    lock Instance.I.visits (fun () ->
+    lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.NCover ||| ReportFormat.Zipped
 
@@ -2187,11 +2105,11 @@ module AltCoverTests =
         let unique =
           Path.Combine(where, Guid.NewGuid().ToString())
 
-        let save = Instance.I.Trace
-        Instance.I.Trace <- Tracer.Create null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.makeNullTrace null
 
         try
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           use stdout = new StringWriter()
           Console.SetOut stdout
           Directory.CreateDirectory(unique) |> ignore
@@ -2226,14 +2144,13 @@ module AltCoverTests =
 
           [ 0..9 ]
           |> Seq.iter (fun i ->
-            AltCoverCoreTests.VisitsAdd(
+            Adapter.VisitsAdd(
               "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
               i,
               (int64 (i + 1))
             ))
 
-          let nullObj: obj = null
-          Instance.I.doExit.Invoke(nullObj, null)
+          Adapter.DoExit().Invoke(null, null)
 
           let head =
             "Coverage statistics flushing took "
@@ -2281,10 +2198,10 @@ module AltCoverTests =
                 "1" ]
           )
         finally
-          Instance.I.Trace <- save
+          Instance.I.trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
           AltCoverCoreTests.maybeDeleteFile (Instance.ReportFilePath + ".zip")
-          AltCoverCoreTests.VisitsClear()
+          Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))

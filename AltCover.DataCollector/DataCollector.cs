@@ -67,7 +67,7 @@ namespace AltCover
       RecorderInstance.ToList().ForEach(
         i =>
         {
-          var supervision = i.GetField("supervision",
+          var supervision = i.GetProperty("supervision",
                                   BindingFlags.Static | BindingFlags.NonPublic);
           if (supervision == null)
           {

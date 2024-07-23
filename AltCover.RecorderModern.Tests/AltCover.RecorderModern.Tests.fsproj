@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>AltCover.Recorder2.Tests</AssemblyName>
+    <AssemblyName>AltCover.RecorderModern.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <NoWarn>NU1702</NoWarn>
+    <NoWarn>NU1702, 3559</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <ExtraDefines>RECORDERMODERN</ExtraDefines>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;RECORDER2;$(ExtraDefines)</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;RELEASE;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
@@ -28,8 +29,7 @@
     <Compile Include="..\AltCover.Recorder.Tests\Adapter.fs" Link="Adapter.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.fs" Link="Tracer.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" Condition="'$(TargetFramework)' != 'ne472'" />
-    <None Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.cs" Condition="'$(TargetFramework)' == 'net472'" />
+    <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,13 +46,11 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Compiler.Tools" />
     <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AltCover.Recorder">
-      <HintPath>..\_Binaries\AltCover.Recorder\Debug+AnyCPU\net20\AltCover.Recorder.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\AltCover.RecorderModern\AltCover.RecorderModern.fsproj" />
   </ItemGroup>
+
 </Project>

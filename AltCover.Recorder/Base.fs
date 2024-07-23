@@ -11,6 +11,80 @@ open System.Globalization
 open System.IO
 open System.Xml
 
+[<Flags>]
+[<SuppressMessage("Gendarme.Rules.Design",
+                  "FlagsShouldNotDefineAZeroValueRule",
+                  Justification = "Zero is meaningful")>]
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UsePluralNameInEnumFlagsRule",
+                  Justification = "Not meaningful to do so")>]
+type internal ReportFormat =
+  | NCover = 0
+  | OpenCover = 1
+  | NativeJson = 2
+  | TrackMask = 63
+  | WithTracking = 64
+  | ZipMask = 127
+  | Zipped = 128
+
+#if !RUNNER
+open ICSharpCode.SharpZipLib.Zip
+
+[<AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)>]
+[<Sealed>]
+[<SuppressMessage("Gendarme.Rules.Performance",
+                  "AvoidUninstantiatedInternalClassesRule",
+                  Justification = "Looks like a bug, not detecting its use")>]
+type internal ExcludeFromCodeCoverageAttribute() =
+  inherit Attribute()
+#endif
+
+type internal Sampling =
+  | All = 0
+  | Single = 1
+
+// TODO isolate where
+#if RUNNER
+[<SuppressMessage("Gendarme.Rules.Performance",
+                  "AvoidUninstantiatedInternalClassesRule",
+                  Justification = "Used as pattern match and compiled away")>]
+#endif
+type internal Tag =
+  | Null = 0
+  | Time = 1
+  | Call = 2
+  | Both = 3
+  | Table = 4
+
+[<ExcludeFromCodeCoverage>]
+[<NoComparison>]
+type internal Pair = { Time: int64; Call: int }
+
+[<ExcludeFromCodeCoverage>]
+[<NoComparison>]
+type internal Track =
+  | Null
+  | Time of int64
+  | Call of int
+  | Both of Pair
+  | Table of Dictionary<string, Dictionary<int, PointVisit>>
+  static member internal Entry = "\u2611" // BALLOT BOX WITH CHECK
+  static member internal Exit = "\u2612" // BALLOT BOX WITH X
+
+and [<NoComparison; ExcludeFromCodeCoverage>] internal PointVisit =
+  { mutable Count: int64
+    Tracks: List<Track> }
+  static member internal Create() = { Count = 0L; Tracks = List<Track>() }
+
+  member internal self.Step() =
+    System.Threading.Interlocked.Increment(&self.Count)
+    |> ignore
+
+  member internal self.Track something =
+    lock self.Tracks (fun () -> self.Tracks.Add something)
+
+  member internal self.Total() = self.Count + int64 self.Tracks.Count
+
 [<RequireQualifiedAccess>]
 module internal Counter =
   type System.NotSupportedException with
@@ -256,7 +330,7 @@ module internal Counter =
             |> snd
           // Treat -ve visit counts (an exemption added in analysis) as zero
           let count = moduleHits.[counter]
-          let visits = (max 0L vc) + count.Total
+          let visits = (max 0L vc) + count.Total()
           pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
           pointProcess pt count.Tracks))
 
@@ -302,9 +376,9 @@ module internal Counter =
         here.Keys
         |> Seq.iter (fun p ->
           ensurePoint next p
-          let mutable v = next.[p]
+          let v = next.[p]
           let add = here.[p]
-          hitcount <- hitcount + add.Total
+          hitcount <- hitcount + add.Total()
 
           lock v (fun () ->
             v.Count <- v.Count + add.Count
@@ -326,7 +400,7 @@ module internal Counter =
     (counts: Dictionary<string, Dictionary<int, PointVisit>>)
     moduleId
     hitPointId
-    (context: Track)
+    context
     =
     if counts.ContainsKey moduleId then
       let next = counts.[moduleId]
@@ -335,7 +409,7 @@ module internal Counter =
       let v = next.[hitPointId]
 
       match context with
-      | :? Null -> v.Step()
+      | Null -> v.Step()
       | something -> v.Track something
 
 #if RUNNER
@@ -343,10 +417,10 @@ module internal Counter =
     (counts: Dictionary<string, Dictionary<int, PointVisit>>)
     moduleId
     hitPointId
-    (context: Track)
+    context
     =
     match context with
-    | :? Table as t -> I.addTable counts t.Value
+    | Table t -> I.addTable counts t
     | _ ->
       addSingleVisit counts moduleId hitPointId context
       1L
