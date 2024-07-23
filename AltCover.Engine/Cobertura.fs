@@ -6,6 +6,7 @@ open System.Xml.Linq
 open System.Globalization
 
 open AltCover.Shared
+open System.Diagnostics.CodeAnalysis
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
@@ -30,6 +31,87 @@ module internal Cobertura =
         String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ratio)
       )
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+                                                      "AvoidUncalledPrivateCodeRule",
+                                                      Justification =
+                                                        "Temporary to validate")>]
+    let splitPath path =
+      let rec facets path bits =
+        let npath = Path.GetDirectoryName path
+
+        let facet =
+          if String.IsNullOrWhiteSpace npath then
+            path
+          else
+            (Path.GetFileName path)
+
+        let wfacet = facet :: bits
+
+        if String.IsNullOrWhiteSpace npath then
+          wfacet
+        else
+          facets npath wfacet
+
+      if String.IsNullOrWhiteSpace path then
+        [ String.Empty ]
+      else
+        facets (path.Replace('\\', '/')) []
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Globalization",
+                                                      "PreferStringComparisonOverrideRule",
+                                                      Justification =
+                                                        "Compiler generated comparisons")>]
+    let grouping path =
+      match path with
+      | [ "\\" ]
+      | [ "/" ] -> "/"
+      | "\\" :: x :: _
+      | "/" :: x :: _ -> "/" + x
+      | [] -> String.Empty
+      | _ -> path |> Seq.head
+
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "InstantiateArgumentExceptionCorrectlyRule",
+                      Justification = "Compiler inlines")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidRepetitiveCallsToPropertiesRule",
+                      Justification = "Compiler inlines")>]
+    let extractSource (values: (string * #(string seq)) seq) =
+      let starter = values |> Seq.head
+
+      match Seq.length values with
+      | 1 -> starter |> fst
+      | _ -> // extract longest common prefix
+        let l =
+          values
+          |> Seq.map (fun (_, split) -> Seq.length split)
+          |> Seq.min
+
+        let parts =
+          values
+          |> Seq.map (fun (_, split) -> split |> Seq.take l |> Seq.toArray)
+
+        let tokens =
+          (snd starter)
+          |> Seq.mapi (fun i facet -> (i, facet))
+          |> Seq.take l
+
+        let prefix =
+          tokens
+          |> Seq.takeWhile (fun (i, facet) ->
+            parts
+            |> Seq.map (fun x -> x[i])
+            |> Seq.forall (fun x -> x.Equals(facet, StringComparison.Ordinal)))
+          |> Seq.map snd
+          |> Seq.toArray
+          |> Path.Combine
+
+        let trimmed = prefix.Length
+        let source = fst starter
+
+        source.Substring(0, trimmed).Trim('\\')
+        + String([| Path.DirectorySeparatorChar |])
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification =
@@ -40,18 +122,37 @@ module internal Cobertura =
       (tag: string)
       (attribute: string)
       =
-      report.Descendants(tag.X)
-      |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
-      |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
-      |> Seq.map Path.GetDirectoryName
-      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-      |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
-      |> Seq.sort
+      let rawsources =
+        report.Descendants(tag.X)
+        |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
+        |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
+        |> Seq.map Path.GetDirectoryName
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.distinct
+        |> Seq.sort
+
+      let groupable =
+        rawsources |> Seq.map (fun x -> (x, splitPath x))
+
+      let groups =
+        groupable |> Seq.groupBy (snd >> grouping)
+
+      let results =
+        groups |> Seq.map (snd >> extractSource)
+
+      results
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(f))))
 
+      results
+      |> Seq.map (fun p -> p.Replace('\\', '/').Trim('/'))
+
     let internal nCover (report: XDocument) (packages: XElement) =
+
+      let sources =
+        addSources report packages.Parent "seqpnt" "document"
+
       let processSeqPnts document (method: XElement) (lines: XElement) =
         method.Descendants("seqpnt".X)
         |> Seq.filter (fun s ->
@@ -133,12 +234,24 @@ module internal Cobertura =
         |> LCov.sortByFirst
         |> Seq.fold (processMethod document methods) (0, 0)
 
-      let processClass (classes: XElement) (hits, total) ((name, document), method) =
+      let processClass
+        (classes: XElement)
+        (hits, total)
+        ((name, document: string), method)
+        =
+        let normalized = document.Replace('\\', '/')
+
+        let filename =
+          sources
+          |> Seq.tryFind (fun s -> normalized.StartsWith(s, StringComparison.Ordinal))
+          |> Option.map (fun start -> document.Substring(start.Length + 1))
+          |> Option.defaultValue document
+
         let ``class`` =
           XElement(
             "class".X,
             XAttribute("name".X, name),
-            XAttribute("filename".X, document)
+            XAttribute("filename".X, filename)
           )
 
         classes.Add(``class``)
@@ -202,9 +315,11 @@ module internal Cobertura =
       p.Attribute("lines-valid".X).Value <- total.ToString(CultureInfo.InvariantCulture)
       p.Attribute("lines-covered".X).Value <- hits.ToString(CultureInfo.InvariantCulture)
 
-      addSources report packages.Parent "seqpnt" "document"
-
     let internal openCover (report: XDocument) (packages: XElement) =
+
+      let sources =
+        addSources report packages.Parent "File" "fullPath"
+
       let extract (owner: XElement) (target: XElement) =
         let summary =
           owner.Elements("Summary".X) |> Seq.head
@@ -390,18 +505,25 @@ module internal Cobertura =
         |> Seq.fold (processMethod fileid methods) (0, 0, 0, 0, 0, 0)
 
       let processClass
-        files
+        (files: Map<string, string>)
         (classes: XElement)
         (cvcum, ccum)
         ((name, fileid), methodSet)
         =
         let document = files |> Map.find fileid
+        let normalized = document.Replace('\\', '/')
+
+        let filename =
+          sources
+          |> Seq.tryFind (fun s -> normalized.StartsWith(s, StringComparison.Ordinal))
+          |> Option.map (fun start -> document.Substring(start.Length + 1))
+          |> Option.defaultValue document
 
         let ``class`` =
           XElement(
             "class".X,
             XAttribute("name".X, name),
-            XAttribute("filename".X, document)
+            XAttribute("filename".X, filename)
           )
 
         classes.Add(``class``)
@@ -477,8 +599,6 @@ module internal Cobertura =
         (report.Descendants("CoverageSession".X)
          |> Seq.head)
         packages.Parent
-
-      addSources report packages.Parent "File" "fullPath"
 
   let internal convertReport (report: XDocument) (format: ReportFormat) =
     let rewrite =

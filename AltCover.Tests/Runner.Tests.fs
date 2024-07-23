@@ -16,6 +16,7 @@ open Microsoft.FSharp.Reflection
 open Mono.Options
 
 #nowarn "25" // partial pattern match
+#nowarn "3559" // TODO
 
 module AltCoverUsage =
   let internal usageText =
@@ -58,32 +59,32 @@ module AltCoverRunnerTests =
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
     Assert.Throws<NotSupportedException>(fun () ->
-      ignore (ReportFormat.NativeJson |> Counter.I.xmlByFormat))
+      ignore (ReportFormat.NativeJson |> Counter.I.XmlByFormat))
     |> ignore
 
   [<Test>]
   let MaxTimeFirst () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.maxTime now ago) = now @>
+    test <@ (Counter.I.MaxTime(now, ago)) = now @>
 
   [<Test>]
   let MaxTimeLast () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.maxTime ago now) = now @>
+    test <@ (Counter.I.MaxTime(ago, now)) = now @>
 
   [<Test>]
   let MinTimeFirst () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.minTime ago now) = ago @>
+    test <@ (Counter.I.MinTime(ago, now)) = ago @>
 
   [<Test>]
   let MinTimeLast () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.minTime now ago) = ago @>
+    test <@ (Counter.I.MinTime(now, ago)) = ago @>
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
@@ -91,7 +92,7 @@ module AltCoverRunnerTests =
     let key = " "
 
     let index =
-      Counter.I.findIndexFromUspid 0 key
+      Counter.I.FindIndexFromUspid(0, key)
 
     test <@ index < 0 @>
 
@@ -105,7 +106,10 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v1 = Counter.addVisit visits key 23 Null
+
+    let v1 =
+      Counter.AddVisit(visits, key, 23, new Null())
+
     Assert.That(v1, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -126,7 +130,7 @@ module AltCoverRunnerTests =
     let payload = Time DateTime.UtcNow.Ticks
 
     let v2 =
-      Counter.addVisit visits key 23 payload
+      Counter.AddVisit(visits, key, 23, payload)
 
     Assert.That(v2, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
@@ -146,11 +150,14 @@ module AltCoverRunnerTests =
     visits.Add("key", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v3 = Counter.addVisit visits key 23 Null
+
+    let v3 =
+      Counter.AddVisit(visits, key, 23, new Null())
+
     Assert.That(v3, Is.EqualTo 1)
 
     let v4 =
-      Counter.addVisit visits "key" 42 Null
+      Counter.AddVisit(visits, "key", 42, new Null())
 
     Assert.That(visits.Count, Is.EqualTo 2)
     Assert.That(v4, Is.EqualTo 1)
@@ -165,9 +172,15 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v5 = Counter.addVisit visits key 23 Null
+
+    let v5 =
+      Counter.AddVisit(visits, key, 23, new Null())
+
     Assert.That(v5, Is.EqualTo 1)
-    let v6 = Counter.addVisit visits key 42 Null
+
+    let v6 =
+      Counter.AddVisit(visits, key, 42, new Null())
+
     Assert.That(v6, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 2)
@@ -182,9 +195,15 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-    let v7 = Counter.addVisit visits key 23 Null
+
+    let v7 =
+      Counter.AddVisit(visits, key, 23, new Null())
+
     Assert.That(v7, Is.EqualTo 1)
-    let v8 = Counter.addVisit visits key 23 Null
+
+    let v8 =
+      Counter.AddVisit(visits, key, 23, new Null())
+
     Assert.That(v8, Is.EqualTo 1)
     let x = visits.[key].[23]
     Assert.That(x.Count, Is.EqualTo 2)
@@ -201,11 +220,14 @@ module AltCoverRunnerTests =
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
-    let v9 = Counter.addVisit visits key 23 Null
+
+    let v9 =
+      Counter.AddVisit(visits, key, 23, new Null())
+
     Assert.That(v9, Is.EqualTo 1)
 
     let v10 =
-      Counter.addVisit visits key 23 payload
+      Counter.AddVisit(visits, key, 23, payload)
 
     Assert.That(v10, Is.EqualTo 1)
     let x = visits.[key].[23]
@@ -225,9 +247,8 @@ module AltCoverRunnerTests =
     |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
   let internal init n l =
-    let tmp =
-      { PointVisit.Create() with Count = n }
-
+    let mutable tmp = PointVisit.Create()
+    tmp.Count <- n
     tmp.Tracks.AddRange l
     tmp
 
@@ -263,14 +284,15 @@ module AltCoverRunnerTests =
 
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
-    Counter.I.updateReport
-      ignore
-      (fun _ _ -> ())
-      true
-      item
-      ReportFormat.OpenCover
-      worker
+    Counter.I.UpdateReport(
+      ignore,
+      (fun _ _ -> ()),
+      true,
+      item,
+      ReportFormat.OpenCover,
+      worker,
       worker2
+    )
     |> ignore
 
     worker2.Position <- 0L
@@ -2576,7 +2598,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
           ignore j)
 
       let counts =
@@ -2587,7 +2609,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case
@@ -2686,11 +2708,11 @@ module AltCoverRunnerTests =
 
         stream.CopyTo worker
 
-      let tracks t =
-        [| Null
-           Call 0
-           Time t
-           Both { Time = t; Call = 0 } |]
+      let tracks t : Track array =
+        [| Null() :> Track
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -2710,7 +2732,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -2823,7 +2845,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
           ignore j)
 
       let counts =
@@ -2834,7 +2856,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case 1
@@ -2984,11 +3006,11 @@ module AltCoverRunnerTests =
 
       Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
 
-      let tracks t =
-        [| Null
-           Call 0
-           Time t
-           Both { Time = t; Call = 0 } |]
+      let tracks t : Track array =
+        [| Null() :> Track
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3008,7 +3030,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3142,7 +3164,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
           ignore j)
 
       let counts =
@@ -3153,7 +3175,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case
@@ -3256,11 +3278,11 @@ module AltCoverRunnerTests =
 
         stream.CopyTo worker
 
-      let tracks t =
-        [| Null
-           Call 0
-           Time t
-           Both { Time = t; Call = 0 } |]
+      let tracks t : Track array =
+        [| Null() :> Track
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3280,7 +3302,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3405,7 +3427,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
           ignore j)
 
       let counts =
@@ -3416,7 +3438,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       // degenerate case 1
@@ -3574,11 +3596,11 @@ module AltCoverRunnerTests =
 
       Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
 
-      let tracks t =
-        [| Null
-           Call 0
-           Time t
-           Both { Time = t; Call = 0 } |]
+      let tracks t : Track array =
+        [| Null() :> Track
+           Call(0) :> Track
+           Time(t) :> Track
+           Both(Pair.Create(t, 0)) |]
 
       let t0 = tracks 0L
 
@@ -3598,7 +3620,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.addVisit counts moduleId hitPointId hit
+        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3853,7 +3875,7 @@ module AltCoverRunnerTests =
 
     let formatter =
       System.Runtime.Serialization.DataContractSerializer(
-        typeof<Tuple<String, Int32, AltCover.Track, DateTime>>
+        typeof<Tuple<String, Int32, DateTime>>
       )
 
     let r =
@@ -3873,7 +3895,7 @@ module AltCoverRunnerTests =
 
           l
           |> List.mapi (fun i x ->
-            formatter.WriteObject(pipe, (x, i, Null, DateTime.UtcNow))
+            formatter.WriteObject(pipe, (x, i, DateTime.UtcNow))
             x)
           |> List.length)
         [ "a"; "b"; String.Empty; "c" ]
@@ -3897,12 +3919,12 @@ module AltCoverRunnerTests =
       Path.Combine(where, Guid.NewGuid().ToString())
 
     let payloads0 =
-      [ Null
-        Call 17
-        Time 23L
-        Both { Time = 5L; Call = 42 }
-        Time 42L
-        Call 5 ]
+      [ Null() :> Track
+        Call(17) :> Track
+        Time(23L) :> Track
+        Both(Pair.Create(5, 42)) :> Track
+        Time(42L) :> Track
+        Call(5) :> Track ]
 
     let pv = init 42L (payloads0 |> List.tail)
 
@@ -3911,7 +3933,9 @@ module AltCoverRunnerTests =
 
     table.Add("Extra", Dictionary<int, PointVisit>())
     table.["Extra"].Add(3, pv)
-    let payloads = (Table table) :: payloads0
+
+    let payloads =
+      ((Table table) :> Track) :: payloads0
 
     let inputs =
       [ String.Empty
@@ -3942,44 +3966,44 @@ module AltCoverRunnerTests =
             formatter.Write i
 
             match y with
-            | Null -> formatter.Write(Tag.Null |> byte)
-            | Time t ->
+            | :? Null -> formatter.Write(Tag.Null |> byte)
+            | :? Time as t ->
               formatter.Write(Tag.Time |> byte)
-              formatter.Write(t)
-            | Call t ->
+              formatter.Write(t.Value)
+            | :? Call as t ->
               formatter.Write(Tag.Call |> byte)
-              formatter.Write(t)
-            | Both b ->
+              formatter.Write(t.Value)
+            | :? Both as b ->
               formatter.Write(Tag.Both |> byte)
-              formatter.Write(b.Time)
-              formatter.Write(b.Call)
-            | Table t ->
+              formatter.Write(b.Value.Time)
+              formatter.Write(b.Value.Call)
+            | :? Table as t ->
               formatter.Write(Tag.Table |> byte)
 
-              t.Keys
+              t.Value.Keys
               |> Seq.iter (fun m ->
                 formatter.Write m
-                formatter.Write t.[m].Keys.Count
+                formatter.Write t.Value.[m].Keys.Count
 
-                t.[m].Keys
+                t.Value.[m].Keys
                 |> Seq.iter (fun p ->
                   formatter.Write p
-                  let v = t.[m].[p]
+                  let v = t.Value.[m].[p]
                   formatter.Write v.Count
 
                   v.Tracks
                   |> Seq.iter (fun tx ->
                     match tx with
-                    | Time t ->
+                    | :? Time as t ->
                       formatter.Write(Tag.Time |> byte)
-                      formatter.Write(t)
-                    | Call t ->
+                      formatter.Write(t.Value)
+                    | :? Call as t ->
                       formatter.Write(Tag.Call |> byte)
-                      formatter.Write(t)
-                    | Both b ->
+                      formatter.Write(t.Value)
+                    | :? Both as b ->
                       formatter.Write(Tag.Both |> byte)
-                      formatter.Write(b.Time)
-                      formatter.Write(b.Call)
+                      formatter.Write(b.Value.Time)
+                      formatter.Write(b.Value.Call)
                   //| _ -> tx |> (sprintf "%A") |> Assert.Fail
                   )
 
@@ -4012,7 +4036,7 @@ module AltCoverRunnerTests =
     let d =
       Dictionary<int, int64 * Track list>()
 
-    d.Add(4, (0L, [ Both { Time = 5L; Call = 42 } ]))
+    d.Add(4, (0L, [ Both(Pair.Create(5, 42)) ]))
 
     let e =
       Dictionary<int, int64 * Track list>()
@@ -4059,12 +4083,12 @@ module AltCoverRunnerTests =
     let root = x.DocumentElement
 
     let hits =
-      [ Null
-        Call 17
-        Time 23L
-        Both { Time = 5L; Call = 42 }
-        Time 42L
-        Time 5L ]
+      [ Null() :> Track
+        Call(17) :> Track
+        Time(23L) :> Track
+        Both(Pair.Create(5, 42)) :> Track
+        Time(42L) :> Track
+        Time(5L) :> Track ]
 
     Runner.J.pointProcess root hits
 
@@ -5695,7 +5719,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      printfn "%s" result
+      //printfn "%s" result
 
       let resource2 =
         Assembly
@@ -5900,7 +5924,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      printfn "%s" result
+      //printfn "%s" result
 
       let resource2 =
         Assembly
@@ -6149,6 +6173,108 @@ module AltCoverRunnerTests =
     xmlDocument.LoadXml(result)
     xmlDocument.Schemas <- schema
     xmlDocument.Validate(null)
+
+  [<Test>]
+  let PathsSplitOK () =
+    let cases =
+      [
+#if WINDOWS
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg",
+         [ "C:\\"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ])
+#else
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg",
+         [ "C:"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ])
+#endif
+        ("/usr/home/anon/project/src/code.cs",
+         [ String([| Path.DirectorySeparatorChar |])
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ])
+        ("partial/path/OK", [ "partial"; "path"; "OK" ])
+        (String.Empty, [ String.Empty ])
+        (null, [ String.Empty ]) ]
+
+    cases
+    |> List.iter (fun (case, expect) ->
+      test <@ Cobertura.I.splitPath case = expect @>
+
+      if case.IsNotNull then
+        test
+          <@
+            case = (Path.Combine(List.toArray expect))
+              .Replace("\\", "/")
+          @>)
+
+  [<Test>]
+  let PathsGroupOK () =
+    let cases =
+      [ ([ "C:\\"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ],
+         "C:\\")
+        ([ "/"
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ],
+         "/usr")
+        ([ "\\"
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ],
+         "/usr")
+        ([ "/" ], "/")
+        ([ "\\" ], "/")
+        ([ "partial"; "path"; "OK" ], "partial")
+        ([], String.Empty)
+        ([ String.Empty ], String.Empty) ]
+
+    cases
+    |> List.iter (fun (case, expect) -> test <@ Cobertura.I.grouping case = expect @>)
+
+  [<Test>]
+  let ExtractSourcesOK () =
+    let sep =
+      String([| Path.DirectorySeparatorChar |])
+
+    let cases =
+      [ ([ "a" ], "a")
+        ([ "a/b/"; "a/b/c" ], "a/b" + sep)
+        ([ "a/b/x/y"; "a/c/d" ], "a" + sep)
+        ([ "c:\\b\\x\\y"; "c:\\b\\c\\d" ], "c:\\b" + sep) ]
+      |> List.map (fun (inputs, expect) ->
+        (inputs
+         |> Seq.map (fun x -> (x, Cobertura.I.splitPath x))),
+        expect)
+
+    Assert.Multiple(fun () ->
+      cases
+      |> Seq.iter (fun (case, expect) ->
+        test
+          <@ Cobertura.I.extractSource case = expect
+
+          @>))
 
   [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472;net20</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -23,17 +23,16 @@
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Adapter.fs" />
+    <Compile Include="Base.Tests.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
+    <None Include="Program.cs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <EmbeddedResource Include="Sample2NCoverage.xml" />
     <EmbeddedResource Include="SimpleCoverage.xml" />
   </ItemGroup>
 
@@ -59,19 +58,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj" />
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-
-    <PackageReference Include="FSharp.Core" Condition="'$(TargetFramework)' != 'net20'">
+    <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
-    <PackageReference Include="FSharp.Compiler.Tools" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="System.IO.Compression"/>
+    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>

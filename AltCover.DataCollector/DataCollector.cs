@@ -67,7 +67,7 @@ namespace AltCover
       RecorderInstance.ToList().ForEach(
         i =>
         {
-          var supervision = i.GetProperty("supervision",
+          var supervision = i.GetField("supervision",
                                   BindingFlags.Static | BindingFlags.NonPublic);
           if (supervision == null)
           {
@@ -97,11 +97,6 @@ namespace AltCover
       Debug.WriteLine("Debug TestCaseEnd {0} => {1}",
         testCaseEndArgs?.DataCollectionContext?.TestCase?.FullyQualifiedName,
         testCaseEndArgs?.TestOutcome);
-
-      //Console.Error.WriteLine(
-      //  "Console.Error.WriteLine TestCaseEnd {0} => {1}",
-      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-      //  testCaseEndArgs.TestOutcome);
 
       if (EqtTrace.IsInfoEnabled)
       {

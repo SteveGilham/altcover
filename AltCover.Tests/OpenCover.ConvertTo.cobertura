@@ -7,7 +7,7 @@
   <packages>
     <package name="Sample1" line-rate="0.71" branch-rate="0.5" complexity="2">
       <classes>
-        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.71" branch-rate="0.67" complexity="2">
+        <class name="TouchTest.Program" filename="Program.cs" line-rate="0.71" branch-rate="0.67" complexity="2">
           <methods>
             <method name="Main" signature="System.Void (System.String[])" line-rate="0.71" branch-rate="0.5" complexity="2">
               <lines>

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
+<coverage profilerVersion="AltCover 8.8.149.49679" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
+  <module moduleId="f7f80a77-e131-f5c7-da33-cd3b6036778a" name="C:\Users\email\Documents\Github\altcover\_Binaries\FSharpTypesDotNetCollecter_Sample2\Debug+AnyCPU\net8.0\__Saved\Sample2.dll" assembly="Sample2" assemblyIdentity="Sample2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+    <method name="main" class="N.Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Int32 N.Program.main(System.String[])">
+      <seqpnt visitcount="0" line="63" column="16" endline="63" endcolumn="17" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="returnFoo" class="N.DU" metadataToken="100663298" excluded="false" instrumented="true" fullname="N.DU+MyUnion N.DU.returnFoo(System.Int32)">
+      <seqpnt visitcount="0" line="49" column="21" endline="49" endcolumn="26" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="returnBar" class="N.DU" metadataToken="100663299" excluded="false" instrumented="true" fullname="N.DU+MyUnion N.DU.returnBar(System.String)">
+      <seqpnt visitcount="0" line="50" column="21" endline="50" endcolumn="26" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="testMakeUnion" class="N.DU" metadataToken="100663300" excluded="false" instrumented="true" fullname="System.Void N.DU.testMakeUnion()">
+      <seqpnt visitcount="0" line="56" column="5" endline="56" endcolumn="37" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="57" column="5" endline="57" endcolumn="39" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="58" column="5" endline="58" endcolumn="45" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="as_bar" class="N.DU+MyUnion" metadataToken="100663319" excluded="false" instrumented="true" fullname="N.DU+MyUnion N.DU+MyUnion.as_bar()">
+      <seqpnt visitcount="0" line="34" column="7" endline="34" endcolumn="10" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="35" column="9" endline="35" endcolumn="24" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="36" column="20" endline="36" endcolumn="33" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="37" column="20" endline="37" endcolumn="33" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="38" column="20" endline="38" endcolumn="33" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="40" column="16" endline="40" endcolumn="20" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="41" column="7" endline="41" endcolumn="11" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="42" column="9" endline="42" endcolumn="19" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="get_MyBar" class="N.DU+MyUnion" metadataToken="100663320" excluded="false" instrumented="true" fullname="Microsoft.FSharp.Core.FSharpFunc`2 N.DU+MyUnion.get_MyBar()">
+      <seqpnt visitcount="0" line="44" column="25" endline="44" endcolumn="36" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name=".ctor" class="N.DU+MyClass" metadataToken="100663341" excluded="false" instrumented="true" fullname="System.Void N.DU+MyClass.#ctor()">
+      <seqpnt visitcount="0" line="47" column="27" endline="47" endcolumn="28" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="makeThing" class="N.M" metadataToken="100663344" excluded="false" instrumented="true" fullname="N.M+Thing N.M.makeThing(System.String)">
+      <seqpnt visitcount="0" line="19" column="21" endline="19" endcolumn="34" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="testMakeThing" class="N.M" metadataToken="100663345" excluded="false" instrumented="true" fullname="System.Void N.M.testMakeThing()">
+      <seqpnt visitcount="0" line="23" column="5" endline="23" endcolumn="43" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+      <seqpnt visitcount="0" line="24" column="5" endline="24" endcolumn="54" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+    <method name="bytes" class="N.M+Thing" metadataToken="100663355" excluded="false" instrumented="true" fullname="System.Byte[] N.M+Thing.bytes()">
+      <seqpnt visitcount="0" line="17" column="7" endline="17" endcolumn="53" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
+    </method>
+  </module>
+</coverage>

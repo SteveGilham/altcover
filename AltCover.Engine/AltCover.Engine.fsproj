@@ -12,7 +12,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-    <!-- OtherFlags>- -keyfile:$(SolutionDir)Build\Infrastructure.snk - -staticlink:Manatee.Json</OtherFlags -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +25,7 @@
     <Compile Include="Output.fs" />
     <Compile Include="Canonical.fs" />
     <Compile Include="Augment.fs" />
-    <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
+    <None Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Metadata.fs" />
@@ -67,10 +66,10 @@
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Recorder\Release+AnyCPU\net20\AltCover.Recorder.dll">
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Repack\AltCover.Recorder.dll">
       <Link>AltCover.Recorder.net20.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Async\Release+AnyCPU\net46\AltCover.Async.dll">
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Repack\AltCover.Async.dll">
       <Link>AltCover.Async.net46.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
@@ -119,6 +118,10 @@
   <ItemGroup>
     <AbstractFsi Include="$(ProjectDir)Abstract.fsi" />
     <AbstractFs Include="$(ProjectDir)Abstract.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.Base\AltCover.Base.csproj" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

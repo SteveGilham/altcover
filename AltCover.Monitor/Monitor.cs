@@ -222,16 +222,16 @@ namespace AltCover.Local
       var found = false;
       foreach (var t in counter)
       {
-        var temp = (Int64)t.GetProperty("branchVisits",
+        var temp = (Int64)t.GetField("branchVisits",
            System.Reflection.BindingFlags.NonPublic |
            System.Reflection.BindingFlags.Public |
-           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes);
+           System.Reflection.BindingFlags.Static).GetValue(null);
         totals.Branch = (int)temp;
 
-        temp = (Int64)t.GetProperty("totalVisits",
+        temp = (Int64)t.GetField("totalVisits",
            System.Reflection.BindingFlags.NonPublic |
            System.Reflection.BindingFlags.Public |
-           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes);
+           System.Reflection.BindingFlags.Static).GetValue(null);
         totals.Code = (int)temp - totals.Branch;
 
         found = true;

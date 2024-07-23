@@ -12,6 +12,11 @@ module ExpectoTestManifest =
   let simpleTests () =
     [|
 #endif
+       Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
+       Tests.BaseTests.ExerciseTime, "BaseTests.ExerciseTime"
+       Tests.BaseTests.ExerciseCall, "BaseTests.ExerciseCall"
+       Tests.BaseTests.ExerciseNull, "BaseTests.ExerciseNull"
+       Tests.BaseTests.ExercisePointVisit, "BaseTests.ExercisePointVisit"
        Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
        Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
        Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
@@ -274,6 +279,9 @@ module ExpectoTestManifest =
        "Runner.NCoverWithOverloadsShouldGeneratePlausibleCobertura"
        Tests.AltCoverRunnerTests.NCoverShouldGenerateMorePlausibleCobertura,
        "Runner.NCoverShouldGenerateMorePlausibleCobertura"
+       Tests.AltCoverRunnerTests.PathsSplitOK, "Runner.PathsSplitOK"
+       Tests.AltCoverRunnerTests.PathsGroupOK, "Runner.PathsGroupOK"
+       Tests.AltCoverRunnerTests.ExtractSourcesOK, "Runner.ExtractSourcesOK"
        Tests.AltCoverRunnerTests.DegenerateCasesShouldNotGenerateCobertura,
        "Runner.DegenerateCasesShouldNotGenerateCobertura"
        Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName,

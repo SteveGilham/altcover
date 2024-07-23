@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;RECORDER2;$(ExtraDefines)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;RELEASE;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
@@ -19,17 +19,19 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample2NCoverage.xml" Link="Sample2NCoverage.xml" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Adapter.fs" Link="Adapter.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.fs" Link="Tracer.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" Condition="'$(TargetFramework)' != 'ne472'" />
+    <None Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.cs" Condition="'$(TargetFramework)' == 'net472'" />
+
   </ItemGroup>
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector">
@@ -45,7 +47,6 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Compiler.Tools" />
     <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 

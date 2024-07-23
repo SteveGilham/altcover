@@ -3,10 +3,10 @@
   <ItemGroup>
     <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="5.23.0.42" />
     <PackageVersion Include="AltCode.Dixon" Version="2022.12.6.11014" />
-    <PackageVersion Include="altcode.gendarme" Version="2023.12.27.19054" />
-    <PackageVersion Include="altcover" Version="8.8.74" />
-    <PackageVersion Include="AltCover.Api" Version="8.8.74" />
-    <PackageVersion Include="AltCover.Fake" Version="8.8.74" />
+    <PackageVersion Include="altcode.gendarme" Version="2024.6.28.12460" />
+    <PackageVersion Include="altcover" Version="8.8.165" />
+    <PackageVersion Include="AltCover.Api" Version="8.8.165" />
+    <PackageVersion Include="AltCover.Fake" Version="8.8.165" />
     <PackageVersion Include="Avalonia" Version="11.0.10" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.0.10" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.0.10" />
@@ -46,6 +46,7 @@
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="Markdig" Version="0.35.0" />
+    <PackageVersion Include="ILRepack" Version="2.0.34" />
     <PackageVersion Include="MessageBox.Avalonia" Version="3.1.5.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
