@@ -82,7 +82,7 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 
   let sample1path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
+    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net46/Sample1.exe")
 
 #if !NET472
   let sample4path =
@@ -98,7 +98,7 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
   let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
+    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net46/Sample8.exe")
 
   let sample32path =
     Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net472/Sample32.exe")
@@ -3346,8 +3346,8 @@ module AltCoverTests =
         "set_CoverageFormat"
         "get_Sample"
         "set_Sample"
-        "get_Modules"
-        "set_Modules"
+        "get_modules"
+        "set_modules"
         "ToList"
         "#ctor"
         "#ctor"
@@ -3401,8 +3401,8 @@ module AltCoverTests =
         "System.Void AltCover.Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
         "System.Int32 AltCover.Sample3.Class3+Class4.get_Sample()"
         "System.Void AltCover.Sample3.Class3+Class4.set_Sample(System.Int32)"
-        "System.String[] AltCover.Sample3.Class3+Class4.get_Modules()"
-        "System.Void AltCover.Sample3.Class3+Class4.set_Modules(System.String[])"
+        "System.String[] AltCover.Sample3.Class3+Class4.get_modules()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_modules(System.String[])"
         "System.Collections.Generic.List`1<T> AltCover.Sample3.Class3+Class4.ToList<T>(T)"
         "System.Void AltCover.Sample3.Class3+Class4.#ctor()"
         "System.String AltCover.Recorder.InstrumentationAttribute.get_Assembly()"

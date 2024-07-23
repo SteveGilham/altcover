@@ -1026,12 +1026,12 @@ module internal Runner =
                     id,
                     strike,
                     match enum tag with
-                    | Tag.Time -> (Time <| formatter.ReadInt64()) :> Track
-                    | Tag.Call -> (Call <| formatter.ReadInt32()) :> Track
+                    | Tag.Time -> Time <| formatter.ReadInt64()
+                    | Tag.Call -> Call <| formatter.ReadInt32()
                     | Tag.Both ->
                       let time = formatter.ReadInt64()
                       let call = formatter.ReadInt32()
-                      Both(Pair.Create(time, call))
+                      Both { Time = time; Call = call }
                     | Tag.Table ->
                       let t =
                         Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1057,7 +1057,7 @@ module internal Runner =
                               if p |> t.[m].ContainsKey |> not then
                                 t.[m].Add(p, PointVisit.Create())
 
-                              let mutable pv = t.[m].[p]
+                              let pv = t.[m].[p]
                               pv.Count <- pv.Count + n
 
                               // [<TailCall>]
@@ -1075,7 +1075,7 @@ module internal Runner =
                                   pv.Tracks.Add(
                                     let time = formatter.ReadInt64()
                                     let call = formatter.ReadInt32()
-                                    Both(Pair.Create(time, call))
+                                    Both { Time = time; Call = call }
                                   )
 
                                   tracking ()
@@ -1090,7 +1090,7 @@ module internal Runner =
 
                       ``module`` ()
                       Table t
-                    | _ -> Null()
+                    | _ -> Null
                   )
                 with :? EndOfStreamException ->
                   None
@@ -1104,7 +1104,8 @@ module internal Runner =
                     key |> String.IsNullOrWhiteSpace |> not
                     || ((String.IsNullOrEmpty key)
                         && hitPointId = 0
-                        && visit.GetType() = typeof<AltCover.Table>)
+                        && visit.GetType().ToString()
+                           == "AltCover.Track+Table")
                   then
                     if
                       hits.ContainsKey key |> not
@@ -1112,7 +1113,7 @@ module internal Runner =
                     then
                       hits.Add(key, Dictionary<int, PointVisit>())
 
-                    Counter.AddVisit(hits, key, hitPointId, visit)
+                    Counter.addVisit hits key hitPointId visit
                   else
                     0L
 
@@ -1189,11 +1190,11 @@ module internal Runner =
 
     let internal extractTracks tracks =
       tracks
-      |> Seq.map (fun (t: Track) ->
+      |> Seq.map (fun t ->
         match t with
-        | :? Time as x -> (Some x.Value, None)
-        | :? Both as b -> (Some b.Value.Time, Some b.Value.Call)
-        | :? Call as y -> (None, Some y.Value)
+        | Time x -> (Some x, None)
+        | Both b -> (Some b.Time, Some b.Call)
+        | Call y -> (None, Some y)
         | _ -> (None, None))
       |> Seq.toList
       |> List.unzip
@@ -1225,7 +1226,7 @@ module internal Runner =
             entrypoint.Tracks
             |> Seq.iter (fun t ->
               match t with
-              | :? Time as tx -> tx.Value |> NativeJson.fromTracking |> m.Entry.Add
+              | Time tx -> tx |> NativeJson.fromTracking |> m.Entry.Add
               | _ -> ())
 
         let e3, exits = hits.TryGetValue Track.Exit
@@ -1238,7 +1239,7 @@ module internal Runner =
             exitpoint.Tracks
             |> Seq.iter (fun t ->
               match t with
-              | :? Time as tx -> tx.Value |> NativeJson.fromTracking |> m.Exit.Add
+              | Time tx -> tx |> NativeJson.fromTracking |> m.Exit.Add
               | _ -> ())
 
       let fillTracks tracks calls =
@@ -1278,7 +1279,7 @@ module internal Runner =
             let calls = calls' |> Seq.choose id
 
             { sp with
-                VC = (int <| count.Total) + Math.Max(0, sp.VC)
+                VC = (int <| count.Total()) + Math.Max(0, sp.VC)
                 Tracks = fillTracks sp.Tracks calls
                 Times = fillTimes sp.Times times }
           else
@@ -1302,7 +1303,7 @@ module internal Runner =
             let calls = calls' |> Seq.choose id
 
             { bp with
-                Hits = (int <| count.Total) + Math.Max(0, bp.Hits)
+                Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
                 Tracks = fillTracks bp.Tracks calls
                 Times = fillTimes bp.Times times }
           else
@@ -1391,15 +1392,14 @@ module internal Runner =
             | _ -> new MemoryStream() :> Stream
 
           let result =
-            AltCover.Counter.DoFlushStream(
-              (postProcess hits format),
-              pointProcess,
-              true,
-              hits,
-              format,
-              file,
+            AltCover.Counter.doFlushStream
+              (postProcess hits format)
+              pointProcess
+              true
+              hits
+              format
+              file
               outputFile
-            )
 
           match arg with
           | None -> ()

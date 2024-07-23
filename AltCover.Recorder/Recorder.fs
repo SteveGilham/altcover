@@ -9,17 +9,12 @@ open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
-
 open System.Resources
 open System.Runtime.CompilerServices
-#if !NET20
 open System.Threading
-#endif
 
-open AltCover.Shared
-
-module Instance =
   // Public "fields"
+module Instance =
 
   /// <summary>
   /// Gets the location of coverage xml file
@@ -40,7 +35,7 @@ module Instance =
   /// This property's IL code is modified to store the actual value
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let Eager = false
+  let Eager = true
 
   /// <summary>
   /// Gets the style of the associated report
@@ -72,7 +67,12 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal Sample = Sampling.All // fsharplint:disable-line NonPublicValuesNames
+  let
+#if DEBUG
+      mutable
+#endif
+      internal Sample = // fsharplint:disable-line NonPublicValuesNames
+    Sampling.All
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -95,6 +95,11 @@ module Instance =
   let mutable internal modules =
     [| String.Empty |]
 
+  let private pattern =
+      System.Text.RegularExpressions.Regex(
+        "^AltCover\.DataCollector, Version=.*, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8$"
+      )
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
@@ -102,10 +107,8 @@ module Instance =
     //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
-    |> Seq.exists (fun n ->
-      n.Name == "AltCover.DataCollector"
-      && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
-    && Token <> "AltCover"
+    |> Seq.exists (fun n -> pattern.IsMatch(n.FullName))
+       && Token <> "AltCover"
 
   type internal Sampled =
     | Visit of int
@@ -160,21 +163,6 @@ module Instance =
 
     let internal synchronize = Object()
 
-#if NET20
-    // class needed for "[ThreadStatic] static val mutable"
-    [<Sealed>]
-    type private AsyncLocal<'a>() =
-      [<ThreadStatic; DefaultValue>]
-      static val mutable private item: 'a
-
-      [<SuppressMessage("Gendarme.Rules.Correctness",
-                        "MethodCanBeMadeStaticRule",
-                        Justification = "It's a compatibility hack")>]
-      member this.Value
-        with get () = AsyncLocal<'a>.item
-        and set (value) = AsyncLocal<'a>.item <- value
-#endif
-
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
@@ -182,6 +170,9 @@ module Instance =
       let value = AsyncLocal<Stack<int>>()
 
       // no race conditions here
+      [<SuppressMessage("Gendarme.Rules.Performance",
+                        "AvoidRepetitiveCallsToPropertiesRule",
+                        Justification = "Initialization guard")>]
       let instance () =
         match value.Value with
         | null -> value.Value <- Stack<int>()
@@ -247,6 +238,9 @@ module Instance =
     /// <summary>
     /// This method flushes hit count buffers.
     /// </summary>
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Simpler this way")>]
     let internal flushAll _ =
       let counts = visits
       clear ()
@@ -423,7 +417,7 @@ module Instance =
          || takeSample Sample moduleId hitPointId context)
       then
         let adder =
-          if !Eager || supervision || (trace.IsConnected |> not) then
+          if (not Eager) || supervision || (trace.IsConnected |> not) then
             addVisit
           else
             traceVisit
@@ -460,6 +454,9 @@ module Instance =
     let internal visitSelection track moduleId hitPointId =
       visitImpl moduleId hitPointId track
 
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "Simpler this way")>]
     let internal flushCounter (finish: Close) _ =
       match finish with
       | Resume -> flushResume ()
@@ -539,4 +536,27 @@ module Instance =
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder",
                             Justification =
                               "Compiler generated doExit@453 and :doUnload@450")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUncalledPrivateCodeRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "Coverage test toggle")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Recorder.Instance::get_Sample()",
+                            Justification = "It's a property")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "It's a property")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "It's a property")>]
 ()

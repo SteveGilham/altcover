@@ -27,7 +27,6 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" Link="InstrumentationAttribute.fs" />
     <Compile Include="TestCommon.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
     <Compile Include="Runner.Tests.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Tests2.fs" />
@@ -106,13 +105,12 @@
     <EmbeddedResource Include="Issue222.NCover.lcov" />
     <EmbeddedResource Include="Issue222.OpenCover.xml" />
     <EmbeddedResource Include="Issue222.OpenCover.cobertura" />
-    <EmbeddedResource Include="$(ProjectDir)../_Repack/AltCover.Recorder.dll">
-      <Link>AltCover.Recorder.net20.dll</Link>
+    <EmbeddedResource Include="$(ProjectDir)../_Binaries/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Base\AltCover.Base.csproj" />
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
     <ProjectReference Include="..\AltCover\AltCover.fsproj" />
     <ProjectReference Include="..\Samples\Sample11\Sample11.csproj" />

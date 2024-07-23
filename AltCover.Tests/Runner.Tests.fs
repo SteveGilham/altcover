@@ -16,7 +16,6 @@ open Microsoft.FSharp.Reflection
 open Mono.Options
 
 #nowarn "25" // partial pattern match
-#nowarn "3559" // TODO
 
 module AltCoverUsage =
   let internal usageText =
@@ -59,32 +58,32 @@ module AltCoverRunnerTests =
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
     Assert.Throws<NotSupportedException>(fun () ->
-      ignore (ReportFormat.NativeJson |> Counter.I.XmlByFormat))
+      ignore (ReportFormat.NativeJson |> Counter.I.xmlByFormat))
     |> ignore
 
   [<Test>]
   let MaxTimeFirst () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.MaxTime(now, ago)) = now @>
+    test <@ (Counter.I.maxTime now ago) = now @>
 
   [<Test>]
   let MaxTimeLast () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.MaxTime(ago, now)) = now @>
+    test <@ (Counter.I.maxTime ago now) = now @>
 
   [<Test>]
   let MinTimeFirst () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.MinTime(ago, now)) = ago @>
+    test <@ (Counter.I.minTime ago now) = ago @>
 
   [<Test>]
   let MinTimeLast () =
     let now = DateTime.Now
     let ago = now - TimeSpan(1, 0, 0, 0)
-    test <@ (Counter.I.MinTime(now, ago)) = ago @>
+    test <@ (Counter.I.minTime now ago) = ago @>
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
@@ -92,7 +91,7 @@ module AltCoverRunnerTests =
     let key = " "
 
     let index =
-      Counter.I.FindIndexFromUspid(0, key)
+      Counter.I.findIndexFromUspid 0 key
 
     test <@ index < 0 @>
 
@@ -106,10 +105,7 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-
-    let v1 =
-      Counter.AddVisit(visits, key, 23, new Null())
-
+    let v1 = Counter.addVisit visits key 23 Null
     Assert.That(v1, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -130,7 +126,7 @@ module AltCoverRunnerTests =
     let payload = Time DateTime.UtcNow.Ticks
 
     let v2 =
-      Counter.AddVisit(visits, key, 23, payload)
+      Counter.addVisit visits key 23 payload
 
     Assert.That(v2, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
@@ -150,14 +146,11 @@ module AltCoverRunnerTests =
     visits.Add("key", Dictionary<int, PointVisit>())
 
     let key = " "
-
-    let v3 =
-      Counter.AddVisit(visits, key, 23, new Null())
-
+    let v3 = Counter.addVisit visits key 23 Null
     Assert.That(v3, Is.EqualTo 1)
 
     let v4 =
-      Counter.AddVisit(visits, "key", 42, new Null())
+      Counter.addVisit visits "key" 42 Null
 
     Assert.That(visits.Count, Is.EqualTo 2)
     Assert.That(v4, Is.EqualTo 1)
@@ -172,15 +165,9 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-
-    let v5 =
-      Counter.AddVisit(visits, key, 23, new Null())
-
+    let v5 = Counter.addVisit visits key 23 Null
     Assert.That(v5, Is.EqualTo 1)
-
-    let v6 =
-      Counter.AddVisit(visits, key, 42, new Null())
-
+    let v6 = Counter.addVisit visits key 42 Null
     Assert.That(v6, Is.EqualTo 1)
     Assert.That(visits.Count, Is.EqualTo 1)
     Assert.That(visits.[key].Count, Is.EqualTo 2)
@@ -195,15 +182,9 @@ module AltCoverRunnerTests =
     visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
-
-    let v7 =
-      Counter.AddVisit(visits, key, 23, new Null())
-
+    let v7 = Counter.addVisit visits key 23 Null
     Assert.That(v7, Is.EqualTo 1)
-
-    let v8 =
-      Counter.AddVisit(visits, key, 23, new Null())
-
+    let v8 = Counter.addVisit visits key 23 Null
     Assert.That(v8, Is.EqualTo 1)
     let x = visits.[key].[23]
     Assert.That(x.Count, Is.EqualTo 2)
@@ -220,14 +201,11 @@ module AltCoverRunnerTests =
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
-
-    let v9 =
-      Counter.AddVisit(visits, key, 23, new Null())
-
+    let v9 = Counter.addVisit visits key 23 Null
     Assert.That(v9, Is.EqualTo 1)
 
     let v10 =
-      Counter.AddVisit(visits, key, 23, payload)
+      Counter.addVisit visits key 23 payload
 
     Assert.That(v10, Is.EqualTo 1)
     let x = visits.[key].[23]
@@ -247,8 +225,9 @@ module AltCoverRunnerTests =
     |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
   let internal init n l =
-    let mutable tmp = PointVisit.Create()
-    tmp.Count <- n
+    let tmp =
+      { PointVisit.Create() with Count = n }
+
     tmp.Tracks.AddRange l
     tmp
 
@@ -284,15 +263,14 @@ module AltCoverRunnerTests =
 
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
-    Counter.I.UpdateReport(
-      ignore,
-      (fun _ _ -> ()),
-      true,
-      item,
-      ReportFormat.OpenCover,
-      worker,
+    Counter.I.updateReport
+      ignore
+      (fun _ _ -> ())
+      true
+      item
+      ReportFormat.OpenCover
+      worker
       worker2
-    )
     |> ignore
 
     worker2.Position <- 0L
@@ -2178,8 +2156,7 @@ module AltCoverRunnerTests =
             Assembly
               .GetExecutingAssembly()
               .GetManifestResourceNames()
-            |> Seq.find
-              _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
+            |> Seq.find _.EndsWith("AltCover.Recorder.dll", StringComparison.Ordinal)
 
           use frombytes =
             Assembly
@@ -2429,8 +2406,7 @@ module AltCoverRunnerTests =
               Assembly
                 .GetExecutingAssembly()
                 .GetManifestResourceNames()
-              |> Seq.find
-                _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
+              |> Seq.find _.EndsWith("AltCover.Recorder.dll", StringComparison.Ordinal)
 
             use frombytes =
               Assembly
@@ -2598,7 +2574,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
           ignore j)
 
       let counts =
@@ -2609,7 +2585,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       // degenerate case
@@ -2708,11 +2684,11 @@ module AltCoverRunnerTests =
 
         stream.CopyTo worker
 
-      let tracks t : Track array =
-        [| Null() :> Track
-           Call(0) :> Track
-           Time(t) :> Track
-           Both(Pair.Create(t, 0)) |]
+      let tracks t =
+        [| Null
+           Call 0
+           Time t
+           Both { Time = t; Call = 0 } |]
 
       let t0 = tracks 0L
 
@@ -2732,7 +2708,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -2845,7 +2821,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
           ignore j)
 
       let counts =
@@ -2856,7 +2832,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       // degenerate case 1
@@ -3006,11 +2982,11 @@ module AltCoverRunnerTests =
 
       Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
 
-      let tracks t : Track array =
-        [| Null() :> Track
-           Call(0) :> Track
-           Time(t) :> Track
-           Both(Pair.Create(t, 0)) |]
+      let tracks t =
+        [| Null
+           Call 0
+           Time t
+           Both { Time = t; Call = 0 } |]
 
       let t0 = tracks 0L
 
@@ -3030,7 +3006,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3164,7 +3140,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
           ignore j)
 
       let counts =
@@ -3175,7 +3151,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       // degenerate case
@@ -3278,11 +3254,11 @@ module AltCoverRunnerTests =
 
         stream.CopyTo worker
 
-      let tracks t : Track array =
-        [| Null() :> Track
-           Call(0) :> Track
-           Time(t) :> Track
-           Both(Pair.Create(t, 0)) |]
+      let tracks t =
+        [| Null
+           Call 0
+           Time t
+           Both { Time = t; Call = 0 } |]
 
       let t0 = tracks 0L
 
@@ -3302,7 +3278,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3427,7 +3403,7 @@ module AltCoverRunnerTests =
       [ 0..9 ]
       |> Seq.iter (fun i ->
         for j = 1 to i + 1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, new Null())
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
           ignore j)
 
       let counts =
@@ -3438,7 +3414,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       // degenerate case 1
@@ -3596,11 +3572,11 @@ module AltCoverRunnerTests =
 
       Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
 
-      let tracks t : Track array =
-        [| Null() :> Track
-           Call(0) :> Track
-           Time(t) :> Track
-           Both(Pair.Create(t, 0)) |]
+      let tracks t =
+        [| Null
+           Call 0
+           Time t
+           Both { Time = t; Call = 0 } |]
 
       let t0 = tracks 0L
 
@@ -3620,7 +3596,7 @@ module AltCoverRunnerTests =
         if counts.ContainsKey moduleId |> not then
           counts.Add(moduleId, Dictionary<int, PointVisit>())
 
-        AltCover.Counter.AddVisit(counts, moduleId, hitPointId, hit)
+        AltCover.Counter.addVisit counts moduleId hitPointId hit
         |> ignore)
 
       let entries = Dictionary<int, PointVisit>()
@@ -3875,7 +3851,7 @@ module AltCoverRunnerTests =
 
     let formatter =
       System.Runtime.Serialization.DataContractSerializer(
-        typeof<Tuple<String, Int32, DateTime>>
+        typeof<Tuple<String, Int32, AltCover.Track, DateTime>>
       )
 
     let r =
@@ -3895,7 +3871,7 @@ module AltCoverRunnerTests =
 
           l
           |> List.mapi (fun i x ->
-            formatter.WriteObject(pipe, (x, i, DateTime.UtcNow))
+            formatter.WriteObject(pipe, (x, i, Null, DateTime.UtcNow))
             x)
           |> List.length)
         [ "a"; "b"; String.Empty; "c" ]
@@ -3919,12 +3895,12 @@ module AltCoverRunnerTests =
       Path.Combine(where, Guid.NewGuid().ToString())
 
     let payloads0 =
-      [ Null() :> Track
-        Call(17) :> Track
-        Time(23L) :> Track
-        Both(Pair.Create(5, 42)) :> Track
-        Time(42L) :> Track
-        Call(5) :> Track ]
+      [ Null
+        Call 17
+        Time 23L
+        Both { Time = 5L; Call = 42 }
+        Time 42L
+        Call 5 ]
 
     let pv = init 42L (payloads0 |> List.tail)
 
@@ -3933,9 +3909,7 @@ module AltCoverRunnerTests =
 
     table.Add("Extra", Dictionary<int, PointVisit>())
     table.["Extra"].Add(3, pv)
-
-    let payloads =
-      ((Table table) :> Track) :: payloads0
+    let payloads = (Table table) :: payloads0
 
     let inputs =
       [ String.Empty
@@ -3966,44 +3940,44 @@ module AltCoverRunnerTests =
             formatter.Write i
 
             match y with
-            | :? Null -> formatter.Write(Tag.Null |> byte)
-            | :? Time as t ->
+            | Null -> formatter.Write(Tag.Null |> byte)
+            | Time t ->
               formatter.Write(Tag.Time |> byte)
-              formatter.Write(t.Value)
-            | :? Call as t ->
+              formatter.Write(t)
+            | Call t ->
               formatter.Write(Tag.Call |> byte)
-              formatter.Write(t.Value)
-            | :? Both as b ->
+              formatter.Write(t)
+            | Both b ->
               formatter.Write(Tag.Both |> byte)
-              formatter.Write(b.Value.Time)
-              formatter.Write(b.Value.Call)
-            | :? Table as t ->
+              formatter.Write(b.Time)
+              formatter.Write(b.Call)
+            | Table t ->
               formatter.Write(Tag.Table |> byte)
 
-              t.Value.Keys
+              t.Keys
               |> Seq.iter (fun m ->
                 formatter.Write m
-                formatter.Write t.Value.[m].Keys.Count
+                formatter.Write t.[m].Keys.Count
 
-                t.Value.[m].Keys
+                t.[m].Keys
                 |> Seq.iter (fun p ->
                   formatter.Write p
-                  let v = t.Value.[m].[p]
+                  let v = t.[m].[p]
                   formatter.Write v.Count
 
                   v.Tracks
                   |> Seq.iter (fun tx ->
                     match tx with
-                    | :? Time as t ->
+                    | Time t ->
                       formatter.Write(Tag.Time |> byte)
-                      formatter.Write(t.Value)
-                    | :? Call as t ->
+                      formatter.Write(t)
+                    | Call t ->
                       formatter.Write(Tag.Call |> byte)
-                      formatter.Write(t.Value)
-                    | :? Both as b ->
+                      formatter.Write(t)
+                    | Both b ->
                       formatter.Write(Tag.Both |> byte)
-                      formatter.Write(b.Value.Time)
-                      formatter.Write(b.Value.Call)
+                      formatter.Write(b.Time)
+                      formatter.Write(b.Call)
                   //| _ -> tx |> (sprintf "%A") |> Assert.Fail
                   )
 
@@ -4036,7 +4010,7 @@ module AltCoverRunnerTests =
     let d =
       Dictionary<int, int64 * Track list>()
 
-    d.Add(4, (0L, [ Both(Pair.Create(5, 42)) ]))
+    d.Add(4, (0L, [ Both { Time = 5L; Call = 42 } ]))
 
     let e =
       Dictionary<int, int64 * Track list>()
@@ -4083,12 +4057,12 @@ module AltCoverRunnerTests =
     let root = x.DocumentElement
 
     let hits =
-      [ Null() :> Track
-        Call(17) :> Track
-        Time(23L) :> Track
-        Both(Pair.Create(5, 42)) :> Track
-        Time(42L) :> Track
-        Time(5L) :> Track ]
+      [ Null
+        Call 17
+        Time 23L
+        Both { Time = 5L; Call = 42 }
+        Time 42L
+        Time 5L ]
 
     Runner.J.pointProcess root hits
 
@@ -5719,7 +5693,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      //printfn "%s" result
+      printfn "%s" result
 
       let resource2 =
         Assembly
@@ -5924,7 +5898,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      //printfn "%s" result
+      printfn "%s" result
 
       let resource2 =
         Assembly

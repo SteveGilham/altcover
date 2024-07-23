@@ -23,11 +23,10 @@
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Base.Tests.fs" />
+    <Compile Include="Adapter.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
-    <None Include="Program.cs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,23 +47,17 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
-    <PackageReference Include="NUnit" VersionOverride="3.14.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net20'">
-    <!-- last net2.0 support here : v 3.11.0 -->
-    <PackageReference Include="NUnit" VersionOverride="3.11.0" />
+  <ItemGroup>
+    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.csproj" />
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="System.IO.Compression" />
+    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" />
+    <PackageReference Include="System.IO.Compression"/>
   </ItemGroup>
 </Project>

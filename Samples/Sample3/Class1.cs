@@ -51,8 +51,8 @@ namespace AltCover.Sample3
       public int CoverageFormat { get; set; }
       public int Sample { get; set; }
       public Int64 Timer { get; set; }
-      public bool Eager { get; set; }
-      public static string[] Modules { get; set; }
+      public bool Defer { get; set; }
+      public static string[] modules { get; set; }
     }
 
     private static List<Tuple<string, int>> log = new List<Tuple<string, int>>();

@@ -1353,7 +1353,7 @@ module AltCoverXTests =
     use from =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.dll")
 
     use recorder =
       AssemblyResolver.ReadAssembly from
@@ -1427,7 +1427,7 @@ module AltCoverXTests =
           t1.GetNestedType("CallTrack", BindingFlags.NonPublic)
 
         let p =
-          t2.GetProperty("Value", BindingFlags.NonPublic ||| BindingFlags.Static)
+          t2.GetProperty("value", BindingFlags.NonPublic ||| BindingFlags.Static)
 
         let v = p.GetValue(nullObject)
 
@@ -1435,7 +1435,7 @@ module AltCoverXTests =
         test <@ v.GetType() = typeof<System.Threading.AsyncLocal<Stack<int>>> @>
 
         let m =
-          t2.GetMethod("Instance", BindingFlags.NonPublic ||| BindingFlags.Static)
+          t2.GetMethod("instance", BindingFlags.NonPublic ||| BindingFlags.Static)
 
         let v2 = m.Invoke(nullObject, [||])
 
@@ -1469,7 +1469,7 @@ module AltCoverXTests =
         use from =
           Assembly
             .GetExecutingAssembly()
-            .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+            .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.dll")
 
         let updated =
           Instrument.I.prepareAssembly from
