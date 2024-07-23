@@ -13,8 +13,6 @@ open System.Resources
 open System.Runtime.CompilerServices
 open System.Threading
 
-open AltCover.Shared
-
   // Public "fields"
 module Instance =
 
@@ -69,7 +67,12 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal Sample = Sampling.All // fsharplint:disable-line NonPublicValuesNames
+  let
+#if DEBUG
+      mutable
+#endif
+      internal Sample = // fsharplint:disable-line NonPublicValuesNames
+    Sampling.All
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -92,6 +95,11 @@ module Instance =
   let mutable internal modules =
     [| String.Empty |]
 
+  let private pattern =
+      System.Text.RegularExpressions.Regex(
+        "^AltCover\.DataCollector, Version=.*, Culture=neutral, PublicKeyToken=c02b1a9f5b7cade8$"
+      )
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
@@ -99,10 +107,8 @@ module Instance =
     //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
-    |> Seq.exists (fun n ->
-      n.Name == "AltCover.DataCollector"
-      && n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
-    && Token <> "AltCover"
+    |> Seq.exists (fun n -> pattern.IsMatch(n.FullName))
+       && Token <> "AltCover"
 
   type internal Sampled =
     | Visit of int
@@ -530,4 +536,27 @@ module Instance =
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder",
                             Justification =
                               "Compiler generated doExit@453 and :doUnload@450")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUncalledPrivateCodeRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "Coverage test toggle")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Recorder.Instance::get_Sample()",
+                            Justification = "It's a property")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "It's a property")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Recorder.Instance::set_Sample(AltCover.Recorder.Sampling)",
+                            Justification = "It's a property")>]
 ()

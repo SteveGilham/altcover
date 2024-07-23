@@ -6,8 +6,6 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
 
-open AltCover.Shared
-
 [<ExcludeFromCodeCoverage>]
 type internal Close =
   | DomainUnload

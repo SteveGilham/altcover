@@ -2518,23 +2518,11 @@ module Targets =
             AltCover.CollectOptions.Primitive
             <| Primitive.CollectOptions.Create()
 
-          if proj.Contains("Recorder") then
-            doMSBuild
-              (withDebug
-               >> fun p ->
-                 { p with
-                     Properties =
-                       ("AltCoverTag", "UnitTestWithCoreRunner_")
-                       :: p.Properties
-                     Verbosity = Some MSBuildVerbosity.Minimal })
-              MSBuildPath
-              newproj
-
           DotNet.test
             (fun to' ->
               { to'.WithCommon(withWorkingDirectoryVM testdir) with
                   Framework = Some "net8.0"
-                  NoBuild = proj.Contains("Recorder") }
+                  NoBuild = false }
                 .WithAltCoverOptions
                 prep
                 coll
