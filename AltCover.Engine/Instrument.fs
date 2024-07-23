@@ -1209,7 +1209,7 @@ module internal Instrument =
 
         let value =
           calltrack.Properties
-          |> Seq.find (fun m -> m.Name == "value")
+          |> Seq.find (fun m -> m.Name == "Value")
 
         let getValue = value.GetMethod
 
@@ -1222,7 +1222,7 @@ module internal Instrument =
           GetValue = getValue
           Instance =
             calltrack.Methods
-            |> Seq.find (fun m -> m.Name == "instance")
+            |> Seq.find (fun m -> m.Name == "Instance")
           Field = field
           FieldType = field.FieldType :?> GenericInstanceType
           Maker =
@@ -1336,7 +1336,7 @@ module internal Instrument =
         let getterDef =
           recorder.MainModule.GetTypes()
           |> Seq.collect _.Methods
-          |> Seq.filter (fun m -> m.Name == "get_modules")
+          |> Seq.filter (fun m -> m.Name == "get_Modules")
           |> Seq.head
 
         let body = getterDef.Body
@@ -1363,15 +1363,13 @@ module internal Instrument =
             [ worker.Create(OpCodes.Dup)
               worker.Create(OpCodes.Ldc_I4, i)
               worker.Create(OpCodes.Ldstr, k)
-              worker.Create(OpCodes.Stelem_Any, stringtype) ]
+              worker.Create(OpCodes.Stelem_Ref) ]
 
           bulkInsertBefore worker head addElement true
           |> ignore)
 
-        let store =
-          [ worker.Create(OpCodes.Stsfld, head.Operand :?> FieldReference) ]
-
-        bulkInsertBefore worker head store true |> ignore
+        let ret = [ worker.Create OpCodes.Ret ]
+        bulkInsertBefore worker head ret true |> ignore
 
         let recorderFileName =
           (extractName state.RecordingAssembly) + ".dll"

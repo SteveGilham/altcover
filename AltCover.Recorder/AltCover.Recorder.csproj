@@ -8,28 +8,23 @@
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <DefineConstants>RECORDER</DefineConstants>
+    <NoWarn>CS1591</NoWarn>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
-    <OtherFlags>--keyfile:$(InfrastructureKey) --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(DefineConstants)</DefineConstants>
-    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
-    <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
-    <Compile Include="Base.fs" />
-    <Compile Include="Tracer.fs" />
-    <Compile Include="Recorder.fs" />
-    <Compile Include="InstrumentationAttribute.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
+    <Compile Include="..\_Generated\VisibleToTest.cs" Link="VisibleToTest.cs" />
+    <!-- Compile Include="..\AltCover.Engine\StringExtension.cs" Link="StringExtension.cs" / -->
+    <!-- Compile Include="..\AltCover.Engine\Canonical.cs" Link="Canonical.cs" / -->
     <EmbeddedResource Include="Strings.resources">
       <!-- -do "resgen .\Strings.resx"  -->
       <LogicalName>AltCover.Recorder.Strings.resources</LogicalName>
@@ -38,12 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Compiler.Tools" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" />
   </ItemGroup>
 
   <ItemGroup>
