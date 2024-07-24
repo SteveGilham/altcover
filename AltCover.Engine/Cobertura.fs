@@ -125,7 +125,7 @@ module internal Cobertura =
       let rawsources =
         report.Descendants(tag.X)
         |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
-        |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
         |> Seq.map Path.GetDirectoryName
         |> Seq.filter (String.IsNullOrWhiteSpace >> not)
         |> Seq.distinct
