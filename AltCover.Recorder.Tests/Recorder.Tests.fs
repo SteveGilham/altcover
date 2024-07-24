@@ -1936,6 +1936,7 @@ module AltCoverTests =
   let ZipFlushLeavesExpectedTracesWhenDiverted () =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
+    let mutable complete = false
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -2021,17 +2022,21 @@ module AltCoverTests =
             "2"
             "1" ]
       )
+
+      complete <- true
     finally
       AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+      Assert.That(complete, Is.True, "incomplete")
 #endif
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken () =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
+    let mutable complete = false
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -2096,6 +2101,7 @@ module AltCoverTests =
       let after = XmlDocument()
       after.Load worker'
       Assert.That(after.OuterXml, Is.EqualTo "<null />")
+      complete <- true
     finally
       AltCoverCoreTests.maybeDeleteFile reportFile
       AltCoverCoreTests.maybeDeleteFile outputFile
@@ -2103,11 +2109,13 @@ module AltCoverTests =
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+      Assert.That(complete, Is.True, "incomplete")
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBrokenInPlace () =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
+    let mutable complete = false
 
     let where =
       Assembly.GetExecutingAssembly().Location
@@ -2161,16 +2169,19 @@ module AltCoverTests =
       Assert.That(reportFile |> File.Exists |> not)
       let zipInfo = FileInfo(zipFile)
       Assert.That(zipInfo.Length, Is.EqualTo 0)
+      complete <- true
     finally
       AltCoverCoreTests.maybeDeleteFile zipFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+      Assert.That(complete, Is.True, "incomplete")
 
 #if !NET20
   [<Test>]
   let ZipFlushLeavesExpectedTraces () =
     getMyMethodName "=>"
+    let mutable complete = false
 
     lock Instance.I.visits (fun () ->
       Instance.I.isRunner <- false
@@ -2280,6 +2291,8 @@ module AltCoverTests =
                 "2"
                 "1" ]
           )
+
+          complete <- true
         finally
           Instance.I.Trace <- save
           AltCoverCoreTests.maybeDeleteFile Instance.ReportFilePath
@@ -2287,7 +2300,8 @@ module AltCoverTests =
           AltCoverCoreTests.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+          AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+          Assert.That(complete, Is.True, "incomplete")))
 
     getMyMethodName "<="
 #endif
