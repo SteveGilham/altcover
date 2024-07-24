@@ -131,13 +131,13 @@ module internal Cobertura =
         |> Seq.distinct
         |> Seq.sort
 
-      let groupable =
+      let groupable = // (directory, facet list)
         rawsources |> Seq.map (fun x -> (x, splitPath x))
 
-      let groups =
+      let groups = // lead facet, (directory, facet list) seq
         groupable |> Seq.groupBy (snd >> grouping)
 
-      let results =
+      let results = // throws away everything but the sources
         groups |> Seq.map (snd >> extractSource)
 
       results
@@ -145,7 +145,7 @@ module internal Cobertura =
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(f))))
 
-      results
+      results // TODO - make look-up table
       |> Seq.map (fun p -> p.Replace('\\', '/').Trim('/'))
 
     let internal nCover (report: XDocument) (packages: XElement) =
