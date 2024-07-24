@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(Configuration)' == 'Release' ">net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' ">net46;netstandard2.0</TargetFrameworks>
     <AssemblyName>AltCover.Recorder</AssemblyName>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
@@ -12,7 +13,7 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
-    <OtherFlags>--keyfile:$(InfrastructureKey) --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
+    <OtherFlags>--keyfile:$(InfrastructureKey) --standalone</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -42,12 +43,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="FSharp.Core" VersionOverride="4.1.18" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>..\ThirdParty\ziplib.net20\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
+    <PackageReference Include="System.IO.Compression"/>
   </ItemGroup>
 
 </Project>

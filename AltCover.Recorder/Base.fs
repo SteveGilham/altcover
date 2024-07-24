@@ -28,7 +28,7 @@ type internal ReportFormat =
   | Zipped = 128
 
 #if !RUNNER
-open ICSharpCode.SharpZipLib.Zip
+open System.IO.Compression
 
 [<AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)>]
 [<Sealed>]
@@ -520,33 +520,28 @@ module internal Counter =
           :> Stream
 
       try
-        ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
-        let zip = new ZipFile(container)
+        use zip = new ZipArchive(container)
 
-        try
-          let entryName = report |> Path.GetFileName
-          let entry = zip.GetEntry(entryName)
+        let entryName = report |> Path.GetFileName
+        let entry = zip.GetEntry(entryName)
 
-          let result =
-            use reader = zip.GetInputStream(entry)
-            I.doFlush postProcess pointProcess own counts format reader target
+        let result =
+          use reader = entry.Open()
+          I.doFlush postProcess pointProcess own counts format reader target
 
-          if output.IsNone then
-            zip.BeginUpdate()
-            zip.Delete entry
-            target.Seek(0L, SeekOrigin.Begin) |> ignore
+        if output.IsNone then
+          entry.Delete()
+          target.Seek(0L, SeekOrigin.Begin) |> ignore
 
-            let source =
-              { new IStaticDataSource with
-                  member self.GetSource() = target }
+          let update = zip.CreateEntry(entryName, CompressionLevel.Optimal)
 
-            zip.Add(source, entryName)
-            zip.CommitUpdate()
+          use s = update.Open()
+          target.CopyTo(s)
 
-          result
-        finally
-          zip.Close()
-      with :? ZipException ->
+        result
+
+      with :? InvalidDataException -> // broken zip file
+        use safe = container
         use reader = new MemoryStream()
         I.doFlush postProcess pointProcess own counts format reader target
 

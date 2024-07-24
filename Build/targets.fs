@@ -1106,7 +1106,7 @@ module Targets =
            "$Binaries/Build/Debug+AnyCPU/net8.0/Build.dll" ])
         ("./Build/common-rules.xml",
          [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
-           "_Binaries/AltCover.Recorder/Debug+AnyCPU/net46/AltCover.Recorder.dll"
+           "_Binaries/AltCover.Recorder/Debug+AnyCPU/netstandard2.0/AltCover.Recorder.dll"
            "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
            "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
            "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
