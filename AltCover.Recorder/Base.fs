@@ -520,7 +520,8 @@ module internal Counter =
           :> Stream
 
       try
-        use zip = new ZipArchive(container)
+        use zip =
+          new ZipArchive(container, ZipArchiveMode.Update)
 
         let entryName = report |> Path.GetFileName
         let entry = zip.GetEntry(entryName)
@@ -533,14 +534,17 @@ module internal Counter =
           entry.Delete()
           target.Seek(0L, SeekOrigin.Begin) |> ignore
 
-          let update = zip.CreateEntry(entryName, CompressionLevel.Optimal)
+          let update =
+            zip.CreateEntry(entryName, CompressionLevel.Optimal)
 
           use s = update.Open()
           target.CopyTo(s)
 
         result
 
-      with :? InvalidDataException -> // broken zip file
+      with
+      | :? NullReferenceException
+      | :? InvalidDataException -> // broken zip file
         use safe = container
         use reader = new MemoryStream()
         I.doFlush postProcess pointProcess own counts format reader target
