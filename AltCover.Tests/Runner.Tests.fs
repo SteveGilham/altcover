@@ -3,6 +3,7 @@
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.IO.Compression
 open System.Reflection
@@ -7297,3 +7298,56 @@ module AltCoverRunnerTests =
     Runner.init ()
     let dict: Dictionary<int, int> = null
     Assert.That(PostProcess.tryGetValue dict 0 |> fst, Is.False)
+
+  [<Test>]
+  let OpenCoverCoberturaSoakTest () =
+    Runner.init ()
+
+    // TODO with SimpleOpenCover and ~XmlElement.CloneNode(true)~ XElement copy constructor
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find _.EndsWith("SimpleOpenCover.xml", StringComparison.Ordinal)
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString()
+        + "/SimpleOpenCover.cobertura"
+      )
+
+    Cobertura.path.Value <- Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    // TODO XElement copy constructor on files and classes
+
+    try // just time the operation
+      let timer = new Stopwatch()
+      timer.Start()
+
+      let r =
+        Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
+
+      timer.Stop()
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+      let timeTaken = timer.Elapsed;
+      Assert.Fail("Time taken: " + timeTaken.ToString(@"m\:ss\.fff"))
+
+    finally
+      Cobertura.path.Value <- None
