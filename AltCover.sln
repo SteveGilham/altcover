@@ -145,6 +145,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.RecorderModern", "
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.RecorderModern.Tests", "AltCover.RecorderModern.Tests\AltCover.RecorderModern.Tests.fsproj", "{4B905582-3295-463B-A645-7FA6D0844035}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoberturaProfiler", "Build\CoberturaProfiler\CoberturaProfiler.fsproj", "{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -361,6 +363,14 @@ Global
 		{4B905582-3295-463B-A645-7FA6D0844035}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B905582-3295-463B-A645-7FA6D0844035}.Release|x86.ActiveCfg = Release|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Debug|x86.Build.0 = Debug|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Release|x86.ActiveCfg = Release|Any CPU
+		{F6B7DF54-E23D-4A5F-B7C7-D172440B8874}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
