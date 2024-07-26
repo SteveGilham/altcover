@@ -59,7 +59,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		.github\workflows\main.yml = .github\workflows\main.yml
 		Build\merge-coverage.ps1 = Build\merge-coverage.ps1
 		Build\msbuildtest.proj = Build\msbuildtest.proj
-		Build\NuPacker.xml = Build\NuPacker.xml
+		AltCover.Tests\NCover.ConvertTo.cobertura = AltCover.Tests\NCover.ConvertTo.cobertura
+		AltCover.Tests\OpenCover.ConvertTo.cobertura = AltCover.Tests\OpenCover.ConvertTo.cobertura
 		OutputBuildProps.props = OutputBuildProps.props
 		OutputBuildTargets.props = OutputBuildTargets.props
 		Build\pester.ps1 = Build\pester.ps1
@@ -138,7 +139,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cecil", "Cecil", "{F56DE54A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample0", "Samples\Sample0\Sample0.csproj", "{19CE63CE-3622-409A-974D-3EA01388317E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample32", "Samples\Sample32\Sample32.csproj", "{349B2983-FB15-4D72-B7F6-04FD36C81B90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample32", "Samples\Sample32\Sample32.csproj", "{349B2983-FB15-4D72-B7F6-04FD36C81B90}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.RecorderModern", "AltCover.RecorderModern\AltCover.RecorderModern.fsproj", "{219B0218-3289-44DD-9C22-6C14A3D7B5A7}"
 EndProject

@@ -6152,6 +6152,108 @@ module AltCoverRunnerTests =
     xmlDocument.Validate(null)
 
   [<Test>]
+  let PathsSplitOK () =
+    let cases =
+      [
+#if WINDOWS
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg",
+         [ "C:\\"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ])
+#else
+        ("C:/Users/anon/OneDrive/Pictures/wallpaper.jpg",
+         [ "C:"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ])
+#endif
+        ("/usr/home/anon/project/src/code.cs",
+         [ String([| Path.DirectorySeparatorChar |])
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ])
+        ("partial/path/OK", [ "partial"; "path"; "OK" ])
+        (String.Empty, [ String.Empty ])
+        (null, [ String.Empty ]) ]
+
+    cases
+    |> List.iter (fun (case, expect) ->
+      test <@ Cobertura.I.splitPath case = expect @>
+
+      if case.IsNotNull then
+        test
+          <@
+            case = (Path.Combine(List.toArray expect))
+              .Replace("\\", "/")
+          @>)
+
+  [<Test>]
+  let PathsGroupOK () =
+    let cases =
+      [ ([ "C:\\"
+           "Users"
+           "anon"
+           "OneDrive"
+           "Pictures"
+           "wallpaper.jpg" ],
+         "C:\\")
+        ([ "/"
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ],
+         "/usr")
+        ([ "\\"
+           "usr"
+           "home"
+           "anon"
+           "project"
+           "src"
+           "code.cs" ],
+         "/usr")
+        ([ "/" ], "/")
+        ([ "\\" ], "/")
+        ([ "partial"; "path"; "OK" ], "partial")
+        ([], String.Empty)
+        ([ String.Empty ], String.Empty) ]
+
+    cases
+    |> List.iter (fun (case, expect) -> test <@ Cobertura.I.grouping case = expect @>)
+
+  [<Test>]
+  let ExtractSourcesOK () =
+    let sep =
+      String([| Path.DirectorySeparatorChar |])
+
+    let cases =
+      [ ([ "a" ], "a")
+        ([ "a/b/"; "a/b/c" ], "a/b" + sep)
+        ([ "a/b/x/y"; "a/c/d" ], "a" + sep)
+        ([ "c:\\b\\x\\y"; "c:\\b\\c\\d" ], "c:\\b" + sep) ]
+      |> List.map (fun (inputs, expect) ->
+        (inputs
+         |> Seq.map (fun x -> (x, Cobertura.I.splitPath x))),
+        expect)
+
+    Assert.Multiple(fun () ->
+      cases
+      |> Seq.iter (fun (case, expect) ->
+        test
+          <@ Cobertura.I.extractSource case = expect
+
+          @>))
+
+  [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
     Runner.init ()
 

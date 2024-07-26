@@ -7,7 +7,7 @@
   <packages>
     <package name="Sample32" line-rate="0" branch-rate="0" complexity="1.43">
       <classes>
-        <class name="Sample32.Program" filename="altcover/Samples/Sample32/Program.cs" line-rate="0" branch-rate="0" complexity="1">
+        <class name="Sample32.Program" filename="Program.cs" line-rate="0" branch-rate="0" complexity="1">
           <methods>
             <method name="Main" signature="System.Void (System.String[])" line-rate="0" branch-rate="0" complexity="1">
               <lines>
@@ -23,7 +23,7 @@
             <line number="10" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="issue222.Class1" filename="altcover/Samples/Sample32/Class1.cs" line-rate="0" branch-rate="0" complexity="2">
+        <class name="issue222.Class1" filename="Class1.cs" line-rate="0" branch-rate="0" complexity="2">
           <methods>
             <method name="AddSingleton`3" signature="System.Void (issue222.IServiceCollection,System.Func`2&lt;System.IServiceProvider,T&gt;)" line-rate="0" branch-rate="0" complexity="2">
               <lines>
@@ -65,7 +65,7 @@
             <line number="30" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="issue222.Class1/&lt;&gt;c__1`3" filename="altcover/Samples/Sample32/Class1.cs" line-rate="0" branch-rate="0" complexity="1">
+        <class name="issue222.Class1/&lt;&gt;c__1`3" filename="Class1.cs" line-rate="0" branch-rate="0" complexity="1">
           <methods>
             <method name="&lt;AddSingleton&gt;b__1_0" signature="T (System.IServiceProvider)" line-rate="0" branch-rate="0" complexity="1">
               <lines>
@@ -77,7 +77,7 @@
             <line number="21" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="issue222.Class1/&lt;&gt;c__2`4" filename="altcover/Samples/Sample32/Class1.cs" line-rate="0" branch-rate="0" complexity="1">
+        <class name="issue222.Class1/&lt;&gt;c__2`4" filename="Class1.cs" line-rate="0" branch-rate="0" complexity="1">
           <methods>
             <method name="&lt;AddSingleton&gt;b__2_0" signature="T (System.IServiceProvider)" line-rate="0" branch-rate="0" complexity="1">
               <lines>
