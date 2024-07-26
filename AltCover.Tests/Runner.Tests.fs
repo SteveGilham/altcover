@@ -7335,6 +7335,35 @@ module AltCoverRunnerTests =
 
     // TODO XElement copy constructor on files and classes
 
+    let file = baseline.Descendants("File".X) |> Seq.head
+    // <File uid="1" fullPath="C:\Users\email\Documents\Github\altcover\Samples\Sample1\Program.cs" />
+
+    let cl = baseline.Descendants("Class".X) |> Seq.head
+
+    for h in 0 .. 9 do
+      for t in 0 .. 9 do
+        for u in 0 .. 9 do
+          let index = (100 * h) + (10 * t) + u + 2
+          let f2 = XElement(file)
+          let uid = sprintf "%A" index
+          f2.Attribute("uid".X).Value <- uid
+          f2.Attribute("fullPath".X).Value <- (sprintf "D:/repos/A%A/B%A/Class%A.cs" h t u)
+          file.Parent.Add f2
+
+          let c2 = XElement(cl)
+          let name = sprintf "Class%A%A%A" h t u
+          c2.Descendants("FullName".X)
+          |> Seq.iter _.SetValue(name)
+          c2.Descendants("Name".X)
+          |> Seq.iter (fun x -> x.SetValue(x.Value.Replace("TouchTest.Program", name)))
+          c2.Descendants("FileRef".X)
+          |> Seq.iter (fun x -> x.Attribute("uid".X).Value <- uid)
+          c2.Descendants("SequencePoint".X)
+          |> Seq.iter (fun x -> x.Attribute("fileid".X).Value <- uid)
+          c2.Descendants("BranchPoint".X)
+          |> Seq.iter (fun x -> x.Attribute("fileid".X).Value <- uid)
+          cl.Parent.Add c2
+
     try // just time the operation
       let timer = new Stopwatch()
       timer.Start()
