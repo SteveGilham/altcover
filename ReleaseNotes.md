@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 32)
+# (Habu series release 33)
+
+# 8.8.173 (Habu series release 32)
 * [PERFORMANCE] Issue #227 - removing the slow-down observed the new (at 8.8.165) file name processing for Cobertura 
 * [PERFORMANCE] removing a surprising hot-spot in branch coverage instrumentation that was taking 60% of the whole instrumentation time
 
