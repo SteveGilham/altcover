@@ -1,6 +1,7 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Xml.Linq
 open System.Globalization
@@ -76,12 +77,15 @@ module internal Cobertura =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidRepetitiveCallsToPropertiesRule",
                       Justification = "Compiler inlines")>]
-    let extractSource (values: (string * #(string seq)) seq) =
+    let extractSource (values: ((string * string seq) * string list) seq) =
       let starter = values |> Seq.head
 
       match Seq.length values with
       | 1 -> starter |> fst
       | _ -> // extract longest common prefix
+        let files =
+          values |> Seq.map fst |> Seq.collect snd
+
         let l =
           values
           |> Seq.map (fun (_, split) -> Seq.length split)
@@ -107,10 +111,11 @@ module internal Cobertura =
           |> Path.Combine
 
         let trimmed = prefix.Length
-        let source = fst starter
+        let source = starter |> fst |> fst
 
-        source.Substring(0, trimmed).Trim('\\')
-        + String([| Path.DirectorySeparatorChar |])
+        (source.Substring(0, trimmed).Trim('\\')
+         + String([| Path.DirectorySeparatorChar |]),
+         files)
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
@@ -122,31 +127,62 @@ module internal Cobertura =
       (tag: string)
       (attribute: string)
       =
-      let rawsources =
+      let files =
         report.Descendants(tag.X)
         |> Seq.map (fun s -> s.Attribute(attribute.X).Value)
-        |> Seq.filter (fun a -> a |> String.IsNullOrWhiteSpace |> not)
-        |> Seq.map Path.GetDirectoryName
-        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-        |> Seq.distinct
-        |> Seq.sort
 
-      let groupable =
-        rawsources |> Seq.map (fun x -> (x, splitPath x))
+      let table =
+        Dictionary<string option, string>()
 
-      let groups =
+      let rawsources =
+        files
+        |> Seq.filter (fun a ->
+          let fail =
+            a |> String.IsNullOrWhiteSpace |> not
+
+          if fail then
+            table[Option.ofObj a] <- String.Empty
+
+          fail)
+        |> Seq.map (fun a -> a, Path.GetDirectoryName a)
+        |> Seq.filter (fun (a, d) ->
+          let fail =
+            d |> String.IsNullOrWhiteSpace |> not
+
+          if fail then
+            table[Option.ofObj a] <- a
+
+          fail)
+        |> Seq.groupBy snd
+        |> Seq.map (fun (a, s) -> a, s |> Seq.map fst)
+        |> Seq.sortBy fst // seq of (directory, files full names)
+
+      let groupable = // seq of ((directory, files full names), facets)
+        rawsources
+        |> Seq.map (fun x -> (x, x |> fst |> splitPath))
+
+      let groups = // seq of (root, seq of ((directory, files full names), facets))
         groupable |> Seq.groupBy (snd >> grouping)
 
-      let results =
+      let results = // throws away everything but the sources
         groups |> Seq.map (snd >> extractSource)
 
       results
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
-        |> Seq.iter _.Add(XElement("source".X, XText(f))))
+        |> Seq.iter _.Add(XElement("source".X, XText(fst f))))
 
-      results
-      |> Seq.map (fun p -> p.Replace('\\', '/').Trim('/'))
+      results // TODO - make look-up table
+      |> Seq.iter (fun (p, files) ->
+        let prefix =
+          1 + p.Replace('\\', '/').Trim('/').Length
+
+        files
+        |> Seq.iter (fun f -> table[Some f] <- f.Substring(prefix))
+
+      )
+
+      table
 
     let internal nCover (report: XDocument) (packages: XElement) =
 
@@ -239,13 +275,8 @@ module internal Cobertura =
         (hits, total)
         ((name, document: string), method)
         =
-        let normalized = document.Replace('\\', '/')
-
         let filename =
-          sources
-          |> Seq.tryFind (fun s -> normalized.StartsWith(s, StringComparison.Ordinal))
-          |> Option.map (fun start -> document.Substring(start.Length + 1))
-          |> Option.defaultValue document
+          sources[Option.ofObj document]
 
         let ``class`` =
           XElement(
@@ -511,13 +542,9 @@ module internal Cobertura =
         ((name, fileid), methodSet)
         =
         let document = files |> Map.find fileid
-        let normalized = document.Replace('\\', '/')
 
         let filename =
-          sources
-          |> Seq.tryFind (fun s -> normalized.StartsWith(s, StringComparison.Ordinal))
-          |> Option.map (fun start -> document.Substring(start.Length + 1))
-          |> Option.defaultValue document
+          sources[Option.ofObj document]
 
         let ``class`` =
           XElement(

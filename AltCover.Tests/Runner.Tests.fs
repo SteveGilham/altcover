@@ -6258,6 +6258,8 @@ module AltCoverRunnerTests =
     let sep =
       String([| Path.DirectorySeparatorChar |])
 
+    let s = [ "some dummy value" ] |> List.toSeq
+
     let cases =
       [ ([ "a" ], "a")
         ([ "a/b/"; "a/b/c" ], "a/b" + sep)
@@ -6265,16 +6267,13 @@ module AltCoverRunnerTests =
         ([ "c:\\b\\x\\y"; "c:\\b\\c\\d" ], "c:\\b" + sep) ]
       |> List.map (fun (inputs, expect) ->
         (inputs
-         |> Seq.map (fun x -> (x, Cobertura.I.splitPath x))),
+         |> List.map (fun x -> ((x, s), Cobertura.I.splitPath x))),
         expect)
 
     Assert.Multiple(fun () ->
       cases
       |> Seq.iter (fun (case, expect) ->
-        test
-          <@ Cobertura.I.extractSource case = expect
-
-          @>))
+        test <@ case |> Cobertura.I.extractSource |> fst = expect @>))
 
   [<Test>]
   let DegenerateCasesShouldNotGenerateCobertura () =
