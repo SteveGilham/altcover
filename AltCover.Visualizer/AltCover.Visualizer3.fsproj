@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netcoreapp2.1;netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(Configuration)'!='Debug'">netcoreapp2.1</TargetFrameworks>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <PackAsTool>True</PackAsTool>
