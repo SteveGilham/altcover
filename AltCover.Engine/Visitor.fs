@@ -1193,19 +1193,22 @@ module internal Visitor =
           null
       | _ -> seq
 
+    let getSequencePoint (dbg: IDictionary<int, SequencePoint>) (i: Instruction) =
+      dbg.TryGetValue(i.Offset) |> snd
+
     let internal findEffectiveSequencePoint
       genuine
-      (dbg: MethodDebugInformation)
+      (dbg: Dictionary<int, SequencePoint>)
       (instructions: Instruction seq)
       =
       instructions
       |> Seq.map (fun i ->
-        let seq = dbg.GetSequencePoint i
+        let seq = getSequencePoint dbg i
         fakeSequencePoint genuine seq i)
       |> Seq.tryFind isSequencePoint
 
     let internal findSequencePoint
-      (dbg: MethodDebugInformation)
+      (dbg: Dictionary<int, SequencePoint>)
       (instructions: Instruction seq)
       =
       findEffectiveSequencePoint Genuine dbg instructions
@@ -1272,30 +1275,36 @@ module internal Visitor =
       findEffectiveSequencePoint FakeAtReturn dbg range
 
     [<TailCall>]
-    let rec internal lastOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
+    let rec internal lastOfSequencePoint
+      (dbg: IDictionary<int, SequencePoint>)
+      (i: Instruction)
+      =
       let n = i.Next
 
       if
         n |> isNull
-        || n |> dbg.GetSequencePoint |> isSequencePoint
+        || n |> (getSequencePoint dbg) |> isSequencePoint
       then
         i
       else
         lastOfSequencePoint dbg n
 
     [<TailCall>]
-    let rec internal firstOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
+    let rec internal firstOfSequencePoint
+      (dbg: IDictionary<int, SequencePoint>)
+      (i: Instruction)
+      =
       let p = i.Previous
 
       if
         p |> isNull // generated code e.g Fody won't have sequence point values
-        || (i |> dbg.GetSequencePoint).IsNotNull
+        || (i |> getSequencePoint dbg).IsNotNull
       then
         i
       else
         firstOfSequencePoint dbg p
 
-    let internal getJumps (dbg: MethodDebugInformation) (i: Instruction) =
+    let internal getJumps (dbg: Dictionary<int, SequencePoint>) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
       let next = i.Next
 
@@ -1393,7 +1402,13 @@ module internal Visitor =
       |> Seq.collect id
       |> Seq.sortBy _.Key // important! instrumentation assumes we work in the order we started with
 
-    let private extractBranchPoints dbg rawInstructions interesting vc =
+    let private extractBranchPoints
+      (v0t: TypeReference option)
+      (dbg: Dictionary<int, SequencePoint>)
+      rawInstructions
+      interesting
+      vc
+      =
       let makeDefault i =
         if CoverageParameters.coalesceBranches.Value then
           -1
@@ -1409,15 +1424,13 @@ module internal Visitor =
       // possibly add MoveNext filtering
       let generated (i: Instruction) =
         let before = firstOfSequencePoint dbg i // This line to suppress
-        let sp = dbg.GetSequencePoint before
+        let sp = getSequencePoint dbg before
 
         before.OpCode = OpCodes.Ldloc_0
         && sp.IsNotNull
         && sp.IsHidden
-        && (let v0t =
-              dbg.Method.Body.Variables.[0].VariableType
-
-            v0t.MetadataType = MetadataType.Int32) // state machines do this
+        && (v0t.IsSome
+            && v0t.Value.MetadataType = MetadataType.Int32) // state machines do this
 
       [ rawInstructions |> Seq.cast ]
       |> Seq.filter (fun _ -> dbg.IsNotNull)
@@ -1471,8 +1484,11 @@ module internal Visitor =
       |> Seq.map BranchPoint
       |> Seq.toList
 
-    let internal validateInstruction (dbg: MethodDebugInformation) (x: Instruction) =
-      let s = dbg.GetSequencePoint x
+    let internal validateInstruction
+      (dbg: IDictionary<int, SequencePoint>)
+      (x: Instruction)
+      =
+      let (_, s) = dbg.TryGetValue x.Offset
       s.IsNotNull && (s.IsHidden |> not)
 
     let internal trivial =
@@ -1485,14 +1501,21 @@ module internal Visitor =
           OpCodes.Nop ]
       )
 
-    let internal isNonTrivialSeqPnt (dbg: MethodDebugInformation) (x: Instruction) =
+    let internal isNonTrivialSeqPnt
+      (dbg: Dictionary<int, SequencePoint>)
+      (x: Instruction)
+      =
       if CoverageParameters.trivia.Value then
-        let rest =
+        let rest = // rest of the sequence point
           Seq.unfold
             (fun (i: Instruction) ->
               if
                 i |> isNull
-                || i |> dbg.GetSequencePoint |> isNull |> not
+                || i.Offset
+                   |> dbg.TryGetValue
+                   |> snd
+                   |> isNull
+                   |> not
               then
                 None
               else
@@ -1509,21 +1532,28 @@ module internal Visitor =
         true
 
     let private visitMethod (m: MethodEntry) =
-      let rawInstructions =
-        m.Method.Body.Instructions
+      let body = m.Method.Body
 
-      let dbg = m.Method.DebugInformation
+      let rawInstructions = body.Instructions
+
+      let splut = Dictionary<int, SequencePoint>()
+
+      do
+        let dbg = m.Method.DebugInformation
+
+        if dbg.IsNotNull && dbg.HasSequencePoints then
+          dbg.SequencePoints
+          |> Seq.iter (fun s -> splut.Add(s.Offset, s))
+
+      // build more look-up tables
 
       let instructions =
         [ rawInstructions |> Seq.cast ]
-        |> Seq.filter (fun _ -> dbg.IsNotNull)
+        |> Seq.filter (fun _ -> splut.Any())
         |> Seq.concat
         |> Seq.filter (fun (x: Instruction) ->
-          if dbg.HasSequencePoints then
-            validateInstruction dbg x
-            && isNonTrivialSeqPnt dbg x
-          else
-            false)
+          validateInstruction splut x
+          && isNonTrivialSeqPnt splut x)
         |> Seq.toList
 
       let number = instructions.Length
@@ -1551,7 +1581,8 @@ module internal Visitor =
             MethodPoint
               { Instruction = i
                 SeqPnt =
-                  dbg.GetSequencePoint(i)
+                  splut.TryGetValue(i.Offset)
+                  |> snd
                   |> Option.ofObj
                   |> Option.filter (fun _ -> CoverageParameters.methodPoint.Value)
                   |> Option.map SeqPnt.Build
@@ -1561,7 +1592,7 @@ module internal Visitor =
         else
           instructions.OrderByDescending(fun (x: Instruction) -> x.Offset)
           |> Seq.mapi (fun i x ->
-            let s = dbg.GetSequencePoint(x)
+            let s = splut.TryGetValue(x.Offset) |> snd
 
             MethodPoint
               { Instruction = x
@@ -1580,10 +1611,18 @@ module internal Visitor =
       let bp =
         if includeBranches () then
           let spnt =
-            instructions |> Seq.head |> dbg.GetSequencePoint
+            (instructions |> Seq.head).Offset
+            |> splut.TryGetValue
+            |> snd
 
           let branches = wanted interesting spnt
-          extractBranchPoints dbg rawInstructions branches m.DefaultVisitCount
+
+          let v0t =
+            body.Variables
+            |> Seq.tryHead
+            |> Option.map _.VariableType
+
+          extractBranchPoints v0t splut rawInstructions branches m.DefaultVisitCount
         else
           []
 
@@ -1688,24 +1727,24 @@ module internal Visitor =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1257::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1260::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1260::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/finish@1263::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1568-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1599-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1471@1471::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1484@1484::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 ()
