@@ -5977,7 +5977,7 @@ module AltCoverTests =
     let path =
       Path.Combine(
         SolutionDir(),
-        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.Engine.dll"
+        "_Binaries/AltCover/Debug+AnyCPU/net7.0/AltCover.Engine.dll"
       )
 
     Visitor.visit

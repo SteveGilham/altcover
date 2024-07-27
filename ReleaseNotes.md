@@ -4,6 +4,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Indori series release 1)
+* [BREAKING] Minimum platforms net472, netstandard2.0 and net7.0
+* [BREAKING] SDK updates to latest current for Cake and MSBuild-related pacakges
 
 # 8.8.173 (Habu series release 32)
 * [PERFORMANCE] Issue #227 - removing the slow-down observed the new (at 8.8.165) file name processing for Cobertura 
