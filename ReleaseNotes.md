@@ -4,6 +4,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 32)
+* [PERFORMANCE] Issue #227 - removing the slow-down observed the new (at 8.8.165) file name processing for Cobertura 
+* [PERFORMANCE] removing a surprising hot-spot in branch coverage instrumentation that was taking 60% of the whole instrumentation time
 
 # 8.8.165 (Habu series release 31)
 * [ADVISORY] the Fake.build related assemblies (in the `altcover.api` and `altcover.fake` packages), and the Avalonia 0.10-based visualizer, rely on components with known vulnerabilities. The Fake.build project appears nigh-moribund so has not released an update, whereas Avalonia 11 completely rewrites all the earlier APIs and has not documented anything to assist in the rewrite of the application.
