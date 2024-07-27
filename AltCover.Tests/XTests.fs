@@ -752,7 +752,7 @@ module AltCoverXTests =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net8.0")
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net9.0")
 
     let key0 =
       Path.Combine(here, "Build/SelfTest.snk")
