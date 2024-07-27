@@ -364,14 +364,14 @@ module internal Instrument =
 
         updateStrongNaming definition pair
 
-        definition.MainModule.GetTypes()
-        |> Seq.iter (fun t ->
-          if
-            t.IsPublic
-            && (not
-                <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal))
-          then
-            t.IsPublic <- false)
+        //definition.MainModule.GetTypes()
+        //|> Seq.iter (fun t ->
+        //  if
+        //    t.IsPublic
+        //    && (not
+        //        <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal))
+        //  then
+        //    t.IsPublic <- false)
 
         injectInstrumentation
           definition
