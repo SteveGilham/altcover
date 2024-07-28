@@ -1407,11 +1407,11 @@ module Targets =
                     nugetCache
                     @@ "cake.common/"
                        + (ddItem "cake.common")
-                       + "/lib/netstandard2.0"
+                       + "/lib/net7.0"
                     nugetCache
                     @@ "cake.core/"
                        + (ddItem "cake.core")
-                       + "/lib/netstandard2.0"
+                       + "/lib/net7.0"
                     nugetCache
                     @@ "communitytoolkit.diagnostics/"
                        + (ddItem "communitytoolkit.diagnostics")
@@ -2357,7 +2357,7 @@ module Targets =
            Path.getFullName "AltCover.Recorder.Tests")
           (Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net9.0",
            Path.getFullName
-             "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder2.Tests/Debug+AnyCPU/net8.0",
+             "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder2.Tests/Debug+AnyCPU/net9.0",
            reports @@ "Recorder2TestWithAltCoverCore.xml",
            "AltCover.Recorder2.Tests.fsproj",
            Path.getFullName "AltCover.Recorder2.Tests")
@@ -3962,13 +3962,8 @@ module Targets =
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
-      let cakeFiles where =
-        (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/netstandard2.0/AltCover.C*.*")
-        |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
-        |> Seq.toList
-
       let cake2Files where =
-        (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/net6.0/AltCover.C*.*")
+        (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/net7.0/AltCover.C*.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
@@ -4037,6 +4032,7 @@ module Targets =
 
       let netstdFiles where =
         (!! "./_Publish/**/*.*")
+        |> Seq.filter (fun x -> (Path.GetFileName x).Equals("AltCover.exe") |> not)
         |> Seq.map (fun x ->
           (x,
            Some(
@@ -4118,8 +4114,7 @@ module Targets =
          "./_Generated/altcover.api.nuspec",
          "altcover.api")
         (List.concat
-          [ cakeFiles "lib/netstandard2.0/"
-            cake2Files "lib/netcoreapp3.1/"
+          [ cake2Files "lib/net7.0/"
             cake0files
             housekeeping ],
          [ ("AltCover.Api", Version) ],
@@ -5850,7 +5845,7 @@ module Targets =
                   "Fake2738Workround", "True" ] })
         "./Samples/Sample4/Sample4LongForm.fsproj")
 
-  let Cake2Test =
+  let Cake4Test =
     (fun () ->
       let before = Actions.ticksNow ()
 
@@ -5937,7 +5932,7 @@ module Targets =
             .Replace("{1}", Version)
         )
 
-        [ (" --version 2.0.0", "build.cake")
+        [ (" --version 4.0.0", "build.cake")
           (String.Empty, "build.cake") ]
         |> List.iter (fun (cakeversion, script) ->
           try
@@ -8296,7 +8291,7 @@ module Targets =
 
     _Target "JsonReporting" JsonReporting
     _Target "MSBuildTest" MSBuildTest
-    _Target "Cake2Test" Cake2Test
+    _Target "Cake4Test" Cake4Test
     _Target "ApiUse" ApiUse
     _Target "DotnetTestIntegration" DotnetTestIntegration
     _Target "Issue20" Issue20
@@ -8570,7 +8565,7 @@ module Targets =
 
     "Unpack" ==> "ApiUse" ==> "Deployment" |> ignore
 
-    "Unpack" ==> "Cake2Test" ==> "Deployment"
+    "Unpack" ==> "Cake4Test" ==> "Deployment"
     |> ignore
 
     "Unpack"

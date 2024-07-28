@@ -1,8 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="AltCover.Prepare"
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Engine.dll" />
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/net7.0/AltCover.Engine.dll" />
   <UsingTask TaskName="AltCover.Collect"
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Engine.dll" />
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/net7.0/AltCover.Engine.dll" />
 
   <ItemGroup>
     <CallContext Include="0" />

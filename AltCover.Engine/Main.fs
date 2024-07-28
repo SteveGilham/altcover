@@ -809,7 +809,7 @@ module internal Main =
           Assembly.GetExecutingAssembly().Location
           |> Path.GetDirectoryName
 
-        [ "../netcoreapp2.0"
+        [ "../net7.0"
           "../netstandard2.0"
           "../any" ]
         |> Seq.map (fun d ->
