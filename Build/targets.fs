@@ -4033,6 +4033,9 @@ module Targets =
       let netstdFiles where =
         (!! "./_Publish/**/*.*")
         |> Seq.filter (fun x -> (Path.GetFileName x).Equals("AltCover.exe") |> not)
+        |> Seq.filter (fun x ->
+          (Path.GetFileName x).Equals("FSharp.Core.dll")
+          |> not)
         |> Seq.map (fun x ->
           (x,
            Some(
@@ -4044,6 +4047,11 @@ module Targets =
            ),
            None))
         |> Seq.toList
+
+      let netstd2Fsharp where =
+        [ ("../AltCover.PowerShell/Release+AnyCPU/netstandard2.0/FSharp.Core.dll",
+           Some(where + "/FSharp.Core.dll"),
+           None) ]
 
       let globalFiles =
         (!! "./_Binaries/AltCover/Release+AnyCPU/net7.0/AltCover.*")
@@ -4102,6 +4110,7 @@ module Targets =
             resourceFiles "lib/net472/"
             libFiles "lib/net472/"
             netstdFiles "lib/netstandard2.0"
+            netstd2Fsharp "lib/netstandard2.0"
             dataFiles "lib/netstandard2.0/"
             monitorFiles "lib/netstandard2.0/"
             fakeFiles "lib/netstandard2.0/"
@@ -8083,7 +8092,7 @@ module Targets =
           "_Reports/VisualizerTestWithAltCoverCoreRunner.net9.0.xml"
           "_DotnetTest/coverage.xml"
           "_Binaries/_DotnetGlobalTest/Debug+AnyCPU/net9.0/DotnetGlobalIntegration.xml"
-          "_Cake/_DotnetTest/coverage.build.cake.--version 2.0.0.xml"
+          "_Cake/_DotnetTest/coverage.build.cake.--version 4.0.0.xml"
           "_Cake/_DotnetTest/coverage.build.cake.Latest.xml"
           "_DotnetTestFail/coverage.xml"
           "_DotnetTestFailFast/coverage.xml"
@@ -8108,6 +8117,7 @@ module Targets =
           "RegressionTesting/issue37/coverage.xml"
           "Samples/Sample16/Test/_Issue72/combined.Test.xml"
           "Samples/Sample16/Test/_Issue72/original.Test.xml"
+          "Samples/Sample16/Test/_Issue72/single.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test.xml"
           "Samples/Sample16/Test/_Reports/single.Test.xml"
           "Samples/Sample16/Test/_Reports/solution.Test2.xml"

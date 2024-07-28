@@ -50,7 +50,7 @@ Describe "Invoke-Altcover" {
         }
         if (Test-Path $x) { Remove-Item -force $x }
 
-        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter ("?Sample2", "Adapter") -ReportFormat NCover -InformationAction Continue -Verbosity Verbose
+        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter ("?Sample2", "Adapter") -ReportFormat NCover -All  -InformationAction Continue -Verbosity Verbose
         $o | Should -Exist
         $x | Should -Exist
         $xm = [xml](Get-Content $x)

@@ -1,4 +1,4 @@
-Import-Module "./_Packaging/Unpack/tools/netcoreapp2.0/AltCover.PowerShell.dll"
+Import-Module "./_Packaging/Unpack/tools/net7.0/AltCover.PowerShell.dll"
 
 
 $files = ("_Reports/UnitTestWithAltCoverCoreRunner.xml",
