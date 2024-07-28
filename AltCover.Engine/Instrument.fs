@@ -1482,3 +1482,29 @@ module internal Instrument =
                               "AltCover.Instrument/I/tag@243::Invoke(System.String)",
                             Justification = "Replace override not available")>]
 ()
+
+(*
+    .field private static bool hit1
+
+    private static bool Ping(int s)
+    {
+      Console.WriteLine(s);
+      return true;
+    }
+
+    // default false fields, release build
+            if (!hit1) hit1 = Ping(i);
+
+	// loop start (head: IL_0031)
+		IL_0004: ldsfld bool ConsoleApp1.Program::hit1
+		IL_0009: brtrue.s IL_0016
+
+		// hit1 = Ping(i);
+		IL_000b: ldloc.0 // i
+		IL_000c: call bool ConsoleApp1.Program::Ping(int32)
+		IL_0011: stsfld bool ConsoleApp1.Program::hit1
+
+		// int s = i + 10;
+		IL_0016: ldloc.0
+
+*)
