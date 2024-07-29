@@ -87,7 +87,7 @@ module AltCoverTests2 =
 
     recorder
     |> List.zip
-      [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
+      [ "System.Boolean AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
         "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
         "System.Void AltCover.Recorder.Instance.Pop()" ]
     |> List.iter (fun (n, m) -> test <@ Naming.fullMethodName m = n @>)
