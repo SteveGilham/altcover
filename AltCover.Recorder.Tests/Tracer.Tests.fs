@@ -51,13 +51,9 @@ module AltCoverCoreTests =
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
-  let SamplesClear () =
-    Instance.I.samples <- Instance.I.MakeSamples()
-
   let private reset () =
     Instance.I.isRunner <- false
     VisitsClear()
-    SamplesClear()
 
   let ModuleReset (m: string array) =
     Instance.Modules <- m

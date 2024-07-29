@@ -299,18 +299,6 @@ namespace AltCover.Recorder
       /// </summary>
       internal static Dictionary<string, Dictionary<int, PointVisit>> visits = MakeVisits();
 
-      internal static Dictionary<string, Dictionary<Sampled, bool>> MakeSamples()
-      {
-        var d = new Dictionary<string, Dictionary<Sampled, bool>>();
-        foreach (var item in Modules)
-        {
-          d.Add(item, new Dictionary<Sampled, bool>());
-        }
-        return d;
-      }
-
-      internal static Dictionary<string, Dictionary<Sampled, bool>> samples = MakeSamples();
-
       internal static bool isRunner = false;
 
       internal static readonly object synchronize = new Object();
@@ -538,7 +526,6 @@ namespace AltCover.Recorder
 
         if (wasConnected != isRunner)
         {
-          samples = MakeSamples();
           Clear();
         }
 
@@ -629,53 +616,6 @@ namespace AltCover.Recorder
         CurriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.AddSingleVisit);
       }
 
-      internal static bool TakeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
-      {
-        if (strategy == Sampling.All)
-          return true;
-
-        Sampled[] sampleds;
-        if (context is Null)
-          sampleds = new Sampled[] { new SimpleVisit(hitPointId) };
-        else if (context is Time t)
-          sampleds = new Sampled[] { new SimpleVisit(hitPointId),
-                                     new TimeVisit(hitPointId, t.Value)};
-        else if (context is Call c)
-          sampleds = new Sampled[] { new SimpleVisit(hitPointId),
-                                     new CallVisit(hitPointId, c.Value)};
-        else if (context is Both b)
-        {
-          sampleds = new Sampled[] { new SimpleVisit(hitPointId),
-                                     new TimeVisit(hitPointId, b.Value.Time),
-                                     new CallVisit(hitPointId, b.Value.Call)};
-        }
-        else throw new InvalidDataException(context.ToString());
-
-        var wanted = false;
-        foreach (var sample in sampleds)
-        {
-          if (!samples.ContainsKey(moduleId))
-            continue;
-          var next = samples[moduleId];
-          var hasPointKey = next.ContainsKey(sample);
-          if (!hasPointKey)
-          {
-            lock (next)
-            {
-              hasPointKey = next.ContainsKey(sample);
-              if (!hasPointKey)
-              {
-                next.Add(sample, true);
-              }
-            }
-
-            wanted = wanted || !hasPointKey;
-          }
-        }
-
-        return wanted;
-      }
-
       /// <summary>
       /// This method is executed from instrumented assemblies.
       /// </summary>
@@ -684,18 +624,13 @@ namespace AltCover.Recorder
       /// <param name="context">What sort of visit</param>
       internal static void VisitImpl(string moduleId, int hitPointId, Track context)
       {
-        if
-          (Sample == Sampling.All
-           || TakeSample(Sample, moduleId, hitPointId, context))
+        if (!Eager || supervision || !Trace.IsConnected)
         {
-          if (!Eager || supervision || !Trace.IsConnected)
-          {
-            AddVisit(moduleId, hitPointId, context);
-          }
-          else
-          {
-            TraceVisit(moduleId, hitPointId, context);
-          }
+          AddVisit(moduleId, hitPointId, context);
+        }
+        else
+        {
+          TraceVisit(moduleId, hitPointId, context);
         }
       }
 
@@ -861,7 +796,7 @@ namespace AltCover.Recorder
     }
 
     // Public API
-    public static void Visit(string moduleId, int hitPointId)
+    public static bool Visit(string moduleId, int hitPointId)
     {
       if (I.Recording)
       {
@@ -869,7 +804,10 @@ namespace AltCover.Recorder
                            I.PayloadSelector(I.IsTrackingRunner) :
                            new Null();
         I.VisitSelection(track, moduleId, hitPointId);
+        return Sample == Sampling.Single; // what does this look like
       }
+
+      return false;
     }
 
     //// The moduleId strings are not the hash or guids normally found there

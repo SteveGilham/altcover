@@ -116,50 +116,6 @@ module AltCoverTests =
 
     getMyMethodName "<="
 
-  let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.TakeSample(Sampling.Single, moduleId, hitPointId, context)
-
-  let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.TakeSample(Sampling.All, moduleId, hitPointId, context)
-
-  [<Test>]
-  let OnlyNewIdPairShouldBeSampled () =
-    getMyMethodName "=>"
-
-    lock Instance.I.visits (fun () ->
-      try
-        AltCoverCoreTests.ModuleReset [| "module"; "newmodule" |]
-        let n = Null() :> Track
-
-        Assert.True(addSample ("module", 23, n), "Test 1")
-        Assert.True(addSample ("module", 24, n), "Test 2")
-        Assert.True(addSample ("newmodule", 23, n), "Test 3")
-        Assert.True(addSample ("module", 23, n) |> not, "Test 4")
-        Assert.True(addSampleUnconditional ("module", 23, n), "Test 5")
-        Assert.True(addSample ("module", 23, Call 1), "Test 6")
-        Assert.True(addSample ("module", 23, Time 0L), "Test 7")
-        Assert.True(addSample ("module", 23, Time 1L), "Test 7a")
-        Assert.True(addSample ("module", 23, Time 0L) |> not, "Test 7b")
-
-        Assert.True(addSample ("module", 24, new Both(Pair.Create(0, 1))), "Test 8")
-
-        Assert.True(addSample ("module", 25, new Both(Pair.Create(0, 1))), "Test 9")
-
-        Assert.True(addSample ("module", 25, Call 1) |> not, "Test 10")
-        Assert.True(addSample ("module", 25, Call 1) |> not, "Test 11")
-        Assert.True(addSample ("module", 25, n) |> not, "Test 12")
-
-        // out of band example
-        Assert.True(addSample ("nonesuch", 25, n) |> not, "Test 12a")
-
-        Assert.Throws<InvalidDataException>(fun () ->
-          addSample ("module", 23, Table null) |> ignore)
-        |> ignore
-      finally
-        AltCoverCoreTests.HardReset())
-
-    getMyMethodName "<="
-
   let VisitsEntrySeq key =
     Instance.I.visits.[key]
     |> Seq.cast<KeyValuePair<int, PointVisit>>
@@ -179,16 +135,16 @@ module AltCoverTests =
         Instance.I.Trace <- Tracer.Create null
 
         Instance.I.Recording <- false
-        Instance.Visit("key", 17)
+        Assert.That(Instance.Visit("key", 17), Is.EqualTo (Instance.Sample = Sampling.Single))
         Instance.I.Recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit(key, -23)
+        Assert.That(Instance.Visit(key, -23), Is.EqualTo (Instance.Sample = Sampling.Single))
 
         Instance.CoverageFormat <-
           ReportFormat.OpenCover
           ||| ReportFormat.WithTracking
 
-        Instance.Visit(key, -23)
+        Assert.That(Instance.Visit(key, -23), Is.EqualTo (Instance.Sample = Sampling.Single))
 
         let vs = AltCoverCoreTests.VisitsSeq()
 

@@ -1492,6 +1492,16 @@ module internal Instrument =
       return true;
     }
 
+    	// return true;
+	IL_0006: ldc.i4.1
+	IL_0007: ret
+
+and
+
+	// return false;
+	IL_0006: ldc.i4.0
+	IL_0007: ret
+
     // default false fields, release build
             if (!hit1) hit1 = Ping(i);
 
@@ -1506,5 +1516,14 @@ module internal Instrument =
 
 		// int s = i + 10;
 		IL_0016: ldloc.0
+
+The recorder Visit method doesn't need rewriting (but could be)
+Release build like this:
+
+	// return Sample == Sampling.Single;
+	IL_002d: call valuetype AltCover.Recorder.Sampling AltCover.Recorder.Instance::get_Sample()
+	IL_0032: ldc.i4.1
+	IL_0033: ceq
+	IL_0035: ret
 
 *)
