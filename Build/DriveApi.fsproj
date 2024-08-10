@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <NoWarn>MSB3243;NU1902,NU1903,NU1904</NoWarn>
+    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>
