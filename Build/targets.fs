@@ -4404,6 +4404,7 @@ module Targets =
     (fun () ->
       !! "./_Pack*/*.nupkg"
       |> Seq.iter (fun nugget ->
+        printfn "Unzipping %A" nugget
         let packdir = Path.GetDirectoryName nugget
 
         let unpack =
