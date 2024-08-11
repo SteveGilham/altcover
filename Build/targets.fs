@@ -4093,7 +4093,7 @@ module Targets =
           [ applicationFiles
             resourceFiles "tools/net472/"
             libFiles "tools/net472/"
-            netcoreFiles "tools/net7.0/"
+            netcoreFiles "tools/net7.0"
             poshFiles "tools/net7.0/"
             poshHelpFiles "tools/net7.0/"
             dataFiles "tools/net7.0/"
@@ -4404,7 +4404,6 @@ module Targets =
     (fun () ->
       !! "./_Pack*/*.nupkg"
       |> Seq.iter (fun nugget ->
-        printfn "Unzipping %A" nugget
         let packdir = Path.GetDirectoryName nugget
 
         let unpack =

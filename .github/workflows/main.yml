@@ -52,7 +52,6 @@ jobs:
           name: reports.windows
           path: |
             _Reports
-            ./_Pack*/*.nupkg
             _Packaging/*.xml
             ./**/AltCover*.log
             ./**/dotnettest.*.txt
@@ -77,7 +76,6 @@ jobs:
           name: reports.linux
           path: |
             _Reports
-            ./_Pack*/*.nupkg
             _Packaging/*.xml
             ./**/AltCover*.log
             ./**/dotnettest.*.txt
