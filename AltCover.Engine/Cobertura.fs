@@ -267,7 +267,7 @@ module internal Cobertura =
               (mname, signature)
 
           (key, (signature, m)))
-        |> LCov.sortByFirst
+        |> LCov.sortByFirst id
         |> Seq.fold (processMethod document methods) (0, 0)
 
       let processClass
@@ -528,7 +528,7 @@ module internal Cobertura =
             fn.Substring(start, argsAt - start)
 
           (key, (signature, method)))
-        |> LCov.sortByFirst
+        |> LCov.sortByFirst id
         |> Seq.filter (fun (_, (_, mt)) ->
           mt.Descendants("SequencePoint".X)
           |> Seq.isEmpty
