@@ -5,6 +5,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 33)
 * [ADVISORY] The Fake.build related assemblies (in the `altcover.api` and `altcover.fake` packages) support Fake 6.1.0
+* [PERFORMANCE] revise the OpenCover to LCov conversion to speed the mapping of methods from source files.
 
 # 8.8.173 (Habu series release 32)
 * [PERFORMANCE] Issue #227 - removing the slow-down observed the new (at 8.8.165) file name processing for Cobertura 
