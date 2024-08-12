@@ -109,6 +109,7 @@ type internal AsyncSupport =
 type internal InstrumentContext =
   { InstrumentedAssemblies: string list
     ModuleId: String
+    VisitStore: TypeDefinition
     RecordingAssembly: AssemblyDefinition
     RecorderSource: Stream
     RecordingMethod: MethodDefinition list // initialised once
@@ -119,6 +120,7 @@ type internal InstrumentContext =
   static member Build assemblies =
     { InstrumentedAssemblies = assemblies
       ModuleId = String.Empty
+      VisitStore = null
       RecordingAssembly = null
       RecorderSource = null
       RecordingMethod = []
@@ -511,10 +513,13 @@ module internal Instrument =
                       "AvoidMessageChainsRule",
                       Justification =
                         "methodWorker.Body.Method.DeclaringType.Fields.Add is OK")>]
-
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "First change in many years")>]
     let internal insertVisit
       (instruction: Instruction)
       (methodWorker: ILProcessor)
+      (dump: TypeDefinition)
       (recordingMethodRef: MethodReference)
       (moduleId: string)
       (point: int)
@@ -537,13 +542,13 @@ module internal Instrument =
         FieldDefinition(
           fieldname,
           FieldAttributes.Static
-          ||| FieldAttributes.Private
+          ||| FieldAttributes.Assembly
           ||| FieldAttributes.NotSerialized
           ||| FieldAttributes.HasDefault,
           recordingMethodRef.ReturnType
         )
 
-      methodWorker.Body.Method.DeclaringType.Fields.Add ref
+      dump.Fields.Add ref
       let nop = methodWorker.Create(OpCodes.Nop)
 
       bulkInsertBefore
@@ -743,11 +748,29 @@ module internal Instrument =
             recordingMethod
             |> List.map m.Module.ImportReference
 
+          let dump =
+            TypeDefinition(
+              "<AltCover>",
+              "<SingleVisit>",
+              TypeAttributes.NotPublic
+              ||| TypeAttributes.Sealed
+              ||| TypeAttributes.Class
+            )
+
+          // get System.Object
+          dump.BaseType <-
+            ((recordingMethod |> Seq.head)
+              .DeclaringType.BaseType)
+            |> m.Module.ImportReference
+
+          m.Module.Types.Add(dump)
+
           { state with
               RecordingMethodRef =
                 { Visit = refs.[0]
                   Push = refs.[1]
                   Pop = refs.[2] }
+              VisitStore = dump
               RecordingMethod = recordingMethod
               AsyncSupport =
                 state.AsyncSupport
@@ -789,6 +812,7 @@ module internal Instrument =
           insertVisit
             e.Instruction
             state.MethodWorker
+            state.VisitStore
             state.RecordingMethodRef.Visit
             state.ModuleId
             e.Uid
@@ -807,6 +831,7 @@ module internal Instrument =
             insertVisit
               instruction
               state.MethodWorker
+              state.VisitStore
               state.RecordingMethodRef.Visit
               state.ModuleId
               point
@@ -1506,6 +1531,6 @@ module internal Instrument =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Instrument/I/tag@243::Invoke(System.String)",
+                              "AltCover.Instrument/I/tag@245::Invoke(System.String)",
                             Justification = "Replace override not available")>]
 ()

@@ -1116,6 +1116,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           Instrument.I.insertVisit
             (func.Body.Instructions.[0])
             (func.Body.GetILProcessor())
+            clazz'
             func'
             unique
             42
@@ -1975,8 +1976,11 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
 
+    let dump =
+      def.MainModule.GetType("Sample15.Class1")
+
     let target =
-      def.MainModule.GetType("Sample15.Class1").Methods
+      dump.Methods
       |> Seq.find (fun m -> m.Name = "OpenCoverSummary")
 
     let raw =
@@ -1984,6 +1988,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     let state =
       { raw with
+          VisitStore = dump
           RecordingMethodRef =
             { Visit = recorder.[1]
               Push = recorder.[1]
@@ -2128,6 +2133,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
       let state =
         { raw with
+            VisitStore = method.DeclaringType
             RecordingMethodRef =
               { Visit = method
                 Push = null
@@ -2230,6 +2236,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
               { Visit = method
                 Push = null
                 Pop = null }
+            VisitStore = def.MainModule.GetAllTypes() |> Seq.head
             MethodWorker = method.Body.GetILProcessor() }
 
       let next = branches.Head.Start.Next
@@ -2309,6 +2316,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
       let state =
         { raw with
+            VisitStore = method.DeclaringType
             RecordingMethodRef =
               { Visit = method
                 Push = null
@@ -3085,6 +3093,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
                   Pop = null } } = { state' with
                                        ModuleId = def.MainModule.Mvid.ToString()
                                        RecordingMethod = visit
+                                       VisitStore = result.VisitStore
                                        RecordingMethodRef =
                                          { Visit = null
                                            Push = null
@@ -3157,6 +3166,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let state =
       { (InstrumentContext.Build []) with
           MethodWorker = proc
+          VisitStore = module'
           MethodBody = main.Body
           RecordingMethodRef =
             { Visit = def.MainModule.ImportReference main
@@ -3216,6 +3226,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let state' =
         { state with
             RecordingAssembly = def'
+            VisitStore = null
             RecordingMethod = [ visit; visit; visit ]
             RecordingMethodRef = r
             AsyncSupport = visit |> AsyncSupport.Update |> Some }
@@ -3242,6 +3253,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             RecordingMethodRef = RecorderRefs.Build() },
         Is.EqualTo
           { state' with
+              VisitStore = result.VisitStore
               ModuleId = def.MainModule.Mvid.ToString()
               RecordingMethod = [ visit; visit; visit ]
               RecordingMethodRef = RecorderRefs.Build()
