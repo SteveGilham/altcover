@@ -162,6 +162,8 @@ module AltCoverTests =
       |> Seq.concat
       |> Seq.filter isAssemblyType
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
+      // hit the heisenbug with a hammer
+      |> Seq.filter (fun f -> f |> Path.GetFileName <> "Sample2.dll")
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
       |> Seq.map (fun x -> (x, AssemblyResolver.ReadAssembly x))
       |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)

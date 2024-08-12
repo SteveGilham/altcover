@@ -631,11 +631,8 @@ namespace AltCover.Recorder
         CurriedIssue71Wrapper(visits, moduleId, hitPointId, context, Counter.AddSingleVisit);
       }
 
-      internal static bool TakeSample(Sampling strategy, string moduleId, int hitPointId, Track context)
+      internal static bool TakeSample(string moduleId, int hitPointId, Track context)
       {
-        if (strategy == Sampling.All)
-          return true;
-
         Sampled[] sampleds;
         if (context is Null)
           sampleds = new Sampled[] { new SimpleVisit(hitPointId) };
@@ -688,7 +685,7 @@ namespace AltCover.Recorder
       {
         if
           (Sample == Sampling.All
-           || TakeSample(Sample, moduleId, hitPointId, context))
+           || TakeSample(moduleId, hitPointId, context))
         {
           if (!Eager || supervision || !Trace.IsConnected)
           {

@@ -117,10 +117,7 @@ module AltCoverTests =
     getMyMethodName "<="
 
   let internal addSample (moduleId, hitPointId, context) =
-    Instance.I.TakeSample(Sampling.Single, moduleId, hitPointId, context)
-
-  let internal addSampleUnconditional (moduleId, hitPointId, context) =
-    Instance.I.TakeSample(Sampling.All, moduleId, hitPointId, context)
+    Instance.I.TakeSample(moduleId, hitPointId, context)
 
   [<Test>]
   let OnlyNewIdPairShouldBeSampled () =
@@ -135,7 +132,6 @@ module AltCoverTests =
         Assert.True(addSample ("module", 24, n), "Test 2")
         Assert.True(addSample ("newmodule", 23, n), "Test 3")
         Assert.True(addSample ("module", 23, n) |> not, "Test 4")
-        Assert.True(addSampleUnconditional ("module", 23, n), "Test 5")
         Assert.True(addSample ("module", 23, Call 1), "Test 6")
         Assert.True(addSample ("module", 23, Time 0L), "Test 7")
         Assert.True(addSample ("module", 23, Time 1L), "Test 7a")
@@ -649,6 +645,7 @@ module AltCoverTests =
     lock handle (fun () ->
       try
         Instance.I.visits <- null
+        Instance.Strategy <- Sampling.All
         let key = " "
 
         let path =
@@ -689,6 +686,7 @@ module AltCoverTests =
         Assert.That(third.Length, Is.EqualTo before.Length)
       finally
         Instance.I.visits <- handle
+        Instance.Strategy <- Sampling.Invalid
         Instance.I.visits.Clear())
 
     getMyMethodName "<="
