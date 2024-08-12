@@ -52,6 +52,7 @@ module AltCoverCoreTests =
     Counter.totalVisits <- 0L
 
   let SamplesClear () =
+    Instance.Strategy <- Sampling.Invalid
     Instance.I.samples <- Instance.I.MakeSamples()
 
   let private reset () =
@@ -279,11 +280,13 @@ module AltCoverCoreTests =
         Instance.I.Trace <- client.OnStart()
         Assert.True(Instance.I.Trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
+        Instance.Strategy <- Sampling.All
         Instance.I.VisitImpl("name", 23, Null())
       finally
         Instance.I.Trace.Close()
         Instance.I.Trace.Close()
         Instance.I.Trace.Close()
+        Instance.Strategy <- Sampling.Invalid
         Instance.I.Trace <- save
 
       use stream = // fsharplint:disable-next-line  RedundantNewKeyword
@@ -351,12 +354,15 @@ module AltCoverCoreTests =
         Instance.I.isRunner <- true
 
         HardReset()
+
+        Instance.Strategy <- Sampling.All
         VisitsAddTrack("name", 23, 1L)
         VisitImplMethod("name", 23, 5)
       finally
         Instance.I.isRunner <- false
         Instance.I.Trace.Close()
         Instance.I.Trace <- save
+        Instance.Strategy <- Sampling.Invalid
 
       use stream = // fsharplint:disable-next-line  RedundantNewKeyword
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)

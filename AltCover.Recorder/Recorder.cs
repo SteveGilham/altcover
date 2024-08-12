@@ -87,6 +87,8 @@ namespace AltCover.Recorder
       get { return 0; }
     }
 
+    internal static Sampling Strategy = Sampling.Invalid;
+
     /// <summary>
     /// Gets the sampling strategy
     /// This property's IL code is modified to store the user chosen override if applicable
@@ -94,7 +96,7 @@ namespace AltCover.Recorder
     internal static Sampling Sample
     {
       [MethodImpl(MethodImplOptions.NoInlining)]
-      get { return Sampling.All; }
+      get { return Strategy; }
     }
 
     /// <summary>

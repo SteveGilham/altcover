@@ -53,6 +53,7 @@ namespace AltCover.Recorder
   {
     All = 0,
     Single = 1,
+    Invalid = -1
   };
 
   [SuppressMessage("Gendarme.Rules.Performance",

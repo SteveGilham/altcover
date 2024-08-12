@@ -2147,7 +2147,8 @@ module Targets =
 
       // Only use
       let baseFilter = AltCoverFilterTypeSafe
-      let eager (p: TypeSafe.PrepareOptions) = { p with Eager = TypeSafe.Flag true }
+      let eager (p: TypeSafe.PrepareOptions) = { p with Eager = TypeSafe.Flag true
+                                                        All = TypeSafe.Flag false }
       let eagerfilter = baseFilter >> eager
 
       let tests =

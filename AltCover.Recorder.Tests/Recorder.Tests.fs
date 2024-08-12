@@ -177,6 +177,7 @@ module AltCoverTests =
         let key = " "
         AltCoverCoreTests.ModuleReset [| key |]
         Instance.I.Trace <- Tracer.Create null
+        Instance.Strategy <- Sampling.All
 
         Instance.I.Recording <- false
 
@@ -308,6 +309,7 @@ module AltCoverTests =
 
     try
       Instance.I.isRunner <- true
+      Instance.Strategy <- Sampling.All
 
       Instance.CoverageFormat <-
         ReportFormat.OpenCover
@@ -340,6 +342,7 @@ module AltCoverTests =
       Instance.Pop()
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.NCover
+      Instance.Strategy <- Sampling.Invalid
 
     let result2 =
       payloadSelection (1311693406324658740L, 1000L, true)
@@ -740,6 +743,7 @@ module AltCoverTests =
     lock Instance.I.visits (fun () ->
       let key = " "
       AltCoverCoreTests.ModuleReset [| key |]
+      Instance.Strategy <- Sampling.All
 
       try
         Instance.I.VisitImpl(key, 23, Null())
