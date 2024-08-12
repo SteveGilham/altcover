@@ -1,6 +1,7 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
@@ -249,6 +250,22 @@ FN:4,(anonymous_0)
         | _ ->
           report.Descendants("Module".X)
           |> Seq.iter (fun assembly ->
+            let methodTable = Dictionary<string, XElement seq>()
+
+            assembly.Descendants("Method".X)
+            |> Seq.map (fun m ->
+              let file = m.Descendants("FileRef".X)
+                         |> Seq.map _.Attribute("uid".X)
+                         |> Seq.tryFind _.IsNotNull
+              match file with
+              | None -> (String.Empty, m)
+              | Some x -> (x.Value, m)
+            )
+            |> Seq.groupBy fst
+            |> Seq.iter (fun (k, v) ->
+              methodTable.Add (k, v |> Seq.map snd)
+            )
+
             assembly.Descendants("File".X)
             |> Seq.sortBy _.Attribute("fullPath".X).Value
             |> Seq.iter (fun f ->
@@ -276,15 +293,9 @@ FN:4,(anonymous_0)
               // source file:
               //
               // FN:<line number of function start>,<function name>
-              let methods =
-                p.Descendants("Method".X)
-                |> Seq.filter (
-                  _.Descendants()
-                  >> Seq.exists (fun r ->
-                    let f = r.Attribute("fileid".X)
-                    f.IsNotNull && f.Value == uid)
-                )
-                |> Seq.toList
+              let methods = match methodTable.TryGetValue(uid) with
+                            | (true, x) -> x |> Seq.toList
+                            | _ -> []
 
               let FN (ms: XElement list) = // fsharplint:disable-line NonPublicValuesNames
                 ms

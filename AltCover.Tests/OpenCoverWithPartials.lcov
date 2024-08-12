@@ -1,22 +1,11 @@
 ﻿TN: SimpleMix
 SF:C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h
-FN:41,System.Int32 <Module>::main(System.String[])
-FN:41,System.Int32 Example::main(System.String[])
-FNDA:1,System.Int32 <Module>::main(System.String[])
-FNDA:1,System.Int32 Example::main(System.String[])
-FNF:2
-FNH:2
-BRDA:42,13,0,1
-BRDA:42,13,1,-
-BRDA:42,625,0,1
-BRDA:42,625,1,-
-BRF:4
-BRH:2
-DA:41,1
-DA:42,1
-DA:43,1
-LH:3
-LF:3
+FNF:0
+FNH:0
+BRF:0
+BRH:0
+LH:0
+LF:0
 end_of_record
 TN: SimpleMix
 SF:C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp
