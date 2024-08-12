@@ -87,7 +87,7 @@ module AltCoverTests2 =
 
     recorder
     |> List.zip
-      [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
+      [ "System.Boolean AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
         "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
         "System.Void AltCover.Recorder.Instance.Pop()" ]
     |> List.iter (fun (n, m) -> test <@ Naming.fullMethodName m = n @>)
@@ -1120,8 +1120,10 @@ has been prefixed with Ldc_I4_1 (1 byte)
             unique
             42
 
-        Assert.That(newValue.Operand, Is.EqualTo unique, "bad operand")
-        Assert.That(newValue.OpCode, Is.EqualTo OpCodes.Ldstr, "bad opcode")
+        let plus2 = newValue.Next.Next
+
+        Assert.That(plus2.Operand, Is.EqualTo unique, "bad operand")
+        Assert.That(plus2.OpCode, Is.EqualTo OpCodes.Ldstr, "bad opcode")
         Instrument.I.writeAssembly def outputdll
 
         use raw =
@@ -1537,7 +1539,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           DefaultVisitCount = Exemption.None }
 
     Assert.That(state2.AsyncSupport |> Option.isNone)
-    Assert.That(recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
+    Assert.That(recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 11))
 
     Assert.That(
       recorder.Head.Body.ExceptionHandlers.Count,
@@ -2037,22 +2039,12 @@ has been prefixed with Ldc_I4_1 (1 byte)
     //IL_0012: switch IL_002b,IL_002d,IL_002b,IL_002d,IL_002b
     //IL_002b: br.s IL_0041
 
-#if !NET472
     Assert.That(
       next,
       Is
-        .GreaterThanOrEqualTo(42)
-        .And.LessThanOrEqualTo(46)
+        .GreaterThanOrEqualTo(55)
+        .And.LessThanOrEqualTo(61)
     )
-
-    let expected = next
-#else
-    let expected = 43
-#endif
-    //if next <> expected
-    //then target.Body.Instructions
-    //     |> Seq.iter (printfn "%A")
-    Assert.That(next, Is.EqualTo expected)
 
     Assert.That(targets2, Is.EquivalentTo [ next; n2; next; n2; next ])
 
@@ -2158,7 +2150,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         |> Seq.skip 1
         |> Seq.toList
 
-      Assert.That(inject.Length, Is.EqualTo 8)
+      Assert.That(inject.Length, Is.EqualTo 16)
 
       let switches =
         branches.Head.Start.Operand :?> Instruction[]
@@ -2166,16 +2158,16 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
       Assert.That(switches.[0], Is.EqualTo inject.[1])
       Assert.That(switches.[1], Is.EqualTo inject.[0])
-      Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
+      Assert.That(inject.[0].Operand, Is.EqualTo inject.[9])
 
       Assert.That(
-        (inject.[2].Operand :?> int)
+        (inject.[4].Operand :?> int)
         &&& Counter.branchMask,
         Is.EqualTo 1
       )
 
       Assert.That(
-        (inject.[6].Operand :?> int)
+        (inject.[12].Operand :?> int)
         &&& Counter.branchMask,
         Is.EqualTo 0
       )
@@ -2256,16 +2248,16 @@ has been prefixed with Ldc_I4_1 (1 byte)
         |> Seq.skip 1
         |> Seq.toList
 
-      Assert.That(inject.Length, Is.EqualTo 5)
+      Assert.That(inject.Length, Is.EqualTo 9)
 
       let jump =
         branches.Head.Start.Operand :?> Instruction
 
       Assert.That(jump, Is.EqualTo inject.[1])
-      Assert.That(inject.[0].Operand, Is.EqualTo inject.[4].Next)
+      Assert.That(inject.[0].Operand, Is.EqualTo inject.[8].Next)
 
       Assert.That(
-        (inject.[2].Operand :?> int)
+        (inject.[4].Operand :?> int)
         &&& Counter.branchMask,
         Is.EqualTo branches.[1].Uid
       )
@@ -2339,17 +2331,17 @@ has been prefixed with Ldc_I4_1 (1 byte)
         |> Seq.skip 1
         |> Seq.toList
 
-      Assert.That(inject.Length, Is.EqualTo 8)
-      Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
+      Assert.That(inject.Length, Is.EqualTo 16)
+      Assert.That(inject.[0].Operand, Is.EqualTo inject.[9])
 
       Assert.That(
-        (inject.[2].Operand :?> int)
+        (inject.[4].Operand :?> int)
         &&& Counter.branchMask,
         Is.EqualTo 1
       )
 
       Assert.That(
-        (inject.[6].Operand :?> int)
+        (inject.[12].Operand :?> int)
         &&& Counter.branchMask,
         Is.EqualTo 0
       )
@@ -3175,7 +3167,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Instrument.I.instrumentationVisitor state visited
 
     Assert.That(result, Is.SameAs state)
-    Assert.That(target.Previous.OpCode, Is.EqualTo OpCodes.Call)
+    Assert.That(target.Previous.OpCode, Is.EqualTo OpCodes.Nop)
+    Assert.That(target.Previous.Previous.OpCode, Is.EqualTo OpCodes.Stsfld)
+    Assert.That(target.Previous.Previous.Previous.OpCode, Is.EqualTo OpCodes.Call)
 
   [<Test>]
   let IncludedModuleDoesNotChangeRecorderJustTheReference () =

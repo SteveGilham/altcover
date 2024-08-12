@@ -364,15 +364,6 @@ module internal Instrument =
 
         updateStrongNaming definition pair
 
-        //definition.MainModule.GetTypes()
-        //|> Seq.iter (fun t ->
-        //  if
-        //    t.IsPublic
-        //    && (not
-        //        <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal))
-        //  then
-        //    t.IsPublic <- false)
-
         injectInstrumentation
           definition
           { Assembly = definition
@@ -516,6 +507,11 @@ module internal Instrument =
       finally
         Directory.SetCurrentDirectory(here)
 
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidMessageChainsRule",
+                      Justification =
+                        "methodWorker.Body.Method.DeclaringType.Fields.Add is OK")>]
+
     let internal insertVisit
       (instruction: Instruction)
       (methodWorker: ILProcessor)
@@ -523,12 +519,43 @@ module internal Instrument =
       (moduleId: string)
       (point: int)
       =
+      //// loop start (head: IL_0031)
+      // IL_0004: ldsfld bool ConsoleApp1.Program::hit1
+      // IL_0009: brtrue.s IL_0016
+      // // hit1 = Ping(i);
+      // IL_000b: ldloc.0 // i
+      // IL_000c: call bool ConsoleApp1.Program::Ping(int32)
+      // IL_0011: stsfld bool ConsoleApp1.Program::hit1
+      // // int s = i + 10;
+      // IL_0016: ldloc.0
+
+      let fieldname =
+        "<AltCover>$"
+        + point.ToString("X8", System.Globalization.CultureInfo.InvariantCulture)
+
+      let ref =
+        FieldDefinition(
+          fieldname,
+          FieldAttributes.Static
+          ||| FieldAttributes.Private
+          ||| FieldAttributes.NotSerialized
+          ||| FieldAttributes.HasDefault,
+          recordingMethodRef.ReturnType
+        )
+
+      methodWorker.Body.Method.DeclaringType.Fields.Add ref
+      let nop = methodWorker.Create(OpCodes.Nop)
+
       bulkInsertBefore
         methodWorker
         instruction
-        [ methodWorker.Create(OpCodes.Ldstr, moduleId)
+        [ methodWorker.Create(OpCodes.Ldsfld, ref)
+          methodWorker.Create(OpCodes.Brtrue_S, nop)
+          methodWorker.Create(OpCodes.Ldstr, moduleId)
           methodWorker.Create(OpCodes.Ldc_I4, point)
-          methodWorker.Create(OpCodes.Call, recordingMethodRef) ]
+          methodWorker.Create(OpCodes.Call, recordingMethodRef)
+          methodWorker.Create(OpCodes.Stsfld, ref)
+          nop ] // avoid rewrite pass to target
         true
 
     // Determine new names for input strong-named assemblies; if we have a key and
@@ -1482,29 +1509,3 @@ module internal Instrument =
                               "AltCover.Instrument/I/tag@243::Invoke(System.String)",
                             Justification = "Replace override not available")>]
 ()
-
-(*
-    .field private static bool hit1
-
-    private static bool Ping(int s)
-    {
-      Console.WriteLine(s);
-      return true;
-    }
-
-    // default false fields, release build
-            if (!hit1) hit1 = Ping(i);
-
-	// loop start (head: IL_0031)
-		IL_0004: ldsfld bool ConsoleApp1.Program::hit1
-		IL_0009: brtrue.s IL_0016
-
-		// hit1 = Ping(i);
-		IL_000b: ldloc.0 // i
-		IL_000c: call bool ConsoleApp1.Program::Ping(int32)
-		IL_0011: stsfld bool ConsoleApp1.Program::hit1
-
-		// int s = i + 10;
-		IL_0016: ldloc.0
-
-*)

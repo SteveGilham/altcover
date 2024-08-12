@@ -10,6 +10,10 @@
     <DefineConstants>RECORDER</DefineConstants>
     <NoWarn>CS1591</NoWarn>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>False</EnableNETAnalyzers>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

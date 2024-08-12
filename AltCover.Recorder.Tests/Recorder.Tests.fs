@@ -179,16 +179,28 @@ module AltCoverTests =
         Instance.I.Trace <- Tracer.Create null
 
         Instance.I.Recording <- false
-        Instance.Visit("key", 17)
+
+        Assert.That(
+          Instance.Visit("key", 17),
+          Is.EqualTo(Instance.Sample = Sampling.Single)
+        )
+
         Instance.I.Recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit(key, -23)
+
+        Assert.That(
+          Instance.Visit(key, -23),
+          Is.EqualTo(Instance.Sample = Sampling.Single)
+        )
 
         Instance.CoverageFormat <-
           ReportFormat.OpenCover
           ||| ReportFormat.WithTracking
 
-        Instance.Visit(key, -23)
+        Assert.That(
+          Instance.Visit(key, -23),
+          Is.EqualTo(Instance.Sample = Sampling.Single)
+        )
 
         let vs = AltCoverCoreTests.VisitsSeq()
 

@@ -861,7 +861,7 @@ namespace AltCover.Recorder
     }
 
     // Public API
-    public static void Visit(string moduleId, int hitPointId)
+    public static bool Visit(string moduleId, int hitPointId)
     {
       if (I.Recording)
       {
@@ -869,7 +869,10 @@ namespace AltCover.Recorder
                            I.PayloadSelector(I.IsTrackingRunner) :
                            new Null();
         I.VisitSelection(track, moduleId, hitPointId);
+        return Sample == Sampling.Single && !I.IsTracking; // what does this look like
       }
+
+      return false;
     }
 
     //// The moduleId strings are not the hash or guids normally found there

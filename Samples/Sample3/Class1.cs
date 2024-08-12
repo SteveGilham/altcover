@@ -65,9 +65,10 @@ namespace AltCover.Sample3
       }
     }
 
-    public static void Log(string id, int num)
+    public static bool Log(string id, int num)
     {
       log.Add(Tuple.Create(id, num));
+      return true;
     }
 
     public static int GetOperandType(Instruction self)

@@ -91,7 +91,6 @@ module AltCoverTests =
   let sample8path =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net9.0/Sample8.dll")
 
-
   let sample32path =
     Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net9.0/Sample32.dll")
 
@@ -3385,7 +3384,7 @@ module AltCoverTests =
         "System.Void AltCover.Sample3.Class2.set_Property(System.Int32)"
         "System.Void AltCover.Sample3.Class2.#ctor()"
         "System.Collections.Generic.List`1 AltCover.Sample3.Class3.get_Visits()"
-        "System.Void AltCover.Sample3.Class3.Log(System.String,System.Int32)"
+        "System.Boolean AltCover.Sample3.Class3.Log(System.String,System.Int32)"
         "System.Int32 AltCover.Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)"
         "System.Void AltCover.Sample3.Class3.#ctor()"
         "System.Void AltCover.Sample3.Class3..cctor()"
