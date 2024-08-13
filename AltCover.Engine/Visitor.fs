@@ -1193,12 +1193,12 @@ module internal Visitor =
           null
       | _ -> seq
 
-    let getSequencePoint (dbg: IDictionary<Instruction, SequencePoint>) (i: Instruction) =
-      i |> dbg.TryGetValue |> snd
+    let getSequencePoint (dbg: IDictionary<int, SequencePoint>) (i: Instruction) =
+      i.Offset |> dbg.TryGetValue |> snd
 
     let internal findEffectiveSequencePoint
       genuine
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (instructions: Instruction seq)
       =
       instructions
@@ -1208,7 +1208,7 @@ module internal Visitor =
       |> Seq.tryFind isSequencePoint
 
     let internal findSequencePoint
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (instructions: Instruction seq)
       =
       findEffectiveSequencePoint Genuine dbg instructions
@@ -1276,7 +1276,7 @@ module internal Visitor =
 
     [<TailCall>]
     let rec internal lastOfSequencePoint
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (i: Instruction)
       =
       let n = i.Next
@@ -1291,7 +1291,7 @@ module internal Visitor =
 
     [<TailCall>]
     let rec internal firstOfSequencePoint
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (i: Instruction)
       =
       let p = i.Previous
@@ -1304,10 +1304,7 @@ module internal Visitor =
       else
         firstOfSequencePoint dbg p
 
-    let internal getJumps
-      (dbg: IDictionary<Instruction, SequencePoint>)
-      (i: Instruction)
-      =
+    let internal getJumps (dbg: IDictionary<int, SequencePoint>) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
       let next = i.Next
 
@@ -1407,7 +1404,7 @@ module internal Visitor =
 
     let private extractBranchPoints
       (v0t: TypeReference option)
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       rawInstructions
       interesting
       vc
@@ -1488,10 +1485,10 @@ module internal Visitor =
       |> Seq.toList
 
     let internal validateInstruction
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (x: Instruction)
       =
-      let (yes, s) = dbg.TryGetValue x
+      let (yes, s) = dbg.TryGetValue x.Offset
       yes && (s.IsHidden |> not)
 
     let internal trivial =
@@ -1505,14 +1502,14 @@ module internal Visitor =
       )
 
     let internal isNonTrivialSeqPnt
-      (dbg: IDictionary<Instruction, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (x: Instruction)
       =
       if CoverageParameters.trivia.Value then
         let rest = // rest of the sequence point
           Seq.unfold
             (fun (i: Instruction) ->
-              if i |> isNull || i |> dbg.ContainsKey then
+              if i |> isNull || i.Offset |> dbg.ContainsKey then
                 None
               else
                 Some(i, i.Next))
@@ -1532,14 +1529,15 @@ module internal Visitor =
 
       let rawInstructions = body.Instructions
 
-      let splut =
+      let splut = Dictionary<int, SequencePoint>()
+
+      do
         m.Method.DebugInformation
         |> Option.ofObj
-        |> Option.map _.GetSequencePointMapping()
-        |> Option.defaultValue (
-          Dictionary<Instruction, SequencePoint>()
-          :> IDictionary<Instruction, SequencePoint>
-        )
+        |> Option.filter _.HasSequencePoints
+        |> Option.iter (fun dbg ->
+          dbg.SequencePoints
+          |> Seq.iter (fun s -> splut.Add(s.Offset, s)))
 
       let instructions =
         [ rawInstructions |> Seq.cast ]
@@ -1575,7 +1573,7 @@ module internal Visitor =
             MethodPoint
               { Instruction = i
                 SeqPnt =
-                  splut.TryGetValue(i)
+                  splut.TryGetValue(i.Offset)
                   |> snd
                   |> Option.ofObj
                   |> Option.filter (fun _ -> CoverageParameters.methodPoint.Value)
@@ -1586,7 +1584,7 @@ module internal Visitor =
         else
           instructions.OrderByDescending(fun (x: Instruction) -> x.Offset)
           |> Seq.mapi (fun i x ->
-            let s = x |> splut.TryGetValue |> snd
+            let s = x.Offset |> splut.TryGetValue |> snd
 
             MethodPoint
               { Instruction = x
@@ -1605,7 +1603,7 @@ module internal Visitor =
       let bp =
         if includeBranches () then
           let spnt =
-            (instructions |> Seq.head)
+            (instructions |> Seq.head).Offset
             |> splut.TryGetValue
             |> snd
 
@@ -1733,12 +1731,12 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1593-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1591-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1487@1487::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1484@1484::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 ()
