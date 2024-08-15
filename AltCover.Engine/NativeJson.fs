@@ -1474,8 +1474,7 @@ type internal DocumentType =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target =
-                              "<StartupCode$AltCover-UICommon>.$NativeJson.#.cctor()",
+                            Target = "AltCover.NativeJson.#.cctor()",
                             Justification = "Compiler Generated")>]
 #endif
 

@@ -46,7 +46,23 @@ module AltCover =
         Environment.NewLine,
         Seq.concat [ [| cl |] |> Array.toSeq; self.Errors ]
       )
+
+  let validateArraySimple a f = a |> Seq.iter (f >> ignore)
+
+  let validateArray a f key = validateArraySimple a (f key)
+
+  let validateOptional f key x =
+    if x |> String.IsNullOrWhiteSpace |> not then
+      f key x |> ignore
+
 #endif
+
+  let toSeq (s: 'a seq) =
+    match s with
+    | null -> Seq.empty<'a>
+    | _ -> s
+
+  let toList (s: 'a seq) = s |> toSeq |> Seq.toList
 
   [<ExcludeFromCodeCoverage;
     NoComparison;
@@ -58,11 +74,6 @@ module AltCover =
     | Primitive of Primitive.CollectOptions
     | TypeSafe of TypeSafe.CollectOptions
     | Abstract of Abstract.ICollectOptions
-
-    static member private ToSeq(s: String seq) =
-      match s with
-      | null -> Seq.empty<string>
-      | _ -> s
 
     member self.RecorderDirectory =
       match self with
@@ -112,8 +123,8 @@ module AltCover =
 
     member self.CommandLine =
       match self with
-      | Primitive p -> p.CommandLine |> CollectOptions.ToSeq
-      | Abstract a -> a.CommandLine |> CollectOptions.ToSeq
+      | Primitive p -> p.CommandLine |> toSeq
+      | Abstract a -> a.CommandLine |> toSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
     member self.ExposeReturnCode =
@@ -205,41 +216,34 @@ module AltCover =
     | TypeSafe of TypeSafe.PrepareOptions
     | Abstract of Abstract.IPrepareOptions
 
-    static member private ToSeq(s: 'a seq) =
-      match s with
-      | null -> Seq.empty<'a>
-      | _ -> s
-
-    static member private ToList(s: 'a seq) = s |> PrepareOptions.ToSeq |> Seq.toList
-
     member self.InputDirectories =
       match self with
-      | Primitive p -> p.InputDirectories |> PrepareOptions.ToList
-      | Abstract a -> a.InputDirectories |> PrepareOptions.ToList
+      | Primitive p -> p.InputDirectories |> toList
+      | Abstract a -> a.InputDirectories |> toList
       | TypeSafe t -> t.InputDirectories.AsStrings()
 
     member self.OutputDirectories =
       match self with
-      | Primitive p -> p.OutputDirectories |> PrepareOptions.ToList
-      | Abstract a -> a.OutputDirectories |> PrepareOptions.ToList
+      | Primitive p -> p.OutputDirectories |> toList
+      | Abstract a -> a.OutputDirectories |> toList
       | TypeSafe t -> t.OutputDirectories.AsStrings()
 
     member self.SymbolDirectories =
       match self with
-      | Primitive p -> p.SymbolDirectories |> PrepareOptions.ToList
-      | Abstract a -> a.SymbolDirectories |> PrepareOptions.ToList
+      | Primitive p -> p.SymbolDirectories |> toList
+      | Abstract a -> a.SymbolDirectories |> toList
       | TypeSafe t -> t.SymbolDirectories.AsStrings()
 
     member self.Dependencies =
       match self with
-      | Primitive p -> p.Dependencies |> PrepareOptions.ToList
-      | Abstract a -> a.Dependencies |> PrepareOptions.ToList
+      | Primitive p -> p.Dependencies |> toList
+      | Abstract a -> a.Dependencies |> toList
       | TypeSafe t -> t.Dependencies.AsStrings()
 
     member self.Keys =
       match self with
-      | Primitive p -> p.Keys |> PrepareOptions.ToList
-      | Abstract a -> a.Keys |> PrepareOptions.ToList
+      | Primitive p -> p.Keys |> toList
+      | Abstract a -> a.Keys |> toList
       | TypeSafe t -> t.Keys.AsStrings()
 
     member self.StrongNameKey =
@@ -256,68 +260,68 @@ module AltCover =
 
     member self.FileFilter =
       match self with
-      | Primitive p -> p.FileFilter |> PrepareOptions.ToList
-      | Abstract a -> a.FileFilter |> PrepareOptions.ToList
+      | Primitive p -> p.FileFilter |> toList
+      | Abstract a -> a.FileFilter |> toList
       | TypeSafe t -> t.FileFilter.AsStrings()
 
     member self.AssemblyFilter =
       match self with
-      | Primitive p -> p.AssemblyFilter |> PrepareOptions.ToList
-      | Abstract a -> a.AssemblyFilter |> PrepareOptions.ToList
+      | Primitive p -> p.AssemblyFilter |> toList
+      | Abstract a -> a.AssemblyFilter |> toList
       | TypeSafe t -> t.AssemblyFilter.AsStrings()
 
     member self.AssemblyExcludeFilter =
       match self with
-      | Primitive p -> p.AssemblyExcludeFilter |> PrepareOptions.ToList
-      | Abstract a -> a.AssemblyExcludeFilter |> PrepareOptions.ToList
+      | Primitive p -> p.AssemblyExcludeFilter |> toList
+      | Abstract a -> a.AssemblyExcludeFilter |> toList
       | TypeSafe t -> t.AssemblyExcludeFilter.AsStrings()
 
     member self.TypeFilter =
       match self with
-      | Primitive p -> p.TypeFilter |> PrepareOptions.ToList
-      | Abstract a -> a.TypeFilter |> PrepareOptions.ToList
+      | Primitive p -> p.TypeFilter |> toList
+      | Abstract a -> a.TypeFilter |> toList
       | TypeSafe t -> t.TypeFilter.AsStrings()
 
     member self.MethodFilter =
       match self with
-      | Primitive p -> p.MethodFilter |> PrepareOptions.ToList
-      | Abstract a -> a.MethodFilter |> PrepareOptions.ToList
+      | Primitive p -> p.MethodFilter |> toList
+      | Abstract a -> a.MethodFilter |> toList
       | TypeSafe t -> t.MethodFilter.AsStrings()
 
     member self.AttributeFilter =
       match self with
-      | Primitive p -> p.AttributeFilter |> PrepareOptions.ToList
-      | Abstract a -> a.AttributeFilter |> PrepareOptions.ToList
+      | Primitive p -> p.AttributeFilter |> toList
+      | Abstract a -> a.AttributeFilter |> toList
       | TypeSafe t -> t.AttributeFilter.AsStrings()
 
     member self.PathFilter =
       match self with
-      | Primitive p -> p.PathFilter |> PrepareOptions.ToList
-      | Abstract a -> a.PathFilter |> PrepareOptions.ToList
+      | Primitive p -> p.PathFilter |> toList
+      | Abstract a -> a.PathFilter |> toList
       | TypeSafe t -> t.PathFilter.AsStrings()
 
     member self.AttributeTopLevel =
       match self with
-      | Primitive p -> p.AttributeTopLevel |> PrepareOptions.ToList
-      | Abstract a -> a.AttributeTopLevel |> PrepareOptions.ToList
+      | Primitive p -> p.AttributeTopLevel |> toList
+      | Abstract a -> a.AttributeTopLevel |> toList
       | TypeSafe t -> t.AttributeTopLevel.AsStrings()
 
     member self.TypeTopLevel =
       match self with
-      | Primitive p -> p.TypeTopLevel |> PrepareOptions.ToList
-      | Abstract a -> a.TypeTopLevel |> PrepareOptions.ToList
+      | Primitive p -> p.TypeTopLevel |> toList
+      | Abstract a -> a.TypeTopLevel |> toList
       | TypeSafe t -> t.TypeTopLevel.AsStrings()
 
     member self.MethodTopLevel =
       match self with
-      | Primitive p -> p.MethodTopLevel |> PrepareOptions.ToList
-      | Abstract a -> a.MethodTopLevel |> PrepareOptions.ToList
+      | Primitive p -> p.MethodTopLevel |> toList
+      | Abstract a -> a.MethodTopLevel |> toList
       | TypeSafe t -> t.MethodTopLevel.AsStrings()
 
     member self.CallContext =
       match self with
-      | Primitive p -> p.CallContext |> PrepareOptions.ToList
-      | Abstract a -> a.CallContext |> PrepareOptions.ToList
+      | Primitive p -> p.CallContext |> toList
+      | Abstract a -> a.CallContext |> toList
       | TypeSafe t -> t.CallContext.AsStrings()
 
     member self.ReportFormat =
@@ -376,8 +380,8 @@ module AltCover =
 
     member self.CommandLine =
       match self with
-      | Primitive p -> p.CommandLine |> PrepareOptions.ToSeq
-      | Abstract a -> a.CommandLine |> PrepareOptions.ToSeq
+      | Primitive p -> p.CommandLine |> toSeq
+      | Abstract a -> a.CommandLine |> toSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
     member self.ExposeReturnCode =
@@ -448,55 +452,54 @@ module AltCover =
 
     interface Abstract.IPrepareOptions with
       member self.InputDirectories =
-        self.InputDirectories |> PrepareOptions.ToSeq
+        self.InputDirectories |> toSeq
 
       member self.OutputDirectories =
-        self.OutputDirectories |> PrepareOptions.ToSeq
+        self.OutputDirectories |> toSeq
 
       member self.SymbolDirectories =
-        self.SymbolDirectories |> PrepareOptions.ToSeq
+        self.SymbolDirectories |> toSeq
 
       member self.Dependencies =
-        self.Dependencies |> PrepareOptions.ToSeq
+        self.Dependencies |> toSeq
 
-      member self.Keys =
-        self.Keys |> PrepareOptions.ToSeq
+      member self.Keys = self.Keys |> toSeq
 
       member self.StrongNameKey = self.StrongNameKey
       member self.Report = self.Report
 
       member self.FileFilter =
-        self.FileFilter |> PrepareOptions.ToSeq
+        self.FileFilter |> toSeq
 
       member self.AssemblyFilter =
-        self.AssemblyFilter |> PrepareOptions.ToSeq
+        self.AssemblyFilter |> toSeq
 
       member self.AssemblyExcludeFilter =
-        self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
+        self.AssemblyExcludeFilter |> toSeq
 
       member self.TypeFilter =
-        self.TypeFilter |> PrepareOptions.ToSeq
+        self.TypeFilter |> toSeq
 
       member self.MethodFilter =
-        self.MethodFilter |> PrepareOptions.ToSeq
+        self.MethodFilter |> toSeq
 
       member self.AttributeFilter =
-        self.AttributeFilter |> PrepareOptions.ToSeq
+        self.AttributeFilter |> toSeq
 
       member self.PathFilter =
-        self.PathFilter |> PrepareOptions.ToSeq
+        self.PathFilter |> toSeq
 
       member self.AttributeTopLevel =
-        self.AttributeTopLevel |> PrepareOptions.ToSeq
+        self.AttributeTopLevel |> toSeq
 
       member self.TypeTopLevel =
-        self.TypeTopLevel |> PrepareOptions.ToSeq
+        self.TypeTopLevel |> toSeq
 
       member self.MethodTopLevel =
-        self.MethodTopLevel |> PrepareOptions.ToSeq
+        self.MethodTopLevel |> toSeq
 
       member self.CallContext =
-        self.CallContext |> PrepareOptions.ToSeq
+        self.CallContext |> toSeq
 
       member self.ReportFormat = self.ReportFormat
       member self.InPlace = self.InPlace
@@ -508,7 +511,7 @@ module AltCover =
       member self.BranchCover = self.BranchCover
 
       member self.CommandLine =
-        self.CommandLine |> PrepareOptions.ToSeq
+        self.CommandLine |> toSeq
 
       member self.ExposeReturnCode =
         self.ExposeReturnCode
@@ -528,14 +531,6 @@ module AltCover =
       member self.Portable = self.Portable
 
 #if RUNNER
-    static member private ValidateArray a f key =
-      PrepareOptions.ValidateArraySimple a (f key)
-
-    static member private ValidateArraySimple a f = a |> Seq.iter (f >> ignore)
-
-    static member private ValidateOptional f key x =
-      if x |> String.IsNullOrWhiteSpace |> not then
-        f key x |> ignore
 
     member private self.Consistent() =
       if self.LineCover && self.BranchCover then
@@ -562,41 +557,35 @@ module AltCover =
           | _ -> false
 
         context
-        |> PrepareOptions.ToSeq
+        |> toSeq
         |> Seq.fold select false
         |> ignore
 
       try
         CommandLine.error <- []
 
-        PrepareOptions.ValidateArray
+        validateArray
           self.InputDirectories
           CommandLine.validateDirectory
           "--inputDirectory"
 
-        PrepareOptions.ValidateArray
-          self.OutputDirectories
-          CommandLine.validatePath
-          "--outputDirectory"
+        validateArray self.OutputDirectories CommandLine.validatePath "--outputDirectory"
 
-        PrepareOptions.ValidateOptional
+        validateOptional
           CommandLine.validateStrongNameKey
           "--strongNameKey"
           self.StrongNameKey
 
-        PrepareOptions.ValidateOptional CommandLine.validatePath "--report" self.Report
+        validateOptional CommandLine.validatePath "--report" self.Report
 
-        PrepareOptions.ValidateArray
+        validateArray
           self.SymbolDirectories
           CommandLine.validateDirectory
           "--symbolDirectory"
 
-        PrepareOptions.ValidateArray
-          self.Dependencies
-          CommandLine.validateAssembly
-          "--dependency"
+        validateArray self.Dependencies CommandLine.validateAssembly "--dependency"
 
-        PrepareOptions.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
+        validateArray self.Keys CommandLine.validateStrongNameKey "--key"
 
         [ self.FileFilter
           self.AssemblyFilter
@@ -605,8 +594,7 @@ module AltCover =
           self.MethodFilter
           self.AttributeFilter
           self.PathFilter ]
-        |> Seq.iter (fun a ->
-          PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
+        |> Seq.iter (fun a -> validateArraySimple a CommandLine.validateRegexes)
 
         self.Consistent()
         validateContext self.CallContext

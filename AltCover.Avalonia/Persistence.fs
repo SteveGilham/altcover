@@ -1,6 +1,7 @@
 ﻿namespace AltCover
 
 open System
+open System.Diagnostics.CodeAnalysis
 
 open Avalonia
 open Avalonia.Controls

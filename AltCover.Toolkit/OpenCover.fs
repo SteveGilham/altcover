@@ -1251,7 +1251,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-Toolkit>.$OpenCover.#.cctor()",
+                            Target = "AltCover.OpenCover.#.cctor()",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",

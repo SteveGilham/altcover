@@ -152,6 +152,11 @@ module DotNet =
                             Scope = "type",
                             Target = "AltCoverFake.DotNet.Testing.DotNet",
                             Justification = "That's life I'm afraid")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target = "AltCoverFake.DotNet.Testing.DotNet.#.cctor()",
+                            Justification = "Compiler generated")>]
 #endif
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1813:AvoidUnsealedAttributes",

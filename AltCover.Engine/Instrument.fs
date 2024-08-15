@@ -82,8 +82,11 @@ type internal AsyncSupport =
 
     let wait =
       task.Methods
-      |> Seq.filter (fun f ->
-        f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
+      |> Seq.filter
+        _.FullName.Equals(
+          "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)",
+          StringComparison.Ordinal
+        )
       |> Seq.head
 
     let def2 =
@@ -95,7 +98,7 @@ type internal AsyncSupport =
 
     let runsynch =
       fsasync.Methods
-      |> Seq.filter (fun f -> f.Name = "RunSynchronously")
+      |> Seq.filter _.Name.Equals("RunSynchronously", StringComparison.Ordinal)
       |> Seq.head
 
     { TaskAssembly = def
@@ -1479,32 +1482,6 @@ module internal Instrument =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Instrument/I/tag@243::Invoke(System.String)",
+                              "AltCover.Instrument/I/tag@246::Invoke(System.String)",
                             Justification = "Replace override not available")>]
 ()
-
-(*
-    .field private static bool hit1
-
-    private static bool Ping(int s)
-    {
-      Console.WriteLine(s);
-      return true;
-    }
-
-    // default false fields, release build
-            if (!hit1) hit1 = Ping(i);
-
-	// loop start (head: IL_0031)
-		IL_0004: ldsfld bool ConsoleApp1.Program::hit1
-		IL_0009: brtrue.s IL_0016
-
-		// hit1 = Ping(i);
-		IL_000b: ldloc.0 // i
-		IL_000c: call bool ConsoleApp1.Program::Ping(int32)
-		IL_0011: stsfld bool ConsoleApp1.Program::hit1
-
-		// int s = i + 10;
-		IL_0016: ldloc.0
-
-*)

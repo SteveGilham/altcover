@@ -221,4 +221,9 @@ module internal Persistence =
                             Target =
                               "<StartupCode$AltCover-Visualizer>.$Persistence.#.cctor()",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target = "AltCover.Persistence.#.cctor()",
+                            Justification = "Compiler generated")>]
 ()

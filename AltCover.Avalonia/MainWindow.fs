@@ -841,7 +841,11 @@ type MainWindow() as this =
       "exit" ]
     |> Seq.iter (fun n ->
       let cap =
-        n.First().ToString().ToUpper() + n.Substring(1)
+        n
+          .First()
+          .ToString()
+          .ToUpper(CultureInfo.InvariantCulture)
+        + n.Substring(1)
 
       let raw =
         Resource.GetResourceString(n + "Button.Label")
@@ -1091,8 +1095,9 @@ type MainWindow() as this =
                 t.Text <- String.Empty
                 // clear format stashes -- TODO
 #if !AVALONIA11
-                t.FormattedText.Spans <- []
-                t.Tag <- t.FormattedText.Spans
+                let ft = t.FormattedText
+                ft.Spans <- []
+                t.Tag <- ft.Spans
 #endif
               )
 
@@ -1159,4 +1164,10 @@ type MainWindow() as this =
                             Target = "AltCover.MainWindow",
                             Justification = "God Object, alas")>]
 #endif
+[<assembly: SuppressMessage("Gendarme.Rules.Smells",
+                            "AvoidSwitchStatementsRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.MainWindow/tagByCoverage@422::Invoke(Avalonia.Controls.Presenters.TextPresenter,Microsoft.FSharp.Collections.FSharpList`1<Avalonia.Media.FormattedTextLine>,AltCover.GuiCommon/CodeTag)",
+                            Justification = "Wrong paradigm")>]
 ()

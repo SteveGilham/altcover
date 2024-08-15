@@ -226,14 +226,15 @@ module DotNet =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-DotNet>.$DotNet.#.cctor()",
+                            Target = "AltCover.DotNet.#.cctor()",
                             Justification = "Compiler generated")>]
 #else
-[<assembly: SuppressMessage("Microsoft.Performance",
-                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
-                            Scope = "member",
-                            Target =
-                              "<StartupCode$AltCover-Fake-DotNet-Testing-AltCover>.$DotNet.#.cctor()",
-                            Justification = "Compiler generated")>]
+//[<assembly: SuppressMessage("Microsoft.Performance",
+//                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+//                            Scope = "member",
+//                            Target =
+//                              "<StartupCode$AltCover-Fake-DotNet-Testing-AltCover>.$DotNet.#.cctor()",
+//                            Justification = "Compiler generated")>]
+
 #endif
 ()

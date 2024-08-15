@@ -435,7 +435,9 @@ module internal Main =
 
     let internal matchType =
       Maybe
-        (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+        (System.Environment
+          .GetEnvironmentVariable("OS")
+          .Equals("Windows_NT", StringComparison.Ordinal))
         StringComparison.OrdinalIgnoreCase
         StringComparison.Ordinal
 

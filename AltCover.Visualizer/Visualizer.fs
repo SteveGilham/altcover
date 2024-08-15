@@ -232,6 +232,9 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "VariableNamesShouldNotMatchFieldNamesRule",
                     Justification = "Compiler generated")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "UseObjectDisposedExceptionRule",
+                    Justification = "No good reason to in context")>]
   type FileOpenDialog(dialog: FileChooserDialog) =
     member self.Run() =
       dialog.SetCurrentFolder(Persistence.readFolder ())
@@ -247,6 +250,9 @@ module private Gui =
     [<SuppressMessage("Gendarme.Rules.Design",
                       "AvoidPropertiesWithoutGetAccessorRule",
                       Justification = "No use case exists")>]
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "UseObjectDisposedExceptionRule",
+                      Justification = "No good reason to in context")>]
     member self.InitialDirectory
       with set (value) = dialog.SetCurrentFolder(value) |> ignore
 
@@ -1030,6 +1036,11 @@ module private Gui =
                             Scope = "member",
                             Target =
                               "<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
+                            Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target = "AltCover.Gui.#.cctor()",
                             Justification = "Compiler generated")>]
 #if NET472
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
