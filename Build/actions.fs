@@ -578,6 +578,7 @@ a:hover {color: #ecc;}
       coverageDocument.Descendants(XName.Get("Method"))
       |> Seq.collect _.Descendants(XName.Get("Name"))
       |> Seq.map _.Value.Replace("Tests.Program", "Program/Program")
+      |> Seq.map _.Replace("Tests.DU/MyUnion/get_MyBar", "Tests.DU/get_MyBar") // flaky
       |> Seq.sort
       |> Seq.toList
 

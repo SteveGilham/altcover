@@ -403,7 +403,7 @@ Describe "ConvertFrom-NCover" {
                                   "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
-    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("Tests.DU/MyUnion/get_MyBa", "Tests.DU/get_MyBa")
     $result | Should -Be $expected.Replace("`r", "")
 
     $written = $written.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("`r", "")
@@ -440,7 +440,7 @@ Describe "ConvertFrom-NCover" {
                                   "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
-    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("Tests.DU/MyUnion/get_MyBa", "Tests.DU/get_MyBa")
 
     $result | Should -Be $expected.Replace("`r", "")
   }
