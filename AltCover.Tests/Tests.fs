@@ -85,17 +85,22 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
 
 #if !NET472
+  let sample2path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net9.0/Sample2.dll")
+
   let sample4path =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
 
   let sample8path =
     Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net9.0/Sample8.dll")
 
-
   let sample32path =
     Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net9.0/Sample32.dll")
 
 #else
+  let sample2path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net472/Sample2.dll")
+
   let sample4path =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
@@ -910,13 +915,8 @@ module AltCoverTests =
 
   [<Test>]
   let CanIdentifyExcludedFSharpMethods () =
-    let tracer = DU.returnFoo 23
-
-    let location =
-      tracer.GetType().Assembly.Location
-
     let sourceAssembly =
-      AssemblyResolver.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(sample2path)
 
     let direct =
       sourceAssembly.MainModule.Types
@@ -952,10 +952,24 @@ module AltCoverTests =
       |> Seq.sort
       |> Seq.toList
 
+    let flaky =
+      Seq.concat [ direct; indirect; indirect2 ]
+      |> Seq.collect _.Methods
+      |> Seq.filter _.Name.Equals(".ctor")
+      |> Seq.filter _.DeclaringType.Name.Equals("get_MyBar@44")
+      |> Seq.head
+
+    let skips =
+      [ ("System.Void N.DU/get_MyBar@44::.ctor(N.DU/MyUnion)", 0)
+        ("System.Void N.DU/MyUnion/get_MyBar@44::.ctor(N.DU/MyUnion)", 1) ] // filtered as algebraic
+      |> Map.ofSeq
+
+    let skip = skips |> Map.find flaky.FullName
+
     let expected =
-      [ ".ctor"
-        ".ctor"
-        "Invoke"
+      [ ".ctor" // "System.Void N.DU/MyClass::.ctor()";
+        ".ctor" // "System.Void N.DU/get_MyBar@44::.ctor(N.DU/MyUnion)"; <= flaky
+        "Invoke" //  "N.DU/MyUnion N.DU/get_MyBar@44::Invoke(Microsoft.FSharp.Core.Unit)";
         "as_bar"
         "bytes"
         "get_MyBar"
@@ -968,7 +982,11 @@ module AltCoverTests =
         "testMakeThing"
         "testMakeUnion" ]
 
-    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
+    Assert.That(
+      pass,
+      Is.EquivalentTo(expected |> List.skip skip),
+      sprintf "Got sequence %A" pass
+    )
 
   [<Test>]
   let CanIdentifyExcludedCSharpAutoProperties () =
