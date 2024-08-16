@@ -141,6 +141,9 @@ module DotNet =
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
         fromArg, "SummaryFormat", collect.SummaryFormat ] //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
 
+    [<SuppressMessage("Gendarme.Rules.Design.Generic",
+                      "AvoidMethodWithUnusedGenericTypeRule",
+                      Justification = "It just be like that")>]
     let internal toCollectListArgArgumentList (collect: Abstract.ICollectOptions) =
       [ fromList, "Packages", collect.Packages ] //=`"pipe `'|'` separated list of method name regexs"
 
