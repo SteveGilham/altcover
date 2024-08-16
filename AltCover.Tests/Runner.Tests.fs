@@ -6332,6 +6332,7 @@ module AltCoverRunnerTests =
       )
 
     Cobertura.path.Value <- Some unique
+    Cobertura.packages.Value <- ["altcover"]
 
     unique
     |> Path.GetDirectoryName

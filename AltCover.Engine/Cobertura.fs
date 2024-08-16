@@ -160,8 +160,12 @@ module internal Cobertura =
         |> Seq.map (fun (a, s) -> a, s |> Seq.map fst)
         |> Seq.sortBy fst // seq of (directory, files full names)
 
+      let packaged =
+        packages.Value
+        |> Seq.map (fun x -> x, Seq.empty<string>)
+
       let groupable = // seq of ((directory, files full names), facets)
-        rawsources
+        Seq.concat [ packaged; rawsources ]
         |> Seq.map (fun x -> (x, x |> fst |> splitPath))
 
       let groups = // seq of (root, seq of ((directory, files full names), facets))
