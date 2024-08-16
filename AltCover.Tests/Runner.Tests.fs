@@ -1678,6 +1678,60 @@ module AltCoverRunnerTests =
         Cobertura.path.Value <- None)
 
   [<Test>]
+  let ParsingPackagesGivesPackages () =
+    Runner.init ()
+
+    lock Cobertura.packages (fun () ->
+      try
+        Cobertura.packages.Value <- []
+        Runner.I.initSummary ()
+
+        let options = Runner.declareOptions ()
+        let unique = Guid.NewGuid().ToString()
+        let unique2 = Guid.NewGuid().ToString()
+
+        let input =
+          [| "-p"; unique; "--package"; unique2 |]
+
+        let parse =
+          CommandLine.parseCommandLine input options
+
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+          test <@ Cobertura.packages.Value = [ unique2; unique ] @>
+
+      finally
+        Runner.I.initSummary ()
+        Cobertura.packages.Value <- [])
+
+  [<Test>]
+  let ParsingNoPackagesGivesFailure () =
+    Runner.init ()
+
+    lock Cobertura.packages (fun () ->
+      try
+        Cobertura.packages.Value <- []
+        Runner.I.initSummary ()
+
+        let options = Runner.declareOptions ()
+        let blank = " "
+        let input = [| "-p"; blank |]
+
+        let parse =
+          CommandLine.parseCommandLine input options
+
+        match parse with
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+          test <@ CommandLine.error = [ "--package : cannot be ' '" ] @>
+      finally
+        Runner.I.initSummary ()
+        Cobertura.packages.Value <- [])
+
+  [<Test>]
   let ParsingOutputGivesOutput () =
     Runner.init ()
 
@@ -6332,7 +6386,7 @@ module AltCoverRunnerTests =
       )
 
     Cobertura.path.Value <- Some unique
-    Cobertura.packages.Value <- ["altcover"]
+    Cobertura.packages.Value <- [ "altcover" ]
 
     unique
     |> Path.GetDirectoryName

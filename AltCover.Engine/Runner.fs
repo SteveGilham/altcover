@@ -828,7 +828,14 @@ module internal Runner =
            else
              Cobertura.path.Value <- x |> canonicalPath |> Some
              I.addCoberturaSummary ()))
-      ("p|package=", (fun x -> Cobertura.packages.Value <- x :: Cobertura.packages.Value))
+      ("p|package=",
+       (fun x ->
+         if x |> String.IsNullOrWhiteSpace |> not then
+           Cobertura.packages.Value <- x :: Cobertura.packages.Value
+         else
+           CommandLine.error <-
+             CommandLine.Format.Local("InvalidValue", "--package", x)
+             :: CommandLine.error))
 
       ("o|outputFile=",
        (fun x ->
