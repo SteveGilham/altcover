@@ -182,6 +182,20 @@ type InvokeAltCoverCommand() =
   member val Cobertura = String.Empty with get, set
 
   /// <summary>
+  /// <para type="description">Package roots for cobertura reports</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Runner",
+              Mandatory = false,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
+  member val Packages: string array = [||] with get, set
+
+  /// <summary>
   /// <para type="description">Write the recorded coverage to this file rather than overwriting the original report file.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Runner",
@@ -678,6 +692,7 @@ type InvokeAltCoverCommand() =
         LcovReport = self.LcovReport
         Threshold = self.Threshold
         Cobertura = self.Cobertura
+        Packages = self.Packages
         OutputFile = self.OutputFile
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent

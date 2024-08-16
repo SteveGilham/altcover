@@ -228,6 +228,10 @@ type Collect =
     ///</summary>
     member Cobertura : string with get, set
     ///<summary>
+    /// Corresponds to command line option `-p, --package=VALUE`
+    ///</summary>
+    member Packages : string array with get, set
+    ///<summary>
     /// Corresponds to command line option `-o, --outputFile=VALUE`
     ///</summary>
     member OutputFile : string with get, set

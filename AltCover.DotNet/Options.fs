@@ -43,6 +43,7 @@ module Options =
                       "CA1704:IdentifiersShouldBeSpelledCorrectly",
                       Justification = "Cobertura is a name")>]
     member val Cobertura = String.Empty with get, set
+    member val Packages = Seq.empty<String> with get, set
 
     member val OutputFile = String.Empty with get, set
     member val CommandLine = Seq.empty<String> with get, set
@@ -70,6 +71,7 @@ module Options =
                         "CA1704:IdentifiersShouldBeSpelledCorrectly",
                         Justification = "Cobertura is a name")>]
       member self.Cobertura = self.Cobertura
+      member self.Packages = self.Packages
 
       member self.OutputFile = self.OutputFile
       member self.CommandLine = self.CommandLine
