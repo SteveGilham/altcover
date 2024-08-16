@@ -17,6 +17,9 @@ module internal Cobertura =
   let internal path: Option<string> ref =
     ref None
 
+  let internal packages: string list ref =
+    ref List.empty<string>
+
   module internal I =
 
     let internal setRate hits total (rate: string) (target: XElement) =

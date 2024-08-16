@@ -220,6 +220,7 @@ type Collect() =
 
   [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "'Cobertura' is jargon")>]
   member val Cobertura = String.Empty with get, set
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidReturningArraysOnPropertiesRule",
                     Justification = "MSBuild tasks use arrays")>]

@@ -198,6 +198,7 @@ module internal Runner =
     executable.Value <- None
     LCov.path.Value <- None
     Cobertura.path.Value <- None
+    Cobertura.packages.Value <- List.empty<string>
     Json.path.Value <- None
     collect.Value <- false
     threshold <- None
@@ -827,6 +828,8 @@ module internal Runner =
            else
              Cobertura.path.Value <- x |> canonicalPath |> Some
              I.addCoberturaSummary ()))
+      ("p|package=", (fun x -> Cobertura.packages.Value <- x :: Cobertura.packages.Value))
+
       ("o|outputFile=",
        (fun x ->
          if CommandLine.validatePath "--outputFile" x then

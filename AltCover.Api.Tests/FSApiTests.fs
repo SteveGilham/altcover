@@ -1201,6 +1201,8 @@ module FSApiTests =
     let collectFragments =
       [ DotNet.I.toCollectFromArgArgumentList
         >> (List.map (fun (_, n, _) -> n))
+        DotNet.I.toCollectListArgArgumentList
+        >> (List.map (fun (_, n, _) -> n))
         _.Verbosity
         >> DotNet.I.toSharedFromValueArgumentList
         >> (List.map (fun (_, n, _, _) -> n)) ]
@@ -1355,7 +1357,7 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
   [<Test>]

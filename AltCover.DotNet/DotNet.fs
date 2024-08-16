@@ -74,7 +74,12 @@ module DotNet =
 
     let private isSet s = s |> String.IsNullOrWhiteSpace |> not
 
-    let private fromList name (s: String seq) = (listArg name s, s.Any())
+    let private fromList name (s: String seq) =
+      let s' =
+        s |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+
+      (listArg name s', s'.Any())
+
     let internal fromArg name s = (arg name s, isSet s)
     let internal fromValue name (s: obj) (b: bool) = (arg name <| s.ToString(), b)
 
@@ -136,6 +141,9 @@ module DotNet =
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
         fromArg, "SummaryFormat", collect.SummaryFormat ] //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
 
+    let internal toCollectListArgArgumentList (collect: Abstract.ICollectOptions) =
+      [ fromList, "Packages", collect.Packages ] //=`"pipe `'|'` separated list of method name regexs"
+
     let internal toSharedFromValueArgumentList
       (verbosity: System.Diagnostics.TraceLevel)
       : ((string -> obj -> bool -> (string * string) * bool) * string * obj * bool) list =
@@ -180,6 +188,9 @@ module DotNet =
 
       collect
       |> I.toCollectFromArgArgumentList
+      |> List.map (fun (f, n, a) -> f n a)
+      collect
+      |> I.toCollectListArgArgumentList
       |> List.map (fun (f, n, a) -> f n a)
 
       Math.Min(int prepare.Verbosity, int collect.Verbosity)

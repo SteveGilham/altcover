@@ -604,7 +604,7 @@ module AltCoverRunnerTests =
   let ShouldHaveExpectedOptions () =
     Runner.init ()
     let options = Runner.declareOptions ()
-    let optionCount = 12
+    let optionCount = 13
 
     let optionNames =
       options
