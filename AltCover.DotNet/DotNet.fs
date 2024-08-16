@@ -70,7 +70,7 @@ module DotNet =
     let private arg name (s: string) = (sprintf """AltCover%s""" name, s)
 
     let private listArg name (s: String seq) =
-      (sprintf """AltCover%s""" name, String.Join("|", s))
+      (sprintf """AltCover%s""" name, String.Join("|", s) + "|")
 
     let private isSet s = s |> String.IsNullOrWhiteSpace |> not
 
