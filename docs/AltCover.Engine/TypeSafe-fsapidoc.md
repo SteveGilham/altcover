@@ -54,6 +54,22 @@ This holds the strongly-typed equivalent of the command line options
         member AsStrings : unit -> seq<System.String>
       end
 ```
+### Cobertura package roots
+```
+    [<NoComparison>]
+    type Package =
+      | Package of System.String
+      with
+        member AsString : unit -> System.String
+      end
+    [<NoComparison>]
+    type Packages =
+      | Packages of seq<Package>
+      | NoPackage
+      with
+        member AsStrings : unit -> seq<System.String>
+      end
+```
 ### Coverage thresholds
 ```
     [<NoComparison>]
@@ -193,6 +209,7 @@ The members correspond to the like-named command line options for `AltCover Runn
         LcovReport: FilePath
         Threshold: Threshold
         Cobertura: FilePath
+        Packages : Packages
         OutputFile: FilePath
         CommandLine: CommandLine
         ExposeReturnCode: Flag

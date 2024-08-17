@@ -30,6 +30,7 @@ public interface ICollectOptions
 | [ExposeReturnCode](Abstract.ICollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [LcovReport](Abstract.ICollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](Abstract.ICollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [Packages](Abstract.ICollectOptions/Packages-apidoc) { get; } | Corresponds to command line option `-p, --package=VALUE` |
 | [RecorderDirectory](Abstract.ICollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](Abstract.ICollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](Abstract.ICollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |

@@ -15,6 +15,7 @@ public class Collect
 | [ExposeReturnCode](Options.Collect/ExposeReturnCode-apidoc) { get; set; } |  |
 | [LcovReport](Options.Collect/LcovReport-apidoc) { get; set; } |  |
 | [OutputFile](Options.Collect/OutputFile-apidoc) { get; set; } |  |
+| [Packages](Options.Collect/Packages-apidoc) { get; set; } |  |
 | [RecorderDirectory](Options.Collect/RecorderDirectory-apidoc) { get; set; } |  |
 | [SummaryFormat](Options.Collect/SummaryFormat-apidoc) { get; set; } |  |
 | [Threshold](Options.Collect/Threshold-apidoc) { get; set; } |  |

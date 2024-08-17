@@ -7,12 +7,13 @@ Takes either OpenCover or classic NCover format input as an `XDocument`, as an a
 Writes the Cobertura report to the object pipeline as an `XDocument`, and optionally to a file.
 
 ```csharp
-public static XDocument ConvertToCobertura(XDocument document)
+public static XDocument ConvertToCobertura(XDocument document, IEnumerable<string> packages)
 ```
 
 | parameter | description |
 | --- | --- |
 | document | The report to convert. |
+| packages | Possibly empty list of package root folders. |
 
 ## Return Value
 

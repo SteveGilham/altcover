@@ -249,7 +249,7 @@ type ConvertToCoberturaCommand() =
   member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">Output as file path</para>
+  /// <para type="description">Package source roots</para>
   /// </summary>
   [<Parameter(ParameterSetName = "XmlDoc",
               Mandatory = false,

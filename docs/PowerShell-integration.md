@@ -567,9 +567,9 @@ Creates a Cobertura format report from other report formats.
 SYNTAX
 
 ```
-ConvertTo-Cobertura [-XDocument] <XDocument> [[-OutputFile] <string>] [<CommonParameters>]
+ConvertTo-Cobertura [-XDocument] <XDocument> [[-OutputFile] <string>] [[-Package] <string[]>] [<CommonParameters>]
 
-ConvertTo-Cobertura [-InputFile] <string> [[-OutputFile] <string>] [<CommonParameters>]
+ConvertTo-Cobertura [-InputFile] <string> [[-OutputFile] <string>] [[-Package] <string[]>] [<CommonParameters>]
 
 
 ```
@@ -605,6 +605,17 @@ Accept wildcard characters?  false
 ```
 
 #### `-OutputFile <string>` 
+Output as file path
+
+```
+Required?                    false
+Position?                    2
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-Package <string[]>` 
 Output as file path
 
 ```
@@ -1114,9 +1125,9 @@ SYNTAX
 ```
 Invoke-AltCover [-Runner] <SwitchParameter> -RecorderDirectory <string> [-Cobertura <string>]
 [-CommandLine <string[]>] [-DropReturnCode <SwitchParameter>] [-Executable <string>] [-LcovReport
-<string>] [-OutputFile <string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}]
-[-Threshold <string>] [-Verbosity {Off | Error | Warning | Info | Verbose}] [-WorkingDirectory
-<string>] [<CommonParameters>]
+<string>] [-OutputFile <string>] [-Package <string[]>] [-SummaryFormat {Default | N | O | C | R | B
+| RPlus | BPlus}] [-Threshold <string>] [-Verbosity {Off | Error | Warning | Info | Verbose}]
+[-WorkingDirectory <string>] [<CommonParameters>]
 
 Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>] [-AttributeFilter
 <string[]>] [-AttributeTopLevel <string[]>] [-BranchCover <SwitchParameter>] [-CallContext
@@ -1230,6 +1241,17 @@ Accept wildcard characters?  false
 
 #### `-Cobertura <string>` 
 File path for Cobertura format version of the collected data
+
+```
+Required?                    false
+Position?                    named
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-Package <string[]>` 
+Package roots for cobertura reports
 
 ```
 Required?                    false

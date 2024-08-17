@@ -54,6 +54,7 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverCobertura=`"path to cobertura format result"
 * `/p:AltCoverThreshold=`"coverage threshold required"
 * `/p:AltCoverSummaryFormat=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
+* `/p:AltCoverPackages=`"pipe `'|'` separated list of source root paths"
 * `/p:AltCoverVerbosity=`"Levels of output -- Verbose, Info (default), Warning, Error, or Off"
 * `/p:AltCoverShowSummary=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
 * `/p:AltCoverForce=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs

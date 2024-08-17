@@ -118,7 +118,7 @@ namespace AltCoverFake.DotNet.Testing
 // ### Cobertura package roots
 // ```
     ///<summary>
-    /// Corresponds to a value after `-- ` on the command line
+    /// Corresponds to a cobertura package source root
     ///</summary>
     [<NoComparison>]
     type Package =
@@ -128,13 +128,13 @@ namespace AltCoverFake.DotNet.Testing
       | Package of System.String
       with
         ///<summary>
-        /// Returns the string to be used in the effective command line
+        /// Returns the string to be used as a package root
         ///</summary>
-        ///<returns>the string to be used in the effective command line</returns>
+        ///<returns>the string to be used as a package root</returns>
         member AsString : unit -> System.String
       end
     ///<summary>
-    /// Corresponds to the values after `-- ` on the command line
+    /// Corresponds to a collection of cobertura package source roots
     ///</summary>
     [<NoComparison>]
     type Packages =
@@ -148,9 +148,9 @@ namespace AltCoverFake.DotNet.Testing
       | NoPackage
       with
         ///<summary>
-        /// Returns the strings to be used in the effective command line
+        /// Returns the strings to be used to be used as package roots
         ///</summary>
-        ///<returns>the strings to be used in the effective command line</returns>
+        ///<returns>the strings to be used as package roots</returns>
         member AsStrings : unit -> seq<System.String>
       end
 // ```
