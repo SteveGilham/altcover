@@ -115,6 +115,45 @@ namespace AltCoverFake.DotNet.Testing
         member AsStrings : unit -> seq<System.String>
       end
 // ```
+// ### Cobertura package roots
+// ```
+    ///<summary>
+    /// Corresponds to a value after `-- ` on the command line
+    ///</summary>
+    [<NoComparison>]
+    type Package =
+      ///<summary>
+      /// Strongly typed string value
+      ///</summary>
+      | Package of System.String
+      with
+        ///<summary>
+        /// Returns the string to be used in the effective command line
+        ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
+        member AsString : unit -> System.String
+      end
+    ///<summary>
+    /// Corresponds to the values after `-- ` on the command line
+    ///</summary>
+    [<NoComparison>]
+    type Packages =
+      ///<summary>
+      /// Strongly typed string collection
+      ///</summary>
+      | Packages of seq<Package>
+      ///<summary>
+      /// Nothing
+      ///</summary>
+      | NoPackage
+      with
+        ///<summary>
+        /// Returns the strings to be used in the effective command line
+        ///</summary>
+        ///<returns>the strings to be used in the effective command line</returns>
+        member AsStrings : unit -> seq<System.String>
+      end
+// ```
 // ### Coverage thresholds
 // ```
     ///<summary>
@@ -489,6 +528,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option `-c, --cobertura=VALUE`
         ///</summary>
         Cobertura: FilePath
+        ///<summary>
+        /// Corresponds to command line option `-p, --package=VALUE`
+        ///</summary>
+        Packages : Packages
         ///<summary>
         /// Corresponds to command line option `-o, --outputFile=VALUE`
         ///</summary>

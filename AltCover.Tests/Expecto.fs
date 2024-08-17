@@ -130,6 +130,10 @@ module ExpectoTestManifest =
        "Runner.ParsingMultipleCoberturaGivesFailure"
        Tests.AltCoverRunnerTests.ParsingNoCoberturaGivesFailure,
        "Runner.ParsingNoCoberturaGivesFailure"
+       Tests.AltCoverRunnerTests.ParsingNoPackagesGivesFailure,
+       "Runner.ParsingPackagesGivesPackages"
+       Tests.AltCoverRunnerTests.ParsingPackagesGivesPackages,
+       "Runner.ParsingNoPackagesGivesFailure"
        Tests.AltCoverRunnerTests.ParsingOutputGivesOutput,
        "Runner.ParsingOutputGivesOutput"
        Tests.AltCoverRunnerTests.ParsingMultipleOutputGivesFailure,

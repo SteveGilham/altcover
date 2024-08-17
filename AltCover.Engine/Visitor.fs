@@ -1194,11 +1194,11 @@ module internal Visitor =
       | _ -> seq
 
     let getSequencePoint (dbg: IDictionary<int, SequencePoint>) (i: Instruction) =
-      dbg.TryGetValue(i.Offset) |> snd
+      i.Offset |> dbg.TryGetValue |> snd
 
     let internal findEffectiveSequencePoint
       genuine
-      (dbg: Dictionary<int, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (instructions: Instruction seq)
       =
       instructions
@@ -1208,7 +1208,7 @@ module internal Visitor =
       |> Seq.tryFind isSequencePoint
 
     let internal findSequencePoint
-      (dbg: Dictionary<int, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (instructions: Instruction seq)
       =
       findEffectiveSequencePoint Genuine dbg instructions
@@ -1304,7 +1304,7 @@ module internal Visitor =
       else
         firstOfSequencePoint dbg p
 
-    let internal getJumps (dbg: Dictionary<int, SequencePoint>) (i: Instruction) =
+    let internal getJumps (dbg: IDictionary<int, SequencePoint>) (i: Instruction) =
       let terminal = lastOfSequencePoint dbg i
       let next = i.Next
 
@@ -1404,7 +1404,7 @@ module internal Visitor =
 
     let private extractBranchPoints
       (v0t: TypeReference option)
-      (dbg: Dictionary<int, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       rawInstructions
       interesting
       vc
@@ -1481,15 +1481,15 @@ module internal Visitor =
             Key = i }))
       |> Seq.choose id
       |> processBranches
-      |> Seq.map BranchPoint
+      |> Seq.map BranchPoint // AltCover.Visitor/I/Pipe #2 stage #10
       |> Seq.toList
 
     let internal validateInstruction
       (dbg: IDictionary<int, SequencePoint>)
       (x: Instruction)
       =
-      let (_, s) = dbg.TryGetValue x.Offset
-      s.IsNotNull && (s.IsHidden |> not)
+      let (yes, s) = dbg.TryGetValue x.Offset
+      yes && (s.IsHidden |> not)
 
     let internal trivial =
       HashSet(
@@ -1502,21 +1502,14 @@ module internal Visitor =
       )
 
     let internal isNonTrivialSeqPnt
-      (dbg: Dictionary<int, SequencePoint>)
+      (dbg: IDictionary<int, SequencePoint>)
       (x: Instruction)
       =
       if CoverageParameters.trivia.Value then
         let rest = // rest of the sequence point
           Seq.unfold
             (fun (i: Instruction) ->
-              if
-                i |> isNull
-                || i.Offset
-                   |> dbg.TryGetValue
-                   |> snd
-                   |> isNull
-                   |> not
-              then
+              if i |> isNull || i.Offset |> dbg.ContainsKey then
                 None
               else
                 Some(i, i.Next))
@@ -1539,13 +1532,12 @@ module internal Visitor =
       let splut = Dictionary<int, SequencePoint>()
 
       do
-        let dbg = m.Method.DebugInformation
-
-        if dbg.IsNotNull && dbg.HasSequencePoints then
+        m.Method.DebugInformation
+        |> Option.ofObj
+        |> Option.filter _.HasSequencePoints
+        |> Option.iter (fun dbg ->
           dbg.SequencePoints
-          |> Seq.iter (fun s -> splut.Add(s.Offset, s))
-
-      // build more look-up tables
+          |> Seq.iter (fun s -> splut.Add(s.Offset, s)))
 
       let instructions =
         [ rawInstructions |> Seq.cast ]
@@ -1592,11 +1584,11 @@ module internal Visitor =
         else
           instructions.OrderByDescending(fun (x: Instruction) -> x.Offset)
           |> Seq.mapi (fun i x ->
-            let s = splut.TryGetValue(x.Offset) |> snd
+            let s = x.Offset |> splut.TryGetValue |> snd
 
             MethodPoint
               { Instruction = x
-                SeqPnt = s |> SeqPnt.Build |> Some
+                SeqPnt = s |> SeqPnt.Build |> Some // AltCover.Visitor/I/sp@1
                 Uid = i + point
                 Interesting = wanted interesting s
                 DefaultVisitCount = m.DefaultVisitCount })
@@ -1739,7 +1731,7 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1599-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1591-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",

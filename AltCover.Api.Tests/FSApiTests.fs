@@ -893,7 +893,7 @@ module FSApiTests =
     |> Seq.iter (fun a -> a.Value <- "false")
 
     let cob =
-      CoverageFormats.ConvertToCobertura doc
+      CoverageFormats.ConvertToCobertura doc []
 
     use stream2 = new MemoryStream()
     cob.Save stream2
@@ -947,7 +947,7 @@ module FSApiTests =
     |> Seq.iter (fun a -> a.Value <- "false")
 
     let cob =
-      CoverageFormats.ConvertToCobertura doc
+      CoverageFormats.ConvertToCobertura doc [ "d:/a01/_work/5/s/src/" ]
 
     use stream2 = new MemoryStream()
     cob.Save stream2
@@ -1200,6 +1200,8 @@ module FSApiTests =
 
     let collectFragments =
       [ DotNet.I.toCollectFromArgArgumentList
+        >> (List.map (fun (_, n, _) -> n))
+        DotNet.I.toCollectListArgArgumentList
         >> (List.map (fun (_, n, _) -> n))
         _.Verbosity
         >> DotNet.I.toSharedFromValueArgumentList

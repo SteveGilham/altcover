@@ -25,11 +25,17 @@ module CoverageFormats =
   [<SuppressMessage("Microsoft.Naming",
                     "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification = "Cobertura is a name")>]
-  let ConvertToCobertura (document: XDocument) =
+  let ConvertToCobertura (document: XDocument) (packages: string seq) =
     let format =
       XmlUtilities.discoverFormat document
 
-    AltCover.Cobertura.convertReport document format
+    try
+      AltCover.Cobertura.packages.Value <- packages |> Seq.toList
+
+      AltCover.Cobertura.convertReport document format
+
+    finally
+      AltCover.Cobertura.packages.Value <- []
 
   let ConvertToJson (document: XDocument) =
     let format =

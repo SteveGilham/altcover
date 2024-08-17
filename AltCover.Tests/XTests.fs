@@ -237,6 +237,7 @@ module AltCoverXTests =
           Threshold = TypeSafe.Threshold t
           SummaryFormat = TypeSafe.BPlus
           Verbosity = System.Diagnostics.TraceLevel.Verbose
+          Packages = TypeSafe.Packages [ TypeSafe.Package "/agent/" ]
           Executable = TypeSafe.Tool "dotnet" }
 
     let instance =
@@ -254,6 +255,8 @@ module AltCoverXTests =
                                      "dotnet"
                                      "-t"
                                      "S23B16M7C3"
+                                     "-p"
+                                     "/agent/"
                                      "--summary:BOC"
                                      "--verbose" ]
       @>
@@ -263,7 +266,7 @@ module AltCoverXTests =
 
     test
       <@
-        validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC --verbose"
+        validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 -p /agent/ --summary:BOC --verbose"
       @>
 
   [<Test>]
@@ -318,9 +321,12 @@ module AltCoverXTests =
     let subject =
       TypeSafe.CollectOptions.Create()
 
-    let scan =
-      (AltCover.CollectOptions.TypeSafe subject)
-        .Validate(true)
+    let instance =
+      AltCover.CollectOptions.TypeSafe subject
+
+    let scan = instance.Validate(true)
+
+    test <@ instance |> Args.collect = [ "Runner"; "--collect" ] @>
 
     test <@ scan.Length = 1 @>
 

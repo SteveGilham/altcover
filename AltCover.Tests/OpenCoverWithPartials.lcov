@@ -20,10 +20,10 @@ LF:3
 end_of_record
 TN: SimpleMix
 SF:C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp
-FN:38,System.Int32 <Module>::main(System.String[])
 FN:25,System.Int32 Example::main(System.String[])
-FNDA:1,System.Int32 <Module>::main(System.String[])
+FN:38,System.Int32 <Module>::main(System.String[])
 FNDA:1,System.Int32 Example::main(System.String[])
+FNDA:1,System.Int32 <Module>::main(System.String[])
 FNF:2
 FNH:2
 BRDA:38,11,0,1

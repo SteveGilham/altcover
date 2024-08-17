@@ -1,0 +1,7 @@
+Instrument for runner
+
+C:\Users\email\Documents\Github\altcover\_Binaries\AltCover\Release+AnyCPU\net472\AltCover.exe -o ./__UnitTestWithAltCoverRunner -s "\.DataCollector" -s Sample -s Microsoft -s testhost -t "System\." -t "Sample3\.Class2" -t Microsoft -t ICSharpCode -t "<Start" -t UnitTestStub -t SolutionRoot -m WaitForExitCustom --sn "C:\Users\email\Documents\Github\altcover\Build\SelfTest.snk" --reportFormat OpenCover -r "C:\Users\email\Documents\Github\altcover\_Binaries\AltCover.Tests\Debug+AnyCPU\net472\UnitTestWithAltCoverRunner.xml" --single --localSource
+
+Run and collect in one
+
+C:\Users\email\Documents\Github\altcover\_Binaries\AltCover\Release+AnyCPU\net472\AltCover.exe Runner -r "C:\Users\email\Documents\Github\altcover\_Binaries\AltCover.Tests\Debug+AnyCPU\net472\./__UnitTestWithAltCoverRunner" -x "C:\Users\email\Documents\Github\altcover\packages\nunit.consolerunner\3.17.0\tools\nunit3-console.exe" -o "C:\Users\email\Documents\Github\altcover\_Reports\UnitTestWithAltCoverRunner.xml" -- --noheader --work=. --result=./_Reports/UnitTestWithAltCoverRunnerReport.xml "C:\Users\email\Documents\Github\altcover\_Binaries\AltCover.Tests\Debug+AnyCPU\net472\__UnitTestWithAltCoverRunner\AltCover.Tests.dll"

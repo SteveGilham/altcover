@@ -19,7 +19,7 @@ module internal LCov =
   let internal path: Option<string> ref =
     ref None
 
-  let internal sortByFirst s = s |> Seq.sortBy fst
+  let internal sortByFirst f s = s |> Seq.sortBy (fst >> f)
 
   module internal I =
 
@@ -40,21 +40,34 @@ module internal LCov =
       )
       |> Seq.min
 
-    let getVC (mp: XElement) =
-      mp.Attribute("vc".X)
-      |> Option.ofObj
-      |> Option.map _.Value
-      |> Option.defaultValue "0"
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "InstantiateArgumentExceptionCorrectlyRule",
+                      Justification = "Library method inlined")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidRepetitiveCallsToPropertiesRule",
+                      Justification = "Library method inlined")>]
+    let internal slOfPartialMethod (m: XElement * XElement seq) =
+      let (_, s) = m
 
-    let internal multiSort (by: 'a -> int) (l: (string * 'a seq) seq) =
+      s
+      |> Seq.map (_.Attribute("sl".X).Value >> Int32.TryParse >> snd)
+      |> Seq.min
+
+    let internal multiSort f (by: 'a -> int) (l: (string * 'a seq) seq) =
       l
       |> Seq.map (fun (f, ms) -> (f, ms |> Seq.sortBy by |> Seq.toList))
-      |> sortByFirst
+      |> sortByFirst f
 
     let internal multiSortByNameAndPartialStartLine
       (l: (string * (XElement * XElement seq) seq) seq)
       =
-      multiSort lineOfPartialMethod l
+      multiSort id lineOfPartialMethod l
+
+    let internal multiSortByNameAndPartialOpenCoverStartLine
+      documents
+      (l: (string * (XElement * XElement seq) seq) seq)
+      =
+      multiSort (fun d -> Map.find d documents) slOfPartialMethod l
 
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
@@ -249,9 +262,23 @@ FN:4,(anonymous_0)
         | _ ->
           report.Descendants("Module".X)
           |> Seq.iter (fun assembly ->
-            assembly.Descendants("File".X)
-            |> Seq.sortBy _.Attribute("fullPath".X).Value
-            |> Seq.iter (fun f ->
+            let documents =
+              assembly.Descendants("File".X)
+              |> Seq.sortBy _.Attribute("fullPath".X).Value
+              |> Seq.map (fun f ->
+                (f.Attribute("uid".X).Value, f.Attribute("fullPath".X).Value))
+              |> Map.ofSeq
+
+            assembly.Descendants("Method".X)
+            |> Seq.collect (fun m ->
+              m.Descendants("SequencePoint".X)
+              |> Seq.groupBy _.Attribute("fileid".X).Value
+              |> Seq.map (fun (d, l) -> (d, (m, l))))
+            |> Seq.groupBy fst
+            |> Seq.sortBy (fun (d, _) -> Map.find d documents)
+            |> Seq.map (fun (d, dmlist) -> d, dmlist |> Seq.map snd)
+            |> (I.multiSortByNameAndPartialOpenCoverStartLine documents)
+            |> Seq.iter (fun (uid, methods) ->
               //If available, a tracefile begins with the testname which
               //   is stored in the following format:
               //
@@ -267,65 +294,40 @@ FN:4,(anonymous_0)
               // containing filename and coverage data:
               //
               //  SF:<absolute path to the source file>
-              writer.WriteLine("SF:" + f.Attribute("fullPath".X).Value)
+              writer.WriteLine("SF:" + (Map.find uid documents))
 
-              let uid = f.Attribute("uid".X).Value
-              let p = f.Parent.Parent
+              let fullname (m: XElement) =
+                (m.Descendants("Name".X) |> Seq.head).Value
 
               // Following is a list of line numbers for each function name found in the
               // source file:
               //
               // FN:<line number of function start>,<function name>
-              let methods =
-                p.Descendants("Method".X)
-                |> Seq.filter (
-                  _.Descendants()
-                  >> Seq.exists (fun r ->
-                    let f = r.Attribute("fileid".X)
-                    f.IsNotNull && f.Value == uid)
-                )
-                |> Seq.toList
+              methods
+              |> Seq.iter (fun m ->
+                let l =
+                  (I.slOfPartialMethod m)
+                    .ToString(CultureInfo.InvariantCulture)
 
-              let FN (ms: XElement list) = // fsharplint:disable-line NonPublicValuesNames
-                ms
-                |> Seq.iter (fun m ->
-                  m.Descendants("SequencePoint".X)
-                  |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
-                  |> Seq.tryHead
-                  |> Option.iter (fun s ->
-                    let n =
-                      (m.Descendants("Name".X) |> Seq.head).Value
-
-                    let sl = s.Attribute("sl".X).Value
-
-                    if sl |> String.IsNullOrWhiteSpace |> not then
-                      writer.WriteLine("FN:" + s.Attribute("sl".X).Value + "," + n)))
-
-              FN methods
+                let (mx, pts) = m
+                let name = fullname mx
+                writer.WriteLine("FN:" + l + "," + name))
               // Next, there is a list of execution counts for each  instrumented  function:
               //
               // FNDA:<execution count>,<function name>
-              let FNDA (ms: XElement list) = // fsharplint:disable-line NonPublicValuesNames
-                ms
-                |> Seq.iter (fun m ->
-                  m.Descendants("SequencePoint".X)
-                  |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
-                  |> Seq.tryHead
-                  |> Option.iter (fun s ->
-                    let n =
-                      (m.Descendants("Name".X) |> Seq.head).Value
+              let hit =
+                methods
+                |> Seq.fold
+                  (fun (n: int) (m, _) ->
+                    let v =
+                      (m.Descendants("SequencePoint".X) |> Seq.head)
+                        .Attribute("vc".X)
+                        .Value
 
-                    let mp =
-                      m.Descendants("MethodPoint".X) |> Seq.head
-
-                    let sl = s.Attribute("sl".X).Value
-
-                    let vc = I.getVC mp
-
-                    if sl |> String.IsNullOrWhiteSpace |> not then
-                      writer.WriteLine("FNDA:" + vc + "," + n)))
-
-              FNDA methods
+                    let name = fullname m
+                    writer.WriteLine("FNDA:" + v + "," + name)
+                    n.Increment(v != "0"))
+                  0
               // This  list  is followed by two lines containing the number of functions
               // found and hit:
               //
@@ -336,21 +338,9 @@ FN:4,(anonymous_0)
                 + methods.Length.ToString(CultureInfo.InvariantCulture)
               )
 
-              let hit =
-                methods
-                |> List.filter (fun m ->
-                  m.Attribute("visited".X).Value == "true"
-                  || [ m.Descendants("SequencePoint".X)
-                       m.Descendants("BranchPoint".X)
-                       m.Descendants("MethodPoint".X) ]
-                     |> Seq.concat
-                     |> Seq.exists (fun s ->
-                       let v = I.getVC s
-                       v.IsNotNull && v != "0"))
-
               writer.WriteLine(
                 "FNH:"
-                + hit.Length.ToString(CultureInfo.InvariantCulture)
+                + hit.ToString(CultureInfo.InvariantCulture)
               )
               // Branch coverage information is stored which one line per branch:
               //
@@ -405,7 +395,7 @@ FN:4,(anonymous_0)
                   + brh.ToString(CultureInfo.InvariantCulture)
                 )
 
-              branch methods
+              branch (methods |> List.map fst)
               // Then there is a list of execution counts  for  each  instrumented  line
               // (i.e. a line which resulted in executable code):
               //
@@ -416,26 +406,26 @@ FN:4,(anonymous_0)
               // checksumming algorithm.
               let (lf, lh) =
                 methods
-                |> Seq.collect _.Descendants("SequencePoint".X)
-                |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
-                |> Seq.filter (fun b ->
-                  b.Attribute("sl".X).Value
-                  |> String.IsNullOrWhiteSpace
-                  |> not)
-                |> Seq.groupBy (_.Attribute("sl".X).Value >> Int32.TryParse >> snd)
-                |> Seq.sortBy fst
+                |> Seq.collect snd
+                |> Seq.filter (
+                  _.Attribute("sl".X).Value
+                  >> String.IsNullOrWhiteSpace
+                  >> not
+                )
+                |> Seq.groupBy _.Attribute("sl".X).Value
+                |> Seq.sortBy (fst >> Int32.TryParse >> snd)
                 |> Seq.fold
-                  (fun (f, h) (line, points) ->
-                    let sl =
-                      line.ToString(CultureInfo.InvariantCulture)
+                  (fun (f, (h: int)) (sl, bs) ->
+                    let vc = I.computeVisitCount bs "vc"
 
-                    let vc = I.computeVisitCount points "vc"
+                    writer.WriteLine(
+                      "DA:"
+                      + sl
+                      + ","
+                      + vc.ToString(CultureInfo.InvariantCulture)
+                    )
 
-                    let vcs =
-                      vc.ToString(CultureInfo.InvariantCulture)
-
-                    writer.WriteLine("DA:" + sl + "," + vcs)
-                    (f + 1, h + (if vcs == "0" then 0 else 1)))
+                    (f + 1, h.Increment(vc <> 0)))
                   (0, 0)
               // At  the  end of a section, there is a summary about how many lines were
               // found and how many were actually instrumented:

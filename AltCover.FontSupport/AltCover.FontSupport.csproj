@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fake.Core.Process" Condition="'$(TargetFramework)' != 'net472'" VersionOverride="6.0.0" />
+    <PackageReference Include="Fake.Core.Process" Condition="'$(TargetFramework)' != 'net472'" VersionOverride="6.1.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

@@ -17,6 +17,9 @@ module internal Cobertura =
   let internal path: Option<string> ref =
     ref None
 
+  let internal packages: string list ref =
+    ref List.empty<string>
+
   module internal I =
 
     let internal setRate hits total (rate: string) (target: XElement) =
@@ -157,8 +160,12 @@ module internal Cobertura =
         |> Seq.map (fun (a, s) -> a, s |> Seq.map fst)
         |> Seq.sortBy fst // seq of (directory, files full names)
 
+      let packaged =
+        packages.Value
+        |> Seq.map (fun x -> x, Seq.empty<string>)
+
       let groupable = // seq of ((directory, files full names), facets)
-        rawsources
+        Seq.concat [ packaged; rawsources ]
         |> Seq.map (fun x -> (x, x |> fst |> splitPath))
 
       let groups = // seq of (root, seq of ((directory, files full names), facets))
@@ -168,6 +175,7 @@ module internal Cobertura =
         groups |> Seq.map (snd >> extractSource)
 
       results
+      |> Seq.sortBy fst
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(fst f))))
@@ -267,7 +275,7 @@ module internal Cobertura =
               (mname, signature)
 
           (key, (signature, m)))
-        |> LCov.sortByFirst
+        |> LCov.sortByFirst id
         |> Seq.fold (processMethod document methods) (0, 0)
 
       let processClass
@@ -528,7 +536,7 @@ module internal Cobertura =
             fn.Substring(start, argsAt - start)
 
           (key, (signature, method)))
-        |> LCov.sortByFirst
+        |> LCov.sortByFirst id
         |> Seq.filter (fun (_, (_, mt)) ->
           mt.Descendants("SequencePoint".X)
           |> Seq.isEmpty

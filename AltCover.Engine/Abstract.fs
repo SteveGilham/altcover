@@ -77,6 +77,10 @@ module Abstract =
                         Justification="Cobertura is a name")>] //// no doc
     abstract member Cobertura : String with get
     ///<summary>
+    /// Corresponds to command line option `-p, --package=VALUE`
+    ///</summary>
+    abstract member Packages : IEnumerable<String> with get
+    ///<summary>
     /// Corresponds to command line option `-o, --outputFile=VALUE`
     ///</summary>
     abstract member OutputFile : String with get
