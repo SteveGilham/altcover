@@ -17,6 +17,7 @@ public class CollectOptions
 | [ExposeReturnCode](CollectOptions/ExposeReturnCode-apidoc) { get; } | Gets whether to expose a program return code (overridden by the MSBuild integration) |
 | virtual [LcovReport](CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | virtual [OutputFile](CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [Packages](CollectOptions/Packages-apidoc) { get; } | Corresponds to command line option `-p, --package=VALUE` |
 | [RecorderDirectory](CollectOptions/RecorderDirectory-apidoc) { get; } | Gets the recorder directory (overridden by the MSBuild integration) |
 | virtual [SummaryFormat](CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | virtual [Threshold](CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |

@@ -75,6 +75,7 @@ type Collect =
     member LcovReport : string with get, set
     member Threshold : string with get, set
     member Cobertura : string with get, set
+    member Packages : string array with get, set
     member OutputFile : string with get, set
     member CommandLine : string array with get, set
     member ExposeReturnCode : bool with get, set

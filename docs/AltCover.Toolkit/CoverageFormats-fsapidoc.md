@@ -13,7 +13,7 @@ namespace AltCover
       document:System.Xml.Linq.XDocument -> stream:System.IO.Stream -> unit
 
     val ConvertToCobertura :
-      document:System.Xml.Linq.XDocument -> System.Xml.Linq.XDocument
+      document:System.Xml.Linq.XDocument -> packages : string seq -> System.Xml.Linq.XDocument
 
     val ConvertToJson :
       document:System.Xml.Linq.XDocument -> string

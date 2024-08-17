@@ -22,6 +22,8 @@ public static class TypeSafe
 | abstract class [FilterItem](TypeSafe.FilterItem-apidoc) | Corresponds to a filter entry |
 | abstract class [Filters](TypeSafe.Filters-apidoc) | Corresponds to a collection of filter entries |
 | abstract class [Flag](TypeSafe.Flag-apidoc) | Corresponds to a yes/no choice |
+| class [Package](TypeSafe.Package-apidoc) | Corresponds to a cobertura package source root |
+| abstract class [Packages](TypeSafe.Packages-apidoc) | Corresponds to a collection of cobertura package source roots |
 | class [PrepareOptions](TypeSafe.PrepareOptions-apidoc) | Command line options for `AltCover` |
 | class [ReportFormat](TypeSafe.ReportFormat-apidoc) | Corresponds to the desired format of the XML report |
 | class [StaticFormat](TypeSafe.StaticFormat-apidoc) | Corresponds to a an option for treating trivial methods |

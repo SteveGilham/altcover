@@ -3,7 +3,7 @@
 ```csharp
 public CollectOptions(DirectoryPath recorderDirectory, DirectoryPath workingDirectory, 
     FilePath executable, FilePath lcovReport, Threshold threshold, FilePath cobertura, 
-    FilePath outputFile, CommandLine commandLine, Flag exposeReturnCode, 
+    Packages packages, FilePath outputFile, CommandLine commandLine, Flag exposeReturnCode, 
     SummaryFormat summaryFormat, TraceLevel verbosity)
 ```
 
@@ -12,6 +12,7 @@ public CollectOptions(DirectoryPath recorderDirectory, DirectoryPath workingDire
 * class [DirectoryPath](../TypeSafe.DirectoryPath-apidoc)
 * class [FilePath](../TypeSafe.FilePath-apidoc)
 * class [Threshold](../TypeSafe.Threshold-apidoc)
+* class [Packages](../TypeSafe.Packages-apidoc)
 * class [CommandLine](../TypeSafe.CommandLine-apidoc)
 * class [Flag](../TypeSafe.Flag-apidoc)
 * class [SummaryFormat](../TypeSafe.SummaryFormat-apidoc)

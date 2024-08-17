@@ -145,7 +145,7 @@ module DotNet =
                       "AvoidMethodWithUnusedGenericTypeRule",
                       Justification = "It just be like that")>]
     let internal toCollectListArgArgumentList (collect: Abstract.ICollectOptions) =
-      [ fromList, "Packages", collect.Packages ] //=`"pipe `'|'` separated list of method name regexs"
+      [ fromList, "Packages", collect.Packages ] //=`"pipe `'|'` separated list of source root paths"
 
     let internal toSharedFromValueArgumentList
       (verbosity: System.Diagnostics.TraceLevel)

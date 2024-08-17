@@ -55,6 +55,7 @@ The members correspond to the like-named command line options for `AltCover Runn
         member LcovReport : System.String
         member Threshold : System.String
         member Cobertura : System.String
+        member Packages : seq<System.String>
         member OutputFile : System.String
         member CommandLine : seq<string>
         member ExposeReturnCode : bool

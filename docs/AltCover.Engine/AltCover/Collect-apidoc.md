@@ -17,6 +17,7 @@ public class Collect : Task
 | [ExposeReturnCode](Collect/ExposeReturnCode-apidoc) { get; set; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [LcovReport](Collect/LcovReport-apidoc) { get; set; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](Collect/OutputFile-apidoc) { get; set; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [Packages](Collect/Packages-apidoc) { get; set; } | Corresponds to command line option `-p, --package=VALUE` |
 | [RecorderDirectory](Collect/RecorderDirectory-apidoc) { get; set; } | Corresponds to command line option `-r, --recorderDirectory=VALUE`; a required parameter |
 | [Summary](Collect/Summary-apidoc) { get; } | Task output calue, the summary of coverage. |
 | [SummaryFormat](Collect/SummaryFormat-apidoc) { get; set; } | Corresponds to command line option `--teamcity[=VALUE]` |
