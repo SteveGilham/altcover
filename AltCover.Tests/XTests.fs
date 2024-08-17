@@ -321,9 +321,16 @@ module AltCoverXTests =
     let subject =
       TypeSafe.CollectOptions.Create()
 
-    let scan =
-      (AltCover.CollectOptions.TypeSafe subject)
-        .Validate(true)
+    let instance =
+      AltCover.CollectOptions.TypeSafe subject
+
+    let scan = instance.Validate(true)
+
+    test
+      <@
+        instance |> Args.collect = [ "Runner"
+                                     "--collect" ]
+      @>
 
     test <@ scan.Length = 1 @>
 
