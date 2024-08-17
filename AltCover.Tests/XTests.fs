@@ -326,11 +326,7 @@ module AltCoverXTests =
 
     let scan = instance.Validate(true)
 
-    test
-      <@
-        instance |> Args.collect = [ "Runner"
-                                     "--collect" ]
-      @>
+    test <@ instance |> Args.collect = [ "Runner"; "--collect" ] @>
 
     test <@ scan.Length = 1 @>
 

@@ -25,7 +25,7 @@ module CoverageFormats =
   [<SuppressMessage("Microsoft.Naming",
                     "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification = "Cobertura is a name")>]
-  let ConvertToCobertura (document: XDocument) (packages : string seq)=
+  let ConvertToCobertura (document: XDocument) (packages: string seq) =
     let format =
       XmlUtilities.discoverFormat document
 

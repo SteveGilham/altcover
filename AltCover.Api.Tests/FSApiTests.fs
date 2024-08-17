@@ -947,7 +947,7 @@ module FSApiTests =
     |> Seq.iter (fun a -> a.Value <- "false")
 
     let cob =
-      CoverageFormats.ConvertToCobertura doc ["d:/a01/_work/5/s/src/"]
+      CoverageFormats.ConvertToCobertura doc [ "d:/a01/_work/5/s/src/" ]
 
     use stream2 = new MemoryStream()
     cob.Save stream2

@@ -6434,9 +6434,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -6517,9 +6515,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="8.8.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -6553,7 +6549,7 @@ module AltCoverRunnerTests =
       )
 
     Cobertura.path.Value <- Some unique
-    Cobertura.packages.Value <- ["d:/a01/_work/5/s/src/"]
+    Cobertura.packages.Value <- [ "d:/a01/_work/5/s/src/" ]
 
     unique
     |> Path.GetDirectoryName
@@ -6601,9 +6597,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="8.2.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -6684,9 +6678,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -6769,9 +6761,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -6854,9 +6844,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
           .Replace( // different computations TODO!!
             """complexity="2.2""",
@@ -6951,9 +6939,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -7184,9 +7170,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.5.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
@@ -7259,9 +7243,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="8.2.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(
@@ -7340,11 +7322,9 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\\", "/")
           .Replace(
-            """version="3.0.0.0""",
+            """version="8.8.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(
@@ -7425,9 +7405,7 @@ module AltCoverRunnerTests =
           .Replace(
             """version="3.0.0.0""",
             "version=\""
-            + typeof<SummaryFormat>.Assembly
-              .GetName()
-              .Version.ToString()
+            + AssemblyVersionInformation.AssemblyVersion
           )
 
       Assert.That(
