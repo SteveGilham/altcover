@@ -175,6 +175,7 @@ module internal Cobertura =
         groups |> Seq.map (snd >> extractSource)
 
       results
+      |> Seq.sortBy fst
       |> Seq.iter (fun f ->
         target.Descendants("sources".X)
         |> Seq.iter _.Add(XElement("source".X, XText(fst f))))

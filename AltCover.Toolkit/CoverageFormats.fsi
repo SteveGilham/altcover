@@ -24,9 +24,10 @@ namespace AltCover
     /// <para type="description">Writes the Cobertura report to the object pipeline as an `XDocument`, and optionally to a file.</para>
     /// </summary>
     /// <param name="document">The report to convert.</param>
+    /// <param name="packages">Possibly empty list of package root folders.</param>
     /// <returns>The converted document</returns>
     val ConvertToCobertura :
-      document:System.Xml.Linq.XDocument -> System.Xml.Linq.XDocument
+      document:System.Xml.Linq.XDocument -> packages : string seq -> System.Xml.Linq.XDocument
 
     /// <summary>
     /// <para type="description">Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline. Writes the JSON report to a atring.</para>

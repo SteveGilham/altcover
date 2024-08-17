@@ -6553,6 +6553,7 @@ module AltCoverRunnerTests =
       )
 
     Cobertura.path.Value <- Some unique
+    Cobertura.packages.Value <- ["d:/a01/_work/5/s/src/"]
 
     unique
     |> Path.GetDirectoryName
