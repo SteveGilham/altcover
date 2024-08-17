@@ -94,6 +94,10 @@ module DotNet = begin
       val toCollectFromArgArgumentList :
         collect:Abstract.ICollectOptions ->
           ((string -> string -> (string*string)* bool) * string * System.String) list
+      val toCollectListArgArgumentList :
+        collect:Abstract.ICollectOptions ->
+          ((string -> #seq<System.String> -> (string*string) * bool) * string *
+           System.String seq) list
       val toSharedFromValueArgumentList :
         verbosity : System.Diagnostics.TraceLevel ->
        ((string -> obj -> bool -> (string*string)*bool) * string * obj * bool) list

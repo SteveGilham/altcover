@@ -115,6 +115,12 @@ module AltCover =
       | Abstract a -> a.Cobertura
       | TypeSafe t -> t.Cobertura.AsString()
 
+    member self.Packages =
+      match self with
+      | Primitive p -> p.Packages
+      | Abstract a -> a.Packages
+      | TypeSafe t -> t.Packages.AsStrings()
+
     member self.OutputFile =
       match self with
       | Primitive p -> p.OutputFile
@@ -156,6 +162,7 @@ module AltCover =
       member self.LcovReport = self.LcovReport
       member self.Threshold = self.Threshold
       member self.Cobertura = self.Cobertura
+      member self.Packages = self.Packages
       member self.OutputFile = self.OutputFile
       member self.CommandLine = self.CommandLine
 

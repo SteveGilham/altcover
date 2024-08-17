@@ -208,6 +208,7 @@
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
       Cobertura="$(AltCoverCobertura)"
+      Packages="$(AltCoverPackages)"
       SummaryFormat="$(AltCoverSummaryFormat)"
       Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary" />

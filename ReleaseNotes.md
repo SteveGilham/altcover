@@ -6,6 +6,9 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 # (Indori series release 1)
 * [BREAKING] Minimum platforms net472, netstandard2.0 and net7.0
 * [BREAKING] SDK updates to latest current for Cake and MSBuild-related packages
+
+# 8.9.3 (Habu series release 33)
+* Add `-p/--package` and equivalents to specify package roots for Cobertura output for all coverage collection methods, plus the PowerShell `ConvertTo-Cobertura` cmdlet
 * [ADVISORY] The Fake.build related assemblies (in the `altcover.api` and `altcover.fake` packages) support Fake 6.1.0
 * [PERFORMANCE] revise the OpenCover to LCov conversion to speed the mapping of methods from source files.
 

@@ -31,6 +31,7 @@ module Primitive =
                         "CA1704:IdentifiersShouldBeSpelledCorrectly",
                         Justification = "Cobertura is a name")>]
       Cobertura: String
+      Packages: String seq
       OutputFile: String
       CommandLine: String seq
       ExposeReturnCode: bool
@@ -43,6 +44,7 @@ module Primitive =
         LcovReport = String.Empty
         Threshold = String.Empty
         Cobertura = String.Empty
+        Packages = []
         OutputFile = String.Empty
         CommandLine = []
         ExposeReturnCode = true

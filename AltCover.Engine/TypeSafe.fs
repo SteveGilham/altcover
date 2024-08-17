@@ -60,6 +60,22 @@ module TypeSafe =
       | CommandArguments c -> c |> Seq.map _.AsString()
 
   [<ExcludeFromCodeCoverage; NoComparison>]
+  type Package =
+    | Package of String
+    member self.AsString() =
+      match self with
+      | Package s -> s
+
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+  type Packages =
+    | Packages of Package seq
+    | NoPackage
+    member self.AsStrings() =
+      match self with
+      | NoPackage -> Seq.empty<String>
+      | Packages c -> c |> Seq.map _.AsString()
+
+  [<ExcludeFromCodeCoverage; NoComparison>]
   type Thresholds =
     { Statements: uint8
       Branches: uint8
@@ -249,6 +265,7 @@ module TypeSafe =
                         "CA1704:IdentifiersShouldBeSpelledCorrectly",
                         Justification = "Cobertura is a name")>]
       Cobertura: FilePath
+      Packages: Packages
       OutputFile: FilePath
       CommandLine: CommandLine
       ExposeReturnCode: Flag
@@ -261,6 +278,7 @@ module TypeSafe =
         LcovReport = NoFile
         Threshold = NoThreshold
         Cobertura = NoFile
+        Packages = NoPackage
         OutputFile = NoFile
         CommandLine = NoCommand
         ExposeReturnCode = Set

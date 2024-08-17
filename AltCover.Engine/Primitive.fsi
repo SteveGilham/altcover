@@ -60,6 +60,10 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         Cobertura: System.String
         ///<summary>
+        /// Corresponds to command line option `-p, --package=VALUE`
+        ///</summary>
+        Packages : seq<System.String>
+        ///<summary>
         /// Corresponds to command line option `-o, --outputFile=VALUE`
         ///</summary>
         OutputFile: System.String

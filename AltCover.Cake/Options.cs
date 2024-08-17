@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using System.Linq;
 
 using FSDotNet = AltCover.DotNet;
 
@@ -325,6 +325,11 @@ namespace AltCover.Cake
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                       Justification = "Lcov is a name")]
     public virtual string Cobertura => String.Empty;
+
+    ///<summary>
+    /// Corresponds to command line option `-p, --package=VALUE`
+    ///</summary>
+    public IEnumerable<string> Packages => Enumerable.Empty<string>();
 
     ///<summary>
     /// Corresponds to command line option `-o, --outputFile=VALUE`
