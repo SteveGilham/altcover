@@ -40,7 +40,10 @@
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.abstractions" />
-    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="xunit.assert" />
     <PackageReference Include="xunit.core" />
     <PackageReference Include="xunit.extensibility.core" />
