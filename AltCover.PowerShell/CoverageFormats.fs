@@ -249,6 +249,26 @@ type ConvertToCoberturaCommand() =
   member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
+  /// <para type="description">Output as file path</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification =
+                      "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
+  member val Package: string array = [||] with get, set
+
+  /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
@@ -264,7 +284,7 @@ type ConvertToCoberturaCommand() =
         self.XDocument <- XDocument.Load self.InputFile
 
       let rewrite =
-        AltCover.CoverageFormats.ConvertToCobertura self.XDocument
+        AltCover.CoverageFormats.ConvertToCobertura self.XDocument self.Package
 
       if
         self.OutputFile

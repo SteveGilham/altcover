@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		Build\DriveApi.fsx = Build\DriveApi.fsx
+		global.json = global.json
 		.github\workflows\main.yml = .github\workflows\main.yml
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		ReleaseNotes.md = ReleaseNotes.md

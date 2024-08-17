@@ -3,7 +3,12 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Habu series release 32)
+# (Habu series release 33)
+* Add `-p/--package` and equivalents to specify package roots for Cobertura output for all coverage collection methods, plus the PowerShell `ConvertTo-Cobertura` cmdlet
+* [ADVISORY] The Fake.build related assemblies (in the `altcover.api` and `altcover.fake` packages) support Fake 6.1.0
+* [PERFORMANCE] revise the OpenCover to LCov conversion to speed the mapping of methods from source files.
+
+# 8.8.173 (Habu series release 32)
 * [PERFORMANCE] Issue #227 - removing the slow-down observed the new (at 8.8.165) file name processing for Cobertura 
 * [PERFORMANCE] removing a surprising hot-spot in branch coverage instrumentation that was taking 60% of the whole instrumentation time
 

@@ -11,6 +11,7 @@
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
     <NoWarn>NU1902,NU1903,NU1904</NoWarn>
+    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -29,10 +30,10 @@
     <EmbeddedResource Include="AltCover.App.xaml">
       <LogicalName>AltCover.App.xaml</LogicalName>
     </EmbeddedResource>
-    
+
     <EmbeddedResource Include="AltCover.AboutBox.xaml">
       <LogicalName>AltCover.AboutBox.xaml</LogicalName>
-    </EmbeddedResource>    
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

@@ -57,6 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Directory.Packages.props = Directory.Packages.props
 		.config\dotnet-tools.json = .config\dotnet-tools.json
 		Build\dump-uncovered.ps1 = Build\dump-uncovered.ps1
+		Fragments.txt = Fragments.txt
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk

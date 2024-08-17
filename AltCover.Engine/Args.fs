@@ -129,6 +129,12 @@ module internal Args =
     [ parameters; trailing ] |> List.concat
 
   let internal buildCollect (args: Abstract.ICollectOptions) =
+    let packages =
+      args.Packages
+      |> Seq.map (fun p -> [ "-p"; p ])
+      |> Seq.toList
+      |> List.concat
+
     let argsList =
       args.CommandLine |> Seq.toList
 
@@ -156,6 +162,7 @@ module internal Args =
       item "-l" args.LcovReport
       item "-t" args.Threshold
       item "-c" args.Cobertura
+      packages
       item "-o" args.OutputFile
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)

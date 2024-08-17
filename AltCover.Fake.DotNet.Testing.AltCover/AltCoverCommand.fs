@@ -40,6 +40,7 @@ module AltCoverCommand =
           LcovReport = a.LcovReport
           Threshold = a.Threshold
           Cobertura = a.Cobertura
+          Packages = a.Packages
           OutputFile = a.OutputFile
           CommandLine = a.CommandLine
           ExposeReturnCode = a.ExposeReturnCode
@@ -59,6 +60,7 @@ module AltCoverCommand =
           LcovReport = a.LcovReport
           Threshold = a.Threshold
           Cobertura = a.Cobertura
+          Packages = a.Packages
           OutputFile = a.OutputFile
           CommandLine = args |> toSeq
           ExposeReturnCode = a.ExposeReturnCode
@@ -328,30 +330,30 @@ module AltCoverCommand =
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@300T.#monoPath",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@302T.#monoPath",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@300T.#options",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@302T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@251T.#options",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@253T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 75@75::Invoke(System.String)",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 77@77::Invoke(System.String)",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 137@137::Invoke(System.String)",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 139@139::Invoke(System.String)",
                             Justification = "Generated code")>]
 ()
