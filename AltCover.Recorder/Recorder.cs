@@ -688,8 +688,7 @@ namespace AltCover.Recorder
           (Sample == Sampling.All
            || TakeSample(Sample, moduleId, hitPointId, context))
         {
-          if ((Defer && AppDomain.CurrentDomain.IsDefaultAppDomain())
-              || supervision || !Trace.IsConnected)
+          if (Defer || supervision || !Trace.IsConnected)
           {
             AddVisit(moduleId, hitPointId, context);
           }

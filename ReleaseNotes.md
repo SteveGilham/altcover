@@ -4,7 +4,6 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Habu series release 34)
-* Coverage reporting from .Net Framework subsidiary `AppDomain`s is never subject to the `--defer` flag, as `DomainUnload` handling is unreliable.
 
 # 8.9.3 (Habu series release 33)
 * Add `-p/--package` and equivalents to specify package roots for Cobertura output for all coverage collection methods, plus the PowerShell `ConvertTo-Cobertura` cmdlet
