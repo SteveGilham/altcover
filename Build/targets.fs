@@ -2158,12 +2158,7 @@ module Targets =
            "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
            [ Path.getFullName // test assemblies
                "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll" ],
-           eagerfilter, // TODO
-           //>> (fun (p: TypeSafe.PrepareOptions) -> { p with Eager = Set }),
-           //TypeFilter =
-           //  [ "ProxyObject" ]
-           //  |> Seq.map TypeSafe.Raw
-           //  |> p.TypeFilter.Join }),
+           eagerfilter, // And single visit, too
            keyfile)
           (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472", // test directory
            "./__ApiTestWithAltCoverRunner", // relative output
