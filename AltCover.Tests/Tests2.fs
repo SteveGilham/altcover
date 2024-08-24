@@ -2804,7 +2804,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       ProgramDatabase.readSymbols def |> ignore
 
       let npath =
-        typeof<TestAttribute>.Assembly.Location
+        typeof<NUnit.Framework.TestAttribute>.Assembly.Location
 
       use ndef =
         AssemblyResolver.ReadAssembly npath
