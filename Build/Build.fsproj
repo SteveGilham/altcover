@@ -40,6 +40,9 @@
     <PackageReference Include="Fake.IO.FileSystem" VersionOverride="6.0.0" />
     <PackageReference Include="Fake.Testing.ReportGenerator" VersionOverride="6.0.0" />
     <PackageReference Include="Fake.Tools.git" VersionOverride="6.0.0" />
+    <PackageReference Include="FSharp.Core" VersionOverride="8.0.400">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="FuChu" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="NUnit" />

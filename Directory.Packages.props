@@ -38,7 +38,7 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="6.0.0" />
     <PackageVersion Include="Fake.Tools.git" Version="6.0.0" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="8.0.400" />
+    <PackageVersion Include="FSharp.Core" Version="9.0.100-beta.24406.3" />
     <PackageVersion Include="FsUnit" Version="6.0.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
@@ -62,7 +62,7 @@
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.6.141" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="NuGet.CommandLine" Version="6.11.0" />
-    <PackageVersion Include="NUnit" Version="4.1.0" />
+    <PackageVersion Include="NUnit" Version="4.2.1" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" Version="3.12.0" />
