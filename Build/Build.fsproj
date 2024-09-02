@@ -40,7 +40,7 @@
     <PackageReference Include="Fake.IO.FileSystem" />
     <PackageReference Include="Fake.Testing.ReportGenerator" />
     <PackageReference Include="Fake.Tools.git" />
-    <PackageReference Include="FSharp.Core" VersionOverride="8.0.400">
+    <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="FuChu" />
