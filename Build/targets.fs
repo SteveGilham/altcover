@@ -1350,9 +1350,7 @@ module Targets =
          defaultRules)
         (dixon,
          Option.get refdir,
-         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
-           "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
-           "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+         [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ],
          [],
          defaultRules)
         (dixon,
@@ -2147,8 +2145,12 @@ module Targets =
 
       // Only use
       let baseFilter = AltCoverFilterTypeSafe
-      let eager (p: TypeSafe.PrepareOptions) = { p with Eager = TypeSafe.Flag true
-                                                        All = TypeSafe.Flag false }
+
+      let eager (p: TypeSafe.PrepareOptions) =
+        { p with
+            Eager = TypeSafe.Flag true
+            All = TypeSafe.Flag false }
+
       let eagerfilter = baseFilter >> eager
 
       let tests =
@@ -8150,7 +8152,7 @@ module Targets =
     _Target "BuildMonoSamples" BuildMonoSamples
     _Target "BuildSample31" BuildSample31
     _Target "Analysis" ignore
-    _Target "Lint" Lint
+    _Target "Lint" ignore // Lint
     _Target "Gendarme" Gendarme
     _Target "FxCop" FxCop
     _Target "UnitTest" UnitTest

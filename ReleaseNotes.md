@@ -5,7 +5,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Indori series release 1)
 * [BREAKING] Minimum platforms net472, netstandard2.0 and net7.0
-* [BREAKING] SDK updates to latest current for Cake and MSBuild-related packages
+* [BREAKING] SDK updates to latest current for Cake and MSBuild-related packages; build with Fake.build 6.1.1 but supports back to 6.0.0
 * [BREAKING] API change : `--all` and `--eager` replace `--single` and `--defer`, so the default behaviour is now deferred (Unload/Exit time) reporting, and first visit only per context. Note that in some cases, use of .Net Framework `AppDomain`s may require the use of `--eager` as the unload handler gives no guarantees about execution time.
 
 # 8.9.3 (Habu series release 33)

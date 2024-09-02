@@ -11,11 +11,11 @@
 
   <ItemGroup>
     <PackageReference Include="BlackFox.VsWhere" />
-    <PackageReference Include="Fake.Core.Environment" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.Core.Process" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.Core.Target" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.DotNet.Cli" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.DotNet.NuGet" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.IO.FileSystem" VersionOverride="6.0.0" />
+    <PackageReference Include="Fake.Core.Environment" />
+    <PackageReference Include="Fake.Core.Process" />
+    <PackageReference Include="Fake.Core.Target" />
+    <PackageReference Include="Fake.DotNet.Cli" />
+    <PackageReference Include="Fake.DotNet.NuGet" />
+    <PackageReference Include="Fake.IO.FileSystem" />
   </ItemGroup>
 </Project>
