@@ -1370,9 +1370,7 @@ module Targets =
          Option.get refdir,
          [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3
            "_Binaries/AltCover.Visualizer3/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
-           "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
-           "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
-           "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+           "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ],
          [],
          defaultRules)
         (dixon,
