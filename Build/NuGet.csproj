@@ -29,5 +29,6 @@
     <PackageReference Include="altcode.gendarme" />
     <PackageReference Include="XmlDoc2CmdletDoc" />
     <PackageReference Include="System.ValueTuple" VersionOverride="4.0.0-rc3-24212-01"/>
+    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" />
   </ItemGroup>
 </Project>
