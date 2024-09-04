@@ -1071,12 +1071,15 @@ module Targets =
         |> Seq.sortBy (Path.GetFileName)
         |> Seq.filter (fun f ->
           ((f.Contains demo)
+           || (f.Contains "Build.fsproj") // FIXME!!
            || (f.Contains regress)
            || (f.Contains underscore)
            || (f.Contains sample))
           |> not)
         !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
       |> Seq.concat
+//      |> Seq.map (fun f -> printfn "Linting %A" f
+//                           (doLint f).ExitCode)
       |> Seq.map doLintAsync
       |> throttle
       |> Async.RunSynchronously
@@ -8152,7 +8155,7 @@ module Targets =
     _Target "BuildMonoSamples" BuildMonoSamples
     _Target "BuildSample31" BuildSample31
     _Target "Analysis" ignore
-    _Target "Lint" ignore // Lint
+    _Target "Lint" Lint
     _Target "Gendarme" Gendarme
     _Target "FxCop" FxCop
     _Target "UnitTest" UnitTest
