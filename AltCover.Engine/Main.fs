@@ -434,10 +434,11 @@ module internal Main =
         tidy (x)
 
     let internal matchType =
+      let os = System.Environment.GetEnvironmentVariable("OS")
+               |> Option.ofObj
+               |> Option.defaultValue String.Empty
       Maybe
-        (System.Environment
-          .GetEnvironmentVariable("OS")
-          .Equals("Windows_NT", StringComparison.Ordinal))
+        (os.Equals("Windows_NT", StringComparison.Ordinal))
         StringComparison.OrdinalIgnoreCase
         StringComparison.Ordinal
 
