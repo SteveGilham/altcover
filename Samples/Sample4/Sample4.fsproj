@@ -49,6 +49,7 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" />
   </ItemGroup>
 
   <Target Name="AfterBuild">
