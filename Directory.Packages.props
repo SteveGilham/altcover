@@ -38,7 +38,7 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="6.1.1" />
     <PackageVersion Include="Fake.Tools.git" Version="6.1.1" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="9.0.100-beta.24406.3" />
+    <PackageVersion Include="FSharp.Core" Version="9.0.100-beta.24422.2" />
     <PackageVersion Include="FsUnit" Version="6.0.0" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
