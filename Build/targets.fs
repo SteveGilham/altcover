@@ -39,21 +39,6 @@ module Targets =
   let mutable Copyright = String.Empty
   let mutable Version = String.Empty
 
-  let localCecil =
-    let xml =
-      "./Directory.Build.props"
-      |> Path.getFullName
-      |> XDocument.Load
-
-    xml.Descendants()
-    |> Seq.filter (fun (e: XElement) ->
-      e.Name.LocalName.Equals("LocalCecil", StringComparison.OrdinalIgnoreCase))
-    |> Seq.map (fun x -> x.Value |> Boolean.TryParse |> snd)
-    |> Seq.tryLast
-    |> Option.defaultValue false
-
-  printfn "Local Cecil = %A" localCecil
-
   let currentBranch =
     "."
     |> Path.getFullName
@@ -600,13 +585,7 @@ module Targets =
   let dotnetBuildDebug proj =
     DotNet.build
       (fun p ->
-        { p.WithCommon(
-            dotnetOptions
-            >> dotnetOptionsWithSkipGtkInstall
-            >> (fun o ->
-              { o with
-                  Verbosity = Some DotNet.Verbosity.Minimal })
-          ) with
+        { p.WithCommon(dotnetOptions >> dotnetOptionsWithSkipGtkInstall) with
             Configuration = DotNet.BuildConfiguration.Debug }
         |> buildWithCLIArguments)
       (Path.GetFullPath proj)
@@ -1483,13 +1462,13 @@ module Targets =
                     @@ "gtksharp/"
                        + (ddItem "gtksharp")
                        + "/lib/netstandard2.0"
-                    if localCecil then
-                      Path.GetFullPath "./ThirdParty/cecil"
-                    else
-                      nugetCache
-                      @@ "mono.cecil/"
-                         + (ddItem "mono.cecil")
-                         + "/lib/netstandard2.0"
+                    //if localCecil then
+                    //  Path.GetFullPath "./ThirdParty/cecil"
+                    //else
+                    nugetCache
+                    @@ "mono.cecil/"
+                       + (ddItem "mono.cecil")
+                       + "/lib/netstandard2.0"
                     nugetCache
                     @@ "mono.options/"
                        + (ddItem "mono.options")
@@ -1538,20 +1517,10 @@ module Targets =
           |> Path.getFullName
           |> XDocument.Load
 
-        let skip =
-          if localCecil then
-            "mono.cecil"
-          else
-            "$$$$$$$"
-
         let packages =
           xml.Descendants(XName.Get("PackageReference"))
           |> Seq.filter (_.Attribute(XName.Get("Include")) >> isNull >> not)
           |> Seq.map _.Attribute(XName.Get("Include")).Value
-          |> Seq.filter (
-            _.Equals(skip, StringComparison.OrdinalIgnoreCase)
-            >> not
-          ) //CECIL
           |> Seq.toList
 
         let dirs =
@@ -4576,12 +4545,10 @@ module Targets =
                   "AltCover.Cake"
                   "AltCover.Base"
                   "Recorder"
-                  "Mono"
                   "DataCollector"
                   "FSharp" ]
               InPlace = false
               ReportFormat = "OpenCover"
-              LocalSource = true
               Save = true
               VisibleBranches = true }
         )
