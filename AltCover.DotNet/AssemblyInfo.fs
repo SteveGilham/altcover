@@ -10,5 +10,9 @@ open System.Diagnostics.CodeAnalysis
                             Target =
                               "System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute",
                             Justification = "Injected type")>]
-
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope = "member",
+                            Target = "<StartupCode$AltCover-DotNet>.$DotNet.#.cctor()",
+                            Justification = "F# Compiler did this")>]
 do ()

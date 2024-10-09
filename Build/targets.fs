@@ -1078,8 +1078,8 @@ module Targets =
           |> not)
         !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
       |> Seq.concat
-//      |> Seq.map (fun f -> printfn "Linting %A" f
-//                           (doLint f).ExitCode)
+      //      |> Seq.map (fun f -> printfn "Linting %A" f
+      //                           (doLint f).ExitCode)
       |> Seq.map doLintAsync
       |> throttle
       |> Async.RunSynchronously
