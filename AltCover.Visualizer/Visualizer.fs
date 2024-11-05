@@ -1,5 +1,7 @@
 ﻿namespace AltCover
 
+// fsharplint:disable  RedundantNewKeyword
+
 open System
 open System.Collections.Generic
 open System.IO

@@ -7,10 +7,10 @@
     <PackageVersion Include="altcover" Version="8.6.125" />
     <PackageVersion Include="AltCover.Api" Version="8.8.173" />
     <PackageVersion Include="AltCover.Fake" Version="8.8.173" />
-    <PackageVersion Include="Avalonia" Version="11.1.4" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.1.4" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.1.4" />
-    <PackageVersion Include="Avalonia.Themes.Simple" Version="11.1.4" />
+    <PackageVersion Include="Avalonia" Version="11.2.0" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.2.0" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.2.0" />
+    <PackageVersion Include="Avalonia.Themes.Simple" Version="11.2.0" />
     <PackageVersion Include="BlackFox.CommandLine" Version="1.0.0" />
     <PackageVersion Include="BlackFox.VsWhere" Version="1.1.0" />
     <PackageVersion Include="Cake.Common" Version="4.0.0" />

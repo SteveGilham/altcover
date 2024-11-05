@@ -100,11 +100,13 @@ type internal AssemblyResolver() as self =
 
   static member ReadAssembly(path: String) =
     let reader = ReaderParameters()
+    // fsharplint:disable-next-line  RedundantNewKeyword
     reader.AssemblyResolver <- new AssemblyResolver()
     AssemblyDefinition.ReadAssembly(path, reader)
 
   static member ReadAssembly(file: Stream) =
     let reader = ReaderParameters()
+    // fsharplint:disable-next-line  RedundantNewKeyword
     reader.AssemblyResolver <- new AssemblyResolver()
     AssemblyDefinition.ReadAssembly(file, reader)
 
@@ -385,6 +387,6 @@ module internal CecilExtension =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.AssemblyResolver/candidate@165::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.String>)",
+                              "AltCover.AssemblyResolver/candidate@167::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.String>)",
                             Justification = "code inlined")>]
 ()

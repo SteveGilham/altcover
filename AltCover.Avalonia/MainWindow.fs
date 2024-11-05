@@ -137,6 +137,7 @@ type MainWindow() as this =
   let ofd = OpenFileDialog()
 #endif
 
+  // fsharplint:disable-next-line  RedundantNewKeyword
   let iconMaker (x: Stream) = new Bitmap(x)
 
   [<NonSerialized>]
@@ -1168,6 +1169,6 @@ type MainWindow() as this =
                             "AvoidSwitchStatementsRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.MainWindow/tagByCoverage@422::Invoke(Avalonia.Controls.Presenters.TextPresenter,Microsoft.FSharp.Collections.FSharpList`1<Avalonia.Media.FormattedTextLine>,AltCover.GuiCommon/CodeTag)",
+                              "AltCover.MainWindow/tagByCoverage@423::Invoke(Avalonia.Controls.Presenters.TextPresenter,Microsoft.FSharp.Collections.FSharpList`1<Avalonia.Media.FormattedTextLine>,AltCover.GuiCommon/CodeTag)",
                             Justification = "Wrong paradigm")>]
 ()

@@ -1046,11 +1046,11 @@ module Targets =
       let failOnIssuesFound (issuesFound: bool) =
         Assert.That(issuesFound, Is.False, "Lint issues were found")
 
-      [ !! "./**/*.fsproj"
+      [ !! "./**/*.fs"
         |> Seq.sortBy (Path.GetFileName)
         |> Seq.filter (fun f ->
           ((f.Contains demo)
-           || (f.Contains "Build.fsproj") // FIXME!!
+           || (f.Contains "AltCover.Recorder") // obsolete
            || (f.Contains regress)
            || (f.Contains underscore)
            || (f.Contains sample))
