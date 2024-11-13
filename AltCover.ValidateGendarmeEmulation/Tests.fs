@@ -38,7 +38,7 @@ module ValidateGendarmeEmulation =
     let path =
       Path.Combine(
         SolutionRoot.location,
-        "_Binaries/AltCover/Debug+AnyCPU/net7.0/AltCover.Engine.dll"
+        "_Binaries/AltCover/Debug+AnyCPU/net8.0/AltCover.Engine.dll"
       )
 
     let def =

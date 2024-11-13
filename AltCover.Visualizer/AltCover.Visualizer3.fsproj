@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <PackAsTool>True</PackAsTool>
@@ -29,7 +29,7 @@
     <None Include="Prepare.ps1" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <EmbeddedResource Include="Visualizer3.glade"/>
+    <EmbeddedResource Include="Visualizer3.glade" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Browser.fs" />
     <Compile Include="Persistence.fs" />
