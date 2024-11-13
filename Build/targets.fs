@@ -4422,7 +4422,52 @@ module Targets =
       Shell.copyFile
         (unpacked + "System.Management.Automation.dll")
         ((packageVersionPart "PowerShellStandard.Library")
-         + "System.Management.Automation.dll"))
+         + "System.Management.Automation.dll")
+
+      [ "AltCover.Base"
+        "AltCover.DotNet"
+        "AltCover.Engine" // beware static linkage -- maybe copy from debug?
+        "AltCover.Monitor"
+        "AltCover.PowerShell"
+        "AltCover.Toolkit" ]
+      |> List.iter (fun n ->
+        Shell.copyFile
+          (unpacked + n + ".xml")
+          ("./_Binaries/"
+           + n
+           + "/Release+AnyCPU/netstandard2.0/"
+           + n
+           + ".xml")
+
+        Actions.RunDotnet
+          (dotnetOptions >> dotnetOptionsWithRollForwards)
+          "xmldocmd"
+          (unpacked
+           + n
+           + ".dll ./_Documentation/"
+           + n
+           + " --visibility public --skip-unbrowsable --clean")
+          ("documenting " + n))
+
+      [ "AltCover.Cake" ]
+      |> List.iter (fun n ->
+        //Shell.copyFile
+        //  (unpacked + n + ".xml")
+        //  ("./_Binaries/"
+        //   + n
+        //   + "/Release+AnyCPU/netstandard2.0/"
+        //   + n
+        //   + ".xml")
+
+        Actions.RunDotnet
+          (dotnetOptions >> dotnetOptionsWithRollForwards)
+          "xmldocmd"
+          ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.1/"
+           + n
+           + ".dll ./_Documentation/"
+           + n
+           + " --visibility public --skip-unbrowsable --clean")
+          ("documenting " + n)))
 
   let WindowsPowerShell =
     (fun () ->
@@ -7806,54 +7851,6 @@ module Targets =
 
   let MakeDocumentation =
     (fun () ->
-      let unpacked =
-        "./_Packaging.api/Unpack/lib/netstandard2.0/"
-
-      [ "AltCover.Base"
-        "AltCover.DotNet"
-        "AltCover.Engine" // beware static linkage -- maybe copy from debug?
-        "AltCover.Monitor"
-        "AltCover.PowerShell"
-        "AltCover.Toolkit" ]
-      |> List.iter (fun n ->
-        Shell.copyFile
-          (unpacked + n + ".xml")
-          ("./_Binaries/"
-           + n
-           + "/Release+AnyCPU/netstandard2.0/"
-           + n
-           + ".xml")
-
-        Actions.RunDotnet
-          (dotnetOptions >> dotnetOptionsWithRollForwards)
-          "xmldocmd"
-          (unpacked
-           + n
-           + ".dll ./_Documentation/"
-           + n
-           + " --visibility public --skip-unbrowsable --clean")
-          ("documenting " + n))
-
-      [ (*"AltCover.Cake"*) ]
-      |> List.iter (fun n ->
-        Shell.copyFile
-          (unpacked + n + ".xml")
-          ("./_Binaries/"
-           + n
-           + "/Release+AnyCPU/net8.0/"
-           + n
-           + ".xml")
-
-        Actions.RunDotnet
-          (dotnetOptions >> dotnetOptionsWithRollForwards)
-          "xmldocmd"
-          (unpacked
-           + n
-           + ".dll ./_Documentation/"
-           + n
-           + " --visibility public --skip-unbrowsable --clean")
-          ("documenting " + n))
-
       let branch = Information.getBranchName (".")
       Assert.That(branch, Is.EqualTo("master").Or.StartWith("develop/docs/"), branch)
 
