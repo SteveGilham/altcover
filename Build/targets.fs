@@ -7834,7 +7834,7 @@ module Targets =
            + " --visibility public --skip-unbrowsable --clean")
           ("documenting " + n))
 
-      [ "AltCover.Cake" ]
+      [ (*"AltCover.Cake"*) ]
       |> List.iter (fun n ->
         Shell.copyFile
           (unpacked + n + ".xml")
