@@ -26,20 +26,23 @@
     <PackageReference Include="AltCode.Fake.DotNet.Gendarme" />
     <PackageReference Include="BlackFox.Commandline" />
     <PackageReference Include="BlackFox.VsWhere" />
-    <PackageReference Include="Fake.Core.environment" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.Core.process" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.Core.Target" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.AssemblyInfoFile" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.Cli" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.fxcop" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.msbuild" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.testing.coverlet" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.testing.nunit" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.testing.opencover" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.dotNet.testing.xunit2" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.IO.FileSystem" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.Testing.ReportGenerator" VersionOverride="6.0.0" />
-    <PackageReference Include="Fake.Tools.git" VersionOverride="6.0.0" />
+    <PackageReference Include="Fake.Core.environment" />
+    <PackageReference Include="Fake.Core.process" />
+    <PackageReference Include="Fake.Core.Target" />
+    <PackageReference Include="Fake.dotNet.AssemblyInfoFile" />
+    <PackageReference Include="Fake.dotNet.Cli" />
+    <PackageReference Include="Fake.dotNet.fxcop" />
+    <PackageReference Include="Fake.dotNet.msbuild" />
+    <PackageReference Include="Fake.dotNet.testing.coverlet" />
+    <PackageReference Include="Fake.dotNet.testing.nunit" />
+    <PackageReference Include="Fake.dotNet.testing.opencover" />
+    <PackageReference Include="Fake.dotNet.testing.xunit2" />
+    <PackageReference Include="Fake.IO.FileSystem" />
+    <PackageReference Include="Fake.Testing.ReportGenerator" />
+    <PackageReference Include="Fake.Tools.git" />
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="FuChu" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="NUnit" />

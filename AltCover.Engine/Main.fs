@@ -34,7 +34,7 @@ module internal Main =
     CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode.Value <- false // ddFlag
-    CoverageParameters.defer.Value <- false // ddflag
+    CoverageParameters.eager.Value <- false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
     CoverageParameters.configurationHash <- None
@@ -70,7 +70,7 @@ module internal Main =
     CoverageParameters.inplace.Value <- false // ddFlag
     CoverageParameters.collect.Value <- false // ddFlag
     CoverageParameters.local.Value <- false // ddFlag
-    CoverageParameters.single <- false // more complicated
+    CoverageParameters.all <- false // more complicated
     CoverageParameters.coverstyle <- CoverStyle.All
     CoverageParameters.sourcelink.Value <- false // ddFlag
     CoverageParameters.coalesceBranches.Value <- false // ddFlag
@@ -266,14 +266,14 @@ module internal Main =
         (CommandLine.ddFlag "save" CoverageParameters.collect)
         (CommandLine.ddFlag "zipfile" CoverageParameters.zipReport)
         (CommandLine.ddFlag "methodpoint" CoverageParameters.methodPoint)
-        ("single",
+        ("all",
          (fun _ ->
-           if CoverageParameters.single then
+           if CoverageParameters.all then
              CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--single")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--all")
                :: CommandLine.error
            else
-             CoverageParameters.single <- true))
+             CoverageParameters.all <- true))
         ("linecover",
          (fun _ ->
            match CoverageParameters.coverstyle with
@@ -300,7 +300,7 @@ module internal Main =
            | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
         (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
         (CommandLine.ddFlag "sourcelink" CoverageParameters.sourcelink)
-        (CommandLine.ddFlag "defer" CoverageParameters.defer)
+        (CommandLine.ddFlag "eager" CoverageParameters.eager)
         (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
         ("showstatic:",
          (fun x ->
@@ -434,8 +434,13 @@ module internal Main =
         tidy (x)
 
     let internal matchType =
+      let os =
+        System.Environment.GetEnvironmentVariable("OS")
+        |> Option.ofObj
+        |> Option.defaultValue String.Empty
+
       Maybe
-        (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+        (os.Equals("Windows_NT", StringComparison.Ordinal))
         StringComparison.OrdinalIgnoreCase
         StringComparison.Ordinal
 
@@ -809,7 +814,7 @@ module internal Main =
           Assembly.GetExecutingAssembly().Location
           |> Path.GetDirectoryName
 
-        [ "../netcoreapp2.0"
+        [ "../net8.0"
           "../netstandard2.0"
           "../any" ]
         |> Seq.map (fun d ->

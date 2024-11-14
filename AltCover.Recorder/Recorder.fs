@@ -40,7 +40,7 @@ module Instance =
   /// This property's IL code is modified to store the actual value
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let Defer = false
+  let Eager = false
 
   /// <summary>
   /// Gets the style of the associated report
@@ -423,7 +423,7 @@ module Instance =
          || takeSample Sample moduleId hitPointId context)
       then
         let adder =
-          if Defer || supervision || (trace.IsConnected |> not) then
+          if !Eager || supervision || (trace.IsConnected |> not) then
             addVisit
           else
             traceVisit

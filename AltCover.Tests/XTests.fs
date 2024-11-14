@@ -647,7 +647,7 @@ module AltCoverXTests =
       { Primitive.PrepareOptions.Create() with
           BranchCover = true
           LineCover = true
-          SingleVisit = true
+          All = true
           CallContext = [| "0" |] }
 
     let scan =
@@ -662,7 +662,7 @@ module AltCoverXTests =
       { TypeSafe.PrepareOptions.Create() with
           BranchCover = TypeSafe.Flag true
           LineCover = TypeSafe.Flag true
-          SingleVisit = TypeSafe.Flag true
+          All = TypeSafe.Flag true
           CallContext = TypeSafe.Context [| TypeSafe.TimeItem 0uy |] }
       |> AltCover.PrepareOptions.TypeSafe
 
@@ -677,7 +677,7 @@ module AltCoverXTests =
                      "--reportFormat"
                      "OpenCover"
                      "--save"
-                     "--single"
+                     "--all"
                      "--linecover"
                      "--branchcover" ]
       @>
@@ -758,7 +758,7 @@ module AltCoverXTests =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net8.0")
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net9.0")
 
     let key0 =
       Path.Combine(here, "Build/SelfTest.snk")

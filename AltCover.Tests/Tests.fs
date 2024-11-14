@@ -72,7 +72,7 @@ module AltCoverTests =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net8.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net9.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
@@ -85,15 +85,22 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
 
 #if !NET472
+  let sample2path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net9.0/Sample2.dll")
+
   let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net8.0/Sample4.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
 
   let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net8.0/Sample8.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net9.0/Sample8.dll")
 
   let sample32path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net8.0/Sample32.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net9.0/Sample32.dll")
+
 #else
+  let sample2path =
+    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net472/Sample2.dll")
+
   let sample4path =
     Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
 
@@ -910,13 +917,8 @@ module AltCoverTests =
 
   [<Test>]
   let CanIdentifyExcludedFSharpMethods () =
-    let tracer = DU.returnFoo 23
-
-    let location =
-      tracer.GetType().Assembly.Location
-
     let sourceAssembly =
-      AssemblyResolver.ReadAssembly(location)
+      AssemblyResolver.ReadAssembly(sample2path)
 
     let direct =
       sourceAssembly.MainModule.Types
@@ -952,10 +954,24 @@ module AltCoverTests =
       |> Seq.sort
       |> Seq.toList
 
+    let flaky =
+      Seq.concat [ direct; indirect; indirect2 ]
+      |> Seq.collect _.Methods
+      |> Seq.filter _.Name.Equals(".ctor")
+      |> Seq.filter _.DeclaringType.Name.Equals("get_MyBar@44")
+      |> Seq.head
+
+    let skips =
+      [ ("System.Void N.DU/get_MyBar@44::.ctor(N.DU/MyUnion)", 0)
+        ("System.Void N.DU/MyUnion/get_MyBar@44::.ctor(N.DU/MyUnion)", 1) ] // filtered as algebraic
+      |> Map.ofSeq
+
+    let skip = skips |> Map.find flaky.FullName
+
     let expected =
-      [ ".ctor"
-        ".ctor"
-        "Invoke"
+      [ ".ctor" // "System.Void N.DU/MyClass::.ctor()";
+        ".ctor" // "System.Void N.DU/get_MyBar@44::.ctor(N.DU/MyUnion)"; <= flaky
+        "Invoke" //  "N.DU/MyUnion N.DU/get_MyBar@44::Invoke(Microsoft.FSharp.Core.Unit)";
         "as_bar"
         "bytes"
         "get_MyBar"
@@ -968,7 +984,11 @@ module AltCoverTests =
         "testMakeThing"
         "testMakeUnion" ]
 
-    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
+    Assert.That(
+      pass,
+      Is.EquivalentTo(expected |> List.skip skip),
+      sprintf "Got sequence %A" pass
+    )
 
   [<Test>]
   let CanIdentifyExcludedCSharpAutoProperties () =
@@ -1105,15 +1125,15 @@ module AltCoverTests =
 
   [<Test>]
   let CanSwitchSampling () =
-    let save = CoverageParameters.single
+    let save = CoverageParameters.all
 
     try
-      CoverageParameters.single <- true
+      CoverageParameters.all <- false
       test <@ CoverageParameters.sampling () = 1 @>
-      CoverageParameters.single <- false
+      CoverageParameters.all <- true
       test <@ CoverageParameters.sampling () = 0 @>
     finally
-      CoverageParameters.single <- save
+      CoverageParameters.all <- save
 
   [<Test>]
   let ValidateStaticExemption () =
@@ -3334,8 +3354,8 @@ module AltCoverTests =
         "GetOperandType"
         "#ctor"
         ".cctor"
-        "get_Defer"
-        "set_Defer"
+        "get_Eager"
+        "set_Eager"
         "get_Property"
         "set_Property"
         "get_ReportFile"
@@ -3389,8 +3409,8 @@ module AltCoverTests =
         "System.Int32 AltCover.Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)"
         "System.Void AltCover.Sample3.Class3.#ctor()"
         "System.Void AltCover.Sample3.Class3..cctor()"
-        "System.Boolean AltCover.Sample3.Class3+Class4.get_Defer()"
-        "System.Void AltCover.Sample3.Class3+Class4.set_Defer(System.Boolean)"
+        "System.Boolean AltCover.Sample3.Class3+Class4.get_Eager()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_Eager(System.Boolean)"
         "AltCover.Sample3.Class1 AltCover.Sample3.Class3+Class4.get_Property()"
         "System.Void AltCover.Sample3.Class3+Class4.set_Property(AltCover.Sample3.Class1)"
         "System.String AltCover.Sample3.Class3+Class4.get_ReportFile()"
@@ -3856,7 +3876,7 @@ module AltCoverTests =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net8.0/Sample4.dll")
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
 
       "Main"
       |> (Regex
@@ -4166,7 +4186,7 @@ module AltCoverTests =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("net8.0", "netstandard2.0")
+        .Replace("net9.0", "netstandard2.0")
 
     let path6 =
       sample4path
@@ -5898,9 +5918,9 @@ module AltCoverTests =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net8.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net9.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net8.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net9.0 not built")
 
     try
       "Program"
@@ -5979,7 +5999,7 @@ module AltCoverTests =
     let path =
       Path.Combine(
         SolutionDir(),
-        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.Engine.dll"
+        "_Binaries/AltCover/Debug+AnyCPU/net8.0/AltCover.Engine.dll"
       )
 
     Visitor.visit

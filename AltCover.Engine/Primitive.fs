@@ -82,13 +82,13 @@ module Primitive =
       Save: bool
       ZipFile: bool
       MethodPoint: bool
-      SingleVisit: bool
+      All: bool
       LineCover: bool
       BranchCover: bool
       CommandLine: String seq
       ExposeReturnCode: bool
       SourceLink: bool
-      Defer: bool
+      Eager: bool
       LocalSource: bool
       VisibleBranches: bool
       ShowStatic: string
@@ -121,13 +121,13 @@ module Primitive =
         Save = true
         ZipFile = false
         MethodPoint = false
-        SingleVisit = false
+        All = false
         LineCover = false
         BranchCover = false
         CommandLine = []
         ExposeReturnCode = true
         SourceLink = false
-        Defer = false
+        Eager = false
         LocalSource = false
         VisibleBranches = false
         ShowStatic = "-"

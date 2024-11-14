@@ -92,7 +92,10 @@ type AddAcceleratorCommand() =
 
     let sma =
       env
-      |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")
+      |> Seq.find (fun a ->
+        a
+          .GetName()
+          .Name.Equals("System.Management.Automation", StringComparison.Ordinal))
 
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")
@@ -119,10 +122,10 @@ type AddAcceleratorCommand() =
         finalmap
         |> Seq.filter (fun kv ->
           (((self.Accelerator.IsPresent
-             && kv.Key = "accelerators"
+             && kv.Key.Equals("accelerators", StringComparison.Ordinal)
              && kv.Value = acceleratorsType)
             || (self.XDocument.IsPresent
-                && kv.Key = "xdoc"
+                && kv.Key.Equals("xdoc", StringComparison.Ordinal)
                 && kv.Value = typeof<System.Xml.Linq.XDocument>))
            |> not))
         |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key kv.Value.FullName)
@@ -176,7 +179,10 @@ type GetAcceleratorCommand() =
 
     let sma =
       env
-      |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")
+      |> Seq.find (fun a ->
+        a
+          .GetName()
+          .Name.Equals("System.Management.Automation", StringComparison.Ordinal))
 
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")

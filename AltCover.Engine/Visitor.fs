@@ -267,6 +267,9 @@ module internal KeyStore =
 type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
+[<SuppressMessage("Gendarme.Rules.Smells",
+                  "AvoidLargeClassesRule",
+                  Justification = "More complex to dismantle")>]
 module internal CoverageParameters =
   let internal hash =
     System.Security.Cryptography.SHA256.Create()
@@ -303,22 +306,22 @@ module internal CoverageParameters =
   let internal coalesceBranches = ref false // ddFlag
   let internal local = ref false // ddFlag
 
-  let mutable internal single = false // more complicated
+  let mutable internal all = false // more complicated
 
   let internal sampling () =
-    (if single then
-       Sampling.Single
+    (if all then
+       Sampling.All
      else
-       Sampling.All)
+       Sampling.Single)
     |> int
 
   let internal sourcelink = ref false // ddFlag
-  let internal defer = ref false
+  let internal eager = ref false
   let internal trivia = ref false
   let internal portable = ref false
 
-  let internal deferOpCode () =
-    if defer.Value then
+  let internal eagerOpCode () =
+    if eager.Value then
       OpCodes.Ldc_I4_1
     else
       OpCodes.Ldc_I4_0
@@ -1725,18 +1728,24 @@ module internal Visitor =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1263::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1263::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1591-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1594-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1484@1484::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1487@1487::Invoke(AltCover.GoTo)",
+                            Justification = "Inlined library code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Visitor/I/finish@1266::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 ()

@@ -313,13 +313,13 @@ module TypeSafe =
       Save: Flag
       ZipFile: Flag
       MethodPoint: Flag
-      SingleVisit: Flag
+      All: Flag
       LineCover: Flag
       BranchCover: Flag
       CommandLine: CommandLine
       ExposeReturnCode: Flag
       SourceLink: Flag
-      Defer: Flag
+      Eager: Flag
       LocalSource: Flag
       VisibleBranches: Flag
       ShowStatic: StaticFormat
@@ -352,13 +352,13 @@ module TypeSafe =
         Save = Set
         ZipFile = Clear
         MethodPoint = Clear
-        SingleVisit = Clear
+        All = Clear
         LineCover = Clear
         BranchCover = Clear
         CommandLine = NoCommand
         ExposeReturnCode = Set
         SourceLink = Clear
-        Defer = Clear
+        Eager = Clear
         LocalSource = Clear
         VisibleBranches = Clear
         ShowStatic = StaticFormat.Default

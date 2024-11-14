@@ -82,8 +82,11 @@ type internal AsyncSupport =
 
     let wait =
       task.Methods
-      |> Seq.filter (fun f ->
-        f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
+      |> Seq.filter
+        _.FullName.Equals(
+          "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)",
+          StringComparison.Ordinal
+        )
       |> Seq.head
 
     let def2 =
@@ -95,7 +98,7 @@ type internal AsyncSupport =
 
     let runsynch =
       fsasync.Methods
-      |> Seq.filter (fun f -> f.Name = "RunSynchronously")
+      |> Seq.filter _.Name.Equals("RunSynchronously", StringComparison.Ordinal)
       |> Seq.head
 
     { TaskAssembly = def
@@ -395,8 +398,8 @@ module internal Instrument =
           ("get_Sample",
            (fun (w: ILProcessor) ->
              w.Create(OpCodes.Ldc_I4, CoverageParameters.sampling ())))
-          ("get_Defer",
-           (fun (w: ILProcessor) -> w.Create(CoverageParameters.deferOpCode ()))) ]
+          ("get_Eager",
+           (fun (w: ILProcessor) -> w.Create(CoverageParameters.eagerOpCode ()))) ]
         |> List.iter (fun (property, value) ->
           let pathGetterDef =
             definition.MainModule.GetTypes()
@@ -1479,6 +1482,6 @@ module internal Instrument =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Instrument/I/tag@243::Invoke(System.String)",
+                              "AltCover.Instrument/I/tag@246::Invoke(System.String)",
                             Justification = "Replace override not available")>]
 ()

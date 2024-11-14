@@ -65,6 +65,7 @@ module DriveApi =
       let prepare =
         AltCover.PrepareOptions.Primitive
           { Primitive.PrepareOptions.Create() with
+              All = true
               TypeFilter = [| "a"; "b" |] }
 
       // let t = prepare.GetType()
@@ -94,6 +95,7 @@ module DriveApi =
       let p2 =
         { Primitive.PrepareOptions.Create() with
             LocalSource = true
+            All = true
             CallContext = [| "[Fact]"; "0" |]
             AssemblyFilter = [| "xunit" |] }
 

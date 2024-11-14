@@ -168,9 +168,9 @@ namespace AltCover.Cake
     public virtual bool MethodPoint => false;
 
     ///<summary>
-    /// Corresponds to command line option `--single`
+    /// Corresponds to command line option `--all`
     ///</summary>
-    public virtual bool SingleVisit => false;
+    public virtual bool All => false;
 
     ///<summary>
     /// Corresponds to command line option `--linecover`
@@ -222,7 +222,7 @@ namespace AltCover.Cake
     [SuppressMessage("Microsoft.Design",
                      "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
                      Justification = "Means 'do not use'")]
-    public bool Defer => throw new NotImplementedException("Defer not used");
+    public bool Eager => throw new NotImplementedException("Eager not used");
 
     ///<summary>
     /// Corresponds to command line option `-l, --localSource`

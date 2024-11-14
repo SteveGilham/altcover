@@ -214,7 +214,7 @@ namespace AltCover.Local
     /// </summary>
     /// <param name="totals">The visited point counts if running under AltCover coverage</param>
     /// <returns>True if running under AltCover coverage</returns>
-    /// <remarks>Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.</remarks>
+    /// <remarks>Current implementation requires `dotnet test`, or other command-line testing with `--eager` NOT set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.</remarks>
     public static bool TryGetVisitTotals(out PointCount totals)
     {
       var counter = TypeInstance("Counter");

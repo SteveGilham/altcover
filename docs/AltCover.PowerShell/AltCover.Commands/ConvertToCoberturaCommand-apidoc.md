@@ -21,6 +21,7 @@ public class ConvertToCoberturaCommand : PSCmdlet
 | [ConvertToCoberturaCommand](ConvertToCoberturaCommand/ConvertToCoberturaCommand-apidoc)() | The default constructor. |
 | [InputFile](ConvertToCoberturaCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](ConvertToCoberturaCommand/OutputFile-apidoc) { get; set; } | Output as file path |
+| [Package](ConvertToCoberturaCommand/Package-apidoc) { get; set; } | Package source roots |
 | [XDocument](ConvertToCoberturaCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |
 | override [ProcessRecord](ConvertToCoberturaCommand/ProcessRecord-apidoc)() | Create transformed document |
 

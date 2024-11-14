@@ -1,18 +1,18 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="AltCover.Prepare"
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Engine.dll" />
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/net8.0/AltCover.Engine.dll" />
   <UsingTask TaskName="AltCover.Collect"
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Engine.dll" />
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/net8.0/AltCover.Engine.dll" />
 
   <ItemGroup>
     <CallContext Include="0" />
     <CallContext Include="[Fact]" />
     <AssemblyFilter Include="xunit" />
-    <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net8.0" />
-    <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net8.0/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
+    <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net9.0" />
+    <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net9.0/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
   </ItemGroup>
   <Target Name="MSBuildTest">
-    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj -f net8.0 /p:AltCoverTag=$(AltCoverTag)" />
+    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj -f net9.0 /p:AltCoverTag=$(AltCoverTag)" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
@@ -20,9 +20,10 @@
       LocalSource="true"
       Report="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
+      All="true"
       AssemblyFilter="@(AssemblyFilter)" />
-    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f net8.0 /p:AltCoverTag=$(AltCoverTag)" EnvironmentVariables="AltCoverTag=$(AltCoverTag)" />
+    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f net9.0 /p:AltCoverTag=$(AltCoverTag)" EnvironmentVariables="AltCoverTag=$(AltCoverTag)" />
     <AltCover.Collect
-      RecorderDirectory="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net8.0" />
+      RecorderDirectory="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/net9.0" />
   </Target>
 </Project>

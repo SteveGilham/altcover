@@ -118,7 +118,7 @@ namespace AltCoverFake.DotNet.Testing
 // ### Cobertura package roots
 // ```
     ///<summary>
-    /// Corresponds to a value after `-- ` on the command line
+    /// Corresponds to a cobertura package source root
     ///</summary>
     [<NoComparison>]
     type Package =
@@ -128,13 +128,13 @@ namespace AltCoverFake.DotNet.Testing
       | Package of System.String
       with
         ///<summary>
-        /// Returns the string to be used in the effective command line
+        /// Returns the string to be used as a package root
         ///</summary>
-        ///<returns>the string to be used in the effective command line</returns>
+        ///<returns>the string to be used as a package root</returns>
         member AsString : unit -> System.String
       end
     ///<summary>
-    /// Corresponds to the values after `-- ` on the command line
+    /// Corresponds to a collection of cobertura package source roots
     ///</summary>
     [<NoComparison>]
     type Packages =
@@ -148,9 +148,9 @@ namespace AltCoverFake.DotNet.Testing
       | NoPackage
       with
         ///<summary>
-        /// Returns the strings to be used in the effective command line
+        /// Returns the strings to be used to be used as package roots
         ///</summary>
-        ///<returns>the strings to be used in the effective command line</returns>
+        ///<returns>the strings to be used as package roots</returns>
         member AsStrings : unit -> seq<System.String>
       end
 // ```
@@ -570,7 +570,6 @@ namespace AltCoverFake.DotNet.Testing
 //The members correspond to the like-named command line options for `AltCover`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
 //* `CommandLine` being the material after a `-- `
-//* `SingleVisit` being the name for `--single`
 //
 // ```
   ///<summary>
@@ -672,9 +671,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         MethodPoint: Flag
         ///<summary>
-        /// Corresponds to command line option `--single`
+        /// Corresponds to command line option `--all`
         ///</summary>
-        SingleVisit: Flag
+        All: Flag
         ///<summary>
         /// Corresponds to command line option `--linecover`
         ///</summary>
@@ -696,9 +695,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SourceLink: Flag
         ///<summary>
-        /// Corresponds to command line option `--defer`
+        /// Corresponds to command line option `--eager`
         ///</summary>
-        Defer: Flag
+        Eager: Flag
         ///<summary>
         /// Corresponds to command line option `-l, --localSource`
         ///</summary>

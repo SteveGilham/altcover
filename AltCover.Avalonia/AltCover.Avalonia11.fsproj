@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <PackAsTool>True</PackAsTool>
@@ -28,10 +28,10 @@
     <AvaloniaResource Include="AltCover.App11.xaml">
       <LogicalName>AltCover.App.xaml</LogicalName>
     </AvaloniaResource>
-    
+
     <AvaloniaResource Include="AltCover.AboutBox.xaml">
       <LogicalName>AltCover.AboutBox.xaml</LogicalName>
-    </AvaloniaResource>    
+    </AvaloniaResource>
   </ItemGroup>
 
   <ItemGroup>

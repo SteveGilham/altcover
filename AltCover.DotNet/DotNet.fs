@@ -125,7 +125,7 @@ module DotNet =
     let internal toPrepareArgArgumentList (prepare: Abstract.IPrepareOptions) =
       [ (arg, "ZipFile", "true", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
         (arg, "MethodPoint", "true", prepare.MethodPoint) //="true|false"` - set "true" to record only the first point of each method
-        (arg, "Single", "true", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
+        (arg, "All", "true", prepare.All) //="true|false"` - set "true" to record every visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
         (arg, "BranchCover", "true", prepare.BranchCover) //="true|false"` - set "true" to record only branch coverage in OpenCover format
         (arg, "SourceLink", "true", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
@@ -145,7 +145,7 @@ module DotNet =
                       "AvoidMethodWithUnusedGenericTypeRule",
                       Justification = "It just be like that")>]
     let internal toCollectListArgArgumentList (collect: Abstract.ICollectOptions) =
-      [ fromList, "Packages", collect.Packages ] //=`"pipe `'|'` separated list of method name regexs"
+      [ fromList, "Packages", collect.Packages ] //=`"pipe `'|'` separated list of source root paths"
 
     let internal toSharedFromValueArgumentList
       (verbosity: System.Diagnostics.TraceLevel)
@@ -240,14 +240,15 @@ module DotNet =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
-                            Target = "<StartupCode$AltCover-DotNet>.$DotNet.#.cctor()",
+                            Target = "AltCover.DotNet.#.cctor()",
                             Justification = "Compiler generated")>]
 #else
-[<assembly: SuppressMessage("Microsoft.Performance",
-                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
-                            Scope = "member",
-                            Target =
-                              "<StartupCode$AltCover-Fake-DotNet-Testing-AltCover>.$DotNet.#.cctor()",
-                            Justification = "Compiler generated")>]
+//[<assembly: SuppressMessage("Microsoft.Performance",
+//                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+//                            Scope = "member",
+//                            Target =
+//                              "<StartupCode$AltCover-Fake-DotNet-Testing-AltCover>.$DotNet.#.cctor()",
+//                            Justification = "Compiler generated")>]
+
 #endif
 ()

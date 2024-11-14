@@ -53,10 +53,10 @@ namespace AltCover.Recorder
     /// Gets whether to defer output until process exit
     /// This property's IL code is modified to store the actual value
     /// </summary>
-    public static bool Defer
+    public static bool Eager
     {
       [MethodImpl(MethodImplOptions.NoInlining)]
-      get { return false; }
+      get { return true; }
     }
 
     /// <summary>
@@ -688,7 +688,7 @@ namespace AltCover.Recorder
           (Sample == Sampling.All
            || TakeSample(Sample, moduleId, hitPointId, context))
         {
-          if (Defer || supervision || !Trace.IsConnected)
+          if (!Eager || supervision || !Trace.IsConnected)
           {
             AddVisit(moduleId, hitPointId, context);
           }

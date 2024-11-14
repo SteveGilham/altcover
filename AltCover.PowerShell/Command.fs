@@ -519,7 +519,7 @@ type InvokeAltCoverCommand() =
               Mandatory = false,
               ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val Single: SwitchParameter = SwitchParameter(false) with get, set
+  member val All: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
   /// <para type="description">Do not record branch coverage.  Is not compatible with the -ReportFormat "ncover" option. Incompatible with `-BranchCover`.</para>
@@ -572,13 +572,13 @@ type InvokeAltCoverCommand() =
   member val SourceLink: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">Defers writing runner-mode coverage data until process exit.</para>
+  /// <para type="description">Write runner-mode coverage data immediately.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument",
               Mandatory = false,
               ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val Defer: SwitchParameter = SwitchParameter(false) with get, set
+  member val Eager: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
   /// <para type="description">Don't instrument code for which the source file is not present.</para>
@@ -726,13 +726,13 @@ type InvokeAltCoverCommand() =
         Save = self.Save.IsPresent
         ZipFile = self.ZipFile.IsPresent
         MethodPoint = self.MethodPoint.IsPresent
-        SingleVisit = self.Single.IsPresent
+        All = self.All.IsPresent
         LineCover = self.LineCover.IsPresent
         BranchCover = self.BranchCover.IsPresent
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
         SourceLink = self.SourceLink.IsPresent
-        Defer = self.Defer.IsPresent
+        Eager = self.Eager.IsPresent
         LocalSource = self.LocalSource.IsPresent
         VisibleBranches = self.VisibleBranches.IsPresent
         ShowStatic = showStatic.[self.ShowStatic |> int]

@@ -115,13 +115,13 @@ module Options =
     member val Save = true with get, set
     member val ZipFile = false with get, set
     member val MethodPoint = false with get, set
-    member val SingleVisit = false with get, set
+    member val All = false with get, set
     member val LineCover = false with get, set
     member val BranchCover = false with get, set
     member val CommandLine = Seq.empty<String> with get, set
     member val ExposeReturnCode = true with get, set
     member val SourceLink = false with get, set
-    member val Defer = false with get, set
+    member val Eager = false with get, set
     member val LocalSource = false with get, set
     member val VisibleBranches = false with get, set
     member val ShowStatic = "-" with get, set
@@ -175,7 +175,7 @@ module Options =
       member self.Save = self.Save
       member self.ZipFile = self.ZipFile
       member self.MethodPoint = self.MethodPoint
-      member self.SingleVisit = self.SingleVisit
+      member self.All = self.All
       member self.LineCover = self.LineCover
       member self.BranchCover = self.BranchCover
       member self.CommandLine = self.CommandLine
@@ -184,7 +184,7 @@ module Options =
         self.ExposeReturnCode
 
       member self.SourceLink = self.SourceLink
-      member self.Defer = self.Defer
+      member self.Eager = self.Eager
       member self.LocalSource = self.LocalSource
 
       member self.VisibleBranches =

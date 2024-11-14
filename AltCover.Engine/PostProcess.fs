@@ -515,4 +515,40 @@ module internal PostProcess =
                             Target =
                               "AltCover.PostProcess/Pipe #2 stage #1 at line 330@331-1::Invoke(AltCover.XmlElementAbstraction)",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.XmlElementAbstraction/Pipe #1 stage #2 at line 55@55::Invoke(System.Xml.XmlElement)",
+                            Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.XmlElementAbstraction/Pipe #2 stage #1 at line 59@59::Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.XmlElementAbstraction/get_Attributes@94::Invoke(System.Xml.XmlAttribute)",
+                            Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.XmlElementAbstraction/get_Attributes@97-1::Invoke(System.Xml.Linq.XAttribute)",
+                            Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.XmlAbstraction/Pipe #1 stage #2 at line 127@127::Invoke(System.Xml.XmlElement)",
+                            Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Naming",
+                            "UseCorrectCasingRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.XmlAbstraction/Pipe #2 stage #1 at line 131@131::Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Compiler generated")>]
 ()

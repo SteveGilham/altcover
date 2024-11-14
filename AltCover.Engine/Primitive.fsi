@@ -101,7 +101,6 @@ namespace AltCoverFake.DotNet.Testing
 //The members correspond to the like-named command line options for `AltCover`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
 //* `CommandLine` being the material after a `-- `
-//* `SingleVisit` being the name for `--single`
 //
 // ```
   ///<summary>
@@ -203,9 +202,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         MethodPoint: bool
         ///<summary>
-        /// Corresponds to command line option `--single`
+        /// Corresponds to command line option `--all`
         ///</summary>
-        SingleVisit: bool
+        All: bool
         ///<summary>
         /// Corresponds to command line option `--linecover`
         ///</summary>
@@ -227,9 +226,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SourceLink: bool
         ///<summary>
-        /// Corresponds to command line option `--defer`
+        /// Corresponds to command line option `--eager`
         ///</summary>
-        Defer: bool
+        Eager: bool
         ///<summary>
         /// Corresponds to command line option `-l, --localSource`
         ///</summary>

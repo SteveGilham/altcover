@@ -106,7 +106,6 @@ module Abstract =
 //The members correspond to the like-named command line options for `AltCover`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
 //* `CommandLine` being the material after a `-- `
-//* `SingleVisit` being the name for `--single`
 //
 // ```
   ///<summary>
@@ -218,9 +217,9 @@ module Abstract =
     ///</summary>
     abstract member MethodPoint : bool with get
     ///<summary>
-    /// Corresponds to command line option `--single`
+    /// Corresponds to command line option `--all`
     ///</summary>
-    abstract member SingleVisit : bool with get
+    abstract member All : bool with get
     ///<summary>
     /// Corresponds to command line option `--linecover`
     ///</summary>
@@ -242,9 +241,9 @@ module Abstract =
     ///</summary>
     abstract member SourceLink : bool with get
     ///<summary>
-    /// Corresponds to command line option `--defer`
+    /// Corresponds to command line option `--eager`
     ///</summary>
-    abstract member Defer : bool with get
+    abstract member Eager : bool with get
     ///<summary>
     /// Corresponds to command line option `-l, --localSource`
     ///</summary>

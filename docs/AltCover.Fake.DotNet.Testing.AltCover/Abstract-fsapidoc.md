@@ -34,6 +34,7 @@ The members correspond to the like-named command line options for `AltCover Runn
     abstract member LcovReport : String with get
     abstract member Threshold : String with get
     abstract member Cobertura : String with get
+    abstract member Packages : IEnumerable<String> with get
     abstract member OutputFile : String with get
     abstract member CommandLine : IEnumerable<String> with get
     abstract member ExposeReturnCode : bool with get

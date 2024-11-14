@@ -19,6 +19,7 @@ public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEq
 | [ExposeReturnCode](AltCover.CollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [LcovReport](AltCover.CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](AltCover.CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [Packages](AltCover.CollectOptions/Packages-apidoc) { get; } | Corresponds to command line option `-p, --package=VALUE` |
 | [RecorderDirectory](AltCover.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](AltCover.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](AltCover.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |

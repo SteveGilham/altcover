@@ -18,6 +18,7 @@ public sealed class CollectOptions : IEquatable<CollectOptions>, IStructuralEqua
 | [ExposeReturnCode](Primitive.CollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [LcovReport](Primitive.CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](Primitive.CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [Packages](Primitive.CollectOptions/Packages-apidoc) { get; } | Corresponds to command line option `-p, --package=VALUE` |
 | [RecorderDirectory](Primitive.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](Primitive.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](Primitive.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |

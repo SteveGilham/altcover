@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <TargetFrameworks>net9.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GendarmeVersion>2024.6.28.12460</GendarmeVersion>
     <GendarmeToolDir>..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
@@ -9,7 +9,6 @@
     <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
     <OtherFlags />
     <SignAssembly>false</SignAssembly>
-    <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277</NoWarn>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -26,19 +25,7 @@
     <Reference Include="Gendarme.Rules.Maintainability">
       <HintPath>$(GendarmeToolDir)Gendarme.Rules.Maintainability.dll</HintPath>
     </Reference>
-    <PackageReference Include="Mono.Cecil" Condition="'$(LocalCecil)' != 'true'" />
-    <Reference Include="Mono.Cecil" Condition="'$(LocalCecil)' == 'true'">
-      <HintPath>$(SolutionDir)\ThirdParty\cecil\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb" Condition="'$(LocalCecil)' == 'true'">
-      <HintPath>$(SolutionDir)\ThirdParty\cecil\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb" Condition="'$(LocalCecil)' == 'true'">
-      <HintPath>$(SolutionDir)\ThirdParty\cecil\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks" Condition="'$(LocalCecil)' == 'true'">
-      <HintPath>$(SolutionDir)\ThirdParty\cecil\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
+    <PackageReference Include="mono.cecil" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>

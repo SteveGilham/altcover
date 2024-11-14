@@ -5,3 +5,12 @@ C:\Users\email\Documents\Github\altcover\_Binaries\AltCover\Release+AnyCPU\net47
 Run and collect in one
 
 C:\Users\email\Documents\Github\altcover\_Binaries\AltCover\Release+AnyCPU\net472\AltCover.exe Runner -r "C:\Users\email\Documents\Github\altcover\_Binaries\AltCover.Tests\Debug+AnyCPU\net472\./__UnitTestWithAltCoverRunner" -x "C:\Users\email\Documents\Github\altcover\packages\nunit.consolerunner\3.17.0\tools\nunit3-console.exe" -o "C:\Users\email\Documents\Github\altcover\_Reports\UnitTestWithAltCoverRunner.xml" -- --noheader --work=. --result=./_Reports/UnitTestWithAltCoverRunnerReport.xml "C:\Users\email\Documents\Github\altcover\_Binaries\AltCover.Tests\Debug+AnyCPU\net472\__UnitTestWithAltCoverRunner\AltCover.Tests.dll"
+
+Covering instrument.fs line 574
+ 	AltCover.Tests.dll!Tests.AltCoverTests2.UpdateStrongReferencesShouldTrackReferencesEvenFakes() Line 2828
+
+
+  triggers for 
+  +		r	{nunit.framework, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb}	Mono.Cecil.AssemblyNameReference
+
+  from {Sample2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a}

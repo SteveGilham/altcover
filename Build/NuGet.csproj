@@ -17,7 +17,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ILRepack"/>
+    <PackageReference Include="ILRepack">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Mono.Options" />
     <PackageReference Include="NUnit.ConsoleRunner" />
     <PackageReference Include="OpenCover" />
@@ -29,6 +32,6 @@
     <PackageReference Include="AltCode.Dixon" />
     <PackageReference Include="altcode.gendarme" />
     <PackageReference Include="XmlDoc2CmdletDoc" />
-    <PackageReference Include="System.ValueTuple" VersionOverride="4.0.0-rc3-24212-01"/>
+    <PackageReference Include="System.ValueTuple" VersionOverride="4.0.0-rc3-24212-01" />
   </ItemGroup>
 </Project>
