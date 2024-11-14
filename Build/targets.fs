@@ -4462,7 +4462,9 @@ module Targets =
         Actions.RunDotnet
           (dotnetOptions >> dotnetOptionsWithRollForwards)
           "xmldocmd"
-          ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.1/"
+          ("./_Binaries/"
+           + n
+           + "/Release+AnyCPU/netstandard2.1/"
            + n
            + ".dll ./_Documentation/"
            + n
@@ -6007,6 +6009,11 @@ module Targets =
         let driveproj =
           XDocument.Load "./Build/DriveApi.fsproj"
 
+        let mutable fctarget = "6.1.3"
+        let mutable fdcli = "6.1.3"
+        let mutable unq = "7.0.0"
+        let mutable sci = "9.0.0"
+
         // refine as required
         driveproj.Descendants(XName.Get("PackageReference"))
         |> Seq.iter (fun x ->
@@ -6017,7 +6024,14 @@ module Targets =
             x.Attribute(XName.Get "VersionOverride")
 
           if i.StartsWith "AltCover." then
-            ver.Value <- Version)
+            ver.Value <- Version
+
+          match i with
+          | "Fake.Core.Target" -> fctarget <- ver.Value
+          | "Fake.DotNet.Cli" -> fdcli <- ver.Value
+          | "Unquote" -> unq <- ver.Value
+          | "System.Collections.Immutable" -> sci <- ver.Value
+          | _ -> ())
 
         driveproj.Save "./_ApiUse/DriveApi.fsproj"
 
@@ -6061,7 +6075,11 @@ module Targets =
             driver,
             Version,
             Path.getFullName "./_Packaging.api",
-            Path.getFullName "./_Packaging.fake"
+            Path.getFullName "./_Packaging.fake",
+            fctarget,
+            fdcli,
+            unq,
+            sci
           )
         )
 
