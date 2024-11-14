@@ -6009,17 +6009,23 @@ module Targets =
         let driveproj =
           XDocument.Load "./Build/DriveApi.fsproj"
 
+        let dd =
+          toolPackages
+          |> Map.toSeq
+          |> Seq.map (fun (k, v) -> k.ToLowerInvariant(), v)
+          |> Map.ofSeq
+
         let mutable fctarget =
-          toolPackages.Item "Fake.Core.Target"
+          dd.Item ("Fake.Core.Target".ToLowerInvariant())
 
         let mutable fdcli =
-          toolPackages.Item "Fake.DotNet.Cli"
+          dd.Item ("Fake.DotNet.Cli".ToLowerInvariant())
 
         let mutable unq =
-          toolPackages.Item "Unquote"
+          dd.Item ("Unquote".ToLowerInvariant())
 
         let mutable sci =
-          toolPackages.Item "System.Collections.Immutable"
+          dd.Item ("System.Collections.Immutable".ToLowerInvariant())
 
         // refine as required
         driveproj.Descendants(XName.Get("PackageReference"))
