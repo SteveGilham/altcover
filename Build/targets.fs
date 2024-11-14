@@ -6009,10 +6009,17 @@ module Targets =
         let driveproj =
           XDocument.Load "./Build/DriveApi.fsproj"
 
-        let mutable fctarget = "6.1.3"
-        let mutable fdcli = "6.1.3"
-        let mutable unq = "7.0.0"
-        let mutable sci = "9.0.0"
+        let mutable fctarget =
+          toolPackages.Item "Fake.Core.Target"
+
+        let mutable fdcli =
+          toolPackages.Item "Fake.DotNet.Cli"
+
+        let mutable unq =
+          toolPackages.Item "Unquote"
+
+        let mutable sci =
+          toolPackages.Item "System.Collections.Immutable"
 
         // refine as required
         driveproj.Descendants(XName.Get("PackageReference"))
@@ -6026,11 +6033,14 @@ module Targets =
           if i.StartsWith "AltCover." then
             ver.Value <- Version
 
+          let k =
+            Option.ofObj ver |> Option.map _.Value
+
           match i with
-          | "Fake.Core.Target" -> fctarget <- ver.Value
-          | "Fake.DotNet.Cli" -> fdcli <- ver.Value
-          | "Unquote" -> unq <- ver.Value
-          | "System.Collections.Immutable" -> sci <- ver.Value
+          | "Fake.Core.Target" -> fctarget <- Option.defaultValue fctarget k
+          | "Fake.DotNet.Cli" -> fdcli <- Option.defaultValue fdcli k
+          | "Unquote" -> unq <- Option.defaultValue unq k
+          | "System.Collections.Immutable" -> sci <- Option.defaultValue sci k
           | _ -> ())
 
         driveproj.Save "./_ApiUse/DriveApi.fsproj"
