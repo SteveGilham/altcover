@@ -1,9 +1,9 @@
-# PrepareOptions.SingleVisit property
+# PrepareOptions.All property
 
-Corresponds to command line option `--single`
+Corresponds to command line option `--all`
 
 ```csharp
-public virtual bool SingleVisit { get; }
+public virtual bool All { get; }
 ```
 
 ## See Also

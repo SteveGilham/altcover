@@ -1,9 +1,9 @@
-# Abstract.IPrepareOptions.SingleVisit property
+# Abstract.IPrepareOptions.All property
 
-Corresponds to command line option `--single`
+Corresponds to command line option `--all`
 
 ```csharp
-public bool SingleVisit { get; }
+public bool All { get; }
 ```
 
 ## See Also

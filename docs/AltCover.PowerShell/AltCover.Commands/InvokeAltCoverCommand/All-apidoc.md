@@ -1,9 +1,9 @@
-# InvokeAltCoverCommand.Single property
+# InvokeAltCoverCommand.All property
 
 only record the first hit at any location (or first for that context if `-CallContext` is operating).
 
 ```csharp
-public SwitchParameter Single { get; set; }
+public SwitchParameter All { get; set; }
 ```
 
 ## See Also

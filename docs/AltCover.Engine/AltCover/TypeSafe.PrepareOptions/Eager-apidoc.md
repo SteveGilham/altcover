@@ -1,9 +1,9 @@
-# TypeSafe.PrepareOptions.Defer property
+# TypeSafe.PrepareOptions.Eager property
 
-Corresponds to command line option `--defer`
+Corresponds to command line option `--eager`
 
 ```csharp
-public Flag Defer { get; }
+public Flag Eager { get; }
 ```
 
 ## See Also

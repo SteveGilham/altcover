@@ -1,9 +1,9 @@
-# TypeSafe.PrepareOptions.SingleVisit property
+# TypeSafe.PrepareOptions.All property
 
-Corresponds to command line option `--single`
+Corresponds to command line option `--all`
 
 ```csharp
-public Flag SingleVisit { get; }
+public Flag All { get; }
 ```
 
 ## See Also

@@ -1,9 +1,9 @@
-# InvokeAltCoverCommand.Defer property
+# InvokeAltCoverCommand.Eager property
 
-Defers writing runner-mode coverage data until process exit.
+Write runner-mode coverage data immediately.
 
 ```csharp
-public SwitchParameter Defer { get; set; }
+public SwitchParameter Eager { get; set; }
 ```
 
 ## See Also

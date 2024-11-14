@@ -1,9 +1,9 @@
-# PrepareOptions.Defer property
+# PrepareOptions.Eager property
 
 Gets whether to defer coverage reporting (overridden by the MSBuild integration)
 
 ```csharp
-public bool Defer { get; }
+public bool Eager { get; }
 ```
 
 ## See Also

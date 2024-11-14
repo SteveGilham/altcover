@@ -1,9 +1,9 @@
-# Prepare.SingleVisit property
+# Prepare.Eager property
 
-Corresponds to command line option `--single`
+Corresponds to command line option `--eager`
 
 ```csharp
-public bool SingleVisit { get; set; }
+public bool Eager { get; set; }
 ```
 
 ## See Also

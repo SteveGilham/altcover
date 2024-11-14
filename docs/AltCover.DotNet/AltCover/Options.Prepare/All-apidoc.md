@@ -1,7 +1,7 @@
-# Options.Prepare.SingleVisit property
+# Options.Prepare.All property
 
 ```csharp
-public bool SingleVisit { get; set; }
+public bool All { get; set; }
 ```
 
 ## See Also

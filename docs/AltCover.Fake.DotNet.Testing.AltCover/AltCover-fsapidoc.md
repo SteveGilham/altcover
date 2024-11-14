@@ -101,7 +101,6 @@ The property members corresponding to the command line options read the values f
 The members correspond to the like-named command line options for `AltCover`, except
 * `ExposeReturnCode` being the converse of the `dropReturnCode` option
 * `CommandLine` being the material after a `-- `
-* `SingleVisit` being the name for `--single`
 
 ```
     [<NoComparison>]
@@ -134,13 +133,13 @@ The members correspond to the like-named command line options for `AltCover`, ex
         member Save : bool
         member ZipFile : bool
         member MethodPoint : bool
-        member SingleVisit : bool
+        member All : bool
         member LineCover : bool
         member BranchCover : bool
         member CommandLine : seq<System.String>
         member ExposeReturnCode : bool
         member SourceLink : bool
-        member Defer : bool
+        member Eager : bool
         member LocalSource : bool
         member VisibleBranches : bool
         member ShowStatic : string

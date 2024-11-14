@@ -12,6 +12,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | --- | --- |
 | [PrepareOptions](TypeSafe.PrepareOptions/PrepareOptions-apidoc)(…) |  |
 | static [Create](TypeSafe.PrepareOptions/Create-apidoc)() | returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set` |
+| [All](TypeSafe.PrepareOptions/All-apidoc) { get; } | Corresponds to command line option `--all` |
 | [AssemblyExcludeFilter](TypeSafe.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
 | [AssemblyFilter](TypeSafe.PrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](TypeSafe.PrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
@@ -19,8 +20,8 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [BranchCover](TypeSafe.PrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
 | [CallContext](TypeSafe.PrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](TypeSafe.PrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
-| [Defer](TypeSafe.PrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
 | [Dependencies](TypeSafe.PrepareOptions/Dependencies-apidoc) { get; } | Corresponds to command line option `-d, --dependency=VALUE` |
+| [Eager](TypeSafe.PrepareOptions/Eager-apidoc) { get; } | Corresponds to command line option `--eager` |
 | [ExposeReturnCode](TypeSafe.PrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](TypeSafe.PrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](TypeSafe.PrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
@@ -40,7 +41,6 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [Save](TypeSafe.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](TypeSafe.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](TypeSafe.PrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
-| [SingleVisit](TypeSafe.PrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
 | [SourceLink](TypeSafe.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](TypeSafe.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](TypeSafe.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |

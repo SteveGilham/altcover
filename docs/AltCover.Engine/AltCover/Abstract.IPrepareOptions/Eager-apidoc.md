@@ -1,9 +1,9 @@
-# Abstract.IPrepareOptions.Defer property
+# Abstract.IPrepareOptions.Eager property
 
-Corresponds to command line option `--defer`
+Corresponds to command line option `--eager`
 
 ```csharp
-public bool Defer { get; }
+public bool Eager { get; }
 ```
 
 ## See Also

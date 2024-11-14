@@ -1,7 +1,7 @@
-# Options.Prepare.Defer property
+# Options.Prepare.Eager property
 
 ```csharp
-public bool Defer { get; set; }
+public bool Eager { get; set; }
 ```
 
 ## See Also

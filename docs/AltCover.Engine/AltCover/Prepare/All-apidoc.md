@@ -1,9 +1,9 @@
-# Prepare.Defer property
+# Prepare.All property
 
-Corresponds to command line option `--defer`
+Corresponds to command line option `--all`
 
 ```csharp
-public bool Defer { get; set; }
+public bool All { get; set; }
 ```
 
 ## See Also
