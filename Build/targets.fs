@@ -8107,7 +8107,7 @@ module Targets =
     _Target "BuildMonoSamples" BuildMonoSamples
     _Target "BuildSample31" BuildSample31
     _Target "Analysis" ignore
-    _Target "Lint" Lint
+    _Target "Lint" (if Environment.isWindows then Lint else ignore)
     _Target "Gendarme" Gendarme
     _Target "FxCop" FxCop
     _Target "UnitTest" UnitTest

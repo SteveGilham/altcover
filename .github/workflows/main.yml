@@ -66,8 +66,6 @@ jobs:
         dotnet-version: '9.0.100'
     - name: Install mono 
       run: sudo apt-get update && sudo apt-get install -y mono-devel
-    - name: Install MSBuild
-      run: sudo apt-get update && sudo apt-get install -y msbuild
     - name: Tools
       run: dotnet tool restore
     - name: Setup
