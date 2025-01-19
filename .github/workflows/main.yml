@@ -57,6 +57,8 @@ jobs:
             ./**/dotnettest.*.txt
   linux:
     runs-on: ubuntu-latest
+    env:
+      MONO: true
     steps:
     - uses: actions/checkout@v4
       with:
