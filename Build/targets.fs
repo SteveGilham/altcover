@@ -5813,7 +5813,7 @@ module Targets =
                   "AltCoverTag", "MSBuildTest_"
                   "AltCoverPath", unpack.Replace('\\', '/')
                   "DebugSymbols", "True"
-                  "Fake2738Workround", "True" ] 
+                  "Fake2738Workround", "True" ]
                 @ tmp.MSBuildParams.Properties })
         "Sample4LongForm.fsproj")
 
@@ -8130,7 +8130,14 @@ module Targets =
     _Target "BuildMonoSamples" BuildMonoSamples
     _Target "BuildSample31" BuildSample31
     _Target "Analysis" ignore
-    _Target "Lint" (if Environment.isWindows then Lint else ignore)
+
+    _Target
+      "Lint"
+      (if Environment.isWindows then
+         Lint
+       else
+         ignore)
+
     _Target "Gendarme" Gendarme
     _Target "FxCop" FxCop
     _Target "UnitTest" UnitTest
