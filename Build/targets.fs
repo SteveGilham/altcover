@@ -5815,7 +5815,7 @@ module Targets =
                   "DebugSymbols", "True"
                   "Fake2738Workround", "True" ] 
                 @ tmp.MSBuildParams.Properties })
-        "./Samples/Sample4/Sample4LongForm.fsproj")
+        "Sample4LongForm.fsproj")
 
 
   let cake5plusTest =
