@@ -57,8 +57,8 @@ jobs:
             ./**/dotnettest.*.txt
   linux:
     runs-on: ubuntu-latest
-    env:
-      MONO: /usr/bin/mono
+    #  env:
+    #   MONO: /usr/bin/mono
     steps:
     - uses: actions/checkout@v4
       with:
@@ -66,6 +66,8 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.100'
+    - name: Install mono 
+      run: sudo apt-get update && sudo apt-get install -y mono-devel
     - name: Tools
       run: dotnet tool restore
     - name: Setup
