@@ -870,8 +870,6 @@ module AltCoverXTests =
           "xunit.assert.dll"
           "xunit.core.dll"
           "xunit.execution.dotnet.dll"
-          //"xunit.runner.reporters.netcoreapp10.dll"
-          //"xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.testadapter.dll" ]
 
       let isWindows =
