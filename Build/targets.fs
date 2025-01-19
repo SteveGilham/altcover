@@ -5779,21 +5779,44 @@ module Targets =
           Path.GetDirectoryName test
         | _ -> Path.getFullName "_Packaging/Unpack/tools/net472"
 
+      // MSBuild.build
+      //   (fun p ->
+      //     { p with
+      //         Verbosity = Some MSBuildVerbosity.Minimal
+      //         ConsoleLogParameters = []
+      //         DistributedLoggers = None
+      //         DisableInternalBinLog = true
+      //         Properties =
+      //           [ "Configuration", "Debug"
+      //             "MSBuildTest", "true"
+      //             "AltCoverTag", "MSBuildTest_"
+      //             "AltCoverPath", unpack.Replace('\\', '/')
+      //             "DebugSymbols", "True"
+      //             "Fake2738Workround", "True" ] })
+      //   "./Samples/Sample4/Sample4LongForm.fsproj")
+
       DotNet.msbuild
-        (fun p ->
-          { p with
-              Verbosity = Some MSBuildVerbosity.Minimal
-              ConsoleLogParameters = []
-              DistributedLoggers = None
-              DisableInternalBinLog = true
-              Properties =
+        (fun opt ->
+          let tmp =
+            opt.WithCommon(fun o' ->
+              { dotnetOptions o' with
+                  WorkingDirectory = sample })
+
+          { tmp with
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.ConsoleLogParameters = []
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DistributedLoggers = None
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.DisableInternalBinLog =
+                true
+              Fake.DotNet.DotNet.MSBuildOptions.MSBuildParams.Properties =
                 [ "Configuration", "Debug"
                   "MSBuildTest", "true"
                   "AltCoverTag", "MSBuildTest_"
                   "AltCoverPath", unpack.Replace('\\', '/')
                   "DebugSymbols", "True"
-                  "Fake2738Workround", "True" ] })
+                  "Fake2738Workround", "True" ] 
+                @ tmp.MSBuildParams.Properties })
         "./Samples/Sample4/Sample4LongForm.fsproj")
+
 
   let cake5plusTest =
     (fun () ->
