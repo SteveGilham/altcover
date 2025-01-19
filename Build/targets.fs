@@ -5779,7 +5779,7 @@ module Targets =
           Path.GetDirectoryName test
         | _ -> Path.getFullName "_Packaging/Unpack/tools/net472"
 
-      MSBuild.build
+      DotNet.msbuild
         (fun p ->
           { p with
               Verbosity = Some MSBuildVerbosity.Minimal
