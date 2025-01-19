@@ -57,11 +57,7 @@ module internal XmlUtilities =
 
   let internal discoverFormat (xmlDocument: XDocument) =
     let format =
-      if
-        xmlDocument
-          .Descendants(XName.Get "CoverageSession")
-          .Any()
-      then
+      if xmlDocument.Descendants(XName.Get "CoverageSession").Any() then
         AltCover.ReportFormat.OpenCover
       else
         AltCover.ReportFormat.NCover

@@ -250,9 +250,7 @@ module internal PostProcess =
         fillTrackedVisits document counts.[Track.Exit] "exit"
 
       let scoreToString raw =
-        (sprintf "%.2f" raw)
-          .TrimEnd([| '0' |])
-          .TrimEnd([| '.' |])
+        (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
 
       let stringToScore (node: XmlElementAbstraction) name =
         node.GetAttribute(name).InvariantParseDouble()
@@ -513,7 +511,7 @@ module internal PostProcess =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.PostProcess/Pipe #2 stage #1 at line 330@331-1::Invoke(AltCover.XmlElementAbstraction)",
+                              "AltCover.PostProcess/Pipe #2 stage #1 at line 328@329-1::Invoke(AltCover.XmlElementAbstraction)",
                             Justification = "Compiler generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",

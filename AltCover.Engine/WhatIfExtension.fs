@@ -7,9 +7,7 @@ module PrepareExtension =
   [<Extension>]
   let WhatIf (prepare: Abstract.IPrepareOptions) : AltCover.ValidatedCommandLine =
     { Command = Args.prepare prepare
-      Errors =
-        (AltCover.PrepareOptions.Abstract prepare)
-          .Validate() }
+      Errors = (AltCover.PrepareOptions.Abstract prepare).Validate() }
 
 module CollectExtension =
   [<Extension>]
@@ -18,9 +16,7 @@ module CollectExtension =
     afterPreparation
     : AltCover.ValidatedCommandLine =
     { Command = Args.collect collect
-      Errors =
-        (AltCover.CollectOptions.Abstract collect)
-          .Validate(afterPreparation) }
+      Errors = (AltCover.CollectOptions.Abstract collect).Validate(afterPreparation) }
 
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "AvoidSpeculativeGeneralityRule",

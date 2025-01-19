@@ -444,8 +444,7 @@ module AltCoverTests =
     (unique: string)
     =
     let constructor =
-      typeof<'T>
-        .GetConstructor([| typeof<System.String> |])
+      typeof<'T>.GetConstructor([| typeof<System.String> |])
 
     let pitcher =
       fun _ _ _ _ ->
@@ -465,8 +464,7 @@ module AltCoverTests =
     ((unique: string), (called: bool array))
     =
     let constructor =
-      typeof<'T>
-        .GetConstructor([| typeof<System.String> |])
+      typeof<'T>.GetConstructor([| typeof<System.String> |])
 
     let pitcher =
       fun _ _ _ _ ->
@@ -768,9 +766,7 @@ module AltCoverTests =
       Counter.startTime <- epoch
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -780,11 +776,7 @@ module AltCoverTests =
       worker.Position <- 0L
       let before = XmlDocument()
 
-      before.Load(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
-      )
+      before.Load(Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
 
       updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
       worker.Position <- 0L
@@ -817,9 +809,7 @@ module AltCoverTests =
       Counter.startTime <- epoch
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -829,11 +819,7 @@ module AltCoverTests =
       worker.Position <- 0L
       let before = XmlDocument()
 
-      before.Load(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
-      )
+      before.Load(Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
 
       updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
       worker.Position <- 0L
@@ -866,9 +852,7 @@ module AltCoverTests =
       Counter.measureTime <- epoch
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -878,11 +862,7 @@ module AltCoverTests =
       worker.Position <- 0L
       let before = XmlDocument()
 
-      before.Load(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
-      )
+      before.Load(Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
 
       updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
       worker.Position <- 0L
@@ -913,9 +893,7 @@ module AltCoverTests =
       Counter.measureTime <- epoch
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -925,11 +903,7 @@ module AltCoverTests =
       worker.Position <- 0L
       let before = XmlDocument()
 
-      before.Load(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
-      )
+      before.Load(Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
 
       updateReport (Dictionary<string, Dictionary<int, PointVisit>>()) worker
       worker.Position <- 0L
@@ -960,9 +934,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -973,9 +945,7 @@ module AltCoverTests =
 
       use before =
         new StreamReader(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         )
 
       let item =
@@ -987,15 +957,11 @@ module AltCoverTests =
       let after = new StreamReader(worker)
 
       let result =
-        after
-          .ReadToEnd()
-          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        after.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
         |> Seq.skip 3
 
       let expected =
-        before
-          .ReadToEnd()
-          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        before.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
         |> Seq.skip 3
 
       Assert.That(result, Is.EquivalentTo expected))
@@ -1011,9 +977,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1024,9 +988,7 @@ module AltCoverTests =
 
       use before =
         new StreamReader(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         )
 
       let item =
@@ -1038,15 +1000,11 @@ module AltCoverTests =
       let after = new StreamReader(worker)
 
       let result =
-        after
-          .ReadToEnd()
-          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        after.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
         |> Seq.skip 3
 
       let expected =
-        before
-          .ReadToEnd()
-          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        before.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
         |> Seq.skip 3
 
       Assert.That(result, Is.EquivalentTo expected))
@@ -1062,9 +1020,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1075,9 +1031,7 @@ module AltCoverTests =
 
       use before =
         new StreamReader(
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream(resource)
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         )
 
       let payload = Dictionary<int, PointVisit>()
@@ -1093,15 +1047,11 @@ module AltCoverTests =
       let after = new StreamReader(worker)
 
       let result =
-        after
-          .ReadToEnd()
-          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        after.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
         |> Seq.skip 3
 
       let expected =
-        before
-          .ReadToEnd()
-          .Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+        before.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
         |> Seq.skip 3
 
       Assert.That(result, Is.EquivalentTo expected))
@@ -1117,9 +1067,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1169,9 +1117,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource3)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource3)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1229,9 +1175,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1387,9 +1331,7 @@ module AltCoverTests =
             DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
           use stream =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
           let size = int stream.Length
           let buffer = Array.create size 0uy
@@ -1492,9 +1434,7 @@ module AltCoverTests =
             DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
           use stream =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
           let size = int stream.Length
           let buffer = Array.create size 0uy
@@ -1592,9 +1532,7 @@ module AltCoverTests =
             DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
           use stream =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
           let size = int stream.Length
           let buffer = Array.create size 0uy
@@ -1699,9 +1637,7 @@ module AltCoverTests =
             DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
           use stream =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
           let size = int stream.Length
           let buffer = Array.create size 0uy
@@ -1808,9 +1744,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1892,9 +1826,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -1962,9 +1894,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -2064,9 +1994,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -2140,9 +2068,7 @@ module AltCoverTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -2210,9 +2136,7 @@ module AltCoverTests =
             DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
           use stream =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(resource)
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
           let size = int stream.Length
           let buffer = Array.create size 0uy

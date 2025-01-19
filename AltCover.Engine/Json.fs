@@ -191,9 +191,7 @@ module internal Json =
             m.Attribute(XName.Get "name").Value
 
           let cname =
-            m
-              .Attribute(XName.Get "class")
-              .Value.Replace('+', '/')
+            m.Attribute(XName.Get "class").Value.Replace('+', '/')
 
           let outerclass =
             cname.Split('/') |> Seq.head
@@ -301,8 +299,7 @@ module internal Json =
     report.Descendants(XName.Get "Module")
     |> Seq.iter (fun x ->
       let path =
-        (x.Elements(XName.Get "ModulePath") |> Seq.head)
-          .Value
+        (x.Elements(XName.Get "ModulePath") |> Seq.head).Value
 
       let modul = NativeJson.Documents()
 

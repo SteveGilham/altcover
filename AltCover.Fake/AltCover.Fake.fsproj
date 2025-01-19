@@ -32,6 +32,7 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Security.Permissions" />
   </ItemGroup>
 
   <ItemGroup>

@@ -67,11 +67,7 @@ module AltCoverXTests =
         | "measureTime" -> ()
         | "document" ->
           test'
-            <@
-              a1.Value
-                .Replace("\\", "/")
-                .EndsWith(a2.Value.Replace("\\", "/"))
-            @>
+            <@ a1.Value.Replace("\\", "/").EndsWith(a2.Value.Replace("\\", "/")) @>
             (a1.Name.ToString()
              + " : "
              + r.ToString()
@@ -144,11 +140,7 @@ module AltCoverXTests =
                 .Replace("\\", "/")
                 .Replace("altcover", "AltCover")
                 .Replace("Samples/", String.Empty)
-                .EndsWith(
-                  a2.Value
-                    .Replace("\\", "/")
-                    .Replace("altcover", "AltCover")
-                )
+                .EndsWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover"))
             @>
             (a1.Name.ToString()
              + " : "
@@ -309,8 +301,7 @@ module AltCoverXTests =
       Primitive.CollectOptions.Create()
 
     let scan =
-      (AltCover.CollectOptions.Primitive subject)
-        .Validate(true)
+      (AltCover.CollectOptions.Primitive subject).Validate(true)
 
     test <@ scan.Length = 1 @>
 
@@ -366,8 +357,7 @@ module AltCoverXTests =
             <| DirectoryInfo(Guid.NewGuid().ToString()) }
 
     let scan =
-      (AltCover.CollectOptions.TypeSafe test)
-        .Validate(true)
+      (AltCover.CollectOptions.TypeSafe test).Validate(true)
 
     test' <@ scan.Length = 2 @>
     <| String.Join(Environment.NewLine, scan)
@@ -457,11 +447,7 @@ module AltCoverXTests =
     test <@ (TypeSafe.Tool ".").AsString() = "." @>
     test <@ (TypeSafe.FilePath ".").AsString() = ("." |> Path.GetFullPath) @>
 
-    test
-      <@
-        ("fred" |> Regex |> TypeSafe.NegateMatchItem)
-          .AsString() = "?fred"
-      @>
+    test <@ ("fred" |> Regex |> TypeSafe.NegateMatchItem).AsString() = "?fred" @>
 
     let subject =
       { TypeSafe.PrepareOptions.Create() with
@@ -527,9 +513,7 @@ module AltCoverXTests =
       @>
 
     let validate =
-      (AltCover.PrepareOptions.TypeSafe subject)
-        .WhatIf()
-        .ToString()
+      (AltCover.PrepareOptions.TypeSafe subject).WhatIf().ToString()
 
     test
       <@
@@ -563,14 +547,10 @@ module AltCoverXTests =
                  <| Assembly.GetExecutingAssembly().Location |]
           CommandLine = TypeSafe.CommandArguments [| TypeSafe.CommandArgument "[Fact]" |]
           ReportFormat = TypeSafe.ReportFormat.NCover
-          PathFilter =
-            (TypeSafe.Filters [| TypeSafe.MatchItem <| Regex "ok" |])
-              .Join
-              [] }
+          PathFilter = (TypeSafe.Filters [| TypeSafe.MatchItem <| Regex "ok" |]).Join [] }
 
     let scan =
-      (AltCover.PrepareOptions.TypeSafe subject)
-        .Validate()
+      (AltCover.PrepareOptions.TypeSafe subject).Validate()
 
     test <@ scan.Length = 0 @>
 
@@ -608,8 +588,7 @@ module AltCoverXTests =
           Keys = [| input |] }
 
     let scan =
-      (AltCover.PrepareOptions.Primitive subject)
-        .Validate()
+      (AltCover.PrepareOptions.Primitive subject).Validate()
 
     test <@ scan.Length = 0 @>
 
@@ -624,8 +603,7 @@ module AltCoverXTests =
           Keys = TypeSafe.FilePaths [| TypeSafe.FilePath input |] }
 
     let scan =
-      (AltCover.PrepareOptions.TypeSafe subject)
-        .Validate()
+      (AltCover.PrepareOptions.TypeSafe subject).Validate()
 
     test <@ scan.Length = 0 @>
 
@@ -636,8 +614,7 @@ module AltCoverXTests =
           CallContext = null }
 
     let scan =
-      (AltCover.PrepareOptions.Primitive subject)
-        .Validate()
+      (AltCover.PrepareOptions.Primitive subject).Validate()
 
     test <@ scan.Length = 0 @>
 
@@ -651,8 +628,7 @@ module AltCoverXTests =
           CallContext = [| "0" |] }
 
     let scan =
-      (AltCover.PrepareOptions.Primitive subject)
-        .Validate()
+      (AltCover.PrepareOptions.Primitive subject).Validate()
 
     test <@ scan.Length = 1 @>
 
@@ -700,8 +676,7 @@ module AltCoverXTests =
           CallContext = [| "0"; "1" |] }
 
     let scan =
-      (AltCover.PrepareOptions.Primitive subject)
-        .Validate()
+      (AltCover.PrepareOptions.Primitive subject).Validate()
 
     test <@ scan.Length = 2 @>
 
@@ -860,8 +835,9 @@ module AltCoverXTests =
 
       test
         <@
-          (CoverageParameters.inputDirectories () |> Seq.head)
-            .Replace("\\", "/") = ((canonicalDirectory input).Replace("\\", "/"))
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
+            input)
+            .Replace("\\", "/"))
         @>
 
       test <@ CoverageParameters.reportPath () = report @>
@@ -894,8 +870,8 @@ module AltCoverXTests =
           "xunit.assert.dll"
           "xunit.core.dll"
           "xunit.execution.dotnet.dll"
-          "xunit.runner.reporters.netcoreapp10.dll"
-          "xunit.runner.utility.netcoreapp10.dll"
+          //"xunit.runner.reporters.netcoreapp10.dll"
+          //"xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.testadapter.dll" ]
 
       let isWindows =
@@ -954,9 +930,7 @@ module AltCoverXTests =
       JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
 
     let target =
-      ((o.Property "runtimeTarget").Value :?> JObject)
-        .Property("name")
-        .Value.ToString()
+      ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
 
     let targets =
       (o.Properties()
@@ -1125,8 +1099,9 @@ module AltCoverXTests =
 
       test
         <@
-          (CoverageParameters.inputDirectories () |> Seq.head)
-            .Replace("\\", "/") = ((canonicalDirectory path).Replace("\\", "/"))
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
+            path)
+            .Replace("\\", "/"))
         @>
 
       test <@ CoverageParameters.reportPath () = report @>
@@ -1620,15 +1595,11 @@ module AltCoverXTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
 

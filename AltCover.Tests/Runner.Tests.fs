@@ -21,30 +21,22 @@ open Mono.Options
 module AltCoverUsage =
   let internal usageText =
     let usage =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("AltCover.Usage.txt", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(usage)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(usage)
 
     use reader = new StreamReader(stream)
     reader.ReadToEnd()
 
   let internal runnerText =
     let usage =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(usage)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(usage)
 
     use reader = new StreamReader(stream)
     reader.ReadToEnd()
@@ -235,15 +227,11 @@ module AltCoverRunnerTests =
     Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
 
   let resource =
-    Assembly
-      .GetExecutingAssembly()
-      .GetManifestResourceNames()
+    Assembly.GetExecutingAssembly().GetManifestResourceNames()
     |> Seq.find _.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal)
 
   let resource2 =
-    Assembly
-      .GetExecutingAssembly()
-      .GetManifestResourceNames()
+    Assembly.GetExecutingAssembly().GetManifestResourceNames()
     |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
   let internal init n l =
@@ -260,9 +248,7 @@ module AltCoverRunnerTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -329,15 +315,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
     // fix up file path
@@ -369,28 +351,20 @@ module AltCoverRunnerTests =
         Json.xmlToJson baseline ReportFormat.NCover
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("GenuineNCover158.json", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd()
       //printfn "%s" result
       let result1 =
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\n", String.Empty)
+        result.Replace("\r", String.Empty).Replace("\n", String.Empty)
 
       let expected1 =
-        expected
-          .Replace("\r", String.Empty)
-          .Replace("\n", String.Empty)
+        expected.Replace("\r", String.Empty).Replace("\n", String.Empty)
 
       testEqualValue result1 expected1
     finally
@@ -404,10 +378,7 @@ module AltCoverRunnerTests =
     dummy.Add("\"\\\b\f\n\r\tA<>\u2012", SortedDictionary<string, NativeJson.Classes>())
 
     let escaped =
-      NativeJson
-        .toText(dummy)
-        .Replace("\r", String.Empty)
-        .Replace("\n", String.Empty)
+      NativeJson.toText(dummy).Replace("\r", String.Empty).Replace("\n", String.Empty)
 
     let expectedEscapes =
       """{ "\"\\\b\f\n\r\tA\u003C\u003E\u2012": {  }}"""
@@ -418,15 +389,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -449,15 +416,11 @@ module AltCoverRunnerTests =
         Json.xmlToJson baseline ReportFormat.OpenCover
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("OpenCover.json", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd()
@@ -514,9 +477,7 @@ module AltCoverRunnerTests =
         + "                               The 'altcover.global.props' file is present in the same directory\n"
 
       Assert.That(
-        result
-          .Replace("\u200b", String.Empty)
-          .Replace("\r\n", "\n"),
+        result.Replace("\u200b", String.Empty).Replace("\r\n", "\n"),
         Is.EqualTo(expected.Replace("\r\n", "\n")),
         "*" + result + "*"
       )
@@ -608,9 +569,7 @@ module AltCoverRunnerTests =
 
     let optionNames =
       options
-      |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy _.Length)
-          .ToLowerInvariant())
+      |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy _.Length).ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -623,9 +582,7 @@ module AltCoverRunnerTests =
 
     let optionNames =
       options
-      |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy _.Length)
-          .ToLowerInvariant())
+      |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy _.Length).ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -727,15 +684,11 @@ module AltCoverRunnerTests =
     )
 
     let targets =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("AltCover.proj", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(targets)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(targets)
 
     let doc = XDocument.Load stream
 
@@ -2229,16 +2182,12 @@ module AltCoverRunnerTests =
       if create |> File.Exists |> not then
         do
           let recorder =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceNames()
+            Assembly.GetExecutingAssembly().GetManifestResourceNames()
             |> Seq.find
               _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
 
           use frombytes =
-            Assembly
-              .GetExecutingAssembly()
-              .GetManifestResourceStream(recorder)
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(recorder)
 
           use libstream =
             new FileStream(create, FileMode.Create)
@@ -2445,9 +2394,7 @@ module AltCoverRunnerTests =
         + "                               The 'altcover.global.props' file is present in the same directory\n"
 
       Assert.That(
-        result
-          .Replace("\r\n", "\n")
-          .Replace("\u200b", String.Empty),
+        result.Replace("\r\n", "\n").Replace("\u200b", String.Empty),
         Is.EqualTo(expected.Replace("\r\n", "\n"))
       )
     finally
@@ -2480,16 +2427,12 @@ module AltCoverRunnerTests =
         if create |> File.Exists |> not then
           do
             let recorder =
-              Assembly
-                .GetExecutingAssembly()
-                .GetManifestResourceNames()
+              Assembly.GetExecutingAssembly().GetManifestResourceNames()
               |> Seq.find
                 _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
 
             use frombytes =
-              Assembly
-                .GetExecutingAssembly()
-                .GetManifestResourceStream(recorder)
+              Assembly.GetExecutingAssembly().GetManifestResourceStream(recorder)
 
             use libstream =
               new FileStream(create, FileMode.Create)
@@ -2637,9 +2580,7 @@ module AltCoverRunnerTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       do
         use worker =
@@ -2746,15 +2687,11 @@ module AltCoverRunnerTests =
       Directory.SetCurrentDirectory(unique)
 
       let nativeJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(nativeJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
       do
         use worker =
@@ -2816,16 +2753,12 @@ module AltCoverRunnerTests =
       // saved.WriteLine jsonText  // NOT printfn "%s" jsonText
 
       let visitedJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
           _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(visitedJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
 
       use reader = new StreamReader(stream)
 
@@ -2887,9 +2820,7 @@ module AltCoverRunnerTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let doc = XDocument.Load stream
       Zip.save (fun s -> doc.Save s) reportFile true // fsharplint:disable-line
@@ -3048,15 +2979,11 @@ module AltCoverRunnerTests =
       Directory.SetCurrentDirectory(unique)
 
       let nativeJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(nativeJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
       Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
 
@@ -3132,16 +3059,12 @@ module AltCoverRunnerTests =
         reader.ReadToEnd()
 
       let visitedJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
           _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(visitedJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
 
       use reader = new StreamReader(stream)
 
@@ -3203,9 +3126,7 @@ module AltCoverRunnerTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       do
         use worker =
@@ -3316,15 +3237,11 @@ module AltCoverRunnerTests =
       Directory.SetCurrentDirectory(unique)
 
       let nativeJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(nativeJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
       do
         use worker =
@@ -3390,16 +3307,12 @@ module AltCoverRunnerTests =
       // saved.WriteLine jsonText  // NOT printfn "%s" jsonText
 
       let visitedJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
           _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(visitedJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
 
       use reader = new StreamReader(stream)
 
@@ -3469,9 +3382,7 @@ module AltCoverRunnerTests =
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let doc = XDocument.Load stream
       Zip.save (fun s -> doc.Save s) reportFile true // fsharplint:disable-line
@@ -3638,15 +3549,11 @@ module AltCoverRunnerTests =
       Directory.SetCurrentDirectory(unique)
 
       let nativeJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(nativeJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
       Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
 
@@ -3722,16 +3629,12 @@ module AltCoverRunnerTests =
         reader.ReadToEnd()
 
       let visitedJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
           _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(visitedJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
 
       use reader = new StreamReader(stream)
 
@@ -4257,18 +4160,11 @@ module AltCoverRunnerTests =
 
     Assert.That(
       processed,
-      Is.EqualTo
-      <| expected
-        .Replace("\r", String.Empty)
-        .Replace("\n", String.Empty)
+      Is.EqualTo(expected.Replace("\r", String.Empty).Replace("\n", String.Empty))
     )
 
     test
-      <@
-        processed = expected
-          .Replace("\r", String.Empty)
-          .Replace("\n", String.Empty)
-      @>
+      <@ processed = expected.Replace("\r", String.Empty).Replace("\n", String.Empty) @>
 
   [<Test>]
   let PostprocessShouldRestoreKnownOpenCoverState () =
@@ -4278,9 +4174,7 @@ module AltCoverRunnerTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     let after = XmlDocument()
     after.Load stream
@@ -4324,15 +4218,11 @@ module AltCoverRunnerTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let after = XmlDocument()
     after.Load stream
@@ -4387,9 +4277,7 @@ module AltCoverRunnerTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     let after = XmlDocument()
     after.Load stream
@@ -4473,9 +4361,7 @@ module AltCoverRunnerTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     let after = XmlDocument()
     after.Load stream
@@ -4558,15 +4444,11 @@ module AltCoverRunnerTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     let resource2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     let after = XDocument.Load(stream)
     let setAttribute (x: XElement) n v = x.Attribute(XName.Get n).Value <- v
@@ -4689,14 +4571,12 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary DocumentType.Unknown ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         Assert.That(builder.ToString(), Is.EqualTo String.Empty)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo String.Empty))
     finally
@@ -4721,7 +4601,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (XML report) ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         let expected =
           "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
@@ -4729,9 +4609,7 @@ module AltCoverRunnerTests =
         Assert.That(builder.ToString(), Is.EqualTo expected)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo expected))
     finally
@@ -4756,7 +4634,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (XML report) ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         let expected =
           "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
@@ -4765,9 +4643,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo expected, collected))
     finally
@@ -4792,7 +4668,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (XML report) ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         let expected =
           "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
@@ -4801,9 +4677,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo expected, collected))
     finally
@@ -4817,15 +4691,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
     let builder = System.Text.StringBuilder()
@@ -4850,7 +4720,7 @@ module AltCoverRunnerTests =
           finally
             Runner.threshold <- None
         // 80% coverage > threshold so expect return code coming in
-        Assert.That(r, Is.EqualTo(42, 0, String.Empty))
+        test <@ r = (42, 0uy, String.Empty) @>
 
         Assert.That(
           builder.ToString(),
@@ -4888,7 +4758,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         Assert.That(
           builder.ToString(),
@@ -4928,7 +4798,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         Assert.That(
           builder.ToString(),
@@ -4972,7 +4842,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         Assert.That(
           builder.ToString(),
@@ -5002,15 +4872,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5087,15 +4953,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5211,7 +5073,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         let expected =
           "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||"
@@ -5219,9 +5081,7 @@ module AltCoverRunnerTests =
         Assert.That(builder.ToString(), Is.EqualTo expected)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo expected))
     finally
@@ -5250,7 +5110,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         let expected =
           "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
@@ -5260,9 +5120,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo expected, collected))
     finally
@@ -5291,7 +5149,7 @@ module AltCoverRunnerTests =
         let r =
           Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
 
-        Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+        test <@ r = (0, 0uy, String.Empty) @>
 
         let expected =
           "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
@@ -5301,9 +5159,7 @@ module AltCoverRunnerTests =
         Assert.That(result, Is.EqualTo expected, result)
 
         let collected =
-          task.Summary
-            .Replace("\r", String.Empty)
-            .Replace("\n", "|")
+          task.Summary.Replace("\r", String.Empty).Replace("\n", "|")
 
         Assert.That(collected, Is.EqualTo expected, collected))
     finally
@@ -5317,15 +5173,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("SimpleCoverage.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     use reader = new StreamReader(stream)
 
@@ -5356,7 +5208,7 @@ module AltCoverRunnerTests =
         //printfn "%s" <| builder.ToString()
 
         // 60% coverage > threshold so expect return code coming in
-        Assert.That(r, Is.EqualTo(42, 0, String.Empty))
+        test <@ r = (42, 0uy, String.Empty) @>
 
         Assert.That(
           builder.ToString(),
@@ -5376,16 +5228,12 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find
         _.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     use reader = new StreamReader(stream)
 
@@ -5416,7 +5264,7 @@ module AltCoverRunnerTests =
         //printfn "%s" <| builder.ToString()
 
         // 25% coverage > threshold so expect return code coming in
-        Assert.That(r, Is.EqualTo(42, 0, String.Empty))
+        test <@ r = (42, 0uy, String.Empty) @>
 
         Assert.That(
           builder.ToString(),
@@ -5455,7 +5303,7 @@ module AltCoverRunnerTests =
       let r =
         summarize Unknown ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       Assert.That(unique |> File.Exists |> not)
     finally
       LCov.path.Value <- None
@@ -5465,15 +5313,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5500,32 +5344,23 @@ module AltCoverRunnerTests =
       let r =
         summarize (XML baseline) ReportFormat.OpenCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("OpenCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
       //printfn "%A" result
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5536,15 +5371,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5572,32 +5403,23 @@ module AltCoverRunnerTests =
       let r =
         summarize (XML baseline) ReportFormat.OpenCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
       //printfn "%A" result
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5608,15 +5430,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5638,32 +5456,23 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("NCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5674,15 +5483,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5704,33 +5509,24 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
       //printfn "%s" result
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("NCoverWithPartials.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5741,15 +5537,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Issue222.NCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5771,33 +5563,24 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
       //printfn "%s" result
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Issue222.NCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5808,15 +5591,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5838,32 +5617,23 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample5.ncover.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5874,15 +5644,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample4.coverlet.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -5907,32 +5673,23 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (JSON baseline) ReportFormat.NativeJson 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
       //printfn "%s" result
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -5943,15 +5700,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Issue222.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -5976,33 +5729,24 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (JSON baseline) ReportFormat.NativeJson 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
       //printfn "%s" result
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Issue222.json.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -6013,15 +5757,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("JsonWithPartials.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -6046,32 +5786,23 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (JSON baseline) ReportFormat.NativeJson 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
       //printfn "%s" result
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -6082,15 +5813,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
     let excluded = XName.Get "excluded"
@@ -6118,32 +5845,23 @@ module AltCoverRunnerTests =
       let r =
         LCov.summary (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       let result = File.ReadAllText unique
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("NCoverBugFix.lcov", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
       let expected =
-        reader
-          .ReadToEnd()
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/")
+        reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected
       )
     finally
@@ -6266,11 +5984,7 @@ module AltCoverRunnerTests =
       test <@ Cobertura.I.splitPath case = expect @>
 
       if case.IsNotNull then
-        test
-          <@
-            case = (Path.Combine(List.toArray expect))
-              .Replace("\\", "/")
-          @>)
+        test <@ case = (Path.Combine(List.toArray expect)).Replace("\\", "/") @>)
 
   [<Test>]
   let PathsGroupOK () =
@@ -6356,7 +6070,7 @@ module AltCoverRunnerTests =
       let r =
         summarize Unknown ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
       Assert.That(unique |> File.Exists |> not)
     finally
       Cobertura.path.Value <- None
@@ -6366,15 +6080,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("NCover122.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -6402,7 +6112,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6414,15 +6124,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("NCover122.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6447,15 +6153,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Issue222.NCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -6483,7 +6185,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6495,15 +6197,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Issue222.NCover.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6528,15 +6226,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -6565,7 +6259,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6577,15 +6271,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("NCoverWithPartials.cob.xml", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6610,15 +6300,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -6646,7 +6332,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6658,15 +6344,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample5.ncover.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6691,15 +6373,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -6729,7 +6407,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (JSON baseline) ReportFormat.NativeJson 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6741,15 +6419,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6774,15 +6448,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("JsonWithPartials.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -6812,7 +6482,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (JSON baseline) ReportFormat.NativeJson 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6824,15 +6494,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6869,15 +6535,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample5.native.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -6907,7 +6569,7 @@ module AltCoverRunnerTests =
       let r =
         summarize (JSON baseline) ReportFormat.NativeJson 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -6919,15 +6581,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -6952,15 +6610,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample5.native.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -6987,15 +6641,11 @@ module AltCoverRunnerTests =
     let result = File.ReadAllText unique
 
     let resource2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal)
 
     use stream2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     use reader = new StreamReader(stream2)
     let expected = reader.ReadToEnd()
@@ -7006,12 +6656,13 @@ module AltCoverRunnerTests =
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |]),
-      Is.EqualTo
-      <| expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |])
+      Is.EqualTo(
+        expected
+          .Replace('\r', '\u00FF')
+          .Replace('\n', '\u00FF')
+          .Replace("\u00FF\u00FF", "\u00FF")
+          .Trim([| '\u00FF' |])
+      )
     )
 
     test
@@ -7032,15 +6683,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("JsonWithPartials.json", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline =
       use r = new StreamReader(stream)
@@ -7068,15 +6715,11 @@ module AltCoverRunnerTests =
     let result = File.ReadAllText unique
 
     let resource2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("JsonWithPartialsToRawXml.xml", StringComparison.Ordinal)
 
     use stream2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     use reader = new StreamReader(stream2)
     let expected = reader.ReadToEnd()
@@ -7102,15 +6745,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
     let excluded = XName.Get "excluded"
@@ -7138,7 +6777,7 @@ module AltCoverRunnerTests =
       let r =
         Cobertura.summary (XML baseline) ReportFormat.NCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex
@@ -7150,15 +6789,11 @@ module AltCoverRunnerTests =
           .Replace("\\", "/")
 
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("NCoverBugFix.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -7183,15 +6818,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("issue122.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -7213,7 +6844,7 @@ module AltCoverRunnerTests =
       let r =
         Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex.Replace(
@@ -7223,15 +6854,11 @@ module AltCoverRunnerTests =
         )
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("issue122.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -7247,9 +6874,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected,
         result
       )
@@ -7263,15 +6888,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Issue222.OpenCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -7294,7 +6915,7 @@ module AltCoverRunnerTests =
       let r =
         Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex.Replace(
@@ -7304,15 +6925,11 @@ module AltCoverRunnerTests =
         )
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Issue222.OpenCover.cobertura", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -7328,9 +6945,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected,
         result
       )
@@ -7344,15 +6959,11 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -7375,7 +6986,7 @@ module AltCoverRunnerTests =
       let r =
         Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
 
-      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      test <@ r = (0, 0uy, String.Empty) @>
 
       let result =
         Regex.Replace(
@@ -7385,15 +6996,11 @@ module AltCoverRunnerTests =
         )
       //printfn "%s" result
       let resource2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal)
 
       use stream2 =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
       use reader = new StreamReader(stream2)
 
@@ -7409,9 +7016,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(
-        result
-          .Replace("\r", String.Empty)
-          .Replace("\\", "/"),
+        result.Replace("\r", String.Empty).Replace("\\", "/"),
         Is.EqualTo expected,
         result
       )

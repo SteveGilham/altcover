@@ -24,8 +24,7 @@ module internal ProgramDatabase =
     // We no longer have to violate Cecil encapsulation to get the PDB path
     // but we do to get the embedded PDB info
     let internal getEmbed =
-      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly
-        .GetTypes()
+      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes()
        |> Seq.filter (fun m -> m.FullName == "Mono.Cecil.Mixin")
        |> Seq.head)
         .GetMethod("GetEmbeddedPortablePdbEntry")
@@ -257,8 +256,7 @@ module internal ProgramDatabase =
             I.symbolMatch tokens ]
           |> List.forall (fun f -> f s))
          || (s == (assembly.Name.Name + ".pdb")
-             && (assembly |> I.getEmbeddedPortablePdbEntry)
-               .IsNotNull))
+             && (assembly |> I.getEmbeddedPortablePdbEntry).IsNotNull))
        |> Seq.map fst
        |> Seq.tryHead))
 
@@ -322,7 +320,7 @@ module internal ProgramDatabase =
                                                             "InstantiateArgumentExceptionCorrectlyRule",
                                                             Scope = "member",
                                                             Target =
-                                                              "AltCover.ProgramDatabase/I/construct@143::Invoke(System.String,System.Object[])",
+                                                              "AltCover.ProgramDatabase/I/construct@142::Invoke(System.String,System.Object[])",
                                                             Justification =
                                                               "Compiler generated")>]
 ()

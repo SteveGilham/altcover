@@ -40,8 +40,7 @@ module VisualizerMain =
 #if AVALONIA11
     0
 #else
-    BuildAvaloniaApp()
-      .StartWithClassicDesktopLifetime(arguments)
+    BuildAvaloniaApp().StartWithClassicDesktopLifetime(arguments)
 #endif
 #else
     0

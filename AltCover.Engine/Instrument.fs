@@ -604,12 +604,10 @@ module internal Instrument =
         oo.["runtimeTarget"].Object.["name"].String
 
       let targets =
-        (oo |> Seq.find (fun kv -> kv.Key == "targets"))
-          .Value.Object
+        (oo |> Seq.find (fun kv -> kv.Key == "targets")).Value.Object
 
       let targeted =
-        (targets |> Seq.find (fun p -> p.Key == target))
-          .Value.Object
+        (targets |> Seq.find (fun p -> p.Key == target)).Value.Object
 
       let app =
         (targeted.Values |> Seq.head).Object
@@ -682,8 +680,7 @@ module internal Instrument =
         updateRuntime ()
 
       let libraries =
-        (oo |> Seq.find (fun p -> p.Key == "libraries"))
-          .Value.Object
+        (oo |> Seq.find (fun p -> p.Key == "libraries")).Value.Object
 
       do
         let newLibraries =
@@ -700,11 +697,7 @@ module internal Instrument =
 
         updateLibraries ()
 
-      o
-        .GetIndentedString()
-        .Replace("\t\t", "  ")
-        .Replace("\t", "  ")
-        .Replace(" :", ":")
+      o.GetIndentedString().Replace("\t\t", "  ").Replace("\t", "  ").Replace(" :", ":")
 
     let private visitModule (state: InstrumentContext) (m: ModuleEntry) =
       let restate =
@@ -1217,8 +1210,7 @@ module internal Instrument =
         let getValue = value.GetMethod
 
         let field =
-          ((getValue.Body.Instructions |> Seq.head).Operand :?> FieldReference)
-            .Resolve()
+          ((getValue.Body.Instructions |> Seq.head).Operand :?> FieldReference).Resolve()
 
         { CallTrack = calltrack
           Value = value
@@ -1228,10 +1220,7 @@ module internal Instrument =
             |> Seq.find (fun m -> m.Name == "Instance")
           Field = field
           FieldType = field.FieldType :?> GenericInstanceType
-          Maker =
-            field
-              .Resolve()
-              .DeclaringType.GetStaticConstructor() }
+          Maker = field.Resolve().DeclaringType.GetStaticConstructor() }
 
       let net20 = readCallTrackType m
 
@@ -1239,9 +1228,7 @@ module internal Instrument =
         readCallTrackType delta.MainModule
 
       let field =
-        ((net20.GetValue.Body.Instructions |> Seq.head)
-          .Operand
-        :?> FieldReference)
+        ((net20.GetValue.Body.Instructions |> Seq.head).Operand :?> FieldReference)
           .Resolve()
 
       let localAsync = field.FieldType.Resolve()
@@ -1318,9 +1305,7 @@ module internal Instrument =
       copyInstance net20 asy46.Instance
 
       // delete the placeholder type
-      m
-        .GetType("AltCover.Recorder.Instance/I")
-        .NestedTypes.Remove(localAsync)
+      m.GetType("AltCover.Recorder.Instance/I").NestedTypes.Remove(localAsync)
       |> ignore
 
       framework46 asy46.Maker recorder

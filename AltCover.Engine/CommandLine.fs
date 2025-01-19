@@ -293,9 +293,7 @@ module internal CommandLine =
 
       let transform array = array |> Array.map (descape >> qRegex)
 
-      x
-        .Replace(";;", "\u0000")
-        .Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
       |> transform
 
   // "Public" interface

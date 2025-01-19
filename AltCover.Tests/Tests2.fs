@@ -17,27 +17,20 @@ open Mono.Options
 
 module AltCoverTests2 =
   let recorderSnk =
-    typeof<AltCover.Node>.Assembly
-      .GetManifestResourceNames()
+    typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
     |> Seq.find _.EndsWith(".Recorder.snk", StringComparison.Ordinal)
 
   let infrastructureSnk =
-    Assembly
-      .GetExecutingAssembly()
-      .GetManifestResourceNames()
+    Assembly.GetExecutingAssembly().GetManifestResourceNames()
     |> Seq.find _.EndsWith("Infrastructure.snk", StringComparison.Ordinal)
 
   let ivtSnk =
-    Assembly
-      .GetExecutingAssembly()
-      .GetManifestResourceNames()
+    Assembly.GetExecutingAssembly().GetManifestResourceNames()
     |> Seq.find _.EndsWith("InternalsVisibleTest.snk", StringComparison.Ordinal)
 
   let private provideKeyPair () =
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(infrastructureSnk)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -45,14 +38,10 @@ module AltCoverTests2 =
 
   let recorderStream () =
     let recorder =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
 
-    Assembly
-      .GetExecutingAssembly()
-      .GetManifestResourceStream(recorder)
+    Assembly.GetExecutingAssembly().GetManifestResourceStream(recorder)
 
   // Instrument.I.fs
 #if IDEMPOTENT_INSTRUMENT
@@ -127,8 +116,7 @@ module AltCoverTests2 =
     Assert.That(token0, Is.Not.Empty)
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -421,7 +409,7 @@ module AltCoverTests2 =
     let x =
       CommandLine.validateAssembly "*" "**"
 
-    Assert.That(x, Is.EqualTo(String.Empty, false))
+    Assert.That(x, Is.EqualTo((String.Empty, false)))
 
   [<Test>]
   let ShouldBeAbleToLocateAReference () =
@@ -739,9 +727,7 @@ module AltCoverTests2 =
           System.Collections.Generic.List<string>()
 
         Instrument.I.writeAssemblies prepared what [ where; second ] (fun s ->
-          s
-            .Replace("\r", String.Empty)
-            .Replace("\n", String.Empty)
+          s.Replace("\r", String.Empty).Replace("\n", String.Empty)
           |> traces.Add)
 
         let expectedTraces =
@@ -788,9 +774,7 @@ module AltCoverTests2 =
           proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class3+Class4", [||])
 
           let report =
-            proxyObject
-              .InvokeMethod("get_ReportFile", [||])
-              .ToString()
+            proxyObject.InvokeMethod("get_ReportFile", [||]).ToString()
 
           Assert.That(
             report,
@@ -1019,8 +1003,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let save = CoverageParameters.theReportPath
 
       use stream =
-        typeof<AltCover.Node>.Assembly
-          .GetManifestResourceStream(recorderSnk)
+        typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
@@ -1061,9 +1044,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class3+Class4", [||])
 
           let report =
-            proxyObject
-              .InvokeMethod("get_ReportFile", [||])
-              .ToString()
+            proxyObject.InvokeMethod("get_ReportFile", [||]).ToString()
 
           Assert.That(report, Is.EqualTo(Path.GetFullPath unique))
         finally
@@ -1556,15 +1537,11 @@ has been prefixed with Ldc_I4_1 (1 byte)
     use recstream = recorderStream ()
 
     let res =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("TailCallSample.dl_", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
 
     use def =
       AssemblyResolver.ReadAssembly stream
@@ -1576,9 +1553,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def.MainModule
-        .GetType("Tests.Problematic")
-        .Methods
+      def.MainModule.GetType("Tests.Problematic").Methods
       |> Seq.find (fun m -> m.Name = "Using FsUnit")
 
     let raw =
@@ -1648,9 +1623,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def.MainModule
-        .GetType("NUnitTestProject1.Tests")
-        .Methods
+      def.MainModule.GetType("NUnitTestProject1.Tests").Methods
       |> Seq.find (fun m -> m.Name = "AddSynch")
 
     let raw =
@@ -1725,9 +1698,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def.MainModule
-        .GetType("NUnitTestProject1.Tests")
-        .Methods
+      def.MainModule.GetType("NUnitTestProject1.Tests").Methods
       |> Seq.find (fun m -> m.Name = "AddAsync")
 
     let raw =
@@ -1936,26 +1907,18 @@ has been prefixed with Ldc_I4_1 (1 byte)
     use recstream = recorderStream ()
 
     let res =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("SwitchSample.dl_", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
 
     let res2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("SwitchSample.pd_", StringComparison.Ordinal)
 
     use stream2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
 
     use def =
       AssemblyResolver.ReadAssembly stream
@@ -2038,12 +2001,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     //IL_002b: br.s IL_0041
 
 #if !NET472
-    Assert.That(
-      next,
-      Is
-        .GreaterThanOrEqualTo(42)
-        .And.LessThanOrEqualTo(46)
-    )
+    Assert.That(next, Is.GreaterThanOrEqualTo(42).And.LessThanOrEqualTo(46))
 
     let expected = next
 #else
@@ -2580,9 +2538,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let token0 = def.Name.PublicKeyToken
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(ivtSnk)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(ivtSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2620,8 +2576,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let token0 = def.Name.PublicKeyToken
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2656,8 +2611,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let token0 = def.Name.PublicKeyToken
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2666,9 +2620,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Some(StrongNameKeyData.Make(buffer.ToArray()))
 
     use stream2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(infrastructureSnk)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
 
     use buffer2 = new MemoryStream()
     stream2.CopyTo(buffer2)
@@ -2715,7 +2667,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     Assert.That(token1, Is.Not.EquivalentTo(token0))
     let mapping (x: byte) = x.ToString("x2")
     let smapping = Seq.map mapping
-    Assert.That([| 0uy |] |> smapping |> Seq.toList, Is.EqualTo [ "00" ])
+    test <@ [| 0uy |] |> smapping |> Seq.toList = [ "00" ] @>
 
     let token' =
       String.Join(String.Empty, token1 |> smapping)
@@ -2742,8 +2694,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     ProgramDatabase.readSymbols def
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2768,8 +2719,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     ProgramDatabase.readSymbols def |> ignore
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2813,8 +2763,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         KeyStore.arrayToIndex ndef.Name.PublicKey
 
       use stream =
-        typeof<AltCover.Node>.Assembly
-          .GetManifestResourceStream(recorderSnk)
+        typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
@@ -2860,8 +2809,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       def.MainModule.AssemblyReferences |> Seq.toList
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2904,8 +2852,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       def.MainModule.AssemblyReferences |> Seq.toList
 
     use stream =
-      typeof<AltCover.Node>.Assembly
-        .GetManifestResourceStream(recorderSnk)
+      typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -3274,9 +3221,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       infrastructureSnk.Replace("Infrastructure.snk", "Sample8.deps.newtonsoft.json")
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(inputName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
 
     use reader = new StreamReader(stream)
 
@@ -3284,9 +3229,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Instrument.I.injectJSON <| reader.ReadToEnd()
 
     use stream' =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resultName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
 
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
@@ -3315,9 +3258,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(inputName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
 
     use reader = new StreamReader(stream)
 
@@ -3325,9 +3266,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       reader.ReadToEnd() |> Instrument.I.injectJSON
     // |> Instrument.I.injectJSON
     use stream' =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resultName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
 
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
@@ -3356,9 +3295,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(inputName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
 
     use reader = new StreamReader(stream)
 
@@ -3367,9 +3304,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     //|> Instrument.I.injectJSON
 
     use stream' =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resultName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
 
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
@@ -3395,9 +3330,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resultName)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
 
     use reader = new StreamReader(stream)
     let expected = reader.ReadToEnd()
@@ -3421,11 +3354,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     Assert.That(
       r,
-      Is.EqualTo(
-        expected
-          .Replace("\r\n", "\n")
-          .Replace("1.4.0.0", version)
-      ),
+      Is.EqualTo(expected.Replace("\r\n", "\n").Replace("1.4.0.0", version)),
       r
     )
 
@@ -3632,13 +3561,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
             |> List.map (fun (a, b) -> Object.ReferenceEquals(a, b)) = expect
           @>
 
-        test
-          <@
-            stdout
-              .ToString()
-              .Trim()
-              .Replace(Environment.NewLine, "|") = toOut
-          @>
+        test <@ stdout.ToString().Trim().Replace(Environment.NewLine, "|") = toOut @>
 
         if toErr.Length = 0 then
           test <@ stderr.ToString().Length = 0 @>
@@ -3674,13 +3597,13 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
     Assert.That(
       CommandLine.validateStrongNameKey "key" (String(Path.GetInvalidPathChars())),
-      Is.EqualTo(StrongNameKeyData.Empty(), false)
+      Is.EqualTo((StrongNameKeyData.Empty(), false))
     )
 
     Assert.That(
       CommandLine.validateStrongNameKey "key"
       <| Assembly.GetExecutingAssembly().Location,
-      Is.EqualTo(StrongNameKeyData.Empty(), false)
+      Is.EqualTo((StrongNameKeyData.Empty(), false))
     )
 
   [<Test>]
@@ -3907,9 +3830,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
 
       Assert.That(
-        lines.[3]
-          .Trim()
-          .Replace("Line+I.doPath", "Line.I.doPath"),
+        lines.[3].Trim().Replace("Line+I.doPath", "Line.I.doPath"),
         Does.StartWith("at AltCover.PathOperation.DoPathOperation")
       )
 
@@ -4027,9 +3948,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
 
       Assert.That(
-        lines.[3]
-          .Trim()
-          .Replace("Line+I.doPath", "Line.I.doPath"),
+        lines.[3].Trim().Replace("Line+I.doPath", "Line.I.doPath"),
         Does.StartWith("at AltCover.PathOperation.DoPathOperation")
       )
 
@@ -4037,11 +3956,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(info.ToString(), Is.Empty)
 
       Assert.That(
-        err
-          .ToString()
-          .Trim()
-          .Replace("\r", String.Empty)
-          .Replace("\n", "|"),
+        err.ToString().Trim().Replace("\r", String.Empty).Replace("\n", "|"),
         Is.EqualTo(
           "Details written to "
           + target
@@ -4094,10 +4009,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assert.That(info.ToString(), Is.Empty)
 
       let logged =
-        err
-          .ToString()
-          .Replace("\r", String.Empty)
-          .Replace("\n", "|")
+        err.ToString().Replace("\r", String.Empty).Replace("\n", "|")
 
       Assert.That(
         logged,

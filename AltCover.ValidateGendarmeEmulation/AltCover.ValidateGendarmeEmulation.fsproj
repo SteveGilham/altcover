@@ -25,6 +25,7 @@
     <Reference Include="Gendarme.Rules.Maintainability">
       <HintPath>$(GendarmeToolDir)Gendarme.Rules.Maintainability.dll</HintPath>
     </Reference>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="mono.cecil" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>

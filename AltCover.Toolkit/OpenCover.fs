@@ -227,8 +227,7 @@ module OpenCover =
 
     // value in method <MetadataToken>100663297</MetadataToken>
     let methodFullName =
-      (m.Descendants(XName.Get "Name") |> Seq.head)
-        .Value
+      (m.Descendants(XName.Get "Name") |> Seq.head).Value
 
     let methodDef =
       declaringType.Methods
@@ -240,10 +239,7 @@ module OpenCover =
         m.Descendants(XName.Get "MetadataToken")
         |> Seq.head
 
-      token.Value <-
-        x.MetadataToken
-          .ToUInt32()
-          .ToString(CultureInfo.InvariantCulture))
+      token.Value <- x.MetadataToken.ToUInt32().ToString(CultureInfo.InvariantCulture))
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
     // Fix offset, sc, ec in <MethodPoint />
@@ -357,8 +353,7 @@ module OpenCover =
 
             point.SetAttribute(
               "sc",
-              (cols - line.TrimStart().Length)
-                .ToString(CultureInfo.InvariantCulture)
+              (cols - line.TrimStart().Length).ToString(CultureInfo.InvariantCulture)
             )
 
         )))
@@ -367,8 +362,7 @@ module OpenCover =
 
   let internal fixFormatModule (m: XElement) (files: string array) =
     // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
-    (m.Elements() |> Seq.head)
-      .AddBeforeSelf(summary ())
+    (m.Elements() |> Seq.head).AddBeforeSelf(summary ())
 
     let modulePath =
       m.Element(XName.Get "ModulePath")
@@ -480,8 +474,7 @@ module OpenCover =
       let v1 = v |> float
       let n1 = n |> float
 
-      (v1 * 100.0 / n1)
-        .ToString("F2", CultureInfo.InvariantCulture)
+      (v1 * 100.0 / n1).ToString("F2", CultureInfo.InvariantCulture)
 
   [<NoEquality; NoComparison; ExcludeFromCodeCoverage>]
   type Summary =
@@ -1189,9 +1182,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
           states.Add(locals), localm :: statem)
         (Summary.Create(), [])
 
-    doc.Root
-      .Element(XName.Get "Modules")
-      .Add(modules |> List.toArray)
+    doc.Root.Element(XName.Get "Modules").Add(modules |> List.toArray)
 
     let sm =
       doc.Root.Element(XName.Get "Summary")
@@ -1263,6 +1254,6 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/Pipe #4 stage #1 at line 760@761::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/Pipe #4 stage #1 at line 753@754::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

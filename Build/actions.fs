@@ -23,8 +23,7 @@ module Actions =
     // [<TailCall>]
     let rec clean1 depth =
       try
-        (DirectoryInfo ".")
-          .GetDirectories("*", SearchOption.AllDirectories)
+        (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
         |> Seq.filter (fun x ->
           x.Name.StartsWith "_"
           || x.Name = "bin"
@@ -695,7 +694,7 @@ a:hover {color: #ecc;}
 
       Assert.That(
         x.ToString().Replace("\r\n", "\n"),
-        Is.EqualTo <| tracked.Replace("\r\n", "\n")
+        Is.EqualTo(tracked.Replace("\r\n", "\n"))
       ))
 
     printfn "Tracked OK"

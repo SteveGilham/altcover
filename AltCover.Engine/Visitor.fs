@@ -470,10 +470,7 @@ module internal CoverageParameters =
                     "PreferStringComparisonOverrideRule",
                     Justification = "Overload not in netstandard2.0")>]
   let private filterString (n: FilterClass) =
-    (string n)
-      .Replace('\r', ';')
-      .Replace('\n', ';')
-      .Replace(";;", ";")
+    (string n).Replace('\r', ';').Replace('\n', ';').Replace(";;", ";")
 
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "UseStringEmptyRule",
@@ -595,11 +592,7 @@ module internal Visitor =
         let uri = Uri(Uri("file://"), rebase)
 
         Uri
-          .UnescapeDataString(
-            uri
-              .MakeRelativeUri(Uri(Uri("file://"), canon))
-              .ToString()
-          )
+          .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), canon)).ToString())
           .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
     let internal exists (url: Uri) =
@@ -610,8 +603,7 @@ module internal Visitor =
         use response = request.GetResponse()
 
         response.ContentLength > 0L
-        && (response :?> System.Net.HttpWebResponse)
-             .StatusCode
+        && (response :?> System.Net.HttpWebResponse).StatusCode
            |> int < 400
       with :? WebException ->
         false
@@ -637,9 +629,7 @@ module internal Visitor =
       match find with
       | Some(best, relative) ->
         let replacement =
-          Path
-            .Combine(relative, Path.GetFileName(file))
-            .Replace('\\', '/')
+          Path.Combine(relative, Path.GetFileName(file)).Replace('\\', '/')
 
         let url =
           dict.[best].Replace("*", replacement)
@@ -937,10 +927,7 @@ module internal Visitor =
                 || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
                    >= 0))
 
-        candidates
-          .Concat(sibs)
-          .Concat(peers)
-          .Concat(children)
+        candidates.Concat(sibs).Concat(peers).Concat(children)
         |> Seq.filter predicate
         |> Seq.sortBy _.DeclaringType.FullName.Split('/').Length // strive upwards
         |> Seq.tryHead
@@ -1722,30 +1709,30 @@ module internal Visitor =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1260::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1250::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/start@1263::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/start@1253::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1594-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1581-2::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1487@1487::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1474@1474::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/finish@1266::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
+                              "AltCover.Visitor/I/finish@1253::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
 ()

@@ -78,7 +78,7 @@ module TestCommon =
     with fail ->
       Assert.That<'a>(value, constraining, fail.Message.Trim())
 
-  let testEqualValue actual expected =
+  let testEqualValue<'a when 'a: equality> (actual: 'a) expected =
     testWithFallback <@ actual = expected @> actual (Is.EqualTo expected)
 
 module TestCommonTests =
@@ -292,9 +292,7 @@ module ExpectoTestCommon =
 
   let consistencyCheck (regular: ((unit -> unit) * string) list) expected =
     let here =
-      System.Reflection.Assembly
-        .GetExecutingAssembly()
-        .Location
+      System.Reflection.Assembly.GetExecutingAssembly().Location
 
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly(here)

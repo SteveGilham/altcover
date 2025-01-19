@@ -36,6 +36,12 @@ module Targets =
   open NUnit.Framework
   open Swensen.Unquote
 
+  let test' x message =
+    try
+      test x
+    with fail ->
+      NUnit.Framework.Assert.Fail(message + Environment.NewLine + fail.Message)
+
   let mutable Copyright = String.Empty
   let mutable Version = String.Empty
 
@@ -166,7 +172,7 @@ module Targets =
 
   let lastGoodPackage () =
     let n =
-      !! "./_Packaging/altcover.*.nupkg"
+      !!"./_Packaging/altcover.*.nupkg"
       |> Seq.map (fun p -> (Path.GetFileNameWithoutExtension p).Substring(9))
 
     if n |> Seq.isEmpty |> not then
@@ -682,7 +688,7 @@ module Targets =
     (fun () ->
       // ("." |> Information.shortlog).Substring 9 |> printfn "%A"
       // dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
-      !! "**/*ssemblyAttributes.cs"
+      !!"**/*ssemblyAttributes.cs"
       |> Seq.map Path.GetFullPath
       |> Seq.toList
       |> List.iter File.delete)
@@ -961,7 +967,7 @@ module Targets =
         "./Samples/Sample28/SourceGenerators.sln" ]
       |> Seq.iter dotnetBuildDebug
 
-      Shell.copy "./_SourceLink" (!! "./_Binaries/Sample14/Debug+AnyCPU/net9.0/*"))
+      Shell.copy "./_SourceLink" (!!"./_Binaries/Sample14/Debug+AnyCPU/net9.0/*"))
 
   let BuildMonoSamples =
     (fun () ->
@@ -1046,7 +1052,7 @@ module Targets =
       let failOnIssuesFound (issuesFound: bool) =
         Assert.That(issuesFound, Is.False, "Lint issues were found")
 
-      [ !! "./**/*.fs"
+      [ !!"./**/*.fs"
         |> Seq.sortBy (Path.GetFileName)
         |> Seq.filter (fun f ->
           ((f.Contains demo)
@@ -1055,7 +1061,7 @@ module Targets =
            || (f.Contains underscore)
            || (f.Contains sample))
           |> not)
-        !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
+        !!"./Build/*.fsx" |> Seq.map Path.GetFullPath ]
       |> Seq.concat
       //      |> Seq.map (fun f -> printfn "Linting %A" f
       //                           (doLint f).ExitCode)
@@ -3816,8 +3822,8 @@ module Targets =
 
       let libFiles path =
         Seq.concat
-          [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
-            !! "_Publish/System.*" ]
+          [ !!"./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
+            !!"_Publish/System.*" ]
         |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
         |> Seq.toList
 
@@ -3874,16 +3880,9 @@ module Targets =
         (Path.getFullName "./nupkg").Length
 
       let otherFiles =
-        (!! "./nupkg/**/*.*")
+        (!!"./nupkg/**/*.*")
         |> Seq.map (fun x ->
-          (x,
-           Some(
-             Path
-               .GetDirectoryName(x)
-               .Substring(nupkg)
-               .Replace("\\", "/")
-           ),
-           None))
+          (x, Some(Path.GetDirectoryName(x).Substring(nupkg).Replace("\\", "/")), None))
         |> Seq.toList
 
       Directory.ensure "./_Intermediate/global"
@@ -3892,9 +3891,7 @@ module Targets =
         otherFiles
         |> List.map (fun (a, b, c) ->
           let text =
-            File
-              .ReadAllText(a)
-              .Replace("tools/netcoreapp2.0", "tools/net8.0/any")
+            File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/net8.0/any")
 
           let name =
             (Path.getFullName "./_Intermediate/global")
@@ -3909,9 +3906,7 @@ module Targets =
         otherFiles
         |> List.map (fun (a, b, c) ->
           let text =
-            File
-              .ReadAllText(a)
-              .Replace("tools/netcoreapp2.0", "lib/netstandard2.0")
+            File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netstandard2.0")
 
           let name =
             (Path.getFullName "./_Intermediate/api")
@@ -3921,8 +3916,8 @@ module Targets =
           (name, b, c))
 
       let poshFiles where =
-        [ (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
-          (!! "./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
+        [ (!!"./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
+          (!!"./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
         |> Seq.concat
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
@@ -3933,7 +3928,7 @@ module Targets =
         |> Seq.toList
 
       let cake2Files where =
-        (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/net8.0/AltCover.C*.*")
+        (!!"./_Binaries/AltCover.Cake/Release+AnyCPU/net8.0/AltCover.C*.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
@@ -3942,17 +3937,17 @@ module Targets =
           (Path.getFullName "./_Binaries/README.cake.html", Some "", None) ]
 
       let monitorFiles where =
-        (!! "./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
+        (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
       let dataFiles1 where =
-        (!! "./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
+        (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
       let dataFiles2 where =
-        (!! "./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/*/AltCover.DataCollector.resources.dll")
+        (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/*/AltCover.DataCollector.resources.dll")
         |> Seq.map (fun x ->
           let d = Path.GetDirectoryName x
           let locale = Path.GetFileName d
@@ -3964,19 +3959,19 @@ module Targets =
         |> List.collect (fun f -> f where)
 
       let fakeFiles where =
-        [ (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
-          (!! "./_Binaries/AltCover.DotNet/Release+AnyCPU/netstandard2.0/AltCover.Dot*.*") ]
+        [ (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+          (!!"./_Binaries/AltCover.DotNet/Release+AnyCPU/netstandard2.0/AltCover.Dot*.*") ]
         |> Seq.concat
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
       let fake2Files where =
-        (!! "./_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.*")
+        (!!"./_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
       let fox2Files where =
-        (!! "./_Publish/BlackFox.*")
+        (!!"./_Publish/BlackFox.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
@@ -3984,15 +3979,12 @@ module Targets =
         (Path.getFullName "./_Publish").Length
 
       let netcoreFiles where =
-        (!! "./_Publish/**/*.*")
+        (!!"./_Publish/**/*.*")
         |> Seq.map (fun x ->
           (x,
            Some(
              where
-             + Path
-               .GetDirectoryName(x)
-               .Substring(publish)
-               .Replace("\\", "/")
+             + Path.GetDirectoryName(x).Substring(publish).Replace("\\", "/")
            ),
            None))
         |> Seq.toList
@@ -4001,7 +3993,7 @@ module Targets =
         (Path.getFullName "./_Publish").Length
 
       let netstdFiles where =
-        (!! "./_Publish/**/*.*")
+        (!!"./_Publish/**/*.*")
         |> Seq.filter (fun x -> (Path.GetFileName x).Equals("AltCover.exe") |> not)
         |> Seq.filter (fun x ->
           (Path.GetFileName x).Equals("FSharp.Core.dll")
@@ -4010,10 +4002,7 @@ module Targets =
           (x,
            Some(
              where
-             + Path
-               .GetDirectoryName(x)
-               .Substring(publishapi)
-               .Replace("\\", "/")
+             + Path.GetDirectoryName(x).Substring(publishapi).Replace("\\", "/")
            ),
            None))
         |> Seq.toList
@@ -4024,7 +4013,7 @@ module Targets =
            None) ]
 
       let globalFiles =
-        (!! "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.*")
+        (!!"./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.*")
         |> Seq.map (fun x -> (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
@@ -4032,28 +4021,25 @@ module Targets =
         (Path.getFullName "./_Publish.visualizer").Length
 
       let vizFiles where =
-        (!! "./_Publish.visualizer/**/*.*")
+        (!!"./_Publish.visualizer/**/*.*")
         |> Seq.map (fun x ->
           (x,
            Some(
              where
-             + Path
-               .GetDirectoryName(x)
-               .Substring(publishV)
-               .Replace("\\", "/")
+             + Path.GetDirectoryName(x).Substring(publishV).Replace("\\", "/")
            ),
            None))
         |> Seq.toList
 
       let auxVFiles =
-        [ (!! "./AltCover.Visualizer/DotnetToolSettings.xml") ]
+        [ (!!"./AltCover.Visualizer/DotnetToolSettings.xml") ]
         |> Seq.concat
         |> Seq.map (fun x -> // Avalonia
           (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       let auxFiles =
-        (!! "./_Binaries/AltCover/Release+AnyCPU/net8.0/*.xml")
+        (!!"./_Binaries/AltCover/Release+AnyCPU/net8.0/*.xml")
         |> Seq.map (fun x -> (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
@@ -4222,9 +4208,7 @@ module Targets =
                     + commitHash
                     + Environment.NewLine
                     + Environment.NewLine
-                    + w
-                      .ToString()
-                      .Replace("\u204B", Environment.NewLine)
+                    + w.ToString().Replace("\u204B", Environment.NewLine)
 
                   printfn "release notes are %A characters" releaseNotes.Length
                   Assert.That(releaseNotes.Length, Is.LessThan 35000)
@@ -4353,10 +4337,7 @@ module Targets =
   let PrepareReadMe =
     (fun () ->
       let c =
-        Copyright
-          .Replace("©", "&#xa9;")
-          .Replace("<", "&lt;")
-          .Replace(">", "&gt;")
+        Copyright.Replace("©", "&#xa9;").Replace("<", "&lt;").Replace(">", "&gt;")
 
       [ "./Build/README.core.md"
         "./Build/README.api.md"
@@ -4372,7 +4353,7 @@ module Targets =
 
   let Unpack =
     (fun () ->
-      !! "./_Pack*/*.nupkg"
+      !!"./_Pack*/*.nupkg"
       |> Seq.iter (fun nugget ->
         let packdir = Path.GetDirectoryName nugget
 
@@ -5296,7 +5277,7 @@ module Targets =
 
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
-        Assert.That(vcs |> List.map fst, Is.EqualTo [ -3; 0 ], "-3 or 0 only")
+        test' <@ vcs |> List.map fst = [ -3; 0 ] @> "-3 or 0 only"
         let expected = [ 2; 20 ]
 
         let actual =
@@ -5304,7 +5285,7 @@ module Targets =
 
         Assert.That(
           actual,
-          Is.EqualTo expected,
+          Is.EqualTo<int list>(expected),
           sprintf "1) Expected %A but got %A" expected actual
         )
 
@@ -5355,8 +5336,8 @@ module Targets =
 
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
-        Assert.That(vcs |> List.map fst, Is.EqualTo [ 0 ])
-        Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 22 ])
+        test <@ vcs |> List.map fst = [ 0 ] @>
+        test <@ vcs |> List.map (snd >> Seq.length) = [ 22 ] @>
 
       let prep =
         AltCover.PrepareOptions.Primitive(
@@ -5405,13 +5386,9 @@ module Targets =
 
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
-        Assert.That(vcs |> List.map fst, Is.EqualTo [ -2; 0 ], "Expect -2, 0")
+        test' <@ vcs |> List.map fst = [ -2; 0 ] @> "Expect -2, 0"
 
-        Assert.That(
-          vcs |> List.map (snd >> Seq.length),
-          Is.EqualTo [ 3; 17 ],
-          "Expect [3; 17]"
-        )
+        test' <@ vcs |> List.map (snd >> Seq.length) = [ 3; 17 ] @> "Expect [3; 17]"
 
       let prep =
         AltCover.PrepareOptions.Primitive(
@@ -5488,13 +5465,11 @@ module Targets =
 
         printfn "%A" vcs
         printfn "%A" (vcs |> List.map (snd >> Seq.length))
-        Assert.That(vcs |> List.map fst, Is.EqualTo [ 0; 1; 2 ], "expect [ 0; 1; 2 ]")
+        test' <@ vcs |> List.map fst = [ 0; 1; 2 ] @> "expect [ 0; 1; 2 ]"
 
-        Assert.That(
-          vcs |> List.map (snd >> Seq.length),
-          Is.EqualTo [ 8; 11; 1 ],
-          "expect [ 8; 11; 1 ]"
-        ))
+        test'
+          <@ vcs |> List.map (snd >> Seq.length) = [ 8; 11; 1 ] @>
+          "expect [ 8; 11; 1 ]")
 
   let ReleaseXUnitFSharpTypesDotNetFullRunner =
     (fun () ->
@@ -5637,11 +5612,7 @@ module Targets =
             "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
             "Tests.M/Thing Tests.M::makeThing(System.String)" ]
 
-        Assert.That(
-          recorded,
-          expected |> Is.EqualTo,
-          sprintf "Bad method list %A" recorded
-        )
+        test' <@ recorded = expected @> (sprintf "Bad method list %A" recorded)
 
         printfn "Content OK"
 
@@ -5877,8 +5848,8 @@ module Targets =
 
         fsproj.Save "./_Cake/_DotnetTest/cake_dotnettest.fsproj"
 
-        Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.fs")
-        Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.json")
+        Shell.copy "./_Cake/_DotnetTest" (!!"./Samples/Sample4/*.fs")
+        Shell.copy "./_Cake/_DotnetTest" (!!"./Samples/Sample4/*.json")
         Shell.copyDir "./_Cake/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
         let config =
@@ -5903,11 +5874,7 @@ module Targets =
         File.WriteAllText(
           "./_Cake/build.cake",
           script
-            .Replace(
-              "{0}",
-              (Path.getFullName "./_Packaging.api")
-                .Replace("\\", "/")
-            )
+            .Replace("{0}", (Path.getFullName "./_Packaging.api").Replace("\\", "/"))
             .Replace("{1}", Version)
         )
 
@@ -6016,16 +5983,16 @@ module Targets =
           |> Map.ofSeq
 
         let mutable fctarget =
-          dd.Item ("Fake.Core.Target".ToLowerInvariant())
+          dd.Item("Fake.Core.Target".ToLowerInvariant())
 
         let mutable fdcli =
-          dd.Item ("Fake.DotNet.Cli".ToLowerInvariant())
+          dd.Item("Fake.DotNet.Cli".ToLowerInvariant())
 
         let mutable unq =
-          dd.Item ("Unquote".ToLowerInvariant())
+          dd.Item("Unquote".ToLowerInvariant())
 
         let mutable sci =
-          dd.Item ("System.Collections.Immutable".ToLowerInvariant())
+          dd.Item("System.Collections.Immutable".ToLowerInvariant())
 
         // refine as required
         driveproj.Descendants(XName.Get("PackageReference"))
@@ -6078,8 +6045,8 @@ module Targets =
 
         pack.AddBeforeSelf inject
         fsproj.Save "./_ApiUse/_DotnetTest/apiuse_dotnettest.fsproj"
-        Shell.copy "./_ApiUse/_DotnetTest" (!! "./Samples/Sample4/*.fs")
-        Shell.copy "./_ApiUse/_DotnetTest" (!! "./Samples/Sample4/*.json")
+        Shell.copy "./_ApiUse/_DotnetTest" (!!"./Samples/Sample4/*.fs")
+        Shell.copy "./_ApiUse/_DotnetTest" (!!"./Samples/Sample4/*.json")
         Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
         let driver =
@@ -7136,8 +7103,8 @@ module Targets =
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
         pack.Attribute(XName.Get "VersionOverride").Value <- Version
         csproj.Save "./_Issue23/sample9.csproj"
-        Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.cs")
-        Shell.copy "./_Issue23" (!! "./Samples/Sample9/*.json")
+        Shell.copy "./_Issue23" (!!"./Samples/Sample9/*.cs")
+        Shell.copy "./_Issue23" (!!"./Samples/Sample9/*.json")
 
         DotNet.restore
           (fun o ->
@@ -7168,11 +7135,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            ((p |> debugNoBuildIn "_Issue23")
-              .WithAltCoverOptions
-              pp0
-              cc0
-              ForceTrue)
+            ((p |> debugNoBuildIn "_Issue23").WithAltCoverOptions pp0 cc0 ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7216,8 +7179,8 @@ module Targets =
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "altcover")
         pack.Attribute(XName.Get "VersionOverride").Value <- Version
         csproj.Save "./_Issue67/sample9.csproj"
-        Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.cs")
-        Shell.copy "./_Issue67" (!! "./Samples/Sample9/*.json")
+        Shell.copy "./_Issue67" (!!"./Samples/Sample9/*.cs")
+        Shell.copy "./_Issue67" (!!"./Samples/Sample9/*.json")
 
         DotNet.restore
           (fun o ->
@@ -7248,11 +7211,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            ((p |> debugNoBuildIn "_Issue67")
-              .WithAltCoverOptions
-              pp0
-              cc0
-              ForceTrue)
+            ((p |> debugNoBuildIn "_Issue67").WithAltCoverOptions pp0 cc0 ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7294,19 +7253,19 @@ module Targets =
 
         Shell.copy
           "./Samples/Sample16/Test/_Issue72"
-          (!! "./Samples/Sample16/Test/Test/*.cs")
+          (!!"./Samples/Sample16/Test/Test/*.cs")
 
         Shell.copy
           "./Samples/Sample16/Test/_Issue72"
-          (!! "./Samples/Sample16/Test/Test/*.json")
+          (!!"./Samples/Sample16/Test/Test/*.json")
 
         Shell.copy
           "./Samples/Sample16/Test/_Issue72b"
-          (!! "./Samples/Sample16/Test/Test/*.cs")
+          (!!"./Samples/Sample16/Test/Test/*.cs")
 
         Shell.copy
           "./Samples/Sample16/Test/_Issue72b"
-          (!! "./Samples/Sample16/Test/Test/*.json")
+          (!!"./Samples/Sample16/Test/Test/*.json")
 
         let csproj =
           XDocument.Load "./Samples/Sample16/Test/Test/Test.csproj"
@@ -7531,8 +7490,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            ((p |> debugNoBuildIn "./Samples/Sample16/Test")
-              .WithAltCoverOptions
+            ((p |> debugNoBuildIn "./Samples/Sample16/Test").WithAltCoverOptions
               psln
               cc0
               ForceTrue)
@@ -7589,8 +7547,8 @@ module Targets =
           |> hint.SetValue)
 
         fsproj.Save "./_DotnetGlobalTest/_DotnetGlobalTest.fsproj"
-        Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.fs")
-        Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.json")
+        Shell.copy "./_DotnetGlobalTest" (!!"./Samples/Sample4/*.fs")
+        Shell.copy "./_DotnetGlobalTest" (!!"./Samples/Sample4/*.json")
         Shell.copyDir "./_DotnetGlobalTest/Data" "./Samples/Sample4/Data" File.Exists
 
         Actions.RunDotnet
@@ -7735,7 +7693,7 @@ module Targets =
         Assert.That(pack.Attribute(XName.Get "Include").Value, Is.EqualTo "AltCover.Api")
         pack.Attribute(XName.Get "VersionOverride").Value <- Version
         csproj.Save "./_Issue114/Sample26.fsproj"
-        Shell.copy "./_Issue114" (!! "./Samples/Sample26/*.fs")
+        Shell.copy "./_Issue114" (!!"./Samples/Sample26/*.fs")
 
         DotNet.restore
           (fun o ->
@@ -7773,11 +7731,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            ((p |> debugNoBuildIn "_Issue114")
-              .WithAltCoverOptions
-              pp0
-              cc0
-              ForceTrue)
+            ((p |> debugNoBuildIn "_Issue114").WithAltCoverOptions pp0 cc0 ForceTrue)
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
@@ -7822,11 +7776,11 @@ module Targets =
 
         pack.AddBeforeSelf inject
         csproj.Save "./_Issue156/Tests/Issue156.csproj"
-        Shell.copy "./_Issue156/Tests" (!! "./RegressionTesting/issue156/Tests/*.cs")
+        Shell.copy "./_Issue156/Tests" (!!"./RegressionTesting/issue156/Tests/*.cs")
 
         Shell.copy
           "./_Issue156/ClassLibrary1"
-          (!! "./RegressionTesting/issue156/ClassLibrary1/*.cs*")
+          (!!"./RegressionTesting/issue156/ClassLibrary1/*.cs*")
 
         DotNet.restore
           (fun o ->
@@ -7867,8 +7821,7 @@ module Targets =
 
         DotNet.test
           (fun p ->
-            ((p |> debugNoBuildIn "_Issue156/Tests")
-              .WithAltCoverOptions
+            ((p |> debugNoBuildIn "_Issue156/Tests").WithAltCoverOptions
               pp0
               cc0
               ForceTrueOnly)
@@ -8019,9 +7972,7 @@ module Targets =
       let cobertura2Files =
         xml
         |> List.filter (fun (x, _) ->
-          Path
-            .GetFileName(x)
-            .Equals("coverage.cobertura.xml", StringComparison.Ordinal)
+          Path.GetFileName(x).Equals("coverage.cobertura.xml", StringComparison.Ordinal)
           |> not)
         |> List.filter (fun x ->
           let root = (snd x).Root
@@ -8120,7 +8071,7 @@ module Targets =
            |> String.IsNullOrWhiteSpace
            |> not
       then
-        (!! "./_Packagin*/*.nupkg")
+        (!!"./_Packagin*/*.nupkg")
         |> Seq.iter (fun f ->
           printfn "Publishing %A from %A" f currentBranch
 
@@ -8139,8 +8090,8 @@ module Targets =
   let resetColours _ =
     Console.ForegroundColor <- consoleBefore |> fst
     Console.BackgroundColor <- consoleBefore |> snd
-    (!! "internalTrace*.log") |> Seq.iter Shell.rm
-    (!! "nunit-agent_*.log") |> Seq.iter Shell.rm
+    (!!"internalTrace*.log") |> Seq.iter Shell.rm
+    (!!"nunit-agent_*.log") |> Seq.iter Shell.rm
 
   //_Target "None" ignore
 

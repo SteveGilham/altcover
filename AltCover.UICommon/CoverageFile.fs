@@ -39,9 +39,7 @@ module Transformer =
 
   let internal loadTransform (path: string) =
     use str =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(path)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
 
     use stylesheet = XmlReader.Create(str)
     let xmlTransform = XslCompiledTransform()
@@ -87,10 +85,7 @@ module Transformer =
 
     // interpret branches
     document.Descendants(XName.Get "line")
-    |> Seq.filter (fun x ->
-      x
-        .Attribute(XName.Get "condition-coverage")
-        .IsNotNull)
+    |> Seq.filter (fun x -> x.Attribute(XName.Get "condition-coverage").IsNotNull)
     |> Seq.iter (fun x ->
       let line =
         x.Attribute(XName.Get "number").Value
@@ -136,11 +131,7 @@ module Transformer =
     report
 
   let private resourceStream n =
-    new StreamReader(
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(n)
-    )
+    new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(n))
 
   let private processOpenCover
     (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
@@ -344,12 +335,12 @@ module Extensions =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Transformer/transformFromCobertura@94-1::Invoke(System.Xml.Linq.XElement)",
+                              "AltCover.Transformer/transformFromCobertura@89-1::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Transformer/lineOnly@167::Invoke(System.Xml.Linq.XElement)",
+                              "AltCover.Transformer/lineOnly@158::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()

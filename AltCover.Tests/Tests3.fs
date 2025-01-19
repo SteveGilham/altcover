@@ -100,9 +100,7 @@ module AltCoverTests3 =
 
     let optionNames =
       options
-      |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy _.Length)
-          .ToLowerInvariant())
+      |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy _.Length).ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -115,9 +113,7 @@ module AltCoverTests3 =
 
     let optionNames =
       options
-      |> Seq.map (fun o ->
-        (o.GetNames() |> Seq.maxBy _.Length)
-          .ToLowerInvariant())
+      |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy _.Length).ToLowerInvariant())
       |> Seq.sort
       |> Seq.toList
 
@@ -200,15 +196,11 @@ module AltCoverTests3 =
       (Is.EqualTo(optionCount))
 
     let targets =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("AltCover.proj", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(targets)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(targets)
 
     let doc = XDocument.Load stream
 
@@ -3781,16 +3773,12 @@ module AltCoverTests3 =
         + "                               The 'altcover.global.props' file is present in the same directory\n"
 
       Assert.That(
-        result
-          .Replace("\r\n", "\n")
-          .Replace("\u200b", String.Empty),
+        result.Replace("\r\n", "\n").Replace("\u200b", String.Empty),
         Is.EqualTo(expected.Replace("\r\n", "\n"))
       )
 
       let helptext =
-        Output.resources
-          .GetString("HelpText")
-          .Replace("\r\n", "\n")
+        Output.resources.GetString("HelpText").Replace("\r\n", "\n")
 
       let fixupBase (s: String) =
 
@@ -3856,9 +3844,7 @@ module AltCoverTests3 =
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
       let dir =
-        System.Reflection.Assembly
-          .GetExecutingAssembly()
-          .Location
+        System.Reflection.Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName
 
       let eo =
@@ -3868,19 +3854,13 @@ module AltCoverTests3 =
         System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
 
       let helptexteo =
-        resources
-          .GetString("HelpText")
-          .Replace("\r\n", "\n")
+        resources.GetString("HelpText").Replace("\r\n", "\n")
 
       let syntheticeo =
         "AltCover "
-        + String
-          .Join(" ", mainHelp)
-          .Replace("VALUE", "VALO")
+        + String.Join(" ", mainHelp).Replace("VALUE", "VALO")
         + " [-- ] [...]\naŭ\nAltCover Runner "
-        + String
-          .Join(" ", runnerHelp)
-          .Replace("VALUE", "VALO")
+        + String.Join(" ", runnerHelp).Replace("VALUE", "VALO")
         + " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n"
         + "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n"
         + "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
@@ -4023,10 +4003,7 @@ module AltCoverTests3 =
         "Warning", [ "-q" ]
         "Error", [ "-q"; "-q" ] ]
       |> List.iter (fun (level, q) ->
-        subject
-          .GetType()
-          .GetProperty("Verbosity")
-          .SetValue(subject, level)
+        subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
 
         aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
 
@@ -4238,10 +4215,7 @@ module AltCoverTests3 =
         "Error", [ "-q"; "-q" ] ]
       |> List.iter (fun (level, q) ->
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        subject
-          .GetType()
-          .GetProperty("Verbosity")
-          .SetValue(subject, level)
+        subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
 
         aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
 
@@ -4555,11 +4529,7 @@ module AltCoverTests3 =
     Assert.That(subject.Execute(), Is.True)
     Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
 
-    Assert.That(
-      Path
-        .GetFileName(subject.Extended)
-        .StartsWith("altcover.test.")
-    )
+    Assert.That(Path.GetFileName(subject.Extended).StartsWith("altcover.test."))
 
     let result =
       subject.Extended |> File.ReadAllText
@@ -4871,11 +4841,7 @@ module AltCoverTests3 =
       CommandLine.I.doRetry (fun _ -> raise ex) (builder.Append >> ignore) 2 0 0 target
 
       test
-        <@
-          builder
-            .ToString()
-            .StartsWith(ex.GetType().FullName, StringComparison.Ordinal)
-        @>)
+        <@ builder.ToString().StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
 
     let builder = System.Text.StringBuilder()
     let monitor (s: string) = s |> builder.Append |> ignore

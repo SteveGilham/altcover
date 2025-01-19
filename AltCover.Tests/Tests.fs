@@ -111,14 +111,11 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net472/Sample32.exe")
 #endif
   let recorderSnk =
-    typeof<AltCover.Node>.Assembly
-      .GetManifestResourceNames()
+    typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
     |> Seq.find _.EndsWith(".Recorder.snk", StringComparison.Ordinal)
 
   let infrastructureSnk =
-    Assembly
-      .GetExecutingAssembly()
-      .GetManifestResourceNames()
+    Assembly.GetExecutingAssembly().GetManifestResourceNames()
     |> Seq.find _.EndsWith("Infrastructure.snk", StringComparison.Ordinal)
 
   let private ff (a, b, c) = { Scope = a; Regex = b; Sense = c }
@@ -483,9 +480,7 @@ module AltCoverTests =
       x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
       || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.filter (fun x ->
-      Path
-        .GetFileName(x)
-        .StartsWith("BlackFox", StringComparison.OrdinalIgnoreCase))
+      Path.GetFileName(x).StartsWith("BlackFox", StringComparison.OrdinalIgnoreCase))
     |> Seq.map AssemblyResolver.ReadAssembly
     |> Seq.filter (fun x ->
       not
@@ -1209,9 +1204,7 @@ module AltCoverTests =
       xml.Descendants()
       |> Seq.filter _.Attribute("Include".X).IsNotNull
       |> Seq.map (fun x ->
-        (x
-          .Attribute(XName.Get("Include"))
-          .Value.ToLowerInvariant(),
+        (x.Attribute(XName.Get("Include")).Value.ToLowerInvariant(),
          x.Attribute(XName.Get("Version")).Value))
       |> Map.ofSeq
 
@@ -1584,26 +1577,18 @@ module AltCoverTests =
   [<Test>]
   let ReleaseBuildTernaryTestInContext () =
     let res =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("issue37.dl_", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
 
     let res2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("issue37.pd_", StringComparison.Ordinal)
 
     use stream2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
 
     use def =
       AssemblyResolver.ReadAssembly stream
@@ -1664,26 +1649,18 @@ module AltCoverTests =
   [<Test>]
   let ReleaseBuildTernaryTestInContextWithCoalescence () =
     let res =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("issue37.dl_", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
 
     let res2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("issue37.pd_", StringComparison.Ordinal)
 
     use stream2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(res2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
 
     use def =
       AssemblyResolver.ReadAssembly stream
@@ -2112,25 +2089,13 @@ module AltCoverTests =
     let dummy = Cil.Document("dummy")
     let before = Cil.SequencePoint(i, dummy)
 
-    before
-      .GetType()
-      .GetProperty("StartLine")
-      .SetValue(before, 23)
+    before.GetType().GetProperty("StartLine").SetValue(before, 23)
 
-    before
-      .GetType()
-      .GetProperty("StartColumn")
-      .SetValue(before, 42)
+    before.GetType().GetProperty("StartColumn").SetValue(before, 42)
 
-    before
-      .GetType()
-      .GetProperty("EndLine")
-      .SetValue(before, -1)
+    before.GetType().GetProperty("EndLine").SetValue(before, -1)
 
-    before
-      .GetType()
-      .GetProperty("EndColumn")
-      .SetValue(before, -1)
+    before.GetType().GetProperty("EndColumn").SetValue(before, -1)
 
     let after = SeqPnt.Build(before)
     Assert.That(after.EndLine, Is.EqualTo before.StartLine)
@@ -2153,9 +2118,7 @@ module AltCoverTests =
 
   let private provideKeyPair () =
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(infrastructureSnk)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -2203,8 +2166,7 @@ module AltCoverTests =
     let computed = pair.PublicKey
 
     let definitive =
-      StrongNameKeyPair(pair.Blob |> List.toArray)
-        .PublicKey
+      StrongNameKeyPair(pair.Blob |> List.toArray).PublicKey
 
     Assert.That(computed, Is.EquivalentTo definitive)
 #endif
@@ -3642,8 +3604,7 @@ module AltCoverTests =
 
       //printfn "%A" (makeDocument document)
       let results =
-        (makeDocument document)
-          .Descendants("altcover.file".X)
+        (makeDocument document).Descendants("altcover.file".X)
         |> Seq.toList
 
       Assert.That(results |> List.length, Is.EqualTo 9)
@@ -3902,15 +3863,11 @@ module AltCoverTests =
       let result = makeJson document
 
       let nativeJson =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(nativeJson)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
       use reader = new StreamReader(stream)
 
@@ -4168,8 +4125,7 @@ module AltCoverTests =
             Identity = Hallmark.Build()
             Destinations = [] })
 
-      (makeDocument document)
-        .Descendants(XName.Get "method")
+      (makeDocument document).Descendants(XName.Get "method")
       |> Seq.iter (fun mx ->
         let sx = mx.Descendants(XName.Get "seqpnt")
         test <@ sx |> Seq.length = 1 @>)
@@ -4187,10 +4143,7 @@ module AltCoverTests =
         .Replace("net9.0", "netstandard2.0")
 
     let path6 =
-      sample4path
-        .Replace("4", "6")
-        .Replace("672", "472")
-        .Replace("2.1", "2.0")
+      sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
 
     try
       AltCoverRunnerTests.mainInit ()
@@ -4206,8 +4159,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names1 =
-        (makeDocument document1)
-          .Descendants(XName.Get "method")
+        (makeDocument document1).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
         //  |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
         //  |> Seq.filter (fun n -> n <> "Main")
@@ -4238,8 +4190,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names2 =
-        (makeDocument document2)
-          .Descendants(XName.Get "method")
+        (makeDocument document2).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
         |> Seq.map _.Attribute(XName.Get "name").Value
         |> Seq.filter (fun n -> n <> "Main")
@@ -4277,8 +4228,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names3 =
-        (makeDocument document3)
-          .Descendants(XName.Get "method")
+        (makeDocument document3).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
         |> Seq.map _.Attribute(XName.Get "name").Value
         |> Seq.filter (fun n -> n <> "Main")
@@ -4313,8 +4263,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names5 =
-        (makeDocument document5)
-          .Descendants(XName.Get "method")
+        (makeDocument document5).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
         |> Seq.map _.Attribute(XName.Get "name").Value
         |> Seq.filter (fun n -> n <> "Main")
@@ -4355,8 +4304,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names6 =
-        (makeDocument document6)
-          .Descendants(XName.Get "method")
+        (makeDocument document6).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
         //  |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
         //                         mx.Attribute(XName.Get "class").Value))
@@ -4393,8 +4341,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names7 =
-        (makeDocument document7)
-          .Descendants(XName.Get "method")
+        (makeDocument document7).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
         |> Seq.map (fun mx ->
           (mx.Attribute(XName.Get "name").Value + "    ",
@@ -4439,8 +4386,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names8 =
-        (makeDocument document8)
-          .Descendants(XName.Get "method")
+        (makeDocument document8).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
         //  |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
         //                         mx.Attribute(XName.Get "class").Value))
@@ -4476,8 +4422,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names9 =
-        (makeDocument document9)
-          .Descendants(XName.Get "method")
+        (makeDocument document9).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
         |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value + "    ")
         //  |> Seq.sortBy (fun n -> BitConverter.ToInt32(
@@ -4505,8 +4450,7 @@ module AltCoverTests =
             Destinations = [] })
 
       let names4 =
-        (makeDocument document4)
-          .Descendants(XName.Get "method")
+        (makeDocument document4).Descendants(XName.Get "method")
         |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
         //  |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
         //  |> Seq.filter (fun n -> n <> "Main")
@@ -4546,8 +4490,7 @@ module AltCoverTests =
             Identity = Hallmark.Build()
             Destinations = [] })
 
-      (makeDocument document)
-        .Descendants(XName.Get "Method")
+      (makeDocument document).Descendants(XName.Get "Method")
       |> Seq.iter (fun mx ->
         let sx =
           mx.Descendants(XName.Get "SequencePoint")
@@ -4603,8 +4546,7 @@ module AltCoverTests =
         |> Seq.find _.EndsWith("*", StringComparison.Ordinal)
 
       let files =
-        (makeDocument document)
-          .Descendants(XName.Get "seqpnt")
+        (makeDocument document).Descendants(XName.Get "seqpnt")
         |> Seq.map _.Attribute(XName.Get "document").Value
         |> Seq.distinct
         |> Seq.filter _.StartsWith("https://", StringComparison.Ordinal)
@@ -4618,8 +4560,7 @@ module AltCoverTests =
       Assert.That(files, Is.EquivalentTo expected)
 
       let untracked =
-        (makeDocument document)
-          .Descendants(XName.Get "seqpnt")
+        (makeDocument document).Descendants(XName.Get "seqpnt")
         |> Seq.map _.Attribute(XName.Get "document").Value
         |> Seq.distinct
         |> Seq.filter (
@@ -4808,9 +4749,7 @@ module AltCoverTests =
     use def = AssemblyResolver.ReadAssembly path
 
     let target =
-      def.MainModule
-        .GetType("AltCover.Sample3.Class2")
-        .GetMethods()
+      def.MainModule.GetType("AltCover.Sample3.Class2").GetMethods()
       |> Seq.filter (fun m -> m.Name = "set_Property")
       |> Seq.head
 
@@ -4845,9 +4784,7 @@ module AltCoverTests =
     use def = AssemblyResolver.ReadAssembly path
 
     let target =
-      def.MainModule
-        .GetType("AltCover.Sample3.Class3")
-        .GetMethods()
+      def.MainModule.GetType("AltCover.Sample3.Class3").GetMethods()
       |> Seq.filter (fun m -> m.Name = "GetOperandType")
       |> Seq.head
 
@@ -5009,11 +4946,7 @@ module AltCoverTests =
               .Replace("\\", "/")
               .Replace("Samples/", String.Empty)
               .Replace("altcover", "AltCover"),
-            Does.EndWith(
-              a2.Value
-                .Replace("\\", "/")
-                .Replace("altcover", "AltCover")
-            ),
+            Does.EndWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover")),
             a1.Name.ToString()
             + " : "
             + r.ToString()
@@ -5076,8 +5009,7 @@ module AltCoverTests =
         |> Seq.find _.EndsWith("*", StringComparison.Ordinal)
 
       let files =
-        (makeDocument document)
-          .Descendants(XName.Get "File")
+        (makeDocument document).Descendants(XName.Get "File")
         |> Seq.map _.Attribute(XName.Get "fullPath").Value
         |> Seq.filter _.StartsWith("https://", StringComparison.Ordinal)
         |> Seq.sort
@@ -5090,8 +5022,7 @@ module AltCoverTests =
       Assert.That(files, Is.EquivalentTo expected)
 
       let untracked =
-        (makeDocument document)
-          .Descendants(XName.Get "File")
+        (makeDocument document).Descendants(XName.Get "File")
         |> Seq.map _.Attribute(XName.Get "fullPath").Value
         |> Seq.filter (
           _.StartsWith("https://", StringComparison.Ordinal)
@@ -5131,15 +5062,11 @@ module AltCoverTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
 
@@ -5331,15 +5258,11 @@ module AltCoverTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
       // strip out branch information
@@ -5391,15 +5314,11 @@ module AltCoverTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
       // strip out line information
@@ -5423,15 +5342,11 @@ module AltCoverTests =
 
   let AddTrackingForMain xml =
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith(xml, StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -5630,15 +5545,11 @@ module AltCoverTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample1ClassExclusion.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
 
@@ -5726,15 +5637,11 @@ module AltCoverTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
 
@@ -5771,15 +5678,11 @@ module AltCoverTests =
             Destinations = [] })
 
       let resource =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceNames()
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find _.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal)
 
       use stream =
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream(resource)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let baseline = XDocument.Load(stream)
 

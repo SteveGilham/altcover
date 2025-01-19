@@ -46,9 +46,7 @@ module internal Main =
     CoverageParameters.defaultStrongNameKey <- None
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Recorder.snk")
+      Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
 
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)

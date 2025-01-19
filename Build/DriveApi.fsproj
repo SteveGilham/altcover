@@ -16,7 +16,7 @@
     <PackageReference Include="AltCover.Fake" VersionOverride="9.0.1" />
     <PackageReference Include="Fake.Core.Target" />
     <PackageReference Include="Fake.DotNet.Cli" />
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="9.0.0" />
+    <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="Unquote" />
   </ItemGroup>
 </Project>

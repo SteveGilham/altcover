@@ -294,9 +294,7 @@ module private Gui =
       )
 
     let data =
-      Resource
-        .GetResourceString("SelectXml")
-        .Split([| '|' |])
+      Resource.GetResourceString("SelectXml").Split([| '|' |])
 
     data |> Seq.iter (addFilter openFileDialog)
 
@@ -319,10 +317,7 @@ module private Gui =
 
     openFileDialog.InitialDirectory <- Persistence.readFolder ()
 
-    openFileDialog.Filter <-
-      Resource
-        .GetResourceString("SelectXml")
-        .Replace("%", "|*.")
+    openFileDialog.Filter <- Resource.GetResourceString("SelectXml").Replace("%", "|*.")
 
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
@@ -378,9 +373,7 @@ module private Gui =
               else
                 handler.coverageFiles.[i]
             )
-        Display =
-          (handler :> IVisualizerWindow)
-            .ShowMessageOnGuiThread
+        Display = (handler :> IVisualizerWindow).ShowMessageOnGuiThread
         UpdateMRUFailure =
           fun info ->
             Handler.InvokeOnGuiThread(fun () ->
@@ -684,14 +677,12 @@ module private Gui =
         let message =
           Resource.Format(
             "No source location",
-            [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
-                .Text
+            [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText).Text
               |> replace ("<", "&lt;")
               |> replace (">", "&gt;") ]
           )
 
-        (handler :> IVisualizerWindow)
-          .ShowMessageOnGuiThread
+        (handler :> IVisualizerWindow).ShowMessageOnGuiThread
           AltCover.MessageType.Info
           message
 
@@ -738,8 +729,7 @@ module private Gui =
                     Justification = "IDisposables are added to other widgets")>]
   let private addLabelWidget g (button: ToolButton, resource) =
     let keytext =
-      (resource |> Resource.GetResourceString)
-        .Split('|')
+      (resource |> Resource.GetResourceString).Split('|')
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))
