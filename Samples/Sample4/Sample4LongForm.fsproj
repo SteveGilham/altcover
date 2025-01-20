@@ -58,7 +58,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="Unquote">
-      <HintPath>..\..\ThirdParty\Unquote5.dll</HintPath>
+      <HintPath>..\..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -75,5 +75,4 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-
 </Project>
