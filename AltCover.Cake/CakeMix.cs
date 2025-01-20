@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Cake.Core
 {
   [EditorBrowsable(EditorBrowsableState.Never)]
@@ -45,17 +46,19 @@ namespace Cake.Core.IO
   [EditorBrowsable(EditorBrowsableState.Never)]
   public class ProcessArgumentBuilder
   {
-    public void Append(string s)
+#pragma warning disable CA1822 // Mark members as static
+    public void Append(string _)
     { }
 
-    public void Append(IProcessArgument s)
+    public void Append(IProcessArgument _)
     { }
 
-    public IEnumerable<IProcessArgument> Skip(int n)
+    public IEnumerable<IProcessArgument> Skip(int _)
     { return null; }
 
-    public IEnumerable<IProcessArgument> Take(int n)
+    public IEnumerable<IProcessArgument> Take(int _)
     { return null; }
+#pragma warning restore CA1822 // Mark members as static
   }
 
   [EditorBrowsable(EditorBrowsableState.Never)]
@@ -65,11 +68,13 @@ namespace Cake.Core.IO
   [EditorBrowsable(EditorBrowsableState.Never)]
   public class FilePath
   {
+#pragma warning disable CA1822 // Mark members as static
     public FilePath GetFilename()
     { return null; }
 
     public string FullPath
     { get { return String.Empty; } }
+#pragma warning restore CA1822 // Mark members as static
   }
 }
 
@@ -84,7 +89,7 @@ namespace Cake.Core.Annotations
   [AttributeUsage(AttributeTargets.All)]
   public class CakeAliasCategoryAttribute : Attribute
   {
-    public CakeAliasCategoryAttribute(string s)
+    public CakeAliasCategoryAttribute(string _)
     { }
   }
 }
@@ -95,9 +100,11 @@ namespace Cake.Common.Tools.DotNet
   public static class DotNetAliases
   {
     public static void DotNetTest(
+#pragma warning disable IDE0060 // Remove unused parameter
       Cake.Core.ICakeContext context,
       string fullPath,
       Cake.Common.Tools.DotNet.Test.DotNetTestSettings testSettings)
+#pragma warning restore IDE0060 // Remove unused parameter
     { }
   }
 }

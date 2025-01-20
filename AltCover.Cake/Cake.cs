@@ -79,7 +79,11 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     public static string ImportModule(this ICakeContext context)
     {
+#if NET8_0_OR_GREATER
+      ArgumentNullException.ThrowIfNull(context, nameof(context));
+#else
       if (context == null) throw new System.ArgumentNullException(nameof(context));
+#endif
       return FSCommand.ImportModule();
     }
 
@@ -92,7 +96,11 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     public static System.Version Version(this ICakeContext context)
     {
+#if NET8_0_OR_GREATER
+      ArgumentNullException.ThrowIfNull(context, nameof(context));
+#else
       if (context == null) throw new System.ArgumentNullException(nameof(context));
+#endif
       return FSCommand.Version();
     }
   }
