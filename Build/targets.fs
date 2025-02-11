@@ -1741,7 +1741,7 @@ module Targets =
           |> (testWithCLITaggedArguments "UnitTestDotNet"))
 
       try
-        [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+        [ Path.getFullName "./AltCover.Tests/AltCover.Tests.fsproj"
           Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
           //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
           Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
@@ -1764,7 +1764,7 @@ module Targets =
               :: p.Properties
             DoRestore = true }
 
-      [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+      [ Path.getFullName "./AltCover.Tests/AltCover.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
         Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
         Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
@@ -1785,7 +1785,7 @@ module Targets =
 
       try
         let l =
-          [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+          [ Path.getFullName "./AltCover.Tests/AltCover.Tests.fsproj"
             Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
             Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
             Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
@@ -2319,12 +2319,12 @@ module Targets =
         Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
 
       let tests = // TODO monitor!not, Visualizer
-        [ (Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net9.0", // testDirectory
+        [ (Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net9.0", // testDirectory
            Path.getFullName
-             "_Binaries/UnitTestWithAltCoverCore_AltCover.Expecto.Tests/Debug+AnyCPU/net9.0", // output
+             "_Binaries/UnitTestWithAltCoverCore_AltCover.Tests/Debug+AnyCPU/net9.0", // output
            reports @@ "UnitTestWithAltCoverCore.xml", // report
-           "AltCover.Expecto.Tests.fsproj", // project
-           Path.getFullName "AltCover.Expecto.Tests") // workingDirectory
+           "AltCover.Tests.fsproj", // project
+           Path.getFullName "AltCover.Tests") // workingDirectory
           (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net9.0",
            Path.getFullName
              "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder.Tests/Debug+AnyCPU/net9.0",
@@ -2451,7 +2451,7 @@ module Targets =
 
       let tests =
         [ (reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
-           Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj")
+           Path.getFullName "./AltCover.Tests/AltCover.Tests.fsproj")
           (reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
            Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj")
           (reports @@ "MonitorTestWithAltCoverCoreRunner.xml", // report
@@ -5800,7 +5800,6 @@ module Targets =
                   "Fake2738Workround", "True" ]
                 @ tmp.MSBuildParams.Properties })
         "Sample4LongForm.fsproj")
-
 
   let cake5plusTest =
     (fun () ->

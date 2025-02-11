@@ -3,16 +3,9 @@
 does not build using the framework version
 #endif
 
-#if EXPECTO_MAIN
-module Manifest =
-  let regular =
-    [|
-#else
 module ExpectoTestManifest =
-  let simpleTests () =
-    [|
-#endif
-       Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
+  let regular =
+    [| Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
        Tests.BaseTests.ExerciseTime, "BaseTests.ExerciseTime"
        Tests.BaseTests.ExerciseCall, "BaseTests.ExerciseCall"
        Tests.BaseTests.ExerciseNull, "BaseTests.ExerciseNull"
@@ -955,7 +948,5 @@ module ExpectoTestManifest =
        "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle" |]
     |> Array.toList
 
-#if !EXPECTO_MAIN
   let consistencyCheck specials =
-    ExpectoTestCommon.consistencyCheck (simpleTests ()) specials //["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
-#endif
+    ExpectoTestCommon.consistencyCheck regular specials //["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]

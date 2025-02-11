@@ -22,7 +22,7 @@ module ExpectoMain =
     ExpectoTestCommon.makeTests
       "AltCoverTests"
       consistencyCheck
-      Manifest.regular
+      ExpectoTestManifest.regular
       specials
       (fun () ->
         AltCoverRunnerTests.mainInit ()

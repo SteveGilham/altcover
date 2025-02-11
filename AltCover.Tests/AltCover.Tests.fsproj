@@ -4,6 +4,9 @@
     <TargetFrameworks>net9.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType Condition="'$(TargetFramework)' != 'net472'">Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
     <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">WINDOWS</ExtraDefines>
     <DefineConstants>TRACE;RUNNER_TESTS;$(ExtraDefines)</DefineConstants>
@@ -37,6 +40,8 @@
     <Compile Include="XTests.fs" />
     <Compile Include="Expecto.fs" Condition="'$(TargetFramework)' != 'net472'" />
     <None Include="Expecto.fs" Condition="'$(TargetFramework)' == 'net472'" />
+    <Compile Include="Program.fs"  Condition="'$(TargetFramework)' != 'net472'" />
+    <None Include="Program.fs"  Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -157,6 +162,14 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
+
+    <PackageReference Include="coverlet.collector"  Condition="'$(TargetFramework)' != 'net472'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="YoloDev.Expecto.TestSdk"  Condition="'$(TargetFramework)' != 'net472'" />
+  
     <Reference Include="Manatee.Json">
       <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
       <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
