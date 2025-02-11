@@ -140,7 +140,9 @@
     <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
-    <Reference Include="Unquote">
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
