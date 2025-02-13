@@ -258,8 +258,8 @@ module internal KeyStore =
     |> hash.ComputeHash
     |> BitConverter.ToString
 
-[<ExcludeFromCodeCoverage;
-  SuppressMessage("Gendarme.Rules.Design.Generic",
+//Stopped working in 9.0.200 [<ExcludeFromCodeCoverage;
+[<SuppressMessage("Gendarme.Rules.Design.Generic",
                   "AvoidDeclaringCustomDelegatesRule",
                   Justification =
                     "Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]

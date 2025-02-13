@@ -209,7 +209,7 @@ module internal CommandLine =
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
                       Justification = "Long enough but no longer")>]
-    [<TailCall>]
+    //Stopped working in 9.0.200 [<TailCall>]
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
