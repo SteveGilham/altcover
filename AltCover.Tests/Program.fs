@@ -1,4 +1,6 @@
 ﻿namespace Tests
+#if !NET472
+//does not build using the framework version
 
 open Expecto
 
@@ -33,3 +35,4 @@ module UnitTestStub =
   let unitTestStub argv =
 
     runTestsWithCLIArgs Seq.empty<CLIArguments> argv ExpectoMain.tests
+#endif

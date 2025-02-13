@@ -1,7 +1,6 @@
 ﻿namespace Tests
-#if NET472
-does not build using the framework version
-#endif
+#if !NET472
+//does not build using the framework version
 
 module ExpectoTestManifest =
   let regular =
@@ -950,3 +949,4 @@ module ExpectoTestManifest =
 
   let consistencyCheck specials =
     ExpectoTestCommon.consistencyCheck regular specials //["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
+#endif
