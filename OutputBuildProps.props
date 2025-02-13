@@ -38,6 +38,6 @@
   <PropertyGroup Condition="'$(Configuration)'!='Debug'">
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <NoWarn>CS9057;9057</NoWarn>
+    <NoWarn>CS9057;9057;FS0203</NoWarn>
   </PropertyGroup>
 </Project>

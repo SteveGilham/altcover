@@ -10,8 +10,8 @@
     <GlobalDefineConstants>AVALONIA;$(TOGGLE)</GlobalDefineConstants>
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
-    <NoWarn>NU1902,NU1903,NU1904</NoWarn>
-    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904</MSBuildWarningsAsMessages>
+    <NoWarn>$(NoWarn);NU1902,NU1903,NU1904</NoWarn>
+    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904;NETSDK1206</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
