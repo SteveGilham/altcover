@@ -10,14 +10,14 @@
     <OtherFlags />
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>TRACE;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Reference Include="Gendarme.Framework">
       <HintPath>$(GendarmeToolDir)Gendarme.Framework.dll</HintPath>
@@ -32,7 +32,7 @@
     </Reference>
     <PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
@@ -48,7 +48,7 @@
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
@@ -58,10 +58,6 @@
     <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="NUnit3TestAdapter">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="FSharp.Core">
