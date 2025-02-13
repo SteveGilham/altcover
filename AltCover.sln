@@ -52,6 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\common-rules.xml = Build\common-rules.xml
 		Build\coverletArgs.runsettings = Build\coverletArgs.runsettings
 		Build\coverletArgs.sample.runsettings = Build\coverletArgs.sample.runsettings
+		.github\dependabot.yml = .github\dependabot.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props

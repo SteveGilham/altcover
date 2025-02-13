@@ -5,8 +5,3 @@ updates:
     schedule:
       interval: "weekly" # check for action update every week
       day: "wednesday"
-  - package-ecosystem: "dotnet-sdk"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
