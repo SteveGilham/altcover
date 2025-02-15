@@ -2517,21 +2517,6 @@ module Targets =
           let newproj = testdir @@ proj
           fsproj.Save newproj
 
-          DotNet.restore
-            (fun o ->
-              let tmp =
-                o.WithCommon(withWorkingDirectoryVM testdir)
-
-              let mparams =
-                { tmp.MSBuildParams with
-                    ConsoleLogParameters = []
-                    DistributedLoggers = None
-                    DisableInternalBinLog = true
-                    Properties = tmp.MSBuildParams.Properties }
-
-              { tmp with MSBuildParams = mparams })
-            proj
-
           let prep =
             AltCover.PrepareOptions.Primitive(
               { Primitive.PrepareOptions.Create() with
