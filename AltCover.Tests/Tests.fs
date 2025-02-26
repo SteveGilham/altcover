@@ -181,34 +181,34 @@ module AltCoverTests =
       let f = fst x
       let tokens, pdb = snd x
 
-      match pdb with
-      // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
-      //| None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
-      | Some name ->
-        printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
+      test' <@ pdb.IsSome @> f
 
-        let seperatePdb =
-          name
-          |> Path.GetDirectoryName
-          |> String.IsNullOrEmpty
-          |> not
+      let name = pdb.Value
 
-        Assert.That(
-          AltCover.ProgramDatabase.I.symbolMatch tokens name,
-          Is.EqualTo seperatePdb,
-          f |> Path.GetFileName
-        )
+      printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
 
-        //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
-        let probe = Path.ChangeExtension(f, ".pdb")
-        let file = FileInfo(probe)
-        let filename = file.Name.Replace("\\", "/")
+      let seperatePdb =
+        name
+        |> Path.GetDirectoryName
+        |> String.IsNullOrEmpty
+        |> not
 
-        Assert.That(
-          "/" + name.Replace("\\", "/"),
-          Does.EndWith("/" + filename),
-          f + " -> " + name
-        ))
+      Assert.That(
+        AltCover.ProgramDatabase.I.symbolMatch tokens name,
+        Is.EqualTo seperatePdb,
+        f |> Path.GetFileName
+      )
+
+      //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
+      let probe = Path.ChangeExtension(f, ".pdb")
+      let file = FileInfo(probe)
+      let filename = file.Name.Replace("\\", "/")
+
+      Assert.That(
+        "/" + name.Replace("\\", "/"),
+        Does.EndWith("/" + filename),
+        f + " -> " + name
+      ))
 
   [<Test>]
   let ShouldGetGUIDfromNativePdb () =
