@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder2.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <NoWarn>NU1702</NoWarn>
+    <NoWarn>NU1702;$(NoWarn)</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
