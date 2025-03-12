@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".config/dotnet-tools.json" />
+    <File Path="Directory.Packages.props" />
+    <File Path="NuGet.config" />
+    <Project Path="Build/NuGet.csproj">
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Project Path="MCS/MCS.fsproj" />
+  <Project Path="Samples/Sample4/Sample4LongForm.fsproj" />
+</Solution>

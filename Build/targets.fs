@@ -862,9 +862,9 @@ module Targets =
   let BuildRelease =
     (fun () ->
       try
-        [ "./AltCover.sln"
-          "./AltCover.Visualizer.sln"
-          "MCS.sln" ]
+        [ "./AltCover.slnx"
+          "./AltCover.Visualizer.slnx"
+          "MCS.slnx" ]
         |> Seq.iter dotnetBuildRelease
 
         // document cmdlets ahead of packaging
@@ -960,11 +960,11 @@ module Targets =
 
       Actions.Run (ilrepack, ".", cmd) "ILRepack failed"
 
-      [ "./AltCover.sln"
-        "./AltCover.Visualizer.sln"
-        "./MCS.sln"
-        "./Samples/Sample14/Sample14.sln"
-        "./Samples/Sample28/SourceGenerators.sln" ]
+      [ "./AltCover.slnx"
+        "./AltCover.Visualizer.slnx"
+        "./MCS.slnx"
+        "./Samples/Sample14/Sample14.slnx"
+        "./Samples/Sample28/SourceGenerators.slnx" ]
       |> Seq.iter dotnetBuildDebug
 
       Shell.copy "./_SourceLink" (!!"./_Binaries/Sample14/Debug+AnyCPU/net9.0/*"))
@@ -2442,7 +2442,7 @@ module Targets =
       Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
 
       Shell.cleanDir ("./_Binaries/Sample4LongForm")
-      dotnetBuildDebug "./MCS.sln"
+      dotnetBuildDebug "./MCS.slnx"
 
       let keyfile =
         Path.getFullName "Build/SelfTest.snk"
@@ -4922,7 +4922,7 @@ module Targets =
 
           printfn "Build the sample2 code as x86"
 
-          "./AltCover.sln"
+          "./AltCover.slnx"
           |> Path.GetFullPath
           |> DotNet.build (fun p ->
             { p with
@@ -5785,7 +5785,6 @@ module Targets =
                   "Fake2738Workround", "True" ]
                 @ tmp.MSBuildParams.Properties })
         "Sample4LongForm.fsproj")
-
 
   let cake5plusTest =
     (fun () ->
@@ -7489,7 +7488,7 @@ module Targets =
               .WithAltCoverImportModule()
               .WithAltCoverGetVersion()
             |> testWithCLIArguments)
-          "Issue72.sln"
+          "Issue72.slnx"
 
         test <@ File.Exists("./Samples/Sample16/Test/_Reports/solution.Test.xml") @>
         test <@ File.Exists("./Samples/Sample16/Test/_Reports/solution.Test2.xml") @>
@@ -8026,7 +8025,7 @@ module Targets =
     (fun () ->
       if Environment.isWindows then
         Directory.ensure "./_Reports/CppInline"
-        msbuildDebug None "./Samples/Sample29/SimpleMix.sln"
+        msbuildDebug None "./Samples/Sample29/SimpleMix.slnx"
 
         OpenCover.run
           (fun p ->
