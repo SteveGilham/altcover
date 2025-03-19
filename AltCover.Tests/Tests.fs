@@ -72,7 +72,7 @@ module AltCoverTests =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net9.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net10.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
@@ -86,16 +86,16 @@ module AltCoverTests =
 
 #if !NET472
   let sample2path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net9.0/Sample2.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net10.0/Sample2.dll")
 
   let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll")
 
   let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net9.0/Sample8.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net10.0/Sample8.dll")
 
   let sample32path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net9.0/Sample32.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net10.0/Sample32.dll")
 
 #else
   let sample2path =
@@ -3835,7 +3835,7 @@ module AltCoverTests =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll")
 
       "Main"
       |> (Regex
@@ -4140,7 +4140,7 @@ module AltCoverTests =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("net9.0", "netstandard2.0")
+        .Replace("net10.0", "netstandard2.0")
 
     let path6 =
       sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
@@ -5819,9 +5819,9 @@ module AltCoverTests =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net9.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net9.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net10.0 not built")
 
     try
       "Program"
