@@ -53,7 +53,7 @@
       <Build Project="false" />
     </Project>
   </Folder>
-  <Folder Name="/Build Items/Cecil/">
+  <Folder Name="/Build Items/Cecil/" Id="122447bc-6834-b063-0b30-e0c0a656f028">
     <File Path="ThirdParty/cecil/Mono.Cecil.dll" />
     <File Path="ThirdParty/cecil/Mono.Cecil.Mdb.dll" />
     <File Path="ThirdParty/cecil/Mono.Cecil.Mdb.pdb" />
@@ -173,6 +173,9 @@
   </Project>
   <Project Path="AltCover.DotNet/AltCover.DotNet.fsproj">
     <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj">
+    <Build Solution="Release|Any CPU" Project="false" />
   </Project>
   <Project Path="AltCover.Engine/AltCover.Engine.fsproj">
     <BuildDependency Project="AltCover.Base/AltCover.Base.csproj" />

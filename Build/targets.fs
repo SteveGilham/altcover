@@ -1683,6 +1683,8 @@ module Targets =
             Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
             Path.getFullName
+              "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/AltCover.Engine.Tests.dll"
+            Path.getFullName
               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
@@ -1743,6 +1745,7 @@ module Targets =
       try
         [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
           Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+          Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj"
           //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
           Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
           Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
@@ -1766,6 +1769,7 @@ module Targets =
 
       [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+        Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj"
         Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
         Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
         Path.getFullName
@@ -1787,6 +1791,7 @@ module Targets =
         let l =
           [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
             Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+            Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj"
             Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
             Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
             Path.getFullName
@@ -1877,6 +1882,8 @@ module Targets =
       let testFiles =
         [ Path.getFullName
             "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
+          Path.getFullName
+            "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/AltCover.Engine.Tests.dll"
           Path.getFullName
             "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
           Path.getFullName
@@ -2020,6 +2027,9 @@ module Targets =
       let apiDir =
         Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
 
+      let engineDir =
+        Path.getFullName "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472"
+
       // TODO/maybes
       //let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
 
@@ -2037,11 +2047,13 @@ module Targets =
               Report = altReport
               InputDirectories =
                 [| "."
+                   engineDir
                    weakDir
                    recorder4Dir
                    apiDir (*; visDir ; monitorDir*) |]
               OutputDirectories =
                 [| "./__UnitTestWithAltCover"
+                   engineDir @@ "__EngineTestWithAltCover"
                    weakDir @@ "__VGEWithAltCover"
                    recorder4Dir @@ "__RecorderTestWithAltCover"
                    apiDir
@@ -2079,6 +2091,8 @@ module Targets =
               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/AltCover.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
+            Path.getFullName
+              "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Engine.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
             Path.getFullName
@@ -2147,6 +2161,14 @@ module Targets =
            [ Path.getFullName // test assemblies
                "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCoverRunner/AltCover.Api.Tests.dll" ],
            baseFilter,
+           keyfile)
+          (Path.getFullName "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472", // test directory
+           "./__EngineTestWithAltCoverRunner", // relative output
+           "EngineTestWithAltCoverRunner.xml", // coverage report
+           "./_Reports/EngineTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+           [ Path.getFullName // test assemblies
+               "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/__EngineTestWithAltCoverRunner/AltCover.Engine.Tests.dll" ],
+           eagerfilter, // And single visit, too
            keyfile)
           (Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472", // test directory
            "./__VisualizerTestWithAltCoverRunner", // relative output
@@ -2343,6 +2365,12 @@ module Targets =
            reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
            "AltCover.Api.Tests.fsproj", // project
            Path.getFullName "AltCover.Api.Tests") // workingDirectory
+          (Path.getFullName "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net9.0", // testDirectory
+           Path.getFullName
+             "_Binaries/UnitTestWithAltCoverCore_AltCover.Engine.Tests/Debug+AnyCPU/net9.0", // output
+           reports @@ "EngineUnitTestWithAltCoverCore.xml", // report
+           "AltCover.Engine.Tests.fsproj", // project
+           Path.getFullName "AltCover.Engine.Tests") // workingDirectory
           (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net9.0", // testDirectory
            Path.getFullName
              "_Binaries/UnitTestWithAltCoverCore_AltCover.Monitor.Tests/Debug+AnyCPU/net9.0", // output
@@ -2454,6 +2482,8 @@ module Targets =
            Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj")
           (reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
            Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj")
+          (reports @@ "EngineTestWithAltCoverCoreRunner.xml", // report
+           Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj")
           (reports @@ "MonitorTestWithAltCoverCoreRunner.xml", // report
            Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj")
           (reports

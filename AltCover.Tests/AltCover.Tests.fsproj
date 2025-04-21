@@ -29,7 +29,6 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" Link="InstrumentationAttribute.fs" />
     <Compile Include="TestCommon.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
     <Compile Include="Runner.Tests.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Tests2.fs" />
