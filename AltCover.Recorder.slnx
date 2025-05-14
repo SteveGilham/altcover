@@ -29,11 +29,12 @@
   </Folder>
   <Project Path="AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj">
     <Build Solution="Release|*" Project="false" />
+    <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
   </Project>
-  <Project Path="AltCover.Recorder/AltCover.Recorder.fsproj" />
+  <Project Path="AltCover.Recorder/AltCover.Recorder.csproj" />
   <Project Path="AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj">
-    <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.fsproj" />
     <Build Solution="Release|*" Project="false" />
+    <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
   </Project>
   <Project Path="D:/Github/altcover/AltCover.Async/AltCover.Async.csproj" />
   <Project Path="D:/Github/altcover/Samples/Sample25/Sample25.csproj" />
