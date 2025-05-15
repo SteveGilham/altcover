@@ -10,6 +10,12 @@ module ExpectoMain =
       Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
       Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
       Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+      // BaseTests
+      Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
+      Tests.BaseTests.ExerciseTime, "BaseTests.ExerciseTime"
+      Tests.BaseTests.ExerciseCall, "BaseTests.ExerciseCall"
+      Tests.BaseTests.ExerciseNull, "BaseTests.ExerciseNull"
+      Tests.BaseTests.ExercisePointVisit, "BaseTests.ExercisePointVisit"
       ]
 
   let specials = []
