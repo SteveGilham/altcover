@@ -182,6 +182,10 @@
     <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
     <Build Solution="*|x86" Project="false" />
   </Project>
+  <Project Path="AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
   <Project Path="AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj">
     <Build Solution="*|x86" Project="false" />
   </Project>
