@@ -5,23 +5,54 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Engine.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputType>Library</OutputType>
-    <GenerateTestingPlatformEntryPoint Condition="'$(TargetFramework)' == 'net472'">false</GenerateTestingPlatformEntryPoint>
     <OutputType Condition="'$(TargetFramework)' != 'net472'">Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">WINDOWS</ExtraDefines>
-    <DefineConstants>DEBUG;TRACE;RUNNER_TESTS;$(ExtraDefines)</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <NoWarn>NU1901;NU1902;NU1903;$(NoWarn)</NoWarn>
     <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277;$(NoWarn)</NoWarn>
     <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <EmbeddedResource Include="..\nupkg\build\AltCover.proj" Link="AltCover.proj" />
+    <EmbeddedResource Include="..\AltCover.Tests\CompressBoth.xml" Link="CompressBoth.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Compressible.xml" Link="Compressible.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\CompressInterior.xml" Link="CompressInterior.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.Xml" Link="GenuineNCover158.Xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158Chart.html" Link="GenuineNCover158Chart.html" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.json" Link="HandRolledToNCover.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartials.json" Link="JsonWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\JsonFromNCoverWithPartials.json" Link="JsonFromNCoverWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToXml.xml" Link="JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.cob.xml" Link="NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.xml" Link="NCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverFromNCoverWithPartials.xml" Link="OpenCoverFromNCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.lcov" Link="OpenCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.xml" Link="OpenCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenCoverForPester.coverlet.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\SameSpan.xml" Link="SameSpan.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.xml" Link="Sample1WithNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.Prepare.xml" Link="Sample4.Prepare.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.coverlet.json" Link="Sample4.coverlet.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.fromcoverletjson.xml" Link="Sample4.fromcoverletjson.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
+    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.json" Link="GenuineNCover158.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCover.json" Link="OpenCover.json" />
+    <EmbeddedResource Include="OpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.xml" Link="Sample4FullTracking.xml" />
+    <Compile Include="FSApiTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -47,25 +78,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Base\AltCover.Base.csproj" />
+    <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
+    <ProjectReference Include="..\AltCover.Toolkit\AltCover.Toolkit.fsproj" />
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
-    <ProjectReference Include="..\AltCover\AltCover.fsproj" />
-    <ProjectReference Include="..\Samples\Sample11\Sample11.csproj" />
-    <ProjectReference Include="..\Samples\Sample16\Sample16.csproj" />
-    <ProjectReference Include="..\Samples\Sample17\Sample17.fsproj" />
-    <ProjectReference Include="..\Samples\Sample1\Sample1.csproj" Condition="'$(TargetFramework)' != 'net472'" />
-    <ProjectReference Include="..\Samples\Sample21\Sample21.csproj" />
-    <ProjectReference Include="..\Samples\Sample23\Sample23.csproj" />
-    <ProjectReference Include="..\Samples\Sample24\Sample24.csproj" />
-    <ProjectReference Include="..\Samples\Sample27\Sample27.fsproj" />
-    <ProjectReference Include="..\Samples\Sample2\Sample2.fsproj" />
-    <ProjectReference Include="..\Samples\Sample30\Sample30.fsproj" />
-    <ProjectReference Include="..\Samples\Sample32\Sample32.csproj" />
-    <ProjectReference Include="..\Samples\Sample3\Sample3.csproj" />
-    <ProjectReference Include="..\Samples\Sample4\Sample4.fsproj" />
-    <ProjectReference Include="..\Samples\Sample5\Sample5.csproj" />
-    <ProjectReference Include="..\Samples\Sample6\Sample6.fsproj" />
-    <ProjectReference Include="..\Samples\Sample12\Sample12.csproj" />
+    <ProjectReference Include="..\Samples\Sample18\Sample18.fsproj" />
   </ItemGroup>
 
 </Project>
