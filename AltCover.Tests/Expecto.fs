@@ -299,24 +299,6 @@ module ExpectoTestManifest =
        Tests.AltCoverTests.ReportFileShouldBeCorrectlyExtended,
        "Tests.ReportFileShouldBeCorrectlyExtended"
        Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
-       Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
-       Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage,
-       "Tests.ShouldGetEmbeddedPdbFromImage"
-       Tests.AltCoverTests.ShouldGetNoMdbFromMonoImage,
-       "Tests.ShouldGetNoMdbFromMonoImage"
-       Tests.AltCoverTests.ShouldGetGUIDfromNativePdb, "Tests.ShouldGetGUIDfromNativePdb"
-       Tests.AltCoverTests.ShouldGetPdbWithFallback, "Tests.ShouldGetPdbWithFallback"
-       Tests.AltCoverTests.ShouldGetForeignPdbWithFallback,
-       "Tests.ShouldGetForeignPdbWithFallback"
-       Tests.AltCoverTests.ShouldGetForeignPdbWithFallbackWhenNotColocated,
-       "Tests.ShouldGetForeignPdbWithFallbackWhenNotColocated"
-       Tests.AltCoverTests.ShouldGetMdbWithFallback, "Tests.ShouldGetMdbWithFallback"
-       Tests.AltCoverTests.ShouldGetSymbolsFromPdb, "Tests.ShouldGetSymbolsFromPdb"
-       Tests.AltCoverTests.ShouldGetSymbolsFromEmbeddedPdb,
-       "Tests.ShouldGetSymbolsFromEmbeddedPdb"
-       Tests.AltCoverTests.ShouldNotGetSymbolsWhenNoPdb,
-       "Tests.ShouldNotGetSymbolsWhenNoPdb"
-       Tests.AltCoverTests.ShouldGetSymbolsFromMdb, "Tests.ShouldGetSymbolsFromMdb"
        Tests.AltCoverTests.NoneOfTheAboveMatchesNoType,
        "Tests.NoneOfTheAboveMatchesNoType"
        Tests.AltCoverTests.NoneOfTheAboveMatchesNoAttribute,

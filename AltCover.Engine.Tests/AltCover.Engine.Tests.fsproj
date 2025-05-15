@@ -22,7 +22,12 @@
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
+    <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\AltCover.Tests\native.pdb" />
   </ItemGroup>
 
   <ItemGroup>

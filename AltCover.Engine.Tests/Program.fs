@@ -20,6 +20,25 @@ module ExpectoMain =
       Tests.BaseTests.ExerciseCall, "BaseTests.ExerciseCall"
       Tests.BaseTests.ExerciseNull, "BaseTests.ExerciseNull"
       Tests.BaseTests.ExercisePointVisit, "BaseTests.ExercisePointVisit"
+      // ProgramDatabase.fs
+      Tests.ProgramDatabase.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
+      Tests.ProgramDatabase.ShouldGetEmbeddedPdbFromImage,
+      "Tests.ShouldGetEmbeddedPdbFromImage"
+      Tests.ProgramDatabase.ShouldGetNoMdbFromMonoImage,
+      "Tests.ShouldGetNoMdbFromMonoImage"
+      Tests.ProgramDatabase.ShouldGetGUIDfromNativePdb, "Tests.ShouldGetGUIDfromNativePdb"
+      Tests.ProgramDatabase.ShouldGetPdbWithFallback, "Tests.ShouldGetPdbWithFallback"
+      Tests.ProgramDatabase.ShouldGetForeignPdbWithFallback,
+      "Tests.ShouldGetForeignPdbWithFallback"
+      Tests.ProgramDatabase.ShouldGetForeignPdbWithFallbackWhenNotColocated,
+      "Tests.ShouldGetForeignPdbWithFallbackWhenNotColocated"
+      Tests.ProgramDatabase.ShouldGetMdbWithFallback, "Tests.ShouldGetMdbWithFallback"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromPdb, "Tests.ShouldGetSymbolsFromPdb"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromEmbeddedPdb,
+      "Tests.ShouldGetSymbolsFromEmbeddedPdb"
+      Tests.ProgramDatabase.ShouldNotGetSymbolsWhenNoPdb,
+      "Tests.ShouldNotGetSymbolsWhenNoPdb"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromMdb, "Tests.ShouldGetSymbolsFromMdb"
       ]
 
   let specials = []
