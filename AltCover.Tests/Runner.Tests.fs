@@ -46,7 +46,9 @@ module AltCoverRunnerTests =
 
   let runnerInit () = AltCover.Runner.init ()
 
+#if !NET472
   let mainInit () = AltCover.Main.init ()
+#endif
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =

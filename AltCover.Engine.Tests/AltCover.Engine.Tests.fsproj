@@ -20,15 +20,29 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
-    <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
+    <Compile Include="ProxyObject.fs" />
+    <Compile Include="Locations.fs" />
+    <Compile Include="Augment.fs" />
     <Compile Include="ProgramDatabase.fs" />
+    <Compile Include="Filter.fs" />
+    <Compile Include="Visitor.fs" />
+    <EmbeddedResource Include="..\AltCover.Tests\issue37.dl_" />
+    <EmbeddedResource Include="..\AltCover.Tests\issue37.pd_" />
+    <EmbeddedResource Include="..\AltCover.Tests\native.pdb" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample1ClassExclusion.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample1MethodExclusion.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.native.json" />
+    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
+    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
+    <ProjectReference Include="..\Samples\Sample2\Sample2.fsproj" />
+    <ProjectReference Include="..\Samples\Sample3\Sample3.csproj" />
+    <ProjectReference Include="..\Samples\Sample11\Sample11.csproj" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="..\AltCover.Tests\native.pdb" />
-  </ItemGroup>
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
@@ -49,6 +63,13 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
+    <Reference Include="Manatee.Json">
+      <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+      <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
+      <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
+      <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
+      <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
