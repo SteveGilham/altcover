@@ -514,9 +514,6 @@ module ExpectoTestManifest =
        Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle,
        "Tests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
        Tests.AltCoverTests.ShouldSortFileIds, "Tests.ShouldSortFileIds"
-       Tests.AltCoverTests.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
-       Tests.AltCoverTests.PositiveIsVisited, "Tests.PositiveIsVisited"
-       Tests.AltCoverTests.NegativesSpray, "Tests.NegativesSpray"
        Tests.AltCoverTests2.ShouldBeAbleToGetTheVisitReportMethod,
        "Tests2.ShouldBeAbleToGetTheVisitReportMethod"
        Tests.AltCoverTests2.ShouldBeAbleToClearTheStrongNameKey,

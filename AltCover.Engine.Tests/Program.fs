@@ -10,6 +10,10 @@ module ExpectoMain =
       Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
       Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
       Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+      // Augment.fs
+      Tests.Augment.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
+      Tests.Augment.PositiveIsVisited, "Tests.PositiveIsVisited"
+      Tests.Augment.NegativesSpray, "Tests.NegativesSpray"
       // BaseTests
       Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
       Tests.BaseTests.ExerciseTime, "BaseTests.ExerciseTime"

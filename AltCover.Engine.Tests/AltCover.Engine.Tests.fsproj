@@ -20,6 +20,7 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
