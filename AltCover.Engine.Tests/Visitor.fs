@@ -15,6 +15,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
 #nowarn "25"
+
 module Visitor =
 
   [<AutoOpen>]

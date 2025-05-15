@@ -40,25 +40,18 @@ module ExpectoMain =
       "Tests.ShouldNotGetSymbolsWhenNoPdb"
       Tests.ProgramDatabase.ShouldGetSymbolsFromMdb, "Tests.ShouldGetSymbolsFromMdb"
       // Filter.fs
-      Tests.ACFilter.NoneOfTheAboveMatchesNoType,
-      "Tests.NoneOfTheAboveMatchesNoType"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoType, "Tests.NoneOfTheAboveMatchesNoType"
       Tests.ACFilter.NoneOfTheAboveMatchesNoAttribute,
       "Tests.NoneOfTheAboveMatchesNoAttribute"
       Tests.ACFilter.NoneOfTheAboveMatchesNoAssembly,
       "Tests.NoneOfTheAboveMatchesNoAssembly"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoModule,
-      "Tests.NoneOfTheAboveMatchesNoModule"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoFile,
-      "Tests.NoneOfTheAboveMatchesNoFile"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoPath,
-      "Tests.NoneOfTheAboveMatchesNoPath"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoMethod,
-      "Tests.NoneOfTheAboveMatchesNoMethod"
-      Tests.ACFilter.FileDoesNotMatchNonFileClass,
-      "Tests.FileDoesNotMatchNonFileClass"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoModule, "Tests.NoneOfTheAboveMatchesNoModule"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoFile, "Tests.NoneOfTheAboveMatchesNoFile"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoPath, "Tests.NoneOfTheAboveMatchesNoPath"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoMethod, "Tests.NoneOfTheAboveMatchesNoMethod"
+      Tests.ACFilter.FileDoesNotMatchNonFileClass, "Tests.FileDoesNotMatchNonFileClass"
       Tests.ACFilter.FileDoesMatchFileClass, "Tests.FileDoesMatchFileClass"
-      Tests.ACFilter.PathDoesNotMatchNonPathClass,
-      "Tests.PathDoesNotMatchNonPathClass"
+      Tests.ACFilter.PathDoesNotMatchNonPathClass, "Tests.PathDoesNotMatchNonPathClass"
       Tests.ACFilter.PathDoesMatchPathClass, "Tests.PathDoesMatchPathClass"
       Tests.ACFilter.AssemblyDoesNotMatchNonAssemblyClass,
       "Tests.AssemblyDoesNotMatchNonAssemblyClass"
@@ -67,8 +60,7 @@ module ExpectoMain =
       Tests.ACFilter.ModuleDoesNotMatchNonModuleClass,
       "Tests.ModuleDoesNotMatchNonModuleClass"
       Tests.ACFilter.ModuleDoesMatchModuleClass, "Tests.ModuleDoesMatchModuleClass"
-      Tests.ACFilter.TypeDoesNotMatchNonTypeClass,
-      "Tests.TypeDoesNotMatchNonTypeClass"
+      Tests.ACFilter.TypeDoesNotMatchNonTypeClass, "Tests.TypeDoesNotMatchNonTypeClass"
       Tests.ACFilter.TypeDoesMatchTypeClass, "Tests.TypeDoesMatchTypeClass"
       Tests.ACFilter.MethodDoesNotMatchNonMethodClass,
       "Tests.MethodDoesNotMatchNonMethodClass"
@@ -105,8 +97,7 @@ module ExpectoMain =
       Tests.Visitor.LocateMatchFallsBackOK, "Tests.LocateMatchFallsBackOK"
       Tests.Visitor.AsyncTestInContext, "Tests.AsyncTestInContext"
       Tests.Visitor.AnotherAsyncTestInContext, "Tests.AnotherAsyncTestInContext"
-      Tests.Visitor.DebugBuildTernaryTestInContext,
-      "Tests.DebugBuildTernaryTestInContext"
+      Tests.Visitor.DebugBuildTernaryTestInContext, "Tests.DebugBuildTernaryTestInContext"
       Tests.Visitor.ReleaseBuildTernaryTest, "Tests.ReleaseBuildTernaryTest"
       Tests.Visitor.ReleaseBuildTernaryTestInContext,
       "Tests.ReleaseBuildTernaryTestInContext"
@@ -118,8 +109,7 @@ module ExpectoMain =
       Tests.Visitor.ValidateSeqPntFixUp, "Tests.ValidateSeqPntFixUp" // HACK HACK HACK
       Tests.Visitor.EmptyArrayHasExpectedHash, "Tests.EmptyArrayHasExpectedHash"
       Tests.Visitor.KeyHasExpectedToken, "Tests.KeyHasExpectedToken"
-      Tests.Visitor.TokenGeneratesExpectedULong,
-      "Tests.TokenGeneratesExpectedULong"
+      Tests.Visitor.TokenGeneratesExpectedULong, "Tests.TokenGeneratesExpectedULong"
       Tests.Visitor.KeyHasExpectedIndex, "Tests.KeyHasExpectedIndex"
       Tests.Visitor.EmptyArrayHasExpectedIndex, "Tests.EmptyArrayHasExpectedIndex"
       Tests.Visitor.KeyHasExpectedRecord, "Tests.KeyHasExpectedRecord"
@@ -144,10 +134,8 @@ module ExpectoMain =
       "Tests.BranchPointsAreComputedForMatch"
       Tests.Visitor.MethodsAreDeeperThanTypes, "Tests.MethodsAreDeeperThanTypes"
       Tests.Visitor.TypesAreDeeperThanModules, "Tests.TypesAreDeeperThanModules"
-      Tests.Visitor.ModulesAreDeeperThanAssemblies,
-      "Tests.ModulesAreDeeperThanAssemblies"
-      Tests.Visitor.AssembliesAreDeeperThanPaths,
-      "Tests.AssembliesAreDeeperThanPaths"
+      Tests.Visitor.ModulesAreDeeperThanAssemblies, "Tests.ModulesAreDeeperThanAssemblies"
+      Tests.Visitor.AssembliesAreDeeperThanPaths, "Tests.AssembliesAreDeeperThanPaths"
       Tests.Visitor.FilteredAssembliesDoNotHaveSequencePoints,
       "Tests.FilteredAssembliesDoNotHaveSequencePoints"
       Tests.Visitor.TestExceptionWrapping, "Tests.TestExceptionWrapping"
@@ -155,21 +143,17 @@ module ExpectoMain =
       Tests.Visitor.TestFixPointApply, "Tests.TestFixPointApply"
       Tests.Visitor.PathsAreDeeperThanAVisit, "Tests.PathsAreDeeperThanAVisit"
       Tests.Visitor.TrackingDetectsTests, "Tests.TrackingDetectsTests"
-      Tests.Visitor.TrackingDetectsExpectedTests,
-      "Tests.TrackingDetectsExpectedTests"
-      Tests.Visitor.TrackingDetectsTestsByFullType,
-      "Tests.TrackingDetectsTestsByFullType"
+      Tests.Visitor.TrackingDetectsExpectedTests, "Tests.TrackingDetectsExpectedTests"
+      Tests.Visitor.TrackingDetectsTestsByFullType, "Tests.TrackingDetectsTestsByFullType"
       Tests.Visitor.TrackingDetectsMethods, "Tests.TrackingDetectsMethods"
       Tests.Visitor.NamingDetectEmpties, "Tests.NamingDetectEmpties"
       Tests.Visitor.NamingSuffixDetectEmpties, "Tests.NamingSuffixDetectEmpties"
       Tests.Visitor.TypeNamesAreExtracted, "Tests.TypeNamesAreExtracted"
       Tests.Visitor.FullTypeNamesAreExtracted, "Tests.FullTypeNamesAreExtracted"
       Tests.Visitor.TypeRefNamesAreExtracted, "Tests.TypeRefNamesAreExtracted"
-      Tests.Visitor.FullTypeRefNamesAreExtracted,
-      "Tests.FullTypeRefNamesAreExtracted"
+      Tests.Visitor.FullTypeRefNamesAreExtracted, "Tests.FullTypeRefNamesAreExtracted"
       Tests.Visitor.MethodNamesAreExtracted, "Tests.MethodNamesAreExtracted"
-      Tests.Visitor.FullMethodNamesAreExtracted,
-      "Tests.FullMethodNamesAreExtracted"
+      Tests.Visitor.FullMethodNamesAreExtracted, "Tests.FullMethodNamesAreExtracted"
       Tests.Visitor.ShouldGenerateExpectedNCoverReportWithOverloads,
       "Tests.ShouldGenerateExpectedNCoverReportWithOverloads"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNet,
@@ -242,8 +226,7 @@ module ExpectoMain =
       "Tests.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
-      Tests.Visitor.ShouldSortFileIds, "Tests.ShouldSortFileIds"
-      ]
+      Tests.Visitor.ShouldSortFileIds, "Tests.ShouldSortFileIds" ]
 
   let specials = []
 
