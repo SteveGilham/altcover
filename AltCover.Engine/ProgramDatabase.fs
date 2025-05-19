@@ -12,6 +12,7 @@ open Mono.Cecil.Rocks
 
 open AltCover.Shared
 open System.Reflection
+open System.Diagnostics.CodeAnalysis
 
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
@@ -20,6 +21,16 @@ module internal ProgramDatabase =
 
   // Implementation details
   module internal I =
+
+    let private handledSymbolFault (x: exn) = (x :? IndexOutOfRangeException)
+
+    let raiseSymbolError f =
+      try
+        f ()
+      with x when handledSymbolFault x ->
+        // This is a workaround for a Mono.Cecil bug that causes an IndexOutOfRangeException
+        // see issue #238
+        InvalidDataException(x.Message, x) |> raise
 
     // We no longer have to violate Cecil encapsulation to get the PDB path
     // but we do to get the embedded PDB info
@@ -292,6 +303,10 @@ module internal ProgramDatabase =
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "not locally owned")>]
+
   let internal readSymbols (assembly: AssemblyDefinition) =
     getPdbWithFallback assembly
     |> Option.iter (fun pdbpath ->
@@ -304,7 +319,7 @@ module internal ProgramDatabase =
       let reader =
         provider.GetSymbolReader(assembly.MainModule, pdbpath)
 
-      assembly.MainModule.ReadSymbols(reader))
+      I.raiseSymbolError (fun () -> assembly.MainModule.ReadSymbols(reader)))
 
   // reflective short-cuts don't work.
   // maybe move this somewhere else, now?
@@ -316,11 +331,10 @@ module internal ProgramDatabase =
     |> Seq.distinctBy _.Url
     |> Seq.toList
 
-[<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
-                                                            "InstantiateArgumentExceptionCorrectlyRule",
-                                                            Scope = "member",
-                                                            Target =
-                                                              "AltCover.ProgramDatabase/I/construct@142::Invoke(System.String,System.Object[])",
-                                                            Justification =
-                                                              "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.ProgramDatabase/I/construct@153::Invoke(System.String,System.Object[])",
+                            Justification = "Compiler generated")>]
 ()

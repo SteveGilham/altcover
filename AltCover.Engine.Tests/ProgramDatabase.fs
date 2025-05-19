@@ -20,6 +20,20 @@ module ProgramDatabase =
     |> Seq.exists (fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
 
   [<Test>]
+  let ShouldTrapIndexOutOfRangeException () =
+    let a = [| "a"; "b" |]
+
+    Assert.Throws<InvalidDataException>(fun () ->
+      AltCover.ProgramDatabase.I.raiseSymbolError (fun () -> printfn "%s" a[2]))
+    |> ignore
+
+    a.[1] <- null
+
+    Assert.Throws<NullReferenceException>(fun () ->
+      AltCover.ProgramDatabase.I.raiseSymbolError (fun () -> printfn "%d" a[1].Length))
+    |> ignore
+
+  [<Test>]
   let ShouldGetPdbFromImage () =
     let files =
       [ Directory.GetFiles(dir, "AltCover*")

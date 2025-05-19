@@ -3232,6 +3232,28 @@ module AltCoverTests3 =
     Assert.That(one.Value, Is.True)
 
   [<Test>]
+  let ResilientHandlesInvalidDataException () =
+    Main.init ()
+    let one = ref false
+    let two = ref false
+
+    let set1 f () =
+      f ()
+      one.Value <- true
+
+    let bif = InvalidDataException("fail")
+    let fbif () = bif |> raise
+
+    Main.I.imageLoadResilient (set1 fbif) (fun x ->
+      Assert.That(x, Is.SameAs bif)
+      two.Value <- true)
+
+    Assert.That(one.Value, Is.False)
+    Assert.That(two.Value)
+    set1 ignore ()
+    Assert.That(one.Value, Is.True)
+
+  [<Test>]
   let ResilientHandlesArgumentException () =
     Main.init ()
     let one = ref false

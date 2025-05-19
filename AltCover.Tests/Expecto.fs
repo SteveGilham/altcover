@@ -627,6 +627,8 @@ module ExpectoTestManifest =
        "Tests3.ImageLoadResilientPassesThrough"
        Tests.AltCoverTests3.ResilientHandlesIOException,
        "Tests3.ResilientHandlesIOException"
+       Tests.AltCoverTests3.ResilientHandlesInvalidDataException,
+       "Tests3.ResilientHandlesInvalidDataException"
        Tests.AltCoverTests3.ResilientHandlesBadImageFormatException,
        "Tests3.ResilientHandlesBadImageFormatException"
        Tests.AltCoverTests3.ResilientHandlesArgumentException,
