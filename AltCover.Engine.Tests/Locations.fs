@@ -15,9 +15,15 @@ module Locations =
 #if !NET472
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net9.0")
+
+  let testdir =
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net9.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
+
+  let testdir =
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472")
 #endif
 
 #if !NET472

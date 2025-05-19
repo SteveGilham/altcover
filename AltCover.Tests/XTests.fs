@@ -14,7 +14,31 @@ open Newtonsoft.Json.Linq
 
 #nowarn "25"
 
+[<AutoOpen>]
+module HallmarkExtra =
+  type Hallmark with
+    static member internal Build() =
+      { Assembly = String.Empty
+        Configuration = String.Empty }
+
 module AltCoverXTests =
+
+#if !NET472
+  type TestAssemblyLoadContext(_dummy: string, _dummy2: string) =
+    inherit System.Runtime.Loader.AssemblyLoadContext(true)
+    override self.Load(name: AssemblyName) = null
+
+#else
+  type TestAssemblyLoadContext(domain: string, where: string) =
+    member self.Unload() = ()
+#endif
+
+  let recorderStream () =
+    let recorder =
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
+      |> Seq.find _.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal)
+
+    Assembly.GetExecutingAssembly().GetManifestResourceStream(recorder)
 
   let monoSample1path =
     Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
@@ -1170,8 +1194,7 @@ module AltCoverXTests =
 
     let def = AssemblyResolver.ReadAssembly path
 
-    use recstream =
-      AltCoverTests2.recorderStream ()
+    use recstream = recorderStream ()
 
     use recdef =
       AssemblyResolver.ReadAssembly recstream
@@ -1228,8 +1251,7 @@ module AltCoverXTests =
 
     let def = AssemblyResolver.ReadAssembly path
 
-    use recstream =
-      AltCoverTests2.recorderStream ()
+    use recstream = recorderStream ()
 
     use recdef =
       AssemblyResolver.ReadAssembly recstream
@@ -1381,7 +1403,7 @@ module AltCoverXTests =
       printfn "%A" created
 
       let alc =
-        new AltCoverTests2.TestAssemblyLoadContext(
+        new TestAssemblyLoadContext(
           "FinishCommitsTheAsyncRecordingAssembly",
           created |> Path.GetDirectoryName
         )

@@ -228,12 +228,170 @@ module ExpectoMain =
       "Tests.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
-      Tests.Visitor.ShouldSortFileIds, "Tests.ShouldSortFileIds" ]
+      Tests.Visitor.ShouldSortFileIds, "Tests.ShouldSortFileIds"
+      // CommandLine.fs
+      Tests.CommandLine.StrongNameKeyCanBeValidated, "Tests.StrongNameKeyCanBeValidated"
+      Tests.CommandLine.VerbosityShouldBeHonoured, "Tests.VerbosityShouldBeHonoured"
+      Tests.CommandLine.CryptographicExceptionIsTransformed,
+      "Tests.CryptographicExceptionIsTransformed"
+      Tests.CommandLine.OutputCanBeExercised, "Tests.OutputCanBeExercised"
+      Tests.CommandLine.NoThrowNoErrorLeavesAllOK, "Tests.NoThrowNoErrorLeavesAllOK"
+      Tests.CommandLine.NoThrowWithErrorIsSignalled, "Tests.NoThrowWithErrorIsSignalled"
+      Tests.CommandLine.ArgumentExceptionWrites, "Tests.ArgumentExceptionWrites"
+      Tests.CommandLine.ArgumentExceptionWritesEx, "Tests.ArgumentExceptionWritesEx"
+      Tests.CommandLine.IOExceptionWrites, "Tests.IOExceptionWrites"
+      Tests.CommandLine.NotSupportedExceptionWrites, "Tests.NotSupportedExceptionWrites"
+      Tests.CommandLine.SecurityExceptionWrites, "Tests.SecurityExceptionWrites"
+      Tests.CommandLine.UnauthorizedAccessExceptionWrites,
+      "Tests.UnauthorizedAccessExceptionWrites"
+      // Instrument.fs
+      Tests.Instrument.ShouldBeAbleToGetTheVisitReportMethod,
+      "Tests.ShouldBeAbleToGetTheVisitReportMethod"
+      Tests.Instrument.ShouldBeAbleToClearTheStrongNameKey,
+      "Tests.ShouldBeAbleToClearTheStrongNameKey"
+      Tests.Instrument.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible,
+      "Tests.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible"
+      Tests.Instrument.NoKnownKeyInEmptyIndex, "Tests.NoKnownKeyInEmptyIndex"
+      Tests.Instrument.KnownKeyMatchedInIndex, "Tests.KnownKeyMatchedInIndex"
+      Tests.Instrument.ThirdPartyKeyNotMatchedInIndex,
+      "Tests.ThirdPartyKeyNotMatchedInIndex"
+      Tests.Instrument.FakedUpKeyIsMatchedInIndex, "Tests.FakedUpKeyIsMatchedInIndex"
+      Tests.Instrument.NoKnownKeyIfAssemblyHasNone, "Tests.NoKnownKeyIfAssemblyHasNone"
+      Tests.Instrument.NoKnownTokenInEmptyIndex, "Tests.NoKnownTokenInEmptyIndex"
+      Tests.Instrument.KnownTokenMatchedInIndex, "Tests.KnownTokenMatchedInIndex"
+      Tests.Instrument.NoKnownTokenIfAssemblyHasNone,
+      "Tests.NoKnownTokenIfAssemblyHasNone"
+      Tests.Instrument.ForeignTokenIsNotMatchedInIndex,
+      "Tests.ForeignTokenIsNotMatchedInIndex"
+      Tests.Instrument.FakedUpTokenIsMatchedInIndex, "Tests.FakedUpTokenIsMatchedInIndex"
+      Tests.Instrument.GuardShouldDisposeRecordingAssemblyOnException,
+      "Tests.GuardShouldDisposeRecordingAssemblyOnException"
+      Tests.Instrument.ShouldBeAbleToTellAnAssembly, "Tests.ShouldBeAbleToTellAnAssembly"
+      Tests.Instrument.ShouldBeAbleToValidateAnAssembly,
+      "Tests.ShouldBeAbleToValidateAnAssembly"
+      Tests.Instrument.ShouldBeAbleToLocateAReference,
+      "Tests.ShouldBeAbleToLocateAReference"
+      Tests.Instrument.ShouldBeAbleToPrepareTheAssembly,
+      "Tests.ShouldBeAbleToPrepareTheAssembly"
+      Tests.Instrument.ShouldGetTrackingStyleIfSet, "Tests.ShouldGetTrackingStyleIfSet"
+      Tests.Instrument.ShouldGetNewFilePathFromPreparedAssembly,
+      "Tests.ShouldGetNewFilePathFromPreparedAssembly"
+      Tests.Instrument.ShouldHandleNullConstantsOK, "Tests.ShouldHandleNullConstantsOK"
+      Tests.Instrument.ShouldRescopeMonoMethodOK, "Tests.ShouldRescopeMonoMethodOK"
+      Tests.Instrument.ShouldWriteMonoAssemblyOK, "Tests.ShouldWriteMonoAssemblyOK"
+      Tests.Instrument.ShouldGetVisitFromWrittenAssembly,
+      "Tests.ShouldGetVisitFromWrittenAssembly"
+      //Tests.Instrument.ShouldUpdateHandlerOK([<Range(0, 31)>] selection)
+      Tests.Instrument.ShouldSubstituteInstructionOperand,
+      "Tests.ShouldSubstituteInstructionOperand"
+      Tests.Instrument.ShouldNotSubstituteDifferentInstructionOperand,
+      "Tests.ShouldNotSubstituteDifferentInstructionOperand"
+      Tests.Instrument.ShouldSubstituteIntoInstructionOperandArray,
+      "Tests.ShouldSubstituteIntoInstructionOperandArray"
+      Tests.Instrument.ShouldNotSubstituteOutsideInstructionOperandArray,
+      "Tests.ShouldNotSubstituteOutsideInstructionOperandArray"
+      Tests.Instrument.ShouldNotSubstituteOtherOperand,
+      "Tests.ShouldNotSubstituteOtherOperand"
+      Tests.Instrument.ShouldBeAbleToTrackAMethod, "Tests.ShouldBeAbleToTrackAMethod"
+      Tests.Instrument.ShouldBeAbleToTrackAMethodWithTailCalls,
+      "Tests.ShouldBeAbleToTrackAMethodWithTailCalls"
+      Tests.Instrument.ShouldBeAbleToTrackAMethodWithNonVoidReturn,
+      "Tests.ShouldBeAbleToTrackAMethodWithNonVoidReturn"
+      Tests.Instrument.ShouldBeAbleToTrackAnAsyncMethod,
+      "Tests.ShouldBeAbleToTrackAnAsyncMethod"
+      Tests.Instrument.ShouldBeAbleToTrackAnFSAsyncMethod,
+      "Tests.ShouldBeAbleToTrackAnFSAsyncMethod"
+      Tests.Instrument.ShouldBeAbleToTrackAnFSTaskMethod,
+      "Tests.ShouldBeAbleToTrackAnFSTaskMethod"
+      Tests.Instrument.ShouldBeAbleToInstrumentASwitchForNCover,
+      "Tests.ShouldBeAbleToInstrumentASwitchForNCover"
+      Tests.Instrument.ShouldNotChangeAnUntrackedMethod,
+      "Tests.ShouldNotChangeAnUntrackedMethod"
+      Tests.Instrument.SwitchBranchesShouldInstrumentByPushingDown,
+      "Tests.SwitchBranchesShouldInstrumentByPushingDown"
+      Tests.Instrument.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases,
+      "Tests.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases"
+      Tests.Instrument.SimpleBranchShouldInstrumentByPushingDown,
+      "Tests.SimpleBranchShouldInstrumentByPushingDown"
+      Tests.Instrument.StartShouldLoadRecordingAssembly,
+      "Tests.StartShouldLoadRecordingAssembly"
+      Tests.Instrument.TypeShouldNotChangeState, "Tests.TypeShouldNotChangeState"
+      Tests.Instrument.ExcludedMethodShouldNotChangeState,
+      "Tests.ExcludedMethodShouldNotChangeState"
+      Tests.Instrument.IncludedMethodShouldChangeState,
+      "Tests.IncludedMethodShouldChangeState"
+      Tests.Instrument.ExcludedAfterMethodShouldNotChangeState,
+      "Tests.ExcludedAfterMethodShouldNotChangeState"
+      Tests.Instrument.IncludedAfterMethodShouldRewriteMethod,
+      "Tests.IncludedAfterMethodShouldRewriteMethod"
+      Tests.Instrument.NoStrongNameShouldUpdateVisibleTo,
+      "Tests.NoStrongNameShouldUpdateVisibleTo"
+      Tests.Instrument.NewStrongNameShouldUpdateVisibleTo,
+      "Tests.NewStrongNameShouldUpdateVisibleTo"
+      Tests.Instrument.UpdateStrongReferencesShouldChangeSigningKeyWherePossible,
+      "Tests.UpdateStrongReferencesShouldChangeSigningKeyWherePossible"
+      Tests.Instrument.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2,
+      "Tests.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2"
+      Tests.Instrument.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired,
+      "Tests.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired"
+      Tests.Instrument.UpdateStrongReferencesShouldNotAddASigningKey,
+      "Tests.UpdateStrongReferencesShouldNotAddASigningKey"
+      Tests.Instrument.UpdateStrongReferencesShouldTrackReferences,
+      "Tests.UpdateStrongReferencesShouldTrackReferences"
+      Tests.Instrument.UpdateStrongReferencesShouldTrackReferencesEvenFakes,
+      "Tests.UpdateStrongReferencesShouldTrackReferencesEvenFakes"
+      Tests.Instrument.ExcludedAssemblyRefsAreNotUpdated,
+      "Tests.ExcludedAssemblyRefsAreNotUpdated"
+      Tests.Instrument.IncludedAssemblyRefsAreUpdated,
+      "Tests.IncludedAssemblyRefsAreUpdated"
+      Tests.Instrument.ExcludedModuleJustRecordsMVid,
+      "Tests.ExcludedModuleJustRecordsMVid"
+      Tests.Instrument.ExcludedModuleJustRecordsNameForJson,
+      "Tests.ExcludedModuleJustRecordsNameForJson"
+      Tests.Instrument.ExcludedModuleJustRecordsHashForOpenCover,
+      "Tests.ExcludedModuleJustRecordsHashForOpenCover"
+      Tests.Instrument.IncludedModuleEnsuresRecorder,
+      "Tests.IncludedModuleEnsuresRecorder"
+      Tests.Instrument.ExcludedMethodPointIsPassThrough,
+      "Tests.ExcludedMethodPointIsPassThrough"
+      Tests.Instrument.IncludedMethodPointInsertsVisit,
+      "Tests.IncludedMethodPointInsertsVisit"
+      Tests.Instrument.IncludedModuleDoesNotChangeRecorderJustTheReference,
+      "Tests.IncludedModuleDoesNotChangeRecorderJustTheReference"
+      Tests.Instrument.AfterModuleShouldNotChangeState,
+      "Tests.AfterModuleShouldNotChangeState"
+      Tests.Instrument.JSONInjectionTransformsSimpleFileAsExpected,
+      "Tests.JSONInjectionTransformsSimpleFileAsExpected"
+      Tests.Instrument.JSONInjectionTransformsStandaloneFileAsExpected,
+      "Tests.JSONInjectionTransformsStandaloneFileAsExpected"
+      Tests.Instrument.JSONInjectionTransformsDependencyFileAsExpected,
+      "Tests.JSONInjectionTransformsDependencyFileAsExpected"
+      Tests.Instrument.JSONInjectionIsIdempotent, "Tests.JSONInjectionIsIdempotent"
+      Tests.Instrument.NonFinishShouldDisposeRecordingAssembly,
+      "Tests.NonFinishShouldDisposeRecordingAssembly"
+      Tests.Instrument.NonFinishShouldDisposeThreadingAssembly,
+      "Tests.NonFinishShouldDisposeThreadingAssembly"
+      Tests.Instrument.NonFinishShouldNotDisposeNullRecordingAssembly,
+      "Tests.NonFinishShouldNotDisposeNullRecordingAssembly"
+      Tests.Instrument.FinishShouldLeaveRecordingAssembly,
+      "Tests.FinishShouldLeaveRecordingAssembly"
 
-  let specials = []
+      ]
+
+  let specials =
+    { 0..31 }
+    |> Seq.map (fun i ->
+      testCase (sprintf "Tests.ShouldUpdateHandlerOK(%d)" i)
+      <| (fun () ->
+        lock ExpectoTestCommon.sync (fun () ->
+          AltCover.Main.init ()
+          Tests.Instrument.ShouldUpdateHandlerOK i)))
+    |> Seq.toList
 
   let consistencyCheck () =
-    ExpectoTestCommon.consistencyCheck regular []
+    ExpectoTestCommon.consistencyCheck
+      regular
+      [ "Tests.Instrument::ShouldUpdateHandlerOK" ]
 
   [<Tests>]
   let tests =

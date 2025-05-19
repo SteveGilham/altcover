@@ -13,6 +13,16 @@ open Mono.Cecil.Cil
 
 #nowarn "25"
 
+module AltCoverTests =
+
+#if !NET472
+  let dir =
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net9.0")
+#else
+  let dir =
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
+#endif
+
 module AltCoverTests3 =
   // Main.fs and CommandLine.fs
   [<Test>]
