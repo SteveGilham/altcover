@@ -161,7 +161,7 @@ module AltCoverTests =
   let ShouldTrapIndexOutOfRangeException () =
     let a = [| "a"; "b" |]
 
-    Assert.Throws<InvalidDataException>(fun () ->
+    Assert.Throws<SymbolReadException>(fun () ->
       ProgramDatabase.I.raiseSymbolError (fun () -> printfn "%s" a[2]))
     |> ignore
 

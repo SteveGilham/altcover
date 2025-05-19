@@ -14,6 +14,16 @@ open AltCover.Shared
 open System.Reflection
 open System.Diagnostics.CodeAnalysis
 
+[<SuppressMessage("Gendarme.Rules.Exceptions",
+                  "MissingExceptionConstructorsRule",
+                  Justification = "Just YAGNI, you know")>]
+[<SuppressMessage("Gendarme.Rules.Serialization",
+                  "MissingSerializationConstructorRule",
+                  Justification = "Just YAGNI, you know")>]
+[<Sealed>]
+type public SymbolReadException(x: exn) =
+  inherit Exception(x.Message, x)
+
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
   // "Public" "field"
@@ -30,7 +40,7 @@ module internal ProgramDatabase =
       with x when handledSymbolFault x ->
         // This is a workaround for a Mono.Cecil bug that causes an IndexOutOfRangeException
         // see issue #238
-        InvalidDataException(x.Message, x) |> raise
+        SymbolReadException(x) |> raise
 
     // We no longer have to violate Cecil encapsulation to get the PDB path
     // but we do to get the embedded PDB info
@@ -335,6 +345,6 @@ module internal ProgramDatabase =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member",
                             Target =
-                              "AltCover.ProgramDatabase/I/construct@153::Invoke(System.String,System.Object[])",
+                              "AltCover.ProgramDatabase/I/construct@163::Invoke(System.String,System.Object[])",
                             Justification = "Compiler generated")>]
 ()
