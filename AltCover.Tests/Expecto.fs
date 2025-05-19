@@ -304,7 +304,8 @@ module ExpectoTestManifest =
        Tests.AltCoverTests.ReportFileShouldBeCorrectlyExtended,
        "Tests.ReportFileShouldBeCorrectlyExtended"
        Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
-       Tests.AltCoverTests.ShouldTrapIndexOutOfRangeException, "Tests.ShouldTrapIndexOutOfRangeException"
+       Tests.AltCoverTests.ShouldTrapIndexOutOfRangeException,
+       "Tests.ShouldTrapIndexOutOfRangeException"
        Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
        Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage,
        "Tests.ShouldGetEmbeddedPdbFromImage"
