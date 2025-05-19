@@ -23,7 +23,7 @@ module ProgramDatabase =
   let ShouldTrapIndexOutOfRangeException () =
     let a = [| "a"; "b" |]
 
-    Assert.Throws<InvalidDataException>(fun () ->
+    Assert.Throws<SymbolReadException>(fun () ->
       AltCover.ProgramDatabase.I.raiseSymbolError (fun () -> printfn "%s" a[2]))
     |> ignore
 

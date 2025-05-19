@@ -3232,7 +3232,7 @@ module AltCoverTests3 =
     Assert.That(one.Value, Is.True)
 
   [<Test>]
-  let ResilientHandlesInvalidDataException () =
+  let ResilientHandlesSymbolReadException () =
     Main.init ()
     let one = ref false
     let two = ref false
@@ -3241,7 +3241,7 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let bif = InvalidDataException("fail")
+    let bif = SymbolReadException(IndexOutOfRangeException("fail"))
     let fbif () = bif |> raise
 
     Main.I.imageLoadResilient (set1 fbif) (fun x ->
