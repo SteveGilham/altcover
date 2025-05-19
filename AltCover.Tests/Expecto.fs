@@ -304,6 +304,7 @@ module ExpectoTestManifest =
        Tests.AltCoverTests.ReportFileShouldBeCorrectlyExtended,
        "Tests.ReportFileShouldBeCorrectlyExtended"
        Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
+       Tests.AltCoverTests.ShouldTrapIndexOutOfRangeException, "Tests.ShouldTrapIndexOutOfRangeException"
        Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
        Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage,
        "Tests.ShouldGetEmbeddedPdbFromImage"
@@ -855,6 +856,8 @@ module ExpectoTestManifest =
        "Tests3.ImageLoadResilientPassesThrough"
        Tests.AltCoverTests3.ResilientHandlesIOException,
        "Tests3.ResilientHandlesIOException"
+       Tests.AltCoverTests3.ResilientHandlesInvalidDataException,
+       "Tests3.ResilientHandlesInvalidDataException"
        Tests.AltCoverTests3.ResilientHandlesBadImageFormatException,
        "Tests3.ResilientHandlesBadImageFormatException"
        Tests.AltCoverTests3.ResilientHandlesArgumentException,

@@ -424,6 +424,7 @@ module internal Main =
       || (x :? BadImageFormatException)
       || (x :? ArgumentException)
       || (x :? IOException)
+      || (x :? InvalidDataException)
 
     let internal imageLoadResilient (f: unit -> 'a) (tidy: exn -> 'a) =
       try
