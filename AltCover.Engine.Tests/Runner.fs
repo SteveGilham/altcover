@@ -18,7 +18,7 @@ open Mono.Options
 #nowarn "25" // partial pattern match
 #nowarn "3559" // TODO
 
-module AltCoverUsage =
+module Usage =
   let internal usageText =
     let usage =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -41,8 +41,8 @@ module AltCoverUsage =
     use reader = new StreamReader(stream)
     reader.ReadToEnd()
 
-module AltCoverRunnerTests =
-  // fs
+module Runner =
+  // TODO needs tests breaking out for other modules (LCov, Json etc.)
 
   let runnerInit () = AltCover.Runner.init ()
 
@@ -333,7 +333,7 @@ module AltCoverRunnerTests =
 
       let expected =
         "Error - usage is:\n"
-        + AltCoverUsage.runnerText
+        + Usage.runnerText
         + "\nor\n"
         + "  ImportModule               Prints out the PowerShell script to import the\n"
         + "                               associated PowerShell module\n"
@@ -2077,9 +2077,13 @@ module AltCoverRunnerTests =
     // Hack for running while instrumented
     let where =
       Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
 #if NET472
     let path =
-      Path.Combine(where, "Sample12.exe")
+      Path.Combine(
+        SolutionRoot.location,
+        "_Binaries/Sample12/Debug+AnyCPU/net472/Sample12.exe"
+      )
 #else
     let path =
       Path.Combine(
@@ -2228,7 +2232,7 @@ module AltCoverRunnerTests =
       let unique = Guid.NewGuid().ToString()
 
       let main =
-        typeof<Marker>.Assembly
+        typeof<AltCover.Marker>.Assembly
           .GetType("AltCover.EntryPoint")
           .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
 
@@ -2248,9 +2252,9 @@ module AltCoverRunnerTests =
         + unique
         + " not found\n"
         + "Error - usage is:\n"
-        + AltCoverUsage.usageText
+        + Usage.usageText
         + "\nor\n"
-        + AltCoverUsage.runnerText
+        + Usage.runnerText
         + "\nor\n"
         + "  ImportModule               Prints out the PowerShell script to import the\n"
         + "                               associated PowerShell module\n"
@@ -5329,7 +5333,7 @@ module AltCoverRunnerTests =
 
       let resource2 =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("NCover.lcov", StringComparison.Ordinal)
+        |> Seq.find _.EndsWith("Tests.NCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
@@ -5800,7 +5804,7 @@ module AltCoverRunnerTests =
     use stream =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Tests.coverage-04.xsd")
+        .GetManifestResourceStream("AltCover.Engine.Tests.coverage-04.xsd")
 
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)

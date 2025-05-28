@@ -23,6 +23,29 @@ module AltCoverTests =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
 #endif
 
+module AltCoverUsage =
+  let internal usageText =
+    let usage =
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
+      |> Seq.find _.EndsWith("AltCover.Usage.txt", StringComparison.Ordinal)
+
+    use stream =
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(usage)
+
+    use reader = new StreamReader(stream)
+    reader.ReadToEnd()
+
+  let internal runnerText =
+    let usage =
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
+      |> Seq.find _.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal)
+
+    use stream =
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(usage)
+
+    use reader = new StreamReader(stream)
+    reader.ReadToEnd()
+
 module AltCoverTests3 =
   // Main.fs and CommandLine.fs
   [<Test>]

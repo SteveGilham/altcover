@@ -15,8 +15,8 @@ module ExpectoMain =
       Manifest.regular
       specials
       (fun () ->
-        AltCoverRunnerTests.mainInit ()
-        AltCoverRunnerTests.runnerInit ())
+        AltCoverXTests.mainInit ()
+        AltCoverXTests.runnerInit ())
 
 module UnitTestStub =
   [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]

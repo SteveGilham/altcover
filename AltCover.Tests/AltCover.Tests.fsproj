@@ -28,7 +28,6 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestCommon.fs" />
-    <Compile Include="Runner.Tests.fs" />
     <Compile Include="Tests3.fs" />
     <Compile Include="XTests.fs" />
     <Compile Include="Expecto.fs" Condition="'$(TargetFramework)' != 'net472'" />
