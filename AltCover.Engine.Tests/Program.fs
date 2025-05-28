@@ -244,6 +244,8 @@ module ExpectoMain =
       Tests.CommandLine.SecurityExceptionWrites, "Tests.SecurityExceptionWrites"
       Tests.CommandLine.UnauthorizedAccessExceptionWrites,
       "Tests.UnauthorizedAccessExceptionWrites"
+      Tests.CommandLine.ShouldLaunchWithExpectedOutput,
+      "Tests.CommandLine.ShouldLaunchWithExpectedOutput"
       // Instrument.fs
       Tests.Instrument.ShouldBeAbleToGetTheVisitReportMethod,
       "Tests.ShouldBeAbleToGetTheVisitReportMethod"
@@ -406,8 +408,9 @@ module ExpectoMain =
       Tests.Runner.DivertedZipWriteJsonLeavesExpectedTraces,
       "Tests.DivertedZipWriteJsonLeavesExpectedTraces"
       Tests.Runner.UsageIsAsExpected, "Tests.UsageIsAsExpected"
-      Tests.Runner.ShouldLaunchWithExpectedOutput, "Tests.ShouldLaunchWithExpectedOutput"
-      Tests.Runner.ShouldHaveExpectedOptions, "Tests.ShouldHaveExpectedOptions"
+      Tests.Runner.ShouldLaunchWithExpectedOutput,
+      "Tests.Runner.ShouldLaunchWithExpectedOutput"
+      Tests.Runner.ShouldHaveExpectedOptions, "Tests.Runner.ShouldHaveExpectedOptions"
       Tests.Runner.ParsingJunkIsAnError, "Tests.ParsingJunkIsAnError"
       Tests.Runner.ParsingJunkAfterSeparatorIsExpected,
       "Tests.ParsingJunkAfterSeparatorIsExpected"
@@ -611,8 +614,10 @@ module ExpectoMain =
       Tests.Runner.ThresholdViolationShouldBeReported,
       "Tests.ThresholdViolationShouldBeReported"
       Tests.Runner.TryGetValueHandlesNull, "Tests.TryGetValueHandlesNull"
-
-      ]
+      // Main.fs
+      Tests.Main.ShouldHaveExpectedOptions, "Tests.Main.ShouldHaveExpectedOptions"
+      // Tasks.fs
+      Tests.Tasks.LoggingCanBeExercised, "Tests.LoggingCanBeExercised" ]
 
   let specials =
     { 0..31 }

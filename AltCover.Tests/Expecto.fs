@@ -16,9 +16,6 @@ module ExpectoTestManifest =
        Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
        Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
        Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
-       Tests.AltCoverTests3.ShouldLaunchWithExpectedOutput,
-       "Tests3.ShouldLaunchWithExpectedOutput"
-       Tests.AltCoverTests3.ShouldHaveExpectedOptions, "Tests3.ShouldHaveExpectedOptions"
        Tests.AltCoverTests3.ParsingJunkIsAnError, "Tests3.ParsingJunkIsAnError"
        Tests.AltCoverTests3.ParsingJunkBeforeSeparatorIsAnError,
        "Tests3.ParsingJunkBeforeSeparatorIsAnError"
@@ -213,7 +210,6 @@ module ExpectoTestManifest =
        Tests.AltCoverTests3.TargetsPathIsAsExpected, "Tests3.TargetsPathIsAsExpected"
        Tests.AltCoverTests3.UsageIsAsExpected, "Tests3.UsageIsAsExpected"
        Tests.AltCoverTests3.ErrorResponseIsAsExpected, "Tests3.ErrorResponseIsAsExpected"
-       Tests.AltCoverTests3.LoggingCanBeExercised, "Tests3.LoggingCanBeExercised"
        Tests.AltCoverTests3.EmptyInstrumentIsJustTheDefaults,
        "Tests3.EmptyInstrumentIsJustTheDefaults"
        Tests.AltCoverTests3.InstrumentLevelsCanBeSet, "Tests3.InstrumentLevelsCanBeSet"

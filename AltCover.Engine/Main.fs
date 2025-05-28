@@ -875,6 +875,6 @@ module internal Main =
         0
       | _ ->
 
-      effectiveMain arguments
+        effectiveMain arguments
 
     result

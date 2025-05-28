@@ -684,3 +684,80 @@ module CommandLine =
       CommandLine.exceptions <- []
       Output.info <- (fst saved)
       Output.error <- (snd saved)
+
+  [<Test>]
+  let ShouldLaunchWithExpectedOutput () =
+    Main.init ()
+
+    let path =
+      Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+
+    maybeIgnore (fun () -> path |> Directory.Exists |> not)
+    let files = Directory.GetFiles(path)
+
+    let program =
+      files
+      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+      |> Seq.head
+
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    CommandLine.toConsole ()
+
+    try
+      use stdout =
+        { new StringWriter() with
+            member self.Encoding = e0 }
+
+      test <@ stdout.Encoding = e0 @>
+
+      use stderr =
+        { new StringWriter() with
+            member self.Encoding = e1 }
+
+      test <@ stderr.Encoding = e1 @>
+
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let nonWindows =
+        System.Environment.GetEnvironmentVariable("OS")
+        <> "Windows_NT"
+
+      let exe, args =
+        Maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
+
+      let r =
+        CommandLine.I.launch
+          exe
+          args
+          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+
+      Assert.That(r, Is.EqualTo 0)
+      Assert.That(stderr.ToString(), Is.Empty)
+      let result = stdout.ToString()
+
+      let quote =
+        Maybe
+          (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+          "\""
+          String.Empty
+
+      let expected =
+        "Command line : '"
+        + quote
+        + exe
+        + quote
+        + " "
+        + args
+        + "\'"
+        + Environment.NewLine
+        + "Where is my rocket pack? "
+        + Environment.NewLine
+
+      Assert.That(result, Is.EqualTo(expected))
+    finally
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+      Output.verbose <- ignore

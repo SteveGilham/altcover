@@ -32,6 +32,8 @@
     <Compile Include="Instrument.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="Runner.fs" />
+    <Compile Include="Main.fs" />
+    <Compile Include="Tasks.fs" />
     <Compile Include="Program.fs" />
     <EmbeddedResource Include="..\AltCover.Tests\AltCover.Usage.txt" />
     <EmbeddedResource Include="..\AltCover.Tests\AltCover.Runner.Usage.txt" />
