@@ -28,19 +28,24 @@ module ExpectoMain =
       "ProgramDatabase.ShouldGetEmbeddedPdbFromImage"
       Tests.ProgramDatabase.ShouldGetNoMdbFromMonoImage,
       "ProgramDatabase.ShouldGetNoMdbFromMonoImage"
-      Tests.ProgramDatabase.ShouldGetGUIDfromNativePdb, "ProgramDatabase.ShouldGetGUIDfromNativePdb"
-      Tests.ProgramDatabase.ShouldGetPdbWithFallback, "ProgramDatabase.ShouldGetPdbWithFallback"
+      Tests.ProgramDatabase.ShouldGetGUIDfromNativePdb,
+      "ProgramDatabase.ShouldGetGUIDfromNativePdb"
+      Tests.ProgramDatabase.ShouldGetPdbWithFallback,
+      "ProgramDatabase.ShouldGetPdbWithFallback"
       Tests.ProgramDatabase.ShouldGetForeignPdbWithFallback,
       "ProgramDatabase.ShouldGetForeignPdbWithFallback"
       Tests.ProgramDatabase.ShouldGetForeignPdbWithFallbackWhenNotColocated,
       "ProgramDatabase.ShouldGetForeignPdbWithFallbackWhenNotColocated"
-      Tests.ProgramDatabase.ShouldGetMdbWithFallback, "ProgramDatabase.ShouldGetMdbWithFallback"
-      Tests.ProgramDatabase.ShouldGetSymbolsFromPdb, "ProgramDatabase.ShouldGetSymbolsFromPdb"
+      Tests.ProgramDatabase.ShouldGetMdbWithFallback,
+      "ProgramDatabase.ShouldGetMdbWithFallback"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromPdb,
+      "ProgramDatabase.ShouldGetSymbolsFromPdb"
       Tests.ProgramDatabase.ShouldGetSymbolsFromEmbeddedPdb,
       "ProgramDatabase.ShouldGetSymbolsFromEmbeddedPdb"
       Tests.ProgramDatabase.ShouldNotGetSymbolsWhenNoPdb,
       "ProgramDatabase.ShouldNotGetSymbolsWhenNoPdb"
-      Tests.ProgramDatabase.ShouldGetSymbolsFromMdb, "ProgramDatabase.ShouldGetSymbolsFromMdb"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromMdb,
+      "ProgramDatabase.ShouldGetSymbolsFromMdb"
       // Filter.fs
       Tests.ACFilter.NoneOfTheAboveMatchesNoType, "Filter.NoneOfTheAboveMatchesNoType"
       Tests.ACFilter.NoneOfTheAboveMatchesNoAttribute,
@@ -99,7 +104,8 @@ module ExpectoMain =
       Tests.Visitor.LocateMatchFallsBackOK, "Visitor.LocateMatchFallsBackOK"
       Tests.Visitor.AsyncTestInContext, "Visitor.AsyncTestInContext"
       Tests.Visitor.AnotherAsyncTestInContext, "Visitor.AnotherAsyncTestInContext"
-      Tests.Visitor.DebugBuildTernaryTestInContext, "Visitor.DebugBuildTernaryTestInContext"
+      Tests.Visitor.DebugBuildTernaryTestInContext,
+      "Visitor.DebugBuildTernaryTestInContext"
       Tests.Visitor.ReleaseBuildTernaryTest, "Visitor.ReleaseBuildTernaryTest"
       Tests.Visitor.ReleaseBuildTernaryTestInContext,
       "Visitor.ReleaseBuildTernaryTestInContext"
@@ -136,7 +142,8 @@ module ExpectoMain =
       "Visitor.BranchPointsAreComputedForMatch"
       Tests.Visitor.MethodsAreDeeperThanTypes, "Visitor.MethodsAreDeeperThanTypes"
       Tests.Visitor.TypesAreDeeperThanModules, "Visitor.TypesAreDeeperThanModules"
-      Tests.Visitor.ModulesAreDeeperThanAssemblies, "Visitor.ModulesAreDeeperThanAssemblies"
+      Tests.Visitor.ModulesAreDeeperThanAssemblies,
+      "Visitor.ModulesAreDeeperThanAssemblies"
       Tests.Visitor.AssembliesAreDeeperThanPaths, "Visitor.AssembliesAreDeeperThanPaths"
       Tests.Visitor.FilteredAssembliesDoNotHaveSequencePoints,
       "Visitor.FilteredAssembliesDoNotHaveSequencePoints"
@@ -146,7 +153,8 @@ module ExpectoMain =
       Tests.Visitor.PathsAreDeeperThanAVisit, "Visitor.PathsAreDeeperThanAVisit"
       Tests.Visitor.TrackingDetectsTests, "Visitor.TrackingDetectsTests"
       Tests.Visitor.TrackingDetectsExpectedTests, "Visitor.TrackingDetectsExpectedTests"
-      Tests.Visitor.TrackingDetectsTestsByFullType, "Visitor.TrackingDetectsTestsByFullType"
+      Tests.Visitor.TrackingDetectsTestsByFullType,
+      "Visitor.TrackingDetectsTestsByFullType"
       Tests.Visitor.TrackingDetectsMethods, "Visitor.TrackingDetectsMethods"
       Tests.Visitor.NamingDetectEmpties, "Visitor.NamingDetectEmpties"
       Tests.Visitor.NamingSuffixDetectEmpties, "Visitor.NamingSuffixDetectEmpties"
@@ -230,17 +238,20 @@ module ExpectoMain =
       "Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
       Tests.Visitor.ShouldSortFileIds, "Visitor.ShouldSortFileIds"
       // CommandLine.fs
-      Tests.CommandLine.StrongNameKeyCanBeValidated, "CommandLine.StrongNameKeyCanBeValidated"
+      Tests.CommandLine.StrongNameKeyCanBeValidated,
+      "CommandLine.StrongNameKeyCanBeValidated"
       Tests.CommandLine.VerbosityShouldBeHonoured, "CommandLine.VerbosityShouldBeHonoured"
       Tests.CommandLine.CryptographicExceptionIsTransformed,
       "CommandLine.CryptographicExceptionIsTransformed"
       Tests.CommandLine.OutputCanBeExercised, "CommandLine.OutputCanBeExercised"
       Tests.CommandLine.NoThrowNoErrorLeavesAllOK, "CommandLine.NoThrowNoErrorLeavesAllOK"
-      Tests.CommandLine.NoThrowWithErrorIsSignalled, "CommandLine.NoThrowWithErrorIsSignalled"
+      Tests.CommandLine.NoThrowWithErrorIsSignalled,
+      "CommandLine.NoThrowWithErrorIsSignalled"
       Tests.CommandLine.ArgumentExceptionWrites, "CommandLine.ArgumentExceptionWrites"
       Tests.CommandLine.ArgumentExceptionWritesEx, "CommandLine.ArgumentExceptionWritesEx"
       Tests.CommandLine.IOExceptionWrites, "CommandLine.IOExceptionWrites"
-      Tests.CommandLine.NotSupportedExceptionWrites, "CommandLine.NotSupportedExceptionWrites"
+      Tests.CommandLine.NotSupportedExceptionWrites,
+      "CommandLine.NotSupportedExceptionWrites"
       Tests.CommandLine.SecurityExceptionWrites, "CommandLine.SecurityExceptionWrites"
       Tests.CommandLine.UnauthorizedAccessExceptionWrites,
       "CommandLine.UnauthorizedAccessExceptionWrites"
@@ -258,27 +269,32 @@ module ExpectoMain =
       Tests.Instrument.ThirdPartyKeyNotMatchedInIndex,
       "Instrument.ThirdPartyKeyNotMatchedInIndex"
       Tests.Instrument.FakedUpKeyIsMatchedInIndex, "Instrument.FakedUpKeyIsMatchedInIndex"
-      Tests.Instrument.NoKnownKeyIfAssemblyHasNone, "Instrument.NoKnownKeyIfAssemblyHasNone"
+      Tests.Instrument.NoKnownKeyIfAssemblyHasNone,
+      "Instrument.NoKnownKeyIfAssemblyHasNone"
       Tests.Instrument.NoKnownTokenInEmptyIndex, "Instrument.NoKnownTokenInEmptyIndex"
       Tests.Instrument.KnownTokenMatchedInIndex, "Instrument.KnownTokenMatchedInIndex"
       Tests.Instrument.NoKnownTokenIfAssemblyHasNone,
       "Instrument.NoKnownTokenIfAssemblyHasNone"
       Tests.Instrument.ForeignTokenIsNotMatchedInIndex,
       "Instrument.ForeignTokenIsNotMatchedInIndex"
-      Tests.Instrument.FakedUpTokenIsMatchedInIndex, "Instrument.FakedUpTokenIsMatchedInIndex"
+      Tests.Instrument.FakedUpTokenIsMatchedInIndex,
+      "Instrument.FakedUpTokenIsMatchedInIndex"
       Tests.Instrument.GuardShouldDisposeRecordingAssemblyOnException,
       "Instrument.GuardShouldDisposeRecordingAssemblyOnException"
-      Tests.Instrument.ShouldBeAbleToTellAnAssembly, "Instrument.ShouldBeAbleToTellAnAssembly"
+      Tests.Instrument.ShouldBeAbleToTellAnAssembly,
+      "Instrument.ShouldBeAbleToTellAnAssembly"
       Tests.Instrument.ShouldBeAbleToValidateAnAssembly,
       "Instrument.ShouldBeAbleToValidateAnAssembly"
       Tests.Instrument.ShouldBeAbleToLocateAReference,
       "Instrument.ShouldBeAbleToLocateAReference"
       Tests.Instrument.ShouldBeAbleToPrepareTheAssembly,
       "Instrument.ShouldBeAbleToPrepareTheAssembly"
-      Tests.Instrument.ShouldGetTrackingStyleIfSet, "Instrument.ShouldGetTrackingStyleIfSet"
+      Tests.Instrument.ShouldGetTrackingStyleIfSet,
+      "Instrument.ShouldGetTrackingStyleIfSet"
       Tests.Instrument.ShouldGetNewFilePathFromPreparedAssembly,
       "Instrument.ShouldGetNewFilePathFromPreparedAssembly"
-      Tests.Instrument.ShouldHandleNullConstantsOK, "Instrument.ShouldHandleNullConstantsOK"
+      Tests.Instrument.ShouldHandleNullConstantsOK,
+      "Instrument.ShouldHandleNullConstantsOK"
       Tests.Instrument.ShouldRescopeMonoMethodOK, "Instrument.ShouldRescopeMonoMethodOK"
       Tests.Instrument.ShouldWriteMonoAssemblyOK, "Instrument.ShouldWriteMonoAssemblyOK"
       Tests.Instrument.ShouldGetVisitFromWrittenAssembly,
@@ -614,6 +630,43 @@ module ExpectoMain =
       Tests.Runner.ThresholdViolationShouldBeReported,
       "Runner.ThresholdViolationShouldBeReported"
       Tests.Runner.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
+      // Arguments.fs
+      Tests.Arguments.CollectOptionsCanBeValidated,
+      "Arguments.CollectOptionsCanBeValidated"
+      Tests.Arguments.TypeSafeEmptyThresholdCanBeValidated,
+      "Arguments.TypeSafeEmptyThresholdCanBeValidated"
+      Tests.Arguments.TypeSafeCollectOptionsCanBeValidated,
+      "Arguments.TypeSafeCollectOptionsCanBeValidated"
+      Tests.Arguments.TypeSafeCollectSummaryCanBeValidated,
+      "Arguments.TypeSafeCollectSummaryCanBeValidated"
+      Tests.Arguments.CollectOptionsCanBeValidatedWithErrors,
+      "Arguments.CollectOptionsCanBeValidatedWithErrors"
+      Tests.Arguments.TypeSafeCollectOptionsCanBeValidatedWithErrors,
+      "Arguments.TypeSafeCollectOptionsCanBeValidatedWithErrors"
+      Tests.Arguments.CollectOptionsCanBePositivelyValidatedWithErrors,
+      "Arguments.CollectOptionsCanBePositivelyValidatedWithErrors"
+      Tests.Arguments.TypeSafeCollectOptionsCanBePositivelyValidatedWithErrors,
+      "Arguments.TypeSafeCollectOptionsCanBePositivelyValidatedWithErrors"
+      Tests.Arguments.PrepareOptionsCanBeValidated,
+      "Arguments.PrepareOptionsCanBeValidated"
+      Tests.Arguments.TypeSafePrepareOptionsCanBeValidated,
+      "Arguments.TypeSafePrepareOptionsCanBeValidated"
+      Tests.Arguments.TypeSafePrepareOptionsCanBeValidatedAgain,
+      "Arguments.TypeSafePrepareOptionsCanBeValidatedAgain"
+      Tests.Arguments.PrepareOptionsStrongNamesCanBeValidated,
+      "Arguments.PrepareOptionsStrongNamesCanBeValidated"
+      Tests.Arguments.TypeSafePrepareOptionsStrongNamesCanBeValidated,
+      "Arguments.TypeSafePrepareOptionsStrongNamesCanBeValidated"
+      Tests.Arguments.PrepareOptionsCanBeValidatedWithNulls,
+      "Arguments.PrepareOptionsCanBeValidatedWithNulls"
+      Tests.Arguments.PrepareOptionsCanBeValidatedAndDetectInconsistency,
+      "Arguments.PrepareOptionsCanBeValidatedAndDetectInconsistency"
+      Tests.Arguments.TypeSafePrepareStaticCanBeValidated,
+      "Arguments.TypeSafePrepareStaticCanBeValidated"
+      Tests.Arguments.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency,
+      "Arguments.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency"
+      Tests.Arguments.PrepareOptionsCanBeValidatedWithErrors,
+      "Arguments.PrepareOptionsCanBeValidatedWithErrors"
       // Main.fs
       Tests.Main.ShouldHaveExpectedOptions, "Main.ShouldHaveExpectedOptions"
       Tests.Main.ParsingJunkIsAnError, "Main.ParsingJunkIsAnError"
@@ -623,13 +676,11 @@ module ExpectoMain =
       "Main.ParsingJunkAfterSeparatorIsExpected"
       Tests.Main.ParsingHelpGivesHelp, "Main.ParsingHelpGivesHelp"
       Tests.Main.ParsingErrorHelpGivesHelp, "Main.ParsingErrorHelpGivesHelp"
-      Tests.Main.ParsingAttributesGivesAttributes,
-      "Main.ParsingAttributesGivesAttributes"
+      Tests.Main.ParsingAttributesGivesAttributes, "Main.ParsingAttributesGivesAttributes"
       Tests.Main.ParsingTopLevelGivesTopLevel, "Main.ParsingTopLevelGivesTopLevel"
       Tests.Main.ParsingMethodsGivesMethods, "Main.ParsingMethodsGivesMethods"
       Tests.Main.ParsingTypesGivesTypes, "Main.ParsingTypesGivesTypes"
-      Tests.Main.ParsingAssembliesGivesAssemblies,
-      "Main.ParsingAssembliesGivesAssemblies"
+      Tests.Main.ParsingAssembliesGivesAssemblies, "Main.ParsingAssembliesGivesAssemblies"
       Tests.Main.ParsingEscapeCasesWork, "Main.ParsingEscapeCasesWork"
       Tests.Main.ParsingModulesGivesModules, "Main.ParsingModulesGivesModules"
       Tests.Main.ParsingFilesGivesFiles, "Main.ParsingFilesGivesFiles"
@@ -658,21 +709,15 @@ module ExpectoMain =
       Tests.Main.ParsingBadSymbolGivesFailure, "Main.ParsingBadSymbolGivesFailure"
       Tests.Main.ParsingNoSymbolGivesFailure, "Main.ParsingNoSymbolGivesFailure"
       Tests.Main.ParsingMultipleDependencyIsOk, "Main.ParsingMultipleDependencyIsOk"
-      Tests.Main.ParsingBadDependencyGivesFailure,
-      "Main.ParsingBadDependencyGivesFailure"
-      Tests.Main.ParsingNonDependencyGivesFailure,
-      "Main.ParsingNonDependencyGivesFailure"
-      Tests.Main.ParsingStrongNameGivesStrongName,
-      "Main.ParsingStrongNameGivesStrongName"
+      Tests.Main.ParsingBadDependencyGivesFailure, "Main.ParsingBadDependencyGivesFailure"
+      Tests.Main.ParsingNonDependencyGivesFailure, "Main.ParsingNonDependencyGivesFailure"
+      Tests.Main.ParsingStrongNameGivesStrongName, "Main.ParsingStrongNameGivesStrongName"
       Tests.Main.ParsingMultipleStrongNameGivesFailure,
       "Main.ParsingMultipleStrongNameGivesFailure"
-      Tests.Main.ParsingBadStrongNameGivesFailure,
-      "Main.ParsingBadStrongNameGivesFailure"
-      Tests.Main.ParsingNonStrongNameGivesFailure,
-      "Main.ParsingNonStrongNameGivesFailure"
+      Tests.Main.ParsingBadStrongNameGivesFailure, "Main.ParsingBadStrongNameGivesFailure"
+      Tests.Main.ParsingNonStrongNameGivesFailure, "Main.ParsingNonStrongNameGivesFailure"
       Tests.Main.ParsingNoStrongNameGivesFailure, "Main.ParsingNoStrongNameGivesFailure"
-      Tests.Main.ParsingMultipleAltStrongNameIsOk,
-      "Main.ParsingMultipleAltStrongNameIsOk"
+      Tests.Main.ParsingMultipleAltStrongNameIsOk, "Main.ParsingMultipleAltStrongNameIsOk"
       Tests.Main.ParsingNoAltStrongNameGivesFailure,
       "Main.ParsingNoAltStrongNameGivesFailure"
       Tests.Main.ParsingBadAltStrongNameGivesFailure,
@@ -680,16 +725,14 @@ module ExpectoMain =
       Tests.Main.ParsingNonAltsStrongNameGivesFailure,
       "Main.ParsingNonAltsStrongNameGivesFailure"
       Tests.Main.ParsingLocalGivesLocal, "Main.ParsingLocalGivesLocal"
-      Tests.Main.ParsingMultipleLocalGivesFailure,
-      "Main.ParsingMultipleLocalGivesFailure"
+      Tests.Main.ParsingMultipleLocalGivesFailure, "Main.ParsingMultipleLocalGivesFailure"
       Tests.Main.ParsingVisibleGivesVisible, "Main.ParsingVisibleGivesVisible"
       Tests.Main.ParsingMultipleVisibleGivesFailure,
       "Main.ParsingMultipleVisibleGivesFailure"
       Tests.Main.ParsingTimeGivesTime, "Main.ParsingTimeGivesTime"
       Tests.Main.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime,
       "Main.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime"
-      Tests.Main.ParsingMultipleTimesGivesFailure,
-      "Main.ParsingMultipleTimesGivesFailure"
+      Tests.Main.ParsingMultipleTimesGivesFailure, "Main.ParsingMultipleTimesGivesFailure"
       Tests.Main.ParsingTimeAndNamesGivesOK, "Main.ParsingTimeAndNamesGivesOK"
       Tests.Main.ParsingBadTimeGivesNoOp, "Main.ParsingBadTimeGivesNoOp"
       Tests.Main.ParsingNonTimeGivesFailure, "Main.ParsingNonTimeGivesFailure"
@@ -729,8 +772,7 @@ module ExpectoMain =
       Tests.Main.ParsingDropGivesDrop, "Main.ParsingDropGivesDrop"
       Tests.Main.ParsingMultipleDropGivesFailure, "Main.ParsingMultipleDropGivesFailure"
       Tests.Main.ParsingEagerWorks, "Main.ParsingEagerWorks"
-      Tests.Main.ParsingMultipleEagerGivesFailure,
-      "Main.ParsingMultipleEagerGivesFailure"
+      Tests.Main.ParsingMultipleEagerGivesFailure, "Main.ParsingMultipleEagerGivesFailure"
       Tests.Main.ParsingStaticGivesStatic, "Main.ParsingStaticGivesStatic"
       Tests.Main.ParsingStaticPlusGivesStatic, "Main.ParsingStaticPlusGivesStatic"
       Tests.Main.ParsingStaticPlusPlusGivesStaticPlus,
@@ -761,8 +803,7 @@ module ExpectoMain =
       "Main.ResilientHandlesBadImageFormatException"
       Tests.Main.ResilientHandlesArgumentException,
       "Main.ResilientHandlesArgumentException"
-      Tests.Main.FolderNestingIsDetectedCorrectly,
-      "Main.FolderNestingIsDetectedCorrectly"
+      Tests.Main.FolderNestingIsDetectedCorrectly, "Main.FolderNestingIsDetectedCorrectly"
       Tests.Main.PreparingNewPlaceShouldCopyEverything,
       "Main.PreparingNewPlaceShouldCopyEverything"
       Tests.Main.ShouldProcessTrailingArguments, "Main.ShouldProcessTrailingArguments"
@@ -772,6 +813,9 @@ module ExpectoMain =
       Tests.Main.TargetsPathIsAsExpected, "Main.TargetsPathIsAsExpected"
       Tests.Main.UsageIsAsExpected, "Main.UsageIsAsExpected"
       Tests.Main.ErrorResponseIsAsExpected, "Main.ErrorResponseIsAsExpected"
+
+      Tests.Main.ADotNetDryRunLooksAsExpected, "Main.ADotNetDryRunLooksAsExpected"
+      Tests.Main.ADryRunLooksAsExpected, "Main.ADryRunLooksAsExpected"
 
       // Tasks.fs
       Tests.Tasks.LoggingCanBeExercised, "Tasks.LoggingCanBeExercised"

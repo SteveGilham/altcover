@@ -10,6 +10,7 @@ open AltCover
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Mono.Cecil.Cil
+open Newtonsoft.Json.Linq
 
 #nowarn "25"
 
@@ -3803,3 +3804,441 @@ module Main =
 #endif // Mono   // remove for fantomas
     finally
       Console.SetError saved
+
+  [<Test>]
+  let ADotNetDryRunLooksAsExpected () =
+    let where =
+      Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
+    let here = SolutionDir()
+
+    let path =
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net9.0")
+
+    let key0 =
+      Path.Combine(here, "Build/SelfTest.snk")
+
+    let input = path
+    let key = key0
+    let unique = Guid.NewGuid().ToString()
+
+    let unique' =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    Directory.CreateDirectory unique' |> ignore
+
+    let report =
+      Path.Combine(unique', "ADotNetDryRunLooksAsExpected.json")
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(where), unique)
+
+    let outputSaved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    let inputSaved =
+      CoverageParameters.theInputDirectories
+      |> Seq.toList
+
+    let reportSaved =
+      CoverageParameters.theReportPath
+
+    let keySaved =
+      CoverageParameters.defaultStrongNameKey
+
+    let saved = (Console.Out, Console.Error)
+    Main.init ()
+    let save2 = (Output.info, Output.error)
+
+    try
+      Output.error <- CommandLine.writeErr
+      String.Empty |> Output.error
+      Output.info <- CommandLine.writeOut
+
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let args =
+        [| "-i"
+           input
+           "-o"
+           output
+           "-r"
+           report
+           "--reportFormat"
+           "Json"
+           "--sn"
+           key
+           "-s=Adapter"
+           "-s=xunit"
+           "-s=nunit"
+           "-e=Sample"
+           "-c=[Test]"
+           "--localSource"
+           "--save" |]
+
+      let result = Main.I.doInstrumentation args
+      test' <@ result = 0 @> <| stderr.ToString()
+      test <@ stderr.ToString() |> Seq.isEmpty @>
+
+      let expected =
+        "Creating folder "
+        + (canonicalDirectory output)
+        + "\nInstrumenting files from "
+        + (canonicalDirectory input)
+        + "\nWriting files to "
+        + (canonicalDirectory output)
+        + "\n   => "
+        + Path.Combine(canonicalDirectory input, "Sample4.dll")
+        + "\n\nCoverage Report: "
+        + report
+        + "\n\n\n    "
+        + Path.Combine(canonicalDirectory output, "Sample4.dll")
+        + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+
+      test
+        <@
+          (expected.Replace("\\", "/")) = stdout
+            .ToString()
+            .Replace("\r\n", "\n")
+            .Replace("\\", "/")
+        @>
+
+      test
+        <@
+          CoverageParameters.outputDirectories ()
+          |> Seq.head = canonicalDirectory output
+        @>
+
+      test
+        <@
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
+            input)
+            .Replace("\\", "/"))
+        @>
+
+      test <@ CoverageParameters.reportPath () = report @>
+
+      use stream =
+        new FileStream(key, FileMode.Open)
+
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+
+      let snk =
+        StrongNameKeyData.Make(buffer.ToArray())
+
+      test <@ (CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk)) @>
+      test <@ CoverageParameters.keys.Count = 2 @>
+
+      test <@ (File.Exists report) @>
+      test <@ (File.Exists(report + ".acv")) @>
+
+      let expected =
+        [ "AltCover.Recorder.g.dll"
+          "FSharp.Core.dll"
+          "Newtonsoft.Json.dll"
+          "Sample4.deps.json"
+          "Sample4.dll"
+          "Sample4.runtimeconfig.json"
+          "Sample4.pdb"
+          "Unquote.dll"
+          "xunit.abstractions.dll"
+          "xunit.assert.dll"
+          "xunit.core.dll"
+          "xunit.execution.dotnet.dll"
+          "xunit.runner.visualstudio.testadapter.dll" ]
+
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+
+      let theFiles =
+        expected |> List.sortBy _.ToUpperInvariant()
+
+      let actualFiles =
+        Directory.GetFiles(output)
+        |> Seq.map Path.GetFileName
+        |> Seq.filter (fun f ->
+          f.EndsWith(".tmp", StringComparison.Ordinal)
+          |> not)
+        |> Seq.filter (fun f -> Path.GetFileNameWithoutExtension f <> "testhost")
+        |> Seq.filter (fun f ->
+          (Path.GetFileNameWithoutExtension f)
+            .StartsWith("Microsoft.", StringComparison.Ordinal)
+          |> not)
+        |> Seq.sortBy _.ToUpperInvariant()
+        |> Seq.toList
+
+      test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
+
+      let recordedJson =
+        use stream = File.OpenRead report
+
+        match
+          DocumentType.LoadReportStream CoverageParameters.theReportFormat.Value stream
+        with
+        | JSON j -> j
+
+      test <@ recordedJson.Keys |> Seq.toList = [ "Sample4.dll" ] @>
+    finally
+      CoverageParameters.trackingNames.Clear()
+      CoverageParameters.theReportFormat <- None
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange outputSaved
+      CoverageParameters.theInputDirectories.AddRange inputSaved
+      CoverageParameters.theReportPath <- reportSaved
+      CoverageParameters.defaultStrongNameKey <- keySaved
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+      CoverageParameters.keys.Clear()
+      CoverageParameters.nameFilters.Clear()
+      Output.error <- snd save2
+      Output.info <- fst save2
+
+    let before =
+      File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
+
+    test <@ before.IndexOf("AltCover.Recorder.g") = -1 @>
+
+    let o =
+      JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
+
+    let target =
+      ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+
+    let targets =
+      (o.Properties()
+       |> Seq.find (fun p -> p.Name = "targets"))
+        .Value
+      :?> JObject
+
+    let targeted =
+      (targets.Properties()
+       |> Seq.find (fun p -> p.Name = target))
+        .Value
+      :?> JObject
+
+    let app =
+      (targeted.PropertyValues() |> Seq.head) :?> JObject
+
+    let existingDependencies =
+      app.Properties()
+      |> Seq.tryFind (fun p -> p.Name = "dependencies")
+
+    let reset =
+      match existingDependencies with
+      | Some p ->
+        (p.Value :?> JObject).Properties()
+        |> Seq.map _.Name
+        |> Set.ofSeq
+
+    test <@ reset |> Set.contains "AltCover.Recorder.g" @>
+
+    let aux =
+      targeted.Properties()
+      |> Seq.map _.Name
+      |> Set.ofSeq
+
+    test
+      <@
+        (aux
+         |> Set.contains (
+           "AltCover.Recorder.g/"
+           + AltCover.AssemblyVersionInformation.AssemblyVersion
+         ))
+      @>
+
+    let libraries =
+      (o.Properties()
+       |> Seq.find (fun p -> p.Name = "libraries"))
+        .Value
+      :?> JObject
+
+    let lib =
+      libraries.Properties()
+      |> Seq.map _.Name
+      |> Set.ofSeq
+
+    test
+      <@
+        (lib
+         |> Set.contains (
+           "AltCover.Recorder.g/"
+           + AltCover.AssemblyVersionInformation.AssemblyVersion
+         ))
+      @>
+
+  [<Test>]
+  let ADryRunLooksAsExpected () =
+    let where =
+      Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
+    let path =
+      monoSample1path
+      |> Path.GetDirectoryName
+      |> Path.GetFullPath
+
+    maybeIgnore (fun () -> path |> Directory.Exists |> not)
+
+    let key =
+      Path.Combine(SolutionDir(), "Build/SelfTest.snk")
+
+    let unique = Guid.NewGuid().ToString()
+
+    let unique' =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    Directory.CreateDirectory unique' |> ignore
+
+    let report =
+      Path.Combine(unique', "ADryRunLooksAsExpected.xml")
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(where), unique)
+
+    let outputSaved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    let inputSaved =
+      CoverageParameters.theInputDirectories
+      |> Seq.toList
+
+    let reportSaved =
+      CoverageParameters.theReportPath
+
+    let keySaved =
+      CoverageParameters.defaultStrongNameKey
+
+    let saved = (Console.Out, Console.Error)
+    let save2 = (Output.info, Output.error)
+    Main.init ()
+
+    try
+      Output.error <- CommandLine.writeErr
+      String.Empty |> Output.error
+      Output.info <- CommandLine.writeOut
+
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let args =
+        [| "-i"
+           path
+           "-o"
+           output
+           "-r"
+           report
+           "--reportFormat"
+           "ncov"
+           "-sn"
+           key |]
+
+      let result = Main.I.doInstrumentation args
+      test' <@ result = 0 @> <| stderr.ToString()
+      test <@ stderr.ToString() |> Seq.isEmpty @>
+
+      let subjectAssembly =
+        Path.Combine(path, "Sample1.exe")
+
+      let expected =
+        "Creating folder "
+        + (canonicalDirectory output)
+        + "\nInstrumenting files from "
+        + (canonicalDirectory path)
+        + "\nWriting files to "
+        + (canonicalDirectory output)
+        + "\n   => "
+        + monoSample1path
+        + "\n\nCoverage Report: "
+        + report
+        + "\n\n\n    "
+        + Path.Combine(canonicalDirectory output, "Sample1.exe")
+        + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+
+      let console = stdout.ToString()
+
+      test
+        <@
+          console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/"))
+        @>
+
+      test
+        <@
+          CoverageParameters.outputDirectories ()
+          |> Seq.head = (canonicalDirectory output)
+        @>
+
+      test
+        <@
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
+            path)
+            .Replace("\\", "/"))
+        @>
+
+      test <@ CoverageParameters.reportPath () = report @>
+
+      use stream =
+        new FileStream(key, FileMode.Open)
+
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+
+      let snk =
+        StrongNameKeyData.Make(buffer.ToArray())
+
+      test <@ CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk) @>
+      test <@ CoverageParameters.keys.Count = 2 @>
+
+      test <@ File.Exists report @>
+
+      let theFiles =
+        [ "AltCover.Recorder.g.dll"
+          "Sample1.exe"
+          "Sample1.exe.mdb" ]
+
+      let actual =
+        Directory.GetFiles(output)
+        |> Seq.map Path.GetFileName
+        |> Seq.toList
+        |> List.sortBy _.ToUpperInvariant()
+
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+
+      let expected =
+        theFiles |> List.sortBy _.ToUpperInvariant()
+
+      test <@ actual = expected @>
+
+      let expectedText =
+        MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
+
+      let expectedXml =
+        XDocument.Load(new StringReader(expectedText))
+
+      let recordedXml =
+        use stream = File.OpenRead report
+
+        match DocumentType.LoadReportStream ReportFormat.OpenCover stream with
+        | XML x -> x
+
+      RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange outputSaved
+      CoverageParameters.theInputDirectories.AddRange inputSaved
+      CoverageParameters.theReportPath <- reportSaved
+      CoverageParameters.defaultStrongNameKey <- keySaved
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+      CoverageParameters.keys.Clear()
+      Output.error <- snd save2
+      Output.info <- fst save2

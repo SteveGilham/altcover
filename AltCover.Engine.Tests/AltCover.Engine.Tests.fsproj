@@ -32,6 +32,8 @@
     <Compile Include="Instrument.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="Runner.fs" />
+    <Compile Include="CoverageFiles.fs" />
+    <Compile Include="Arguments.fs" />
     <Compile Include="Main.fs" />
     <Compile Include="Tasks.fs" />
     <Compile Include="Program.fs" />
@@ -125,6 +127,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
