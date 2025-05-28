@@ -6,14 +6,14 @@ open Expecto
 
 module ExpectoMain =
   let regular =
-    [ Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
-      Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
-      Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
-      Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+    [ Tests.TestCommonTests.TestMultiple, "TestCommon.TestMultiple"
+      Tests.TestCommonTests.TestIgnoredTests, "TestCommon.TestIgnoredTests"
+      Tests.TestCommonTests.ExerciseItAll, "TestCommon.ExerciseItAll"
+      Tests.TestCommonTests.SelfTest, "TestCommon.SelfTest"
       // Augment.fs
-      Tests.Augment.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
-      Tests.Augment.PositiveIsVisited, "Tests.PositiveIsVisited"
-      Tests.Augment.NegativesSpray, "Tests.NegativesSpray"
+      Tests.Augment.ZeroIsNotVisited, "Augment.ZeroIsNotVisited"
+      Tests.Augment.PositiveIsVisited, "Augment.PositiveIsVisited"
+      Tests.Augment.NegativesSpray, "Augment.NegativesSpray"
       // Base.fs
       Tests.BaseTests.ExerciseBoth, "BaseTests.ExerciseBoth"
       Tests.BaseTests.ExerciseTime, "BaseTests.ExerciseTime"
@@ -22,602 +22,782 @@ module ExpectoMain =
       Tests.BaseTests.ExercisePointVisit, "BaseTests.ExercisePointVisit"
       // ProgramDatabase.fs
       Tests.ProgramDatabase.ShouldTrapIndexOutOfRangeException,
-      "Tests.ShouldTrapIndexOutOfRangeException"
-      Tests.ProgramDatabase.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
+      "ProgramDatabase.ShouldTrapIndexOutOfRangeException"
+      Tests.ProgramDatabase.ShouldGetPdbFromImage, "ProgramDatabase.ShouldGetPdbFromImage"
       Tests.ProgramDatabase.ShouldGetEmbeddedPdbFromImage,
-      "Tests.ShouldGetEmbeddedPdbFromImage"
+      "ProgramDatabase.ShouldGetEmbeddedPdbFromImage"
       Tests.ProgramDatabase.ShouldGetNoMdbFromMonoImage,
-      "Tests.ShouldGetNoMdbFromMonoImage"
-      Tests.ProgramDatabase.ShouldGetGUIDfromNativePdb, "Tests.ShouldGetGUIDfromNativePdb"
-      Tests.ProgramDatabase.ShouldGetPdbWithFallback, "Tests.ShouldGetPdbWithFallback"
+      "ProgramDatabase.ShouldGetNoMdbFromMonoImage"
+      Tests.ProgramDatabase.ShouldGetGUIDfromNativePdb, "ProgramDatabase.ShouldGetGUIDfromNativePdb"
+      Tests.ProgramDatabase.ShouldGetPdbWithFallback, "ProgramDatabase.ShouldGetPdbWithFallback"
       Tests.ProgramDatabase.ShouldGetForeignPdbWithFallback,
-      "Tests.ShouldGetForeignPdbWithFallback"
+      "ProgramDatabase.ShouldGetForeignPdbWithFallback"
       Tests.ProgramDatabase.ShouldGetForeignPdbWithFallbackWhenNotColocated,
-      "Tests.ShouldGetForeignPdbWithFallbackWhenNotColocated"
-      Tests.ProgramDatabase.ShouldGetMdbWithFallback, "Tests.ShouldGetMdbWithFallback"
-      Tests.ProgramDatabase.ShouldGetSymbolsFromPdb, "Tests.ShouldGetSymbolsFromPdb"
+      "ProgramDatabase.ShouldGetForeignPdbWithFallbackWhenNotColocated"
+      Tests.ProgramDatabase.ShouldGetMdbWithFallback, "ProgramDatabase.ShouldGetMdbWithFallback"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromPdb, "ProgramDatabase.ShouldGetSymbolsFromPdb"
       Tests.ProgramDatabase.ShouldGetSymbolsFromEmbeddedPdb,
-      "Tests.ShouldGetSymbolsFromEmbeddedPdb"
+      "ProgramDatabase.ShouldGetSymbolsFromEmbeddedPdb"
       Tests.ProgramDatabase.ShouldNotGetSymbolsWhenNoPdb,
-      "Tests.ShouldNotGetSymbolsWhenNoPdb"
-      Tests.ProgramDatabase.ShouldGetSymbolsFromMdb, "Tests.ShouldGetSymbolsFromMdb"
+      "ProgramDatabase.ShouldNotGetSymbolsWhenNoPdb"
+      Tests.ProgramDatabase.ShouldGetSymbolsFromMdb, "ProgramDatabase.ShouldGetSymbolsFromMdb"
       // Filter.fs
-      Tests.ACFilter.NoneOfTheAboveMatchesNoType, "Tests.NoneOfTheAboveMatchesNoType"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoType, "Filter.NoneOfTheAboveMatchesNoType"
       Tests.ACFilter.NoneOfTheAboveMatchesNoAttribute,
-      "Tests.NoneOfTheAboveMatchesNoAttribute"
+      "Filter.NoneOfTheAboveMatchesNoAttribute"
       Tests.ACFilter.NoneOfTheAboveMatchesNoAssembly,
-      "Tests.NoneOfTheAboveMatchesNoAssembly"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoModule, "Tests.NoneOfTheAboveMatchesNoModule"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoFile, "Tests.NoneOfTheAboveMatchesNoFile"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoPath, "Tests.NoneOfTheAboveMatchesNoPath"
-      Tests.ACFilter.NoneOfTheAboveMatchesNoMethod, "Tests.NoneOfTheAboveMatchesNoMethod"
-      Tests.ACFilter.FileDoesNotMatchNonFileClass, "Tests.FileDoesNotMatchNonFileClass"
-      Tests.ACFilter.FileDoesMatchFileClass, "Tests.FileDoesMatchFileClass"
-      Tests.ACFilter.PathDoesNotMatchNonPathClass, "Tests.PathDoesNotMatchNonPathClass"
-      Tests.ACFilter.PathDoesMatchPathClass, "Tests.PathDoesMatchPathClass"
+      "Filter.NoneOfTheAboveMatchesNoAssembly"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoModule, "Filter.NoneOfTheAboveMatchesNoModule"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoFile, "Filter.NoneOfTheAboveMatchesNoFile"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoPath, "Filter.NoneOfTheAboveMatchesNoPath"
+      Tests.ACFilter.NoneOfTheAboveMatchesNoMethod, "Filter.NoneOfTheAboveMatchesNoMethod"
+      Tests.ACFilter.FileDoesNotMatchNonFileClass, "Filter.FileDoesNotMatchNonFileClass"
+      Tests.ACFilter.FileDoesMatchFileClass, "Filter.FileDoesMatchFileClass"
+      Tests.ACFilter.PathDoesNotMatchNonPathClass, "Filter.PathDoesNotMatchNonPathClass"
+      Tests.ACFilter.PathDoesMatchPathClass, "Filter.PathDoesMatchPathClass"
       Tests.ACFilter.AssemblyDoesNotMatchNonAssemblyClass,
-      "Tests.AssemblyDoesNotMatchNonAssemblyClass"
+      "Filter.AssemblyDoesNotMatchNonAssemblyClass"
       Tests.ACFilter.AssemblyDoesMatchAssemblyClass,
-      "Tests.AssemblyDoesMatchAssemblyClass"
+      "Filter.AssemblyDoesMatchAssemblyClass"
       Tests.ACFilter.ModuleDoesNotMatchNonModuleClass,
-      "Tests.ModuleDoesNotMatchNonModuleClass"
-      Tests.ACFilter.ModuleDoesMatchModuleClass, "Tests.ModuleDoesMatchModuleClass"
-      Tests.ACFilter.TypeDoesNotMatchNonTypeClass, "Tests.TypeDoesNotMatchNonTypeClass"
-      Tests.ACFilter.TypeDoesMatchTypeClass, "Tests.TypeDoesMatchTypeClass"
+      "Filter.ModuleDoesNotMatchNonModuleClass"
+      Tests.ACFilter.ModuleDoesMatchModuleClass, "Filter.ModuleDoesMatchModuleClass"
+      Tests.ACFilter.TypeDoesNotMatchNonTypeClass, "Filter.TypeDoesNotMatchNonTypeClass"
+      Tests.ACFilter.TypeDoesMatchTypeClass, "Filter.TypeDoesMatchTypeClass"
       Tests.ACFilter.MethodDoesNotMatchNonMethodClass,
-      "Tests.MethodDoesNotMatchNonMethodClass"
-      Tests.ACFilter.MethodDoesMatchMethodClass, "Tests.MethodDoesMatchMethodClass"
+      "Filter.MethodDoesNotMatchNonMethodClass"
+      Tests.ACFilter.MethodDoesMatchMethodClass, "Filter.MethodDoesMatchMethodClass"
       Tests.ACFilter.AttributeDoesNotMatchNonAttributeClass,
-      "Tests.AttributeDoesNotMatchNonAttributeClass"
+      "Filter.AttributeDoesNotMatchNonAttributeClass"
       Tests.ACFilter.AttributeDoesMatchAttributeClass,
-      "Tests.AttributeDoesMatchAttributeClass"
+      "Filter.AttributeDoesMatchAttributeClass"
       Tests.ACFilter.CanExcludeCSharpPropertiesByAttribute,
-      "Tests.CanExcludeCSharpPropertiesByAttribute"
-      Tests.ACFilter.RefStructsAreNotObsolete, "Tests.RefStructsAreNotObsolete"
+      "Filter.CanExcludeCSharpPropertiesByAttribute"
+      Tests.ACFilter.RefStructsAreNotObsolete, "Filter.RefStructsAreNotObsolete"
       Tests.ACFilter.Sample3Class1IsCSharpAutoproperty,
-      "Tests.Sample3Class1IsCSharpAutoproperty"
+      "Filter.Sample3Class1IsCSharpAutoproperty"
       Tests.ACFilter.Sample3Class2IsNotCSharpAutoproperty,
-      "Tests.Sample3Class2IsNotCSharpAutoproperty"
+      "Filter.Sample3Class2IsNotCSharpAutoproperty"
       Tests.ACFilter.CanIdentifyExcludedFSharpMethods,
-      "Tests.CanIdentifyExcludedFSharpMethods"
+      "Filter.CanIdentifyExcludedFSharpMethods"
       Tests.ACFilter.CanIdentifyExcludedCSharpAutoProperties,
-      "Tests.CanIdentifyExcludedCSharpAutoProperties"
+      "Filter.CanIdentifyExcludedCSharpAutoProperties"
       Tests.ACFilter.CanIdentifyIncludedCSharpProperties,
-      "Tests.CanIdentifyIncludedCSharpProperties"
+      "Filter.CanIdentifyIncludedCSharpProperties"
       // Visitor.fs
       Tests.Visitor.ReportFileShouldBeCorrectlySuffixed,
-      "Tests.ReportFileShouldBeCorrectlySuffixed"
+      "Visitor.ReportFileShouldBeCorrectlySuffixed"
       Tests.Visitor.ReportFileShouldBeCorrectlyExtended,
-      "Tests.ReportFileShouldBeCorrectlyExtended"
-      Tests.Visitor.CanSwitchSampling, "Tests.CanSwitchSampling"
-      Tests.Visitor.ValidateStaticExemption, "Tests.ValidateStaticExemption"
-      Tests.Visitor.ValidateStaticClass, "Tests.ValidateStaticClass"
-      Tests.Visitor.ValidateAutomaticExemption, "Tests.ValidateAutomaticExemption"
-      Tests.Visitor.DetectLocalSource, "Tests.DetectLocalSource"
+      "Visitor.ReportFileShouldBeCorrectlyExtended"
+      Tests.Visitor.CanSwitchSampling, "Visitor.CanSwitchSampling"
+      Tests.Visitor.ValidateStaticExemption, "Visitor.ValidateStaticExemption"
+      Tests.Visitor.ValidateStaticClass, "Visitor.ValidateStaticClass"
+      Tests.Visitor.ValidateAutomaticExemption, "Visitor.ValidateAutomaticExemption"
+      Tests.Visitor.DetectLocalSource, "Visitor.DetectLocalSource"
       Tests.Visitor.LocateMatchShouldChooseLongerWildCardPath,
-      "Tests.LocateMatchShouldChooseLongerWildCardPath"
-      Tests.Visitor.LocateMatchFallsBackOK, "Tests.LocateMatchFallsBackOK"
-      Tests.Visitor.AsyncTestInContext, "Tests.AsyncTestInContext"
-      Tests.Visitor.AnotherAsyncTestInContext, "Tests.AnotherAsyncTestInContext"
-      Tests.Visitor.DebugBuildTernaryTestInContext, "Tests.DebugBuildTernaryTestInContext"
-      Tests.Visitor.ReleaseBuildTernaryTest, "Tests.ReleaseBuildTernaryTest"
+      "Visitor.LocateMatchShouldChooseLongerWildCardPath"
+      Tests.Visitor.LocateMatchFallsBackOK, "Visitor.LocateMatchFallsBackOK"
+      Tests.Visitor.AsyncTestInContext, "Visitor.AsyncTestInContext"
+      Tests.Visitor.AnotherAsyncTestInContext, "Visitor.AnotherAsyncTestInContext"
+      Tests.Visitor.DebugBuildTernaryTestInContext, "Visitor.DebugBuildTernaryTestInContext"
+      Tests.Visitor.ReleaseBuildTernaryTest, "Visitor.ReleaseBuildTernaryTest"
       Tests.Visitor.ReleaseBuildTernaryTestInContext,
-      "Tests.ReleaseBuildTernaryTestInContext"
+      "Visitor.ReleaseBuildTernaryTestInContext"
       Tests.Visitor.ReleaseBuildTernaryTestInContextWithCoalescence,
-      "Tests.ReleaseBuildTernaryTestInContextWithCoalescence"
-      Tests.Visitor.CSharpNestedMethods, "Tests.CSharpNestedMethods"
-      Tests.Visitor.FSharpNestedMethodsClassic, "Tests.FSharpNestedMethodsClassic"
-      Tests.Visitor.FSharpNestedMethods5x0x201, "Tests.FSharpNestedMethods_5_0_201"
-      Tests.Visitor.ValidateSeqPntFixUp, "Tests.ValidateSeqPntFixUp" // HACK HACK HACK
-      Tests.Visitor.EmptyArrayHasExpectedHash, "Tests.EmptyArrayHasExpectedHash"
-      Tests.Visitor.KeyHasExpectedToken, "Tests.KeyHasExpectedToken"
-      Tests.Visitor.TokenGeneratesExpectedULong, "Tests.TokenGeneratesExpectedULong"
-      Tests.Visitor.KeyHasExpectedIndex, "Tests.KeyHasExpectedIndex"
-      Tests.Visitor.EmptyArrayHasExpectedIndex, "Tests.EmptyArrayHasExpectedIndex"
-      Tests.Visitor.KeyHasExpectedRecord, "Tests.KeyHasExpectedRecord"
-      Tests.Visitor.KeyHasExpectedPlaceInIndex, "Tests.KeyHasExpectedPlaceInIndex"
-      Tests.Visitor.EmptyFiltersPassAll, "Tests.EmptyFiltersPassAll"
+      "Visitor.ReleaseBuildTernaryTestInContextWithCoalescence"
+      Tests.Visitor.CSharpNestedMethods, "Visitor.CSharpNestedMethods"
+      Tests.Visitor.FSharpNestedMethodsClassic, "Visitor.FSharpNestedMethodsClassic"
+      Tests.Visitor.FSharpNestedMethods5x0x201, "Visitor.FSharpNestedMethods_5_0_201"
+      Tests.Visitor.ValidateSeqPntFixUp, "Visitor.ValidateSeqPntFixUp" // HACK HACK HACK
+      Tests.Visitor.EmptyArrayHasExpectedHash, "Visitor.EmptyArrayHasExpectedHash"
+      Tests.Visitor.KeyHasExpectedToken, "Visitor.KeyHasExpectedToken"
+      Tests.Visitor.TokenGeneratesExpectedULong, "Visitor.TokenGeneratesExpectedULong"
+      Tests.Visitor.KeyHasExpectedIndex, "Visitor.KeyHasExpectedIndex"
+      Tests.Visitor.EmptyArrayHasExpectedIndex, "Visitor.EmptyArrayHasExpectedIndex"
+      Tests.Visitor.KeyHasExpectedRecord, "Visitor.KeyHasExpectedRecord"
+      Tests.Visitor.KeyHasExpectedPlaceInIndex, "Visitor.KeyHasExpectedPlaceInIndex"
+      Tests.Visitor.EmptyFiltersPassAll, "Visitor.EmptyFiltersPassAll"
       Tests.Visitor.NonEmptyFiltersCatchAnExpectedValue,
-      "Tests.NonEmptyFiltersCatchAnExpectedValue"
+      "Visitor.NonEmptyFiltersCatchAnExpectedValue"
       Tests.Visitor.NonEmptyFiltersPassAnExpectedValue,
-      "Tests.NonEmptyFiltersPassAnExpectedValue"
+      "Visitor.NonEmptyFiltersPassAnExpectedValue"
       Tests.Visitor.AfterProcessingYieldsAnExpectedValue,
-      "Tests.AfterProcessingYieldsAnExpectedValue"
+      "Visitor.AfterProcessingYieldsAnExpectedValue"
       Tests.Visitor.Sample3Class1PropertyIsNotSignificant,
-      "Tests.Sample3Class1PropertyIsNotSignificant"
+      "Visitor.Sample3Class1PropertyIsNotSignificant"
       Tests.Visitor.Sample3Class2IPropertyIsSignificant,
-      "Tests.Sample3Class2IPropertyIsSignificant"
-      Tests.Visitor.TerminalCasesGoNoDeeper, "Tests.TerminalCasesGoNoDeeper"
+      "Visitor.Sample3Class2IPropertyIsSignificant"
+      Tests.Visitor.TerminalCasesGoNoDeeper, "Visitor.TerminalCasesGoNoDeeper"
       Tests.Visitor.MethodPointsAreDeeperThanMethods,
-      "Tests.MethodPointsAreDeeperThanMethods"
+      "Visitor.MethodPointsAreDeeperThanMethods"
       Tests.Visitor.BranchPointsAreComputedForSwitch,
-      "Tests.BranchPointsAreComputedForSwitch"
+      "Visitor.BranchPointsAreComputedForSwitch"
       Tests.Visitor.BranchPointsAreComputedForMatch,
-      "Tests.BranchPointsAreComputedForMatch"
-      Tests.Visitor.MethodsAreDeeperThanTypes, "Tests.MethodsAreDeeperThanTypes"
-      Tests.Visitor.TypesAreDeeperThanModules, "Tests.TypesAreDeeperThanModules"
-      Tests.Visitor.ModulesAreDeeperThanAssemblies, "Tests.ModulesAreDeeperThanAssemblies"
-      Tests.Visitor.AssembliesAreDeeperThanPaths, "Tests.AssembliesAreDeeperThanPaths"
+      "Visitor.BranchPointsAreComputedForMatch"
+      Tests.Visitor.MethodsAreDeeperThanTypes, "Visitor.MethodsAreDeeperThanTypes"
+      Tests.Visitor.TypesAreDeeperThanModules, "Visitor.TypesAreDeeperThanModules"
+      Tests.Visitor.ModulesAreDeeperThanAssemblies, "Visitor.ModulesAreDeeperThanAssemblies"
+      Tests.Visitor.AssembliesAreDeeperThanPaths, "Visitor.AssembliesAreDeeperThanPaths"
       Tests.Visitor.FilteredAssembliesDoNotHaveSequencePoints,
-      "Tests.FilteredAssembliesDoNotHaveSequencePoints"
-      Tests.Visitor.TestExceptionWrapping, "Tests.TestExceptionWrapping"
-      Tests.Visitor.TestFixPointInvoke, "Tests.TestFixPointInvoke"
-      Tests.Visitor.TestFixPointApply, "Tests.TestFixPointApply"
-      Tests.Visitor.PathsAreDeeperThanAVisit, "Tests.PathsAreDeeperThanAVisit"
-      Tests.Visitor.TrackingDetectsTests, "Tests.TrackingDetectsTests"
-      Tests.Visitor.TrackingDetectsExpectedTests, "Tests.TrackingDetectsExpectedTests"
-      Tests.Visitor.TrackingDetectsTestsByFullType, "Tests.TrackingDetectsTestsByFullType"
-      Tests.Visitor.TrackingDetectsMethods, "Tests.TrackingDetectsMethods"
-      Tests.Visitor.NamingDetectEmpties, "Tests.NamingDetectEmpties"
-      Tests.Visitor.NamingSuffixDetectEmpties, "Tests.NamingSuffixDetectEmpties"
-      Tests.Visitor.TypeNamesAreExtracted, "Tests.TypeNamesAreExtracted"
-      Tests.Visitor.FullTypeNamesAreExtracted, "Tests.FullTypeNamesAreExtracted"
-      Tests.Visitor.TypeRefNamesAreExtracted, "Tests.TypeRefNamesAreExtracted"
-      Tests.Visitor.FullTypeRefNamesAreExtracted, "Tests.FullTypeRefNamesAreExtracted"
-      Tests.Visitor.MethodNamesAreExtracted, "Tests.MethodNamesAreExtracted"
-      Tests.Visitor.FullMethodNamesAreExtracted, "Tests.FullMethodNamesAreExtracted"
+      "Visitor.FilteredAssembliesDoNotHaveSequencePoints"
+      Tests.Visitor.TestExceptionWrapping, "Visitor.TestExceptionWrapping"
+      Tests.Visitor.TestFixPointInvoke, "Visitor.TestFixPointInvoke"
+      Tests.Visitor.TestFixPointApply, "Visitor.TestFixPointApply"
+      Tests.Visitor.PathsAreDeeperThanAVisit, "Visitor.PathsAreDeeperThanAVisit"
+      Tests.Visitor.TrackingDetectsTests, "Visitor.TrackingDetectsTests"
+      Tests.Visitor.TrackingDetectsExpectedTests, "Visitor.TrackingDetectsExpectedTests"
+      Tests.Visitor.TrackingDetectsTestsByFullType, "Visitor.TrackingDetectsTestsByFullType"
+      Tests.Visitor.TrackingDetectsMethods, "Visitor.TrackingDetectsMethods"
+      Tests.Visitor.NamingDetectEmpties, "Visitor.NamingDetectEmpties"
+      Tests.Visitor.NamingSuffixDetectEmpties, "Visitor.NamingSuffixDetectEmpties"
+      Tests.Visitor.TypeNamesAreExtracted, "Visitor.TypeNamesAreExtracted"
+      Tests.Visitor.FullTypeNamesAreExtracted, "Visitor.FullTypeNamesAreExtracted"
+      Tests.Visitor.TypeRefNamesAreExtracted, "Visitor.TypeRefNamesAreExtracted"
+      Tests.Visitor.FullTypeRefNamesAreExtracted, "Visitor.FullTypeRefNamesAreExtracted"
+      Tests.Visitor.MethodNamesAreExtracted, "Visitor.MethodNamesAreExtracted"
+      Tests.Visitor.FullMethodNamesAreExtracted, "Visitor.FullMethodNamesAreExtracted"
       Tests.Visitor.ShouldGenerateExpectedNCoverReportWithOverloads,
-      "Tests.ShouldGenerateExpectedNCoverReportWithOverloads"
+      "Visitor.ShouldGenerateExpectedNCoverReportWithOverloads"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNet,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNet"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet,
-      "Tests.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet"
+      "Visitor.ShouldGenerateExpectedXmlReportWithoutTriviaFromDotNet"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithEmbeds,
-      "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
+      "Visitor.ShouldGenerateExpectedXmlReportFromWithEmbeds"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithOverloads,
-      "Tests.ShouldGenerateExpectedXmlReportWithOverloads"
+      "Visitor.ShouldGenerateExpectedXmlReportWithOverloads"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithPartials,
-      "Tests.ShouldGenerateExpectedXmlReportFromWithPartials"
+      "Visitor.ShouldGenerateExpectedXmlReportFromWithPartials"
       Tests.Visitor.ShouldGenerateExpectedJsonReportFromDotNet,
-      "Tests.ShouldGenerateExpectedJsonReportFromDotNet"
+      "Visitor.ShouldGenerateExpectedJsonReportFromDotNet"
       Tests.Visitor.ShouldGenerateExpectedJsonReportWithEmbeds,
-      "Tests.ShouldGenerateExpectedJsonReportWithEmbeds"
+      "Visitor.ShouldGenerateExpectedJsonReportWithEmbeds"
       Tests.Visitor.ShouldGenerateExpectedJsonReportWithOverloads,
-      "Tests.ShouldGenerateExpectedJsonReportWithOverloads"
+      "Visitor.ShouldGenerateExpectedJsonReportWithOverloads"
       Tests.Visitor.ShouldGenerateExpectedJsonReportWithPartials,
-      "Tests.ShouldGenerateExpectedJsonReportWithPartials"
+      "Visitor.ShouldGenerateExpectedJsonReportWithPartials"
       Tests.Visitor.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly,
-      "Tests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly"
+      "Visitor.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly"
       Tests.Visitor.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel,
-      "Tests.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel"
+      "Visitor.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel"
       Tests.Visitor.ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly,
-      "Tests.ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly"
+      "Visitor.ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithSourceLink,
-      "Tests.ShouldGenerateExpectedXmlReportWithSourceLink"
+      "Visitor.ShouldGenerateExpectedXmlReportWithSourceLink"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetWhenExcluded,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetWhenExcluded"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetWhenExcluded"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetWhenExcludedEvenIfTracked,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetWhenExcludedEvenIfTracked"
-      Tests.Visitor.ShouldDetectTernary, "Tests.ShouldDetectTernary"
-      Tests.Visitor.ShouldDetectSwitchNesting, "Tests.ShouldDetectSwitchNesting"
-      Tests.Visitor.SafeMultiplyIsSafe, "Tests.SafeMultiplyIsSafe"
-      Tests.Visitor.EmptyMethodHasComplexity1, "Tests.EmptyMethodHasComplexity1"
-      Tests.Visitor.BranchChainsSerialize, "Tests.BranchChainsSerialize"
-      Tests.Visitor.BranchChainsTerminate, "Tests.BranchChainsTerminate"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetWhenExcludedEvenIfTracked"
+      Tests.Visitor.ShouldDetectTernary, "Visitor.ShouldDetectTernary"
+      Tests.Visitor.ShouldDetectSwitchNesting, "Visitor.ShouldDetectSwitchNesting"
+      Tests.Visitor.SafeMultiplyIsSafe, "Visitor.SafeMultiplyIsSafe"
+      Tests.Visitor.EmptyMethodHasComplexity1, "Visitor.EmptyMethodHasComplexity1"
+      Tests.Visitor.BranchChainsSerialize, "Visitor.BranchChainsSerialize"
+      Tests.Visitor.BranchChainsTerminate, "Visitor.BranchChainsTerminate"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyleWithTracking,
-      "Tests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyleWithTracking"
+      "Visitor.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyleWithTracking"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle"
+      "Visitor.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle,
-      "Tests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
-      Tests.Visitor.ShouldSortFileIds, "Tests.ShouldSortFileIds"
+      "Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
+      Tests.Visitor.ShouldSortFileIds, "Visitor.ShouldSortFileIds"
       // CommandLine.fs
-      Tests.CommandLine.StrongNameKeyCanBeValidated, "Tests.StrongNameKeyCanBeValidated"
-      Tests.CommandLine.VerbosityShouldBeHonoured, "Tests.VerbosityShouldBeHonoured"
+      Tests.CommandLine.StrongNameKeyCanBeValidated, "CommandLine.StrongNameKeyCanBeValidated"
+      Tests.CommandLine.VerbosityShouldBeHonoured, "CommandLine.VerbosityShouldBeHonoured"
       Tests.CommandLine.CryptographicExceptionIsTransformed,
-      "Tests.CryptographicExceptionIsTransformed"
-      Tests.CommandLine.OutputCanBeExercised, "Tests.OutputCanBeExercised"
-      Tests.CommandLine.NoThrowNoErrorLeavesAllOK, "Tests.NoThrowNoErrorLeavesAllOK"
-      Tests.CommandLine.NoThrowWithErrorIsSignalled, "Tests.NoThrowWithErrorIsSignalled"
-      Tests.CommandLine.ArgumentExceptionWrites, "Tests.ArgumentExceptionWrites"
-      Tests.CommandLine.ArgumentExceptionWritesEx, "Tests.ArgumentExceptionWritesEx"
-      Tests.CommandLine.IOExceptionWrites, "Tests.IOExceptionWrites"
-      Tests.CommandLine.NotSupportedExceptionWrites, "Tests.NotSupportedExceptionWrites"
-      Tests.CommandLine.SecurityExceptionWrites, "Tests.SecurityExceptionWrites"
+      "CommandLine.CryptographicExceptionIsTransformed"
+      Tests.CommandLine.OutputCanBeExercised, "CommandLine.OutputCanBeExercised"
+      Tests.CommandLine.NoThrowNoErrorLeavesAllOK, "CommandLine.NoThrowNoErrorLeavesAllOK"
+      Tests.CommandLine.NoThrowWithErrorIsSignalled, "CommandLine.NoThrowWithErrorIsSignalled"
+      Tests.CommandLine.ArgumentExceptionWrites, "CommandLine.ArgumentExceptionWrites"
+      Tests.CommandLine.ArgumentExceptionWritesEx, "CommandLine.ArgumentExceptionWritesEx"
+      Tests.CommandLine.IOExceptionWrites, "CommandLine.IOExceptionWrites"
+      Tests.CommandLine.NotSupportedExceptionWrites, "CommandLine.NotSupportedExceptionWrites"
+      Tests.CommandLine.SecurityExceptionWrites, "CommandLine.SecurityExceptionWrites"
       Tests.CommandLine.UnauthorizedAccessExceptionWrites,
-      "Tests.UnauthorizedAccessExceptionWrites"
+      "CommandLine.UnauthorizedAccessExceptionWrites"
       Tests.CommandLine.ShouldLaunchWithExpectedOutput,
-      "Tests.CommandLine.ShouldLaunchWithExpectedOutput"
+      "CommandLine.ShouldLaunchWithExpectedOutput"
       // Instrument.fs
       Tests.Instrument.ShouldBeAbleToGetTheVisitReportMethod,
-      "Tests.ShouldBeAbleToGetTheVisitReportMethod"
+      "Instrument.ShouldBeAbleToGetTheVisitReportMethod"
       Tests.Instrument.ShouldBeAbleToClearTheStrongNameKey,
-      "Tests.ShouldBeAbleToClearTheStrongNameKey"
+      "Instrument.ShouldBeAbleToClearTheStrongNameKey"
       Tests.Instrument.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible,
-      "Tests.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible"
-      Tests.Instrument.NoKnownKeyInEmptyIndex, "Tests.NoKnownKeyInEmptyIndex"
-      Tests.Instrument.KnownKeyMatchedInIndex, "Tests.KnownKeyMatchedInIndex"
+      "Instrument.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible"
+      Tests.Instrument.NoKnownKeyInEmptyIndex, "Instrument.NoKnownKeyInEmptyIndex"
+      Tests.Instrument.KnownKeyMatchedInIndex, "Instrument.KnownKeyMatchedInIndex"
       Tests.Instrument.ThirdPartyKeyNotMatchedInIndex,
-      "Tests.ThirdPartyKeyNotMatchedInIndex"
-      Tests.Instrument.FakedUpKeyIsMatchedInIndex, "Tests.FakedUpKeyIsMatchedInIndex"
-      Tests.Instrument.NoKnownKeyIfAssemblyHasNone, "Tests.NoKnownKeyIfAssemblyHasNone"
-      Tests.Instrument.NoKnownTokenInEmptyIndex, "Tests.NoKnownTokenInEmptyIndex"
-      Tests.Instrument.KnownTokenMatchedInIndex, "Tests.KnownTokenMatchedInIndex"
+      "Instrument.ThirdPartyKeyNotMatchedInIndex"
+      Tests.Instrument.FakedUpKeyIsMatchedInIndex, "Instrument.FakedUpKeyIsMatchedInIndex"
+      Tests.Instrument.NoKnownKeyIfAssemblyHasNone, "Instrument.NoKnownKeyIfAssemblyHasNone"
+      Tests.Instrument.NoKnownTokenInEmptyIndex, "Instrument.NoKnownTokenInEmptyIndex"
+      Tests.Instrument.KnownTokenMatchedInIndex, "Instrument.KnownTokenMatchedInIndex"
       Tests.Instrument.NoKnownTokenIfAssemblyHasNone,
-      "Tests.NoKnownTokenIfAssemblyHasNone"
+      "Instrument.NoKnownTokenIfAssemblyHasNone"
       Tests.Instrument.ForeignTokenIsNotMatchedInIndex,
-      "Tests.ForeignTokenIsNotMatchedInIndex"
-      Tests.Instrument.FakedUpTokenIsMatchedInIndex, "Tests.FakedUpTokenIsMatchedInIndex"
+      "Instrument.ForeignTokenIsNotMatchedInIndex"
+      Tests.Instrument.FakedUpTokenIsMatchedInIndex, "Instrument.FakedUpTokenIsMatchedInIndex"
       Tests.Instrument.GuardShouldDisposeRecordingAssemblyOnException,
-      "Tests.GuardShouldDisposeRecordingAssemblyOnException"
-      Tests.Instrument.ShouldBeAbleToTellAnAssembly, "Tests.ShouldBeAbleToTellAnAssembly"
+      "Instrument.GuardShouldDisposeRecordingAssemblyOnException"
+      Tests.Instrument.ShouldBeAbleToTellAnAssembly, "Instrument.ShouldBeAbleToTellAnAssembly"
       Tests.Instrument.ShouldBeAbleToValidateAnAssembly,
-      "Tests.ShouldBeAbleToValidateAnAssembly"
+      "Instrument.ShouldBeAbleToValidateAnAssembly"
       Tests.Instrument.ShouldBeAbleToLocateAReference,
-      "Tests.ShouldBeAbleToLocateAReference"
+      "Instrument.ShouldBeAbleToLocateAReference"
       Tests.Instrument.ShouldBeAbleToPrepareTheAssembly,
-      "Tests.ShouldBeAbleToPrepareTheAssembly"
-      Tests.Instrument.ShouldGetTrackingStyleIfSet, "Tests.ShouldGetTrackingStyleIfSet"
+      "Instrument.ShouldBeAbleToPrepareTheAssembly"
+      Tests.Instrument.ShouldGetTrackingStyleIfSet, "Instrument.ShouldGetTrackingStyleIfSet"
       Tests.Instrument.ShouldGetNewFilePathFromPreparedAssembly,
-      "Tests.ShouldGetNewFilePathFromPreparedAssembly"
-      Tests.Instrument.ShouldHandleNullConstantsOK, "Tests.ShouldHandleNullConstantsOK"
-      Tests.Instrument.ShouldRescopeMonoMethodOK, "Tests.ShouldRescopeMonoMethodOK"
-      Tests.Instrument.ShouldWriteMonoAssemblyOK, "Tests.ShouldWriteMonoAssemblyOK"
+      "Instrument.ShouldGetNewFilePathFromPreparedAssembly"
+      Tests.Instrument.ShouldHandleNullConstantsOK, "Instrument.ShouldHandleNullConstantsOK"
+      Tests.Instrument.ShouldRescopeMonoMethodOK, "Instrument.ShouldRescopeMonoMethodOK"
+      Tests.Instrument.ShouldWriteMonoAssemblyOK, "Instrument.ShouldWriteMonoAssemblyOK"
       Tests.Instrument.ShouldGetVisitFromWrittenAssembly,
-      "Tests.ShouldGetVisitFromWrittenAssembly"
+      "Instrument.ShouldGetVisitFromWrittenAssembly"
       //Tests.Instrument.ShouldUpdateHandlerOK([<Range(0, 31)>] selection)
       Tests.Instrument.ShouldSubstituteInstructionOperand,
-      "Tests.ShouldSubstituteInstructionOperand"
+      "Instrument.ShouldSubstituteInstructionOperand"
       Tests.Instrument.ShouldNotSubstituteDifferentInstructionOperand,
-      "Tests.ShouldNotSubstituteDifferentInstructionOperand"
+      "Instrument.ShouldNotSubstituteDifferentInstructionOperand"
       Tests.Instrument.ShouldSubstituteIntoInstructionOperandArray,
-      "Tests.ShouldSubstituteIntoInstructionOperandArray"
+      "Instrument.ShouldSubstituteIntoInstructionOperandArray"
       Tests.Instrument.ShouldNotSubstituteOutsideInstructionOperandArray,
-      "Tests.ShouldNotSubstituteOutsideInstructionOperandArray"
+      "Instrument.ShouldNotSubstituteOutsideInstructionOperandArray"
       Tests.Instrument.ShouldNotSubstituteOtherOperand,
-      "Tests.ShouldNotSubstituteOtherOperand"
-      Tests.Instrument.ShouldBeAbleToTrackAMethod, "Tests.ShouldBeAbleToTrackAMethod"
+      "Instrument.ShouldNotSubstituteOtherOperand"
+      Tests.Instrument.ShouldBeAbleToTrackAMethod, "Instrument.ShouldBeAbleToTrackAMethod"
       Tests.Instrument.ShouldBeAbleToTrackAMethodWithTailCalls,
-      "Tests.ShouldBeAbleToTrackAMethodWithTailCalls"
+      "Instrument.ShouldBeAbleToTrackAMethodWithTailCalls"
       Tests.Instrument.ShouldBeAbleToTrackAMethodWithNonVoidReturn,
-      "Tests.ShouldBeAbleToTrackAMethodWithNonVoidReturn"
+      "Instrument.ShouldBeAbleToTrackAMethodWithNonVoidReturn"
       Tests.Instrument.ShouldBeAbleToTrackAnAsyncMethod,
-      "Tests.ShouldBeAbleToTrackAnAsyncMethod"
+      "Instrument.ShouldBeAbleToTrackAnAsyncMethod"
       Tests.Instrument.ShouldBeAbleToTrackAnFSAsyncMethod,
-      "Tests.ShouldBeAbleToTrackAnFSAsyncMethod"
+      "Instrument.ShouldBeAbleToTrackAnFSAsyncMethod"
       Tests.Instrument.ShouldBeAbleToTrackAnFSTaskMethod,
-      "Tests.ShouldBeAbleToTrackAnFSTaskMethod"
+      "Instrument.ShouldBeAbleToTrackAnFSTaskMethod"
       Tests.Instrument.ShouldBeAbleToInstrumentASwitchForNCover,
-      "Tests.ShouldBeAbleToInstrumentASwitchForNCover"
+      "Instrument.ShouldBeAbleToInstrumentASwitchForNCover"
       Tests.Instrument.ShouldNotChangeAnUntrackedMethod,
-      "Tests.ShouldNotChangeAnUntrackedMethod"
+      "Instrument.ShouldNotChangeAnUntrackedMethod"
       Tests.Instrument.SwitchBranchesShouldInstrumentByPushingDown,
-      "Tests.SwitchBranchesShouldInstrumentByPushingDown"
+      "Instrument.SwitchBranchesShouldInstrumentByPushingDown"
       Tests.Instrument.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases,
-      "Tests.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases"
+      "Instrument.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases"
       Tests.Instrument.SimpleBranchShouldInstrumentByPushingDown,
-      "Tests.SimpleBranchShouldInstrumentByPushingDown"
+      "Instrument.SimpleBranchShouldInstrumentByPushingDown"
       Tests.Instrument.StartShouldLoadRecordingAssembly,
-      "Tests.StartShouldLoadRecordingAssembly"
-      Tests.Instrument.TypeShouldNotChangeState, "Tests.TypeShouldNotChangeState"
+      "Instrument.StartShouldLoadRecordingAssembly"
+      Tests.Instrument.TypeShouldNotChangeState, "Instrument.TypeShouldNotChangeState"
       Tests.Instrument.ExcludedMethodShouldNotChangeState,
-      "Tests.ExcludedMethodShouldNotChangeState"
+      "Instrument.ExcludedMethodShouldNotChangeState"
       Tests.Instrument.IncludedMethodShouldChangeState,
-      "Tests.IncludedMethodShouldChangeState"
+      "Instrument.IncludedMethodShouldChangeState"
       Tests.Instrument.ExcludedAfterMethodShouldNotChangeState,
-      "Tests.ExcludedAfterMethodShouldNotChangeState"
+      "Instrument.ExcludedAfterMethodShouldNotChangeState"
       Tests.Instrument.IncludedAfterMethodShouldRewriteMethod,
-      "Tests.IncludedAfterMethodShouldRewriteMethod"
+      "Instrument.IncludedAfterMethodShouldRewriteMethod"
       Tests.Instrument.NoStrongNameShouldUpdateVisibleTo,
-      "Tests.NoStrongNameShouldUpdateVisibleTo"
+      "Instrument.NoStrongNameShouldUpdateVisibleTo"
       Tests.Instrument.NewStrongNameShouldUpdateVisibleTo,
-      "Tests.NewStrongNameShouldUpdateVisibleTo"
+      "Instrument.NewStrongNameShouldUpdateVisibleTo"
       Tests.Instrument.UpdateStrongReferencesShouldChangeSigningKeyWherePossible,
-      "Tests.UpdateStrongReferencesShouldChangeSigningKeyWherePossible"
+      "Instrument.UpdateStrongReferencesShouldChangeSigningKeyWherePossible"
       Tests.Instrument.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2,
-      "Tests.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2"
+      "Instrument.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2"
       Tests.Instrument.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired,
-      "Tests.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired"
+      "Instrument.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired"
       Tests.Instrument.UpdateStrongReferencesShouldNotAddASigningKey,
-      "Tests.UpdateStrongReferencesShouldNotAddASigningKey"
+      "Instrument.UpdateStrongReferencesShouldNotAddASigningKey"
       Tests.Instrument.UpdateStrongReferencesShouldTrackReferences,
-      "Tests.UpdateStrongReferencesShouldTrackReferences"
+      "Instrument.UpdateStrongReferencesShouldTrackReferences"
       Tests.Instrument.UpdateStrongReferencesShouldTrackReferencesEvenFakes,
-      "Tests.UpdateStrongReferencesShouldTrackReferencesEvenFakes"
+      "Instrument.UpdateStrongReferencesShouldTrackReferencesEvenFakes"
       Tests.Instrument.ExcludedAssemblyRefsAreNotUpdated,
-      "Tests.ExcludedAssemblyRefsAreNotUpdated"
+      "Instrument.ExcludedAssemblyRefsAreNotUpdated"
       Tests.Instrument.IncludedAssemblyRefsAreUpdated,
-      "Tests.IncludedAssemblyRefsAreUpdated"
+      "Instrument.IncludedAssemblyRefsAreUpdated"
       Tests.Instrument.ExcludedModuleJustRecordsMVid,
-      "Tests.ExcludedModuleJustRecordsMVid"
+      "Instrument.ExcludedModuleJustRecordsMVid"
       Tests.Instrument.ExcludedModuleJustRecordsNameForJson,
-      "Tests.ExcludedModuleJustRecordsNameForJson"
+      "Instrument.ExcludedModuleJustRecordsNameForJson"
       Tests.Instrument.ExcludedModuleJustRecordsHashForOpenCover,
-      "Tests.ExcludedModuleJustRecordsHashForOpenCover"
+      "Instrument.ExcludedModuleJustRecordsHashForOpenCover"
       Tests.Instrument.IncludedModuleEnsuresRecorder,
-      "Tests.IncludedModuleEnsuresRecorder"
+      "Instrument.IncludedModuleEnsuresRecorder"
       Tests.Instrument.ExcludedMethodPointIsPassThrough,
-      "Tests.ExcludedMethodPointIsPassThrough"
+      "Instrument.ExcludedMethodPointIsPassThrough"
       Tests.Instrument.IncludedMethodPointInsertsVisit,
-      "Tests.IncludedMethodPointInsertsVisit"
+      "Instrument.IncludedMethodPointInsertsVisit"
       Tests.Instrument.IncludedModuleDoesNotChangeRecorderJustTheReference,
-      "Tests.IncludedModuleDoesNotChangeRecorderJustTheReference"
+      "Instrument.IncludedModuleDoesNotChangeRecorderJustTheReference"
       Tests.Instrument.AfterModuleShouldNotChangeState,
-      "Tests.AfterModuleShouldNotChangeState"
+      "Instrument.AfterModuleShouldNotChangeState"
       Tests.Instrument.JSONInjectionTransformsSimpleFileAsExpected,
-      "Tests.JSONInjectionTransformsSimpleFileAsExpected"
+      "Instrument.JSONInjectionTransformsSimpleFileAsExpected"
       Tests.Instrument.JSONInjectionTransformsStandaloneFileAsExpected,
-      "Tests.JSONInjectionTransformsStandaloneFileAsExpected"
+      "Instrument.JSONInjectionTransformsStandaloneFileAsExpected"
       Tests.Instrument.JSONInjectionTransformsDependencyFileAsExpected,
-      "Tests.JSONInjectionTransformsDependencyFileAsExpected"
-      Tests.Instrument.JSONInjectionIsIdempotent, "Tests.JSONInjectionIsIdempotent"
+      "Instrument.JSONInjectionTransformsDependencyFileAsExpected"
+      Tests.Instrument.JSONInjectionIsIdempotent, "Instrument.JSONInjectionIsIdempotent"
       Tests.Instrument.NonFinishShouldDisposeRecordingAssembly,
-      "Tests.NonFinishShouldDisposeRecordingAssembly"
+      "Instrument.NonFinishShouldDisposeRecordingAssembly"
       Tests.Instrument.NonFinishShouldDisposeThreadingAssembly,
-      "Tests.NonFinishShouldDisposeThreadingAssembly"
+      "Instrument.NonFinishShouldDisposeThreadingAssembly"
       Tests.Instrument.NonFinishShouldNotDisposeNullRecordingAssembly,
-      "Tests.NonFinishShouldNotDisposeNullRecordingAssembly"
+      "Instrument.NonFinishShouldNotDisposeNullRecordingAssembly"
       Tests.Instrument.FinishShouldLeaveRecordingAssembly,
-      "Tests.FinishShouldLeaveRecordingAssembly"
+      "Instrument.FinishShouldLeaveRecordingAssembly"
       // Json.fs
       Tests.Json.NCoverShouldGeneratePlausibleJson,
-      "Tests.NCoverShouldGeneratePlausibleJson"
+      "Json.NCoverShouldGeneratePlausibleJson"
       Tests.Json.OpenCoverShouldGeneratePlausibleJson,
-      "Tests.OpenCoverShouldGeneratePlausibleJson"
+      "Json.OpenCoverShouldGeneratePlausibleJson"
       // Runner.fs
-      Tests.Runner.ShouldFailXmlDataForNativeJson, "Tests.ShouldFailXmlDataForNativeJson"
-      Tests.Runner.MaxTimeFirst, "Tests.MaxTimeFirst"
-      Tests.Runner.MaxTimeLast, "Tests.MaxTimeLast"
-      Tests.Runner.MinTimeFirst, "Tests.MinTimeFirst"
-      Tests.Runner.MinTimeLast, "Tests.MinTimeLast"
-      Tests.Runner.JunkUspidGivesNegativeIndex, "Tests.JunkUspidGivesNegativeIndex"
-      Tests.Runner.RealIdShouldIncrementCount, "Tests.RealIdShouldIncrementCount"
-      Tests.Runner.RealIdShouldIncrementList, "Tests.RealIdShouldIncrementList"
-      Tests.Runner.DistinctIdShouldBeDistinct, "Tests.DistinctIdShouldBeDistinct"
-      Tests.Runner.DistinctLineShouldBeDistinct, "Tests.DistinctLineShouldBeDistinct"
+      Tests.Runner.ShouldFailXmlDataForNativeJson, "Runner.ShouldFailXmlDataForNativeJson"
+      Tests.Runner.MaxTimeFirst, "Runner.MaxTimeFirst"
+      Tests.Runner.MaxTimeLast, "Runner.MaxTimeLast"
+      Tests.Runner.MinTimeFirst, "Runner.MinTimeFirst"
+      Tests.Runner.MinTimeLast, "Runner.MinTimeLast"
+      Tests.Runner.JunkUspidGivesNegativeIndex, "Runner.JunkUspidGivesNegativeIndex"
+      Tests.Runner.RealIdShouldIncrementCount, "Runner.RealIdShouldIncrementCount"
+      Tests.Runner.RealIdShouldIncrementList, "Runner.RealIdShouldIncrementList"
+      Tests.Runner.DistinctIdShouldBeDistinct, "Runner.DistinctIdShouldBeDistinct"
+      Tests.Runner.DistinctLineShouldBeDistinct, "Runner.DistinctLineShouldBeDistinct"
       Tests.Runner.RepeatVisitsShouldIncrementCount,
-      "Tests.RepeatVisitsShouldIncrementCount"
+      "Runner.RepeatVisitsShouldIncrementCount"
       Tests.Runner.RepeatVisitsShouldIncrementTotal,
-      "Tests.RepeatVisitsShouldIncrementTotal"
+      "Runner.RepeatVisitsShouldIncrementTotal"
       Tests.Runner.KnownModuleWithPayloadMakesExpectedChangeInOpenCover,
-      "Tests.KnownModuleWithPayloadMakesExpectedChangeInOpenCover"
+      "Runner.KnownModuleWithPayloadMakesExpectedChangeInOpenCover"
       Tests.Runner.DivertedWriteLeavesExpectedTraces,
-      "Tests.DivertedWriteLeavesExpectedTraces"
+      "Runner.DivertedWriteLeavesExpectedTraces"
       Tests.Runner.DivertedWriteJsonLeavesExpectedTraces,
-      "Tests.DivertedWriteJsonLeavesExpectedTraces"
+      "Runner.DivertedWriteJsonLeavesExpectedTraces"
       Tests.Runner.DivertedZipWriteLeavesExpectedTraces,
-      "Tests.DivertedZipWriteLeavesExpectedTraces"
+      "Runner.DivertedZipWriteLeavesExpectedTraces"
       Tests.Runner.DivertedZipWriteJsonLeavesExpectedTraces,
-      "Tests.DivertedZipWriteJsonLeavesExpectedTraces"
-      Tests.Runner.UsageIsAsExpected, "Tests.UsageIsAsExpected"
+      "Runner.DivertedZipWriteJsonLeavesExpectedTraces"
+      Tests.Runner.UsageIsAsExpected, "Runner.UsageIsAsExpected"
       Tests.Runner.ShouldLaunchWithExpectedOutput,
-      "Tests.Runner.ShouldLaunchWithExpectedOutput"
-      Tests.Runner.ShouldHaveExpectedOptions, "Tests.Runner.ShouldHaveExpectedOptions"
-      Tests.Runner.ParsingJunkIsAnError, "Tests.ParsingJunkIsAnError"
+      "Runner.Runner.ShouldLaunchWithExpectedOutput"
+      Tests.Runner.ShouldHaveExpectedOptions, "Runner.Runner.ShouldHaveExpectedOptions"
+      Tests.Runner.ParsingJunkIsAnError, "Runner.ParsingJunkIsAnError"
       Tests.Runner.ParsingJunkAfterSeparatorIsExpected,
-      "Tests.ParsingJunkAfterSeparatorIsExpected"
-      Tests.Runner.ParsingHelpGivesHelp, "Tests.ParsingHelpGivesHelp"
-      Tests.Runner.ParsingErrorHelpGivesHelp, "Tests.ParsingErrorHelpGivesHelp"
-      Tests.Runner.ParsingExeGivesExe, "Tests.ParsingExeGivesExe"
-      Tests.Runner.ParsingMultipleExeGivesFailure, "Tests.ParsingMultipleExeGivesFailure"
-      Tests.Runner.ParsingNoExeGivesFailure, "Tests.ParsingNoExeGivesFailure"
-      Tests.Runner.ParsingWorkerGivesWorker, "Tests.ParsingWorkerGivesWorker"
+      "Runner.ParsingJunkAfterSeparatorIsExpected"
+      Tests.Runner.ParsingHelpGivesHelp, "Runner.ParsingHelpGivesHelp"
+      Tests.Runner.ParsingErrorHelpGivesHelp, "Runner.ParsingErrorHelpGivesHelp"
+      Tests.Runner.ParsingExeGivesExe, "Runner.ParsingExeGivesExe"
+      Tests.Runner.ParsingMultipleExeGivesFailure, "Runner.ParsingMultipleExeGivesFailure"
+      Tests.Runner.ParsingNoExeGivesFailure, "Runner.ParsingNoExeGivesFailure"
+      Tests.Runner.ParsingWorkerGivesWorker, "Runner.ParsingWorkerGivesWorker"
       Tests.Runner.ParsingMultipleWorkerGivesFailure,
-      "Tests.ParsingMultipleWorkerGivesFailure"
-      Tests.Runner.ParsingBadWorkerGivesFailure, "Tests.ParsingBadWorkerGivesFailure"
-      Tests.Runner.ParsingNoWorkerGivesFailure, "Tests.ParsingNoWorkerGivesFailure"
-      Tests.Runner.ParsingRecorderGivesRecorder, "Tests.ParsingRecorderGivesRecorder"
+      "Runner.ParsingMultipleWorkerGivesFailure"
+      Tests.Runner.ParsingBadWorkerGivesFailure, "Runner.ParsingBadWorkerGivesFailure"
+      Tests.Runner.ParsingNoWorkerGivesFailure, "Runner.ParsingNoWorkerGivesFailure"
+      Tests.Runner.ParsingRecorderGivesRecorder, "Runner.ParsingRecorderGivesRecorder"
       Tests.Runner.ParsingMultipleRecorderGivesFailure,
-      "Tests.ParsingMultipleRecorderGivesFailure"
-      Tests.Runner.ParsingBadRecorderGivesFailure, "Tests.ParsingBadRecorderGivesFailure"
-      Tests.Runner.ParsingNoRecorderGivesFailure, "Tests.ParsingNoRecorderGivesFailure"
-      Tests.Runner.ParsingCollectGivesCollect, "Tests.ParsingCollectGivesCollect"
+      "Runner.ParsingMultipleRecorderGivesFailure"
+      Tests.Runner.ParsingBadRecorderGivesFailure, "Runner.ParsingBadRecorderGivesFailure"
+      Tests.Runner.ParsingNoRecorderGivesFailure, "Runner.ParsingNoRecorderGivesFailure"
+      Tests.Runner.ParsingCollectGivesCollect, "Runner.ParsingCollectGivesCollect"
       Tests.Runner.ParsingMultipleCollectGivesFailure,
-      "Tests.ParsingMultipleCollectGivesFailure"
-      Tests.Runner.ParsingLcovGivesLcov, "Tests.ParsingLcovGivesLcov"
+      "Runner.ParsingMultipleCollectGivesFailure"
+      Tests.Runner.ParsingLcovGivesLcov, "Runner.ParsingLcovGivesLcov"
       Tests.Runner.ParsingMultipleLcovGivesFailure,
-      "Tests.ParsingMultipleLcovGivesFailure"
-      Tests.Runner.ParsingNoLcovGivesFailure, "Tests.ParsingNoLcovGivesFailure"
-      Tests.Runner.ParsingThresholdGivesThreshold, "Tests.ParsingThresholdGivesThreshold"
+      "Runner.ParsingMultipleLcovGivesFailure"
+      Tests.Runner.ParsingNoLcovGivesFailure, "Runner.ParsingNoLcovGivesFailure"
+      Tests.Runner.ParsingThresholdGivesThreshold, "Runner.ParsingThresholdGivesThreshold"
       Tests.Runner.ParsingTopThresholdGivesThreshold,
-      "Tests.ParsingTopThresholdGivesThreshold"
+      "Runner.ParsingTopThresholdGivesThreshold"
       Tests.Runner.ParsingLowThresholdGivesThreshold,
-      "Tests.ParsingLowThresholdGivesThreshold"
+      "Runner.ParsingLowThresholdGivesThreshold"
       Tests.Runner.ParsingComplexThresholdGivesThreshold,
-      "Tests.ParsingComplexThresholdGivesThreshold"
+      "Runner.ParsingComplexThresholdGivesThreshold"
       Tests.Runner.ParsingMultipleThresholdGivesFailure,
-      "Tests.ParsingMultipleThresholdGivesFailure"
+      "Runner.ParsingMultipleThresholdGivesFailure"
       Tests.Runner.ParsingBadThresholdGivesFailure,
-      "Tests.ParsingBadThresholdGivesFailure"
+      "Runner.ParsingBadThresholdGivesFailure"
       Tests.Runner.ParsingBadThreshold2GivesFailure,
-      "Tests.ParsingBadThreshold2GivesFailure"
+      "Runner.ParsingBadThreshold2GivesFailure"
       Tests.Runner.ParsingBadThreshold3GivesFailure,
-      "Tests.ParsingBadThreshold3GivesFailure"
+      "Runner.ParsingBadThreshold3GivesFailure"
       Tests.Runner.ParsingBadThreshold4GivesFailure,
-      "Tests.ParsingBadThreshold4GivesFailure"
+      "Runner.ParsingBadThreshold4GivesFailure"
       Tests.Runner.ParsingBadThreshold5GivesFailure,
-      "Tests.ParsingBadThreshold5GivesFailure"
+      "Runner.ParsingBadThreshold5GivesFailure"
       Tests.Runner.ParsingBadThreshold6GivesFailure,
-      "Tests.ParsingBadThreshold6GivesFailure"
+      "Runner.ParsingBadThreshold6GivesFailure"
       Tests.Runner.ParsingBadThreshold7GivesFailure,
-      "Tests.ParsingBadThreshold7GivesFailure"
+      "Runner.ParsingBadThreshold7GivesFailure"
       Tests.Runner.ParsingEmptyThresholdGivesFailure,
-      "Tests.ParsingEmptyThresholdGivesFailure"
-      Tests.Runner.ParsingNoThresholdGivesFailure, "Tests.ParsingNoThresholdGivesFailure"
-      Tests.Runner.ParsingCoberturaGivesCobertura, "Tests.ParsingCoberturaGivesCobertura"
+      "Runner.ParsingEmptyThresholdGivesFailure"
+      Tests.Runner.ParsingNoThresholdGivesFailure, "Runner.ParsingNoThresholdGivesFailure"
+      Tests.Runner.ParsingCoberturaGivesCobertura, "Runner.ParsingCoberturaGivesCobertura"
       Tests.Runner.ParsingMultipleCoberturaGivesFailure,
-      "Tests.ParsingMultipleCoberturaGivesFailure"
-      Tests.Runner.ParsingNoCoberturaGivesFailure, "Tests.ParsingNoCoberturaGivesFailure"
-      Tests.Runner.ParsingNoPackagesGivesFailure, "Tests.ParsingPackagesGivesPackages"
-      Tests.Runner.ParsingPackagesGivesPackages, "Tests.ParsingNoPackagesGivesFailure"
-      Tests.Runner.ParsingOutputGivesOutput, "Tests.ParsingOutputGivesOutput"
+      "Runner.ParsingMultipleCoberturaGivesFailure"
+      Tests.Runner.ParsingNoCoberturaGivesFailure, "Runner.ParsingNoCoberturaGivesFailure"
+      Tests.Runner.ParsingNoPackagesGivesFailure, "Runner.ParsingPackagesGivesPackages"
+      Tests.Runner.ParsingPackagesGivesPackages, "Runner.ParsingNoPackagesGivesFailure"
+      Tests.Runner.ParsingOutputGivesOutput, "Runner.ParsingOutputGivesOutput"
       Tests.Runner.ParsingMultipleOutputGivesFailure,
-      "Tests.ParsingMultipleOutputGivesFailure"
-      Tests.Runner.ParsingNoOutputGivesFailure, "Tests.ParsingNoOutputGivesFailure"
-      Tests.Runner.ParsingDropGivesDrop, "Tests.ParsingDropGivesDrop"
+      "Runner.ParsingMultipleOutputGivesFailure"
+      Tests.Runner.ParsingNoOutputGivesFailure, "Runner.ParsingNoOutputGivesFailure"
+      Tests.Runner.ParsingDropGivesDrop, "Runner.ParsingDropGivesDrop"
       Tests.Runner.ParsingMultipleDropGivesFailure,
-      "Tests.ParsingMultipleDropGivesFailure"
-      Tests.Runner.ParsingTCString, "Tests.ParsingTCString"
-      Tests.Runner.ParsingTCGivesTC, "Tests.ParsingTCGivesTC"
-      Tests.Runner.ParsingMultipleTCGivesFailure, "Tests.ParsingMultipleTCGivesFailure"
-      Tests.Runner.ParsingBadTCGivesFailure, "Tests.ParsingBadTCGivesFailure"
-      Tests.Runner.ParsingQuietWorks, "Tests.ParsingQuietWorks"
-      Tests.Runner.ParsingMultiQuietWorks, "Tests.ParsingMultiQuietWorks"
-      Tests.Runner.ParsingBatchMultiQuietWorks, "Tests.ParsingBatchMultiQuietWorks"
-      Tests.Runner.ParsingVerboseWorks, "Tests.ParsingVerboseWorks"
-      Tests.Runner.ParsingMixedQuietWorks, "Tests.ParsingMixedQuietWorks"
-      Tests.Runner.ShouldRequireExe, "Tests.ShouldRequireExe"
-      Tests.Runner.ShouldAcceptExe, "Tests.ShouldAcceptExe"
-      Tests.Runner.ShouldRequireCollectIfNotExe, "Tests.ShouldRequireCollectIfNotExe"
-      Tests.Runner.ShouldRejectExeIfCollect, "Tests.ShouldRejectExeIfCollect"
-      Tests.Runner.ShouldRequireWorker, "Tests.ShouldRequireWorker"
-      Tests.Runner.ShouldAcceptWorker, "Tests.ShouldAcceptWorker"
-      Tests.Runner.ShouldRequireRecorder, "Tests.ShouldRequireRecorder"
-      Tests.Runner.ShouldRequireRecorderDll, "Tests.ShouldRequireRecorderDll"
-      Tests.Runner.ShouldAcceptRecorder, "Tests.ShouldAcceptRecorder"
-      Tests.Runner.ShouldHandleReturnCodes, "Tests.ShouldHandleReturnCodes"
-      Tests.Runner.ShouldProcessTrailingArguments, "Tests.ShouldProcessTrailingArguments"
-      Tests.Runner.ShouldNoOp, "Tests.ShouldNoOp"
-      Tests.Runner.ErrorResponseIsAsExpected, "Tests.ErrorResponseIsAsExpected"
-      Tests.Runner.ShouldGetStringConstants, "Tests.ShouldGetStringConstants"
-      Tests.Runner.ShouldProcessPayload, "Tests.ShouldProcessPayload"
-      Tests.Runner.WriteJsonLeavesExpectedTraces, "Tests.WriteJsonLeavesExpectedTraces"
+      "Runner.ParsingMultipleDropGivesFailure"
+      Tests.Runner.ParsingTCString, "Runner.ParsingTCString"
+      Tests.Runner.ParsingTCGivesTC, "Runner.ParsingTCGivesTC"
+      Tests.Runner.ParsingMultipleTCGivesFailure, "Runner.ParsingMultipleTCGivesFailure"
+      Tests.Runner.ParsingBadTCGivesFailure, "Runner.ParsingBadTCGivesFailure"
+      Tests.Runner.ParsingQuietWorks, "Runner.ParsingQuietWorks"
+      Tests.Runner.ParsingMultiQuietWorks, "Runner.ParsingMultiQuietWorks"
+      Tests.Runner.ParsingBatchMultiQuietWorks, "Runner.ParsingBatchMultiQuietWorks"
+      Tests.Runner.ParsingVerboseWorks, "Runner.ParsingVerboseWorks"
+      Tests.Runner.ParsingMixedQuietWorks, "Runner.ParsingMixedQuietWorks"
+      Tests.Runner.ShouldRequireExe, "Runner.ShouldRequireExe"
+      Tests.Runner.ShouldAcceptExe, "Runner.ShouldAcceptExe"
+      Tests.Runner.ShouldRequireCollectIfNotExe, "Runner.ShouldRequireCollectIfNotExe"
+      Tests.Runner.ShouldRejectExeIfCollect, "Runner.ShouldRejectExeIfCollect"
+      Tests.Runner.ShouldRequireWorker, "Runner.ShouldRequireWorker"
+      Tests.Runner.ShouldAcceptWorker, "Runner.ShouldAcceptWorker"
+      Tests.Runner.ShouldRequireRecorder, "Runner.ShouldRequireRecorder"
+      Tests.Runner.ShouldRequireRecorderDll, "Runner.ShouldRequireRecorderDll"
+      Tests.Runner.ShouldAcceptRecorder, "Runner.ShouldAcceptRecorder"
+      Tests.Runner.ShouldHandleReturnCodes, "Runner.ShouldHandleReturnCodes"
+      Tests.Runner.ShouldProcessTrailingArguments, "Runner.ShouldProcessTrailingArguments"
+      Tests.Runner.ShouldNoOp, "Runner.ShouldNoOp"
+      Tests.Runner.ErrorResponseIsAsExpected, "Runner.ErrorResponseIsAsExpected"
+      Tests.Runner.ShouldGetStringConstants, "Runner.ShouldGetStringConstants"
+      Tests.Runner.ShouldProcessPayload, "Runner.ShouldProcessPayload"
+      Tests.Runner.WriteJsonLeavesExpectedTraces, "Runner.WriteJsonLeavesExpectedTraces"
       Tests.Runner.ZipWriteJsonLeavesExpectedTraces,
-      "Tests.ZipWriteJsonLeavesExpectedTraces"
-      Tests.Runner.NullPayloadShouldReportNothing, "Tests.NullPayloadShouldReportNothing"
-      Tests.Runner.WriteLeavesExpectedTraces, "Tests.WriteLeavesExpectedTraces"
-      Tests.Runner.ZipWriteLeavesExpectedTraces, "Tests.ZipWriteLeavesExpectedTraces"
+      "Runner.ZipWriteJsonLeavesExpectedTraces"
+      Tests.Runner.NullPayloadShouldReportNothing, "Runner.NullPayloadShouldReportNothing"
+      Tests.Runner.WriteLeavesExpectedTraces, "Runner.WriteLeavesExpectedTraces"
+      Tests.Runner.ZipWriteLeavesExpectedTraces, "Runner.ZipWriteLeavesExpectedTraces"
       Tests.Runner.ActivePayloadShouldReportAsExpected,
-      "Tests.ActivePayloadShouldReportAsExpected"
-      Tests.Runner.CollectShouldReportAsExpected, "Tests.CollectShouldReportAsExpected"
+      "Runner.ActivePayloadShouldReportAsExpected"
+      Tests.Runner.CollectShouldReportAsExpected, "Runner.CollectShouldReportAsExpected"
       Tests.Runner.JunkPayloadShouldReportAsExpected,
-      "Tests.JunkPayloadShouldReportAsExpected"
+      "Runner.JunkPayloadShouldReportAsExpected"
       Tests.Runner.TrackingPayloadShouldReportAsExpected,
-      "Tests.TrackingPayloadShouldReportAsExpected"
-      Tests.Runner.PointProcessShouldCaptureTimes, "Tests.PointProcessShouldCaptureTimes"
+      "Runner.TrackingPayloadShouldReportAsExpected"
+      Tests.Runner.PointProcessShouldCaptureTimes, "Runner.PointProcessShouldCaptureTimes"
       Tests.Runner.PostprocessShouldHandleNullCase,
-      "Tests.PostprocessShouldHandleNullCase"
+      "Runner.PostprocessShouldHandleNullCase"
       Tests.Runner.PostprocessShouldHandleEntryAndExitTimes,
-      "Tests.PostprocessShouldHandleEntryAndExitTimes"
+      "Runner.PostprocessShouldHandleEntryAndExitTimes"
       Tests.Runner.PostprocessShouldRestoreKnownOpenCoverState,
-      "Tests.PostprocessShouldRestoreKnownOpenCoverState"
+      "Runner.PostprocessShouldRestoreKnownOpenCoverState"
       Tests.Runner.PostprocessShouldRestoreKnownOpenCoverStateFromMono,
-      "Tests.PostprocessShouldRestoreKnownOpenCoverStateFromMono"
+      "Runner.PostprocessShouldRestoreKnownOpenCoverStateFromMono"
       Tests.Runner.PostprocessShouldRestoreDegenerateOpenCoverState,
-      "Tests.PostprocessShouldRestoreDegenerateOpenCoverState"
+      "Runner.PostprocessShouldRestoreDegenerateOpenCoverState"
       Tests.Runner.PostprocessShouldRestoreBranchOnlyOpenCoverState,
-      "Tests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
+      "Runner.PostprocessShouldRestoreBranchOnlyOpenCoverState"
       Tests.Runner.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc,
-      "Tests.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc"
-      Tests.Runner.JunkTokenShouldDefaultZero, "Tests.JunkTokenShouldDefaultZero"
+      "Runner.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc"
+      Tests.Runner.JunkTokenShouldDefaultZero, "Runner.JunkTokenShouldDefaultZero"
       Tests.Runner.EmptyJsonGeneratesExpectedSummary,
-      "Tests.EmptyJsonGeneratesExpectedSummary"
+      "Runner.EmptyJsonGeneratesExpectedSummary"
       Tests.Runner.EmptyJsonGeneratesExpectedTCSummary,
-      "Tests.EmptyJsonGeneratesExpectedTCSummary"
+      "Runner.EmptyJsonGeneratesExpectedTCSummary"
       Tests.Runner.EmptyJsonGeneratesExpectedSummaries,
-      "Tests.EmptyJsonGeneratesExpectedSummaries"
+      "Runner.EmptyJsonGeneratesExpectedSummaries"
       Tests.Runner.SimpleJsonShouldGeneratePlausibleSummary,
-      "Tests.SimpleJsonShouldGeneratePlausibleSummary"
+      "Runner.SimpleJsonShouldGeneratePlausibleSummary"
       Tests.Runner.ComplexJsonShouldGeneratePlausibleSummary,
-      "Tests.ComplexJsonShouldGeneratePlausibleSummary"
+      "Runner.ComplexJsonShouldGeneratePlausibleSummary"
       Tests.Runner.UnknownGeneratesExpectedSummary,
-      "Tests.UnknownGeneratesExpectedSummary"
+      "Runner.UnknownGeneratesExpectedSummary"
       Tests.Runner.EmptyNCoverGeneratesExpectedSummary,
-      "Tests.EmptyNCoverGeneratesExpectedSummary"
+      "Runner.EmptyNCoverGeneratesExpectedSummary"
       Tests.Runner.EmptyNCoverGeneratesExpectedTCSummary,
-      "Tests.EmptyNCoverGeneratesExpectedTCSummary"
+      "Runner.EmptyNCoverGeneratesExpectedTCSummary"
       Tests.Runner.EmptyNCoverGeneratesExpectedSummaries,
-      "Tests.EmptyNCoverGeneratesExpectedSummaries"
+      "Runner.EmptyNCoverGeneratesExpectedSummaries"
       Tests.Runner.NCoverShouldGeneratePlausibleSummary,
-      "Tests.NCoverShouldGeneratePlausibleSummary"
+      "Runner.NCoverShouldGeneratePlausibleSummary"
       Tests.Runner.EmptyOpenCoverGeneratesExpectedSummary,
-      "Tests.EmptyOpenCoverGeneratesExpectedSummary"
+      "Runner.EmptyOpenCoverGeneratesExpectedSummary"
       Tests.Runner.EmptyOpenCoverGeneratesExpectedTCSummary,
-      "Tests.EmptyOpenCoverGeneratesExpectedTCSummary"
+      "Runner.EmptyOpenCoverGeneratesExpectedTCSummary"
       Tests.Runner.EmptyOpenCoverGeneratesExpectedSummaries,
-      "Tests.EmptyOpenCoverGeneratesExpectedSummaries"
+      "Runner.EmptyOpenCoverGeneratesExpectedSummaries"
       Tests.Runner.OpenCoverShouldGeneratePlausibleSummary,
-      "Tests.OpenCoverShouldGeneratePlausibleSummary"
+      "Runner.OpenCoverShouldGeneratePlausibleSummary"
       Tests.Runner.OpenCoverShouldGeneratePlausiblePartialSummary,
-      "Tests.OpenCoverShouldGeneratePlausiblePartialSummary"
+      "Runner.OpenCoverShouldGeneratePlausiblePartialSummary"
       Tests.Runner.DegenerateCasesShouldNotGenerateLcov,
-      "Tests.DegenerateCasesShouldNotGenerateLcov"
+      "Runner.DegenerateCasesShouldNotGenerateLcov"
       Tests.Runner.OpenCoverShouldGeneratePlausibleLcov,
-      "Tests.OpenCoverShouldGeneratePlausibleLcov"
+      "Runner.OpenCoverShouldGeneratePlausibleLcov"
       Tests.Runner.OpenCoverWithPartialsShouldGeneratePlausibleLcov,
-      "Tests.OpenCoverWithPartialsShouldGeneratePlausibleLcov"
+      "Runner.OpenCoverWithPartialsShouldGeneratePlausibleLcov"
       Tests.Runner.JsonShouldGeneratePlausibleLcov,
-      "Tests.JsonShouldGeneratePlausibleLcov"
+      "Runner.JsonShouldGeneratePlausibleLcov"
       Tests.Runner.JsonWithPartialsShouldGeneratePlausibleLcov,
-      "Tests.JsonWithPartialsShouldGeneratePlausibleLcov"
+      "Runner.JsonWithPartialsShouldGeneratePlausibleLcov"
       Tests.Runner.JsonWithOverloadsShouldGeneratePlausibleLcov,
-      "Tests.JsonWithOverloadsShouldGeneratePlausibleLcov"
+      "Runner.JsonWithOverloadsShouldGeneratePlausibleLcov"
       Tests.Runner.NCoverShouldGeneratePlausibleLcov,
-      "Tests.NCoverShouldGeneratePlausibleLcov"
+      "Runner.NCoverShouldGeneratePlausibleLcov"
       Tests.Runner.NCoverWithOverloadsShouldGeneratePlausibleLcov,
-      "Tests.NCoverWithOverloadsShouldGeneratePlausibleLcov"
+      "Runner.NCoverWithOverloadsShouldGeneratePlausibleLcov"
       Tests.Runner.NCoverWithPartialsShouldGeneratePlausibleLcov,
-      "Tests.NCoverWithPartialsShouldGeneratePlausibleLcov"
+      "Runner.NCoverWithPartialsShouldGeneratePlausibleLcov"
       Tests.Runner.NCoverShouldGenerateMorePlausibleLcov,
-      "Tests.NCoverShouldGenerateMorePlausibleLcov"
+      "Runner.NCoverShouldGenerateMorePlausibleLcov"
       Tests.Runner.NCoverShouldGeneratePlausibleLcovWithMissingFullName,
-      "Tests.NCoverShouldGeneratePlausibleLcovWithMissingFullName"
-      Tests.Runner.MultiSortDoesItsThing, "Tests.MultiSortDoesItsThing"
-      Tests.Runner.JsonShouldGeneratePlausibleXml, "Tests.JsonShouldGeneratePlausibleXml"
+      "Runner.NCoverShouldGeneratePlausibleLcovWithMissingFullName"
+      Tests.Runner.MultiSortDoesItsThing, "Runner.MultiSortDoesItsThing"
+      Tests.Runner.JsonShouldGeneratePlausibleXml, "Runner.JsonShouldGeneratePlausibleXml"
       Tests.Runner.JsonWithPartialsShouldGeneratePlausibleXml,
-      "Tests.JsonWithPartialsShouldGeneratePlausibleXml"
+      "Runner.JsonWithPartialsShouldGeneratePlausibleXml"
       Tests.Runner.JsonShouldGeneratePlausibleCobertura,
-      "Tests.JsonShouldGeneratePlausibleCobertura"
+      "Runner.JsonShouldGeneratePlausibleCobertura"
       Tests.Runner.JsonWithPartialsShouldGeneratePlausibleCobertura,
-      "Tests.JsonWithPartialsShouldGeneratePlausibleCobertura"
+      "Runner.JsonWithPartialsShouldGeneratePlausibleCobertura"
       Tests.Runner.JsonFromComplexNestingShouldGeneratePlausibleCobertura,
-      "Tests.JsonFromComplexNestingShouldGeneratePlausibleCobertura"
+      "Runner.JsonFromComplexNestingShouldGeneratePlausibleCobertura"
       Tests.Runner.NCoverShouldGeneratePlausibleCobertura,
-      "Tests.NCoverShouldGeneratePlausibleCobertura"
+      "Runner.NCoverShouldGeneratePlausibleCobertura"
       Tests.Runner.NCoverWithPartialsShouldGeneratePlausibleCobertura,
-      "Tests.NCoverWithPartialsShouldGeneratePlausibleCobertura"
+      "Runner.NCoverWithPartialsShouldGeneratePlausibleCobertura"
       Tests.Runner.NCoverWithOverloadsShouldGeneratePlausibleCobertura,
-      "Tests.NCoverWithOverloadsShouldGeneratePlausibleCobertura"
+      "Runner.NCoverWithOverloadsShouldGeneratePlausibleCobertura"
       Tests.Runner.NCoverShouldGenerateMorePlausibleCobertura,
-      "Tests.NCoverShouldGenerateMorePlausibleCobertura"
-      Tests.Runner.PathsSplitOK, "Tests.PathsSplitOK"
-      Tests.Runner.PathsGroupOK, "Tests.PathsGroupOK"
-      Tests.Runner.ExtractSourcesOK, "Tests.ExtractSourcesOK"
+      "Runner.NCoverShouldGenerateMorePlausibleCobertura"
+      Tests.Runner.PathsSplitOK, "Runner.PathsSplitOK"
+      Tests.Runner.PathsGroupOK, "Runner.PathsGroupOK"
+      Tests.Runner.ExtractSourcesOK, "Runner.ExtractSourcesOK"
       Tests.Runner.DegenerateCasesShouldNotGenerateCobertura,
-      "Tests.DegenerateCasesShouldNotGenerateCobertura"
+      "Runner.DegenerateCasesShouldNotGenerateCobertura"
       Tests.Runner.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName,
-      "Tests.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName"
+      "Runner.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName"
       Tests.Runner.OpenCoverShouldGeneratePlausibleCobertura,
-      "Tests.OpenCoverShouldGeneratePlausibleCobertura"
+      "Runner.OpenCoverShouldGeneratePlausibleCobertura"
       Tests.Runner.OpenCoverWithOverloadsShouldGeneratePlausibleCobertura,
-      "Tests.OpenCoverWithOverloadsShouldGeneratePlausibleCobertura"
+      "Runner.OpenCoverWithOverloadsShouldGeneratePlausibleCobertura"
       Tests.Runner.OpenCoverWithPartialsShouldGeneratePlausibleCobertura,
-      "Tests.OpenCoverWithPartialsShouldGeneratePlausibleCobertura"
+      "Runner.OpenCoverWithPartialsShouldGeneratePlausibleCobertura"
       Tests.Runner.ThresholdViolationShouldBeReported,
-      "Tests.ThresholdViolationShouldBeReported"
-      Tests.Runner.TryGetValueHandlesNull, "Tests.TryGetValueHandlesNull"
+      "Runner.ThresholdViolationShouldBeReported"
+      Tests.Runner.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
       // Main.fs
-      Tests.Main.ShouldHaveExpectedOptions, "Tests.Main.ShouldHaveExpectedOptions"
+      Tests.Main.ShouldHaveExpectedOptions, "Main.ShouldHaveExpectedOptions"
+      Tests.Main.ParsingJunkIsAnError, "Main.ParsingJunkIsAnError"
+      Tests.Main.ParsingJunkBeforeSeparatorIsAnError,
+      "Main.ParsingJunkBeforeSeparatorIsAnError"
+      Tests.Main.ParsingJunkAfterSeparatorIsExpected,
+      "Main.ParsingJunkAfterSeparatorIsExpected"
+      Tests.Main.ParsingHelpGivesHelp, "Main.ParsingHelpGivesHelp"
+      Tests.Main.ParsingErrorHelpGivesHelp, "Main.ParsingErrorHelpGivesHelp"
+      Tests.Main.ParsingAttributesGivesAttributes,
+      "Main.ParsingAttributesGivesAttributes"
+      Tests.Main.ParsingTopLevelGivesTopLevel, "Main.ParsingTopLevelGivesTopLevel"
+      Tests.Main.ParsingMethodsGivesMethods, "Main.ParsingMethodsGivesMethods"
+      Tests.Main.ParsingTypesGivesTypes, "Main.ParsingTypesGivesTypes"
+      Tests.Main.ParsingAssembliesGivesAssemblies,
+      "Main.ParsingAssembliesGivesAssemblies"
+      Tests.Main.ParsingEscapeCasesWork, "Main.ParsingEscapeCasesWork"
+      Tests.Main.ParsingModulesGivesModules, "Main.ParsingModulesGivesModules"
+      Tests.Main.ParsingFilesGivesFiles, "Main.ParsingFilesGivesFiles"
+      Tests.Main.ParsingPathsGivesPaths, "Main.ParsingPathsGivesPaths"
+      Tests.Main.ParsingReportGivesReport, "Main.ParsingReportGivesReport"
+      Tests.Main.ParsingMultipleReportGivesFailure,
+      "Main.ParsingMultipleReportGivesFailure"
+      Tests.Main.ParsingBadReportGivesFailure, "Main.ParsingBadReportGivesFailure"
+      Tests.Main.ParsingNoReportGivesFailure, "Main.ParsingNoReportGivesFailure"
+      Tests.Main.ParsingEmptyReportGivesFailure, "Main.ParsingEmptyReportGivesFailure"
+      Tests.Main.ParsingInputGivesInput, "Main.ParsingInputGivesInput"
+      Tests.Main.ParsingMultipleInputIsOKToo, "Main.ParsingMultipleInputIsOKToo"
+      Tests.Main.ParsingDuplicateInputGivesFailure,
+      "Main.ParsingDuplicateInputGivesFailure"
+      Tests.Main.ParsingBadInputGivesFailure, "Main.ParsingBadInputGivesFailure"
+      Tests.Main.ParsingNoInputGivesFailure, "Main.ParsingNoInputGivesFailure"
+      Tests.Main.ParsingOutputGivesOutput, "Main.ParsingOutputGivesOutput"
+      Tests.Main.ParsingDuplicateOutputGivesFailure,
+      "Main.ParsingDuplicateOutputGivesFailure"
+      Tests.Main.ParsingMultipleOutputIsOK, "Main.ParsingMultipleOutputIsOK"
+      Tests.Main.ParsingBadOutputGivesFailure, "Main.ParsingBadOutputGivesFailure"
+      Tests.Main.ParsingNoOutputGivesFailure, "Main.ParsingNoOutputGivesFailure"
+      Tests.Main.ParsingEmptyOutputGivesFailure, "Main.ParsingEmptyOutputGivesFailure"
+      Tests.Main.ParsingSymbolGivesSymbol, "Main.ParsingSymbolGivesSymbol"
+      Tests.Main.ParsingMultipleSymbolGivesOK, "Main.ParsingMultipleSymbolGivesOK"
+      Tests.Main.ParsingBadSymbolGivesFailure, "Main.ParsingBadSymbolGivesFailure"
+      Tests.Main.ParsingNoSymbolGivesFailure, "Main.ParsingNoSymbolGivesFailure"
+      Tests.Main.ParsingMultipleDependencyIsOk, "Main.ParsingMultipleDependencyIsOk"
+      Tests.Main.ParsingBadDependencyGivesFailure,
+      "Main.ParsingBadDependencyGivesFailure"
+      Tests.Main.ParsingNonDependencyGivesFailure,
+      "Main.ParsingNonDependencyGivesFailure"
+      Tests.Main.ParsingStrongNameGivesStrongName,
+      "Main.ParsingStrongNameGivesStrongName"
+      Tests.Main.ParsingMultipleStrongNameGivesFailure,
+      "Main.ParsingMultipleStrongNameGivesFailure"
+      Tests.Main.ParsingBadStrongNameGivesFailure,
+      "Main.ParsingBadStrongNameGivesFailure"
+      Tests.Main.ParsingNonStrongNameGivesFailure,
+      "Main.ParsingNonStrongNameGivesFailure"
+      Tests.Main.ParsingNoStrongNameGivesFailure, "Main.ParsingNoStrongNameGivesFailure"
+      Tests.Main.ParsingMultipleAltStrongNameIsOk,
+      "Main.ParsingMultipleAltStrongNameIsOk"
+      Tests.Main.ParsingNoAltStrongNameGivesFailure,
+      "Main.ParsingNoAltStrongNameGivesFailure"
+      Tests.Main.ParsingBadAltStrongNameGivesFailure,
+      "Main.ParsingBadAltStrongNameGivesFailure"
+      Tests.Main.ParsingNonAltsStrongNameGivesFailure,
+      "Main.ParsingNonAltsStrongNameGivesFailure"
+      Tests.Main.ParsingLocalGivesLocal, "Main.ParsingLocalGivesLocal"
+      Tests.Main.ParsingMultipleLocalGivesFailure,
+      "Main.ParsingMultipleLocalGivesFailure"
+      Tests.Main.ParsingVisibleGivesVisible, "Main.ParsingVisibleGivesVisible"
+      Tests.Main.ParsingMultipleVisibleGivesFailure,
+      "Main.ParsingMultipleVisibleGivesFailure"
+      Tests.Main.ParsingTimeGivesTime, "Main.ParsingTimeGivesTime"
+      Tests.Main.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime,
+      "Main.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime"
+      Tests.Main.ParsingMultipleTimesGivesFailure,
+      "Main.ParsingMultipleTimesGivesFailure"
+      Tests.Main.ParsingTimeAndNamesGivesOK, "Main.ParsingTimeAndNamesGivesOK"
+      Tests.Main.ParsingBadTimeGivesNoOp, "Main.ParsingBadTimeGivesNoOp"
+      Tests.Main.ParsingNonTimeGivesFailure, "Main.ParsingNonTimeGivesFailure"
+      Tests.Main.ParsingNoTimeGivesFailure, "Main.ParsingNoTimeGivesFailure"
+      Tests.Main.ParsingJsonFormatGivesJson, "Main.ParsingJsonFormatGivesJson"
+      Tests.Main.ParsingNCoverFormatGivesNCover, "Main.ParsingNCoverFormatGivesNCover"
+      Tests.Main.ParsingOpenCoverFormatGivesOpenCover,
+      "Main.ParsingOpenCoverFormatGivesOpenCover"
+      Tests.Main.ParsingMultipleReportFormatGivesFailure,
+      "Main.ParsingMultipleReportFormatGivesFailure"
+      Tests.Main.ParsingInPlaceGivesInPlace, "Main.ParsingInPlaceGivesInPlace"
+      Tests.Main.ParsingMultipleInPlaceGivesFailure,
+      "Main.ParsingMultipleInPlaceGivesFailure"
+      Tests.Main.ParsingSaveGivesSave, "Main.ParsingSaveGivesSave"
+      Tests.Main.ParsingMultipleSaveGivesFailure, "Main.ParsingMultipleSaveGivesFailure"
+      Tests.Main.ParsingAllGivesAll, "Main.ParsingAllGivesAll"
+      Tests.Main.ParsingMultipleAllGivesFailure, "Main.ParsingMultipleAllGivesFailure"
+      Tests.Main.ParsingLineCoverGivesLineCover, "Main.ParsingLineCoverGivesLineCover"
+      Tests.Main.OpenCoverIsCompatibleWithLineCover,
+      "Main.OpenCoverIsCompatibleWithLineCover"
+      Tests.Main.LineCoverIsCompatibleWithOpenCover,
+      "Main.LineCoverIsCompatibleWithOpenCover"
+      Tests.Main.ParsingMultipleLineCoverGivesFailure,
+      "Main.ParsingMultipleLineCoverGivesFailure"
+      Tests.Main.LineCoverIsNotCompatibleWithBranchCover,
+      "Main.LineCoverIsNotCompatibleWithBranchCover"
+      Tests.Main.ParsingBranchCoverGivesBranchCover,
+      "Main.ParsingBranchCoverGivesBranchCover"
+      Tests.Main.OpenCoverIsCompatibleWithBranchCover,
+      "Main.OpenCoverIsCompatibleWithBranchCover"
+      Tests.Main.BranchCoverIsCompatibleWithOpenCover,
+      "Main.BranchCoverIsCompatibleWithOpenCover"
+      Tests.Main.ParsingMultipleBranchCoverGivesFailure,
+      "Main.ParsingMultipleBranchCoverGivesFailure"
+      Tests.Main.BranchCoverIsNotCompatibleWithLineCover,
+      "Main.BranchCoverIsNotCompatibleWithLineCover"
+      Tests.Main.ParsingDropGivesDrop, "Main.ParsingDropGivesDrop"
+      Tests.Main.ParsingMultipleDropGivesFailure, "Main.ParsingMultipleDropGivesFailure"
+      Tests.Main.ParsingEagerWorks, "Main.ParsingEagerWorks"
+      Tests.Main.ParsingMultipleEagerGivesFailure,
+      "Main.ParsingMultipleEagerGivesFailure"
+      Tests.Main.ParsingStaticGivesStatic, "Main.ParsingStaticGivesStatic"
+      Tests.Main.ParsingStaticPlusGivesStatic, "Main.ParsingStaticPlusGivesStatic"
+      Tests.Main.ParsingStaticPlusPlusGivesStaticPlus,
+      "Main.ParsingStaticPlusPlusGivesStaticPlus"
+      Tests.Main.ParsingStaticMinusGivesNoStatic, "Main.ParsingStaticMinusGivesNoStatic"
+      Tests.Main.ParsingMultipleStaticGivesFailure,
+      "Main.ParsingMultipleStaticGivesFailure"
+      Tests.Main.ParsingJunkStaticGivesFailure, "Main.ParsingJunkStaticGivesFailure"
+      Tests.Main.ParsingQuietWorks, "Main.ParsingQuietWorks"
+      Tests.Main.ParsingMultiQuietWorks, "Main.ParsingMultiQuietWorks"
+      Tests.Main.ParsingBatchMultiQuietWorks, "Main.ParsingBatchMultiQuietWorks"
+      Tests.Main.ParsingVerboseWorks, "Main.ParsingVerboseWorks"
+      Tests.Main.ParsingMixedQuietWorks, "Main.ParsingMixedQuietWorks"
+      Tests.Main.OutputLeftPassesThrough, "Main.OutputLeftPassesThrough"
+      Tests.Main.OutputInPlaceFails, "Main.OutputInPlaceFails"
+      Tests.Main.PortableFailsOnMultiInputs, "Main.PortableFailsOnMultiInputs"
+      Tests.Main.ScreeningFilesShouldRejectTheInstrumentedOnes,
+      "Main.ScreeningFilesShouldRejectTheInstrumentedOnes"
+      Tests.Main.OutputToNewPlaceIsOK, "Main.OutputToNewPlaceIsOK"
+      Tests.Main.OutputToReallyNewPlaceIsOK, "Main.OutputToReallyNewPlaceIsOK"
+      Tests.Main.InPlaceToExistingPlaceFails, "Main.InPlaceToExistingPlaceFails"
+      Tests.Main.InPlaceOperationIsAsExpected, "Main.InPlaceOperationIsAsExpected"
+      Tests.Main.ImageLoadResilientPassesThrough, "Main.ImageLoadResilientPassesThrough"
+      Tests.Main.ResilientHandlesIOException, "Main.ResilientHandlesIOException"
+      Tests.Main.ResilientHandlesSymbolReadException,
+      "Main.ResilientHandlesSymbolReadException"
+      Tests.Main.ResilientHandlesBadImageFormatException,
+      "Main.ResilientHandlesBadImageFormatException"
+      Tests.Main.ResilientHandlesArgumentException,
+      "Main.ResilientHandlesArgumentException"
+      Tests.Main.FolderNestingIsDetectedCorrectly,
+      "Main.FolderNestingIsDetectedCorrectly"
+      Tests.Main.PreparingNewPlaceShouldCopyEverything,
+      "Main.PreparingNewPlaceShouldCopyEverything"
+      Tests.Main.ShouldProcessTrailingArguments, "Main.ShouldProcessTrailingArguments"
+      Tests.Main.StoresAsExpected, "Main.StoresAsExpected"
+      Tests.Main.ImportModuleIsAsExpected, "Main.ImportModuleIsAsExpected"
+      Tests.Main.VersionIsAsExpected, "Main.VersionIsAsExpected"
+      Tests.Main.TargetsPathIsAsExpected, "Main.TargetsPathIsAsExpected"
+      Tests.Main.UsageIsAsExpected, "Main.UsageIsAsExpected"
+      Tests.Main.ErrorResponseIsAsExpected, "Main.ErrorResponseIsAsExpected"
+
       // Tasks.fs
-      Tests.Tasks.LoggingCanBeExercised, "Tests.LoggingCanBeExercised" ]
+      Tests.Tasks.LoggingCanBeExercised, "Tasks.LoggingCanBeExercised"
+      Tests.Tasks.EmptyInstrumentIsJustTheDefaults,
+      "Tasks.EmptyInstrumentIsJustTheDefaults"
+      Tests.Tasks.InstrumentLevelsCanBeSet, "Tasks.InstrumentLevelsCanBeSet"
+      Tests.Tasks.NonDefaultInstrumentObsoleteIsOK,
+      "Tasks.NonDefaultInstrumentObsoleteIsOK"
+      Tests.Tasks.NonDefaultInstrumentIsOK, "Tasks.NonDefaultInstrumentIsOK"
+      Tests.Tasks.EmptyCollectIsJustTheDefaults, "Tasks.EmptyCollectIsJustTheDefaults"
+      Tests.Tasks.CollectLevelsCanBeSet, "Tasks.CollectLevelsCanBeSet"
+      Tests.Tasks.CollectWithExeIsNotCollecting, "Tasks.CollectWithExeIsNotCollecting"
+      Tests.Tasks.EmptyPowerShellIsJustTheDefaults,
+      "Tasks.EmptyPowerShellIsJustTheDefaults"
+      Tests.Tasks.EmptyVersionIsJustTheDefaults, "Tasks.EmptyVersionIsJustTheDefaults"
+      Tests.Tasks.EchoWorks, "Tasks.EchoWorks"
+      Tests.Tasks.EchoFallsSilent, "Tasks.EchoFallsSilent"
+      Tests.Tasks.RunSettingsFailsIfCollectorNotFound,
+      "Tasks.RunSettingsFailsIfCollectorNotFound"
+      Tests.Tasks.RunSettingsWorksIfOK, "Tasks.RunSettingsWorksIfOK"
+      Tests.Tasks.RunSettingsExtendsOK, "Tasks.RunSettingsExtendsOK"
+      Tests.Tasks.RunSettingsRecoversOK, "Tasks.RunSettingsRecoversOK"
+      Tests.Tasks.RunSettingsThrowsIfUninitialized,
+      "Tasks.RunSettingsThrowsIfUninitialized"
+      Tests.Tasks.ContingentCopyTest, "Tasks.ContingentCopyTest"
+      Tests.Tasks.RetryDeleteTest, "Tasks.RetryDeleteTest" ]
 
   let specials =
     { 0..31 }
