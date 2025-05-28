@@ -838,3 +838,43 @@ module internal Main =
                                                     "AvoidUncalledPrivateCodeRule",
                                                     Justification = "Unit test accessor")>]
   let mutable internal effectiveMain = I.main
+
+#if !NET472
+  [<SuppressMessage("Gendarme.Rules.Portability",
+                    "DoNotHardcodePathsRule",
+                    Justification = "Safe hard-coded in-package relative path")>]
+#endif
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Called by internals visible to")>]
+  let internal main dotnet arguments =
+    CommandLine.toConsole ()
+
+    let result =
+      let first =
+        arguments
+        |> Seq.tryHead
+        |> Option.filter (fun _ -> dotnet)
+        |> Option.defaultValue String.Empty
+
+      init ()
+
+      match first with
+      | Select "TargetsPath" _ ->
+        let here =
+          Assembly.GetExecutingAssembly().Location
+
+        let targets =
+          Path.Combine(
+            here |> Path.GetDirectoryName,
+            "../../../build/netstandard2.0/altcover.global.targets"
+          )
+          |> Path.GetFullPath
+
+        targets |> Output.info
+        0
+      | _ ->
+
+      effectiveMain arguments
+
+    result

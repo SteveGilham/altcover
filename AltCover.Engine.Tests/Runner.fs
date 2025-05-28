@@ -44,12 +44,6 @@ module Usage =
 module Runner =
   // TODO needs tests breaking out for other modules (LCov, Json etc.)
 
-  let runnerInit () = AltCover.Runner.init ()
-
-#if !NET472
-  let mainInit () = AltCover.Main.init ()
-#endif
-
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
     Assert.Throws<NotSupportedException>(fun () ->
@@ -82,7 +76,7 @@ module Runner =
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
-    runnerInit ()
+    AltCover.Runner.init ()
     let key = " "
 
     let index =
@@ -2231,13 +2225,8 @@ module Runner =
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
 
-      let main =
-        typeof<AltCover.Marker>.Assembly
-          .GetType("AltCover.EntryPoint")
-          .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
-
       let returnCode =
-        main.Invoke(nullObject, [| [| "RuNN"; "-r"; unique |] |])
+        AltCover.Main.main false [| "RuNN"; "-r"; unique |]
 
       Assert.That(returnCode, Is.EqualTo 255)
 

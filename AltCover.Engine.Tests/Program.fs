@@ -381,22 +381,16 @@ module ExpectoMain =
       Tests.Json.OpenCoverShouldGeneratePlausibleJson,
       "Tests.OpenCoverShouldGeneratePlausibleJson"
       // Runner.fs
-      Tests.Runner.ShouldFailXmlDataForNativeJson,
-      "Tests.ShouldFailXmlDataForNativeJson"
+      Tests.Runner.ShouldFailXmlDataForNativeJson, "Tests.ShouldFailXmlDataForNativeJson"
       Tests.Runner.MaxTimeFirst, "Tests.MaxTimeFirst"
       Tests.Runner.MaxTimeLast, "Tests.MaxTimeLast"
       Tests.Runner.MinTimeFirst, "Tests.MinTimeFirst"
       Tests.Runner.MinTimeLast, "Tests.MinTimeLast"
-      Tests.Runner.JunkUspidGivesNegativeIndex,
-      "Tests.JunkUspidGivesNegativeIndex"
-      Tests.Runner.RealIdShouldIncrementCount,
-      "Tests.RealIdShouldIncrementCount"
-      Tests.Runner.RealIdShouldIncrementList,
-      "Tests.RealIdShouldIncrementList"
-      Tests.Runner.DistinctIdShouldBeDistinct,
-      "Tests.DistinctIdShouldBeDistinct"
-      Tests.Runner.DistinctLineShouldBeDistinct,
-      "Tests.DistinctLineShouldBeDistinct"
+      Tests.Runner.JunkUspidGivesNegativeIndex, "Tests.JunkUspidGivesNegativeIndex"
+      Tests.Runner.RealIdShouldIncrementCount, "Tests.RealIdShouldIncrementCount"
+      Tests.Runner.RealIdShouldIncrementList, "Tests.RealIdShouldIncrementList"
+      Tests.Runner.DistinctIdShouldBeDistinct, "Tests.DistinctIdShouldBeDistinct"
+      Tests.Runner.DistinctLineShouldBeDistinct, "Tests.DistinctLineShouldBeDistinct"
       Tests.Runner.RepeatVisitsShouldIncrementCount,
       "Tests.RepeatVisitsShouldIncrementCount"
       Tests.Runner.RepeatVisitsShouldIncrementTotal,
@@ -412,48 +406,34 @@ module ExpectoMain =
       Tests.Runner.DivertedZipWriteJsonLeavesExpectedTraces,
       "Tests.DivertedZipWriteJsonLeavesExpectedTraces"
       Tests.Runner.UsageIsAsExpected, "Tests.UsageIsAsExpected"
-      Tests.Runner.ShouldLaunchWithExpectedOutput,
-      "Tests.ShouldLaunchWithExpectedOutput"
-      Tests.Runner.ShouldHaveExpectedOptions,
-      "Tests.ShouldHaveExpectedOptions"
+      Tests.Runner.ShouldLaunchWithExpectedOutput, "Tests.ShouldLaunchWithExpectedOutput"
+      Tests.Runner.ShouldHaveExpectedOptions, "Tests.ShouldHaveExpectedOptions"
       Tests.Runner.ParsingJunkIsAnError, "Tests.ParsingJunkIsAnError"
       Tests.Runner.ParsingJunkAfterSeparatorIsExpected,
       "Tests.ParsingJunkAfterSeparatorIsExpected"
       Tests.Runner.ParsingHelpGivesHelp, "Tests.ParsingHelpGivesHelp"
-      Tests.Runner.ParsingErrorHelpGivesHelp,
-      "Tests.ParsingErrorHelpGivesHelp"
+      Tests.Runner.ParsingErrorHelpGivesHelp, "Tests.ParsingErrorHelpGivesHelp"
       Tests.Runner.ParsingExeGivesExe, "Tests.ParsingExeGivesExe"
-      Tests.Runner.ParsingMultipleExeGivesFailure,
-      "Tests.ParsingMultipleExeGivesFailure"
-      Tests.Runner.ParsingNoExeGivesFailure,
-      "Tests.ParsingNoExeGivesFailure"
-      Tests.Runner.ParsingWorkerGivesWorker,
-      "Tests.ParsingWorkerGivesWorker"
+      Tests.Runner.ParsingMultipleExeGivesFailure, "Tests.ParsingMultipleExeGivesFailure"
+      Tests.Runner.ParsingNoExeGivesFailure, "Tests.ParsingNoExeGivesFailure"
+      Tests.Runner.ParsingWorkerGivesWorker, "Tests.ParsingWorkerGivesWorker"
       Tests.Runner.ParsingMultipleWorkerGivesFailure,
       "Tests.ParsingMultipleWorkerGivesFailure"
-      Tests.Runner.ParsingBadWorkerGivesFailure,
-      "Tests.ParsingBadWorkerGivesFailure"
-      Tests.Runner.ParsingNoWorkerGivesFailure,
-      "Tests.ParsingNoWorkerGivesFailure"
-      Tests.Runner.ParsingRecorderGivesRecorder,
-      "Tests.ParsingRecorderGivesRecorder"
+      Tests.Runner.ParsingBadWorkerGivesFailure, "Tests.ParsingBadWorkerGivesFailure"
+      Tests.Runner.ParsingNoWorkerGivesFailure, "Tests.ParsingNoWorkerGivesFailure"
+      Tests.Runner.ParsingRecorderGivesRecorder, "Tests.ParsingRecorderGivesRecorder"
       Tests.Runner.ParsingMultipleRecorderGivesFailure,
       "Tests.ParsingMultipleRecorderGivesFailure"
-      Tests.Runner.ParsingBadRecorderGivesFailure,
-      "Tests.ParsingBadRecorderGivesFailure"
-      Tests.Runner.ParsingNoRecorderGivesFailure,
-      "Tests.ParsingNoRecorderGivesFailure"
-      Tests.Runner.ParsingCollectGivesCollect,
-      "Tests.ParsingCollectGivesCollect"
+      Tests.Runner.ParsingBadRecorderGivesFailure, "Tests.ParsingBadRecorderGivesFailure"
+      Tests.Runner.ParsingNoRecorderGivesFailure, "Tests.ParsingNoRecorderGivesFailure"
+      Tests.Runner.ParsingCollectGivesCollect, "Tests.ParsingCollectGivesCollect"
       Tests.Runner.ParsingMultipleCollectGivesFailure,
       "Tests.ParsingMultipleCollectGivesFailure"
       Tests.Runner.ParsingLcovGivesLcov, "Tests.ParsingLcovGivesLcov"
       Tests.Runner.ParsingMultipleLcovGivesFailure,
       "Tests.ParsingMultipleLcovGivesFailure"
-      Tests.Runner.ParsingNoLcovGivesFailure,
-      "Tests.ParsingNoLcovGivesFailure"
-      Tests.Runner.ParsingThresholdGivesThreshold,
-      "Tests.ParsingThresholdGivesThreshold"
+      Tests.Runner.ParsingNoLcovGivesFailure, "Tests.ParsingNoLcovGivesFailure"
+      Tests.Runner.ParsingThresholdGivesThreshold, "Tests.ParsingThresholdGivesThreshold"
       Tests.Runner.ParsingTopThresholdGivesThreshold,
       "Tests.ParsingTopThresholdGivesThreshold"
       Tests.Runner.ParsingLowThresholdGivesThreshold,
@@ -478,80 +458,58 @@ module ExpectoMain =
       "Tests.ParsingBadThreshold7GivesFailure"
       Tests.Runner.ParsingEmptyThresholdGivesFailure,
       "Tests.ParsingEmptyThresholdGivesFailure"
-      Tests.Runner.ParsingNoThresholdGivesFailure,
-      "Tests.ParsingNoThresholdGivesFailure"
-      Tests.Runner.ParsingCoberturaGivesCobertura,
-      "Tests.ParsingCoberturaGivesCobertura"
+      Tests.Runner.ParsingNoThresholdGivesFailure, "Tests.ParsingNoThresholdGivesFailure"
+      Tests.Runner.ParsingCoberturaGivesCobertura, "Tests.ParsingCoberturaGivesCobertura"
       Tests.Runner.ParsingMultipleCoberturaGivesFailure,
       "Tests.ParsingMultipleCoberturaGivesFailure"
-      Tests.Runner.ParsingNoCoberturaGivesFailure,
-      "Tests.ParsingNoCoberturaGivesFailure"
-      Tests.Runner.ParsingNoPackagesGivesFailure,
-      "Tests.ParsingPackagesGivesPackages"
-      Tests.Runner.ParsingPackagesGivesPackages,
-      "Tests.ParsingNoPackagesGivesFailure"
-      Tests.Runner.ParsingOutputGivesOutput,
-      "Tests.ParsingOutputGivesOutput"
+      Tests.Runner.ParsingNoCoberturaGivesFailure, "Tests.ParsingNoCoberturaGivesFailure"
+      Tests.Runner.ParsingNoPackagesGivesFailure, "Tests.ParsingPackagesGivesPackages"
+      Tests.Runner.ParsingPackagesGivesPackages, "Tests.ParsingNoPackagesGivesFailure"
+      Tests.Runner.ParsingOutputGivesOutput, "Tests.ParsingOutputGivesOutput"
       Tests.Runner.ParsingMultipleOutputGivesFailure,
       "Tests.ParsingMultipleOutputGivesFailure"
-      Tests.Runner.ParsingNoOutputGivesFailure,
-      "Tests.ParsingNoOutputGivesFailure"
+      Tests.Runner.ParsingNoOutputGivesFailure, "Tests.ParsingNoOutputGivesFailure"
       Tests.Runner.ParsingDropGivesDrop, "Tests.ParsingDropGivesDrop"
       Tests.Runner.ParsingMultipleDropGivesFailure,
       "Tests.ParsingMultipleDropGivesFailure"
       Tests.Runner.ParsingTCString, "Tests.ParsingTCString"
       Tests.Runner.ParsingTCGivesTC, "Tests.ParsingTCGivesTC"
-      Tests.Runner.ParsingMultipleTCGivesFailure,
-      "Tests.ParsingMultipleTCGivesFailure"
-      Tests.Runner.ParsingBadTCGivesFailure,
-      "Tests.ParsingBadTCGivesFailure"
+      Tests.Runner.ParsingMultipleTCGivesFailure, "Tests.ParsingMultipleTCGivesFailure"
+      Tests.Runner.ParsingBadTCGivesFailure, "Tests.ParsingBadTCGivesFailure"
       Tests.Runner.ParsingQuietWorks, "Tests.ParsingQuietWorks"
       Tests.Runner.ParsingMultiQuietWorks, "Tests.ParsingMultiQuietWorks"
-      Tests.Runner.ParsingBatchMultiQuietWorks,
-      "Tests.ParsingBatchMultiQuietWorks"
+      Tests.Runner.ParsingBatchMultiQuietWorks, "Tests.ParsingBatchMultiQuietWorks"
       Tests.Runner.ParsingVerboseWorks, "Tests.ParsingVerboseWorks"
       Tests.Runner.ParsingMixedQuietWorks, "Tests.ParsingMixedQuietWorks"
       Tests.Runner.ShouldRequireExe, "Tests.ShouldRequireExe"
       Tests.Runner.ShouldAcceptExe, "Tests.ShouldAcceptExe"
-      Tests.Runner.ShouldRequireCollectIfNotExe,
-      "Tests.ShouldRequireCollectIfNotExe"
-      Tests.Runner.ShouldRejectExeIfCollect,
-      "Tests.ShouldRejectExeIfCollect"
+      Tests.Runner.ShouldRequireCollectIfNotExe, "Tests.ShouldRequireCollectIfNotExe"
+      Tests.Runner.ShouldRejectExeIfCollect, "Tests.ShouldRejectExeIfCollect"
       Tests.Runner.ShouldRequireWorker, "Tests.ShouldRequireWorker"
       Tests.Runner.ShouldAcceptWorker, "Tests.ShouldAcceptWorker"
       Tests.Runner.ShouldRequireRecorder, "Tests.ShouldRequireRecorder"
-      Tests.Runner.ShouldRequireRecorderDll,
-      "Tests.ShouldRequireRecorderDll"
+      Tests.Runner.ShouldRequireRecorderDll, "Tests.ShouldRequireRecorderDll"
       Tests.Runner.ShouldAcceptRecorder, "Tests.ShouldAcceptRecorder"
       Tests.Runner.ShouldHandleReturnCodes, "Tests.ShouldHandleReturnCodes"
-      Tests.Runner.ShouldProcessTrailingArguments,
-      "Tests.ShouldProcessTrailingArguments"
+      Tests.Runner.ShouldProcessTrailingArguments, "Tests.ShouldProcessTrailingArguments"
       Tests.Runner.ShouldNoOp, "Tests.ShouldNoOp"
-      Tests.Runner.ErrorResponseIsAsExpected,
-      "Tests.ErrorResponseIsAsExpected"
-      Tests.Runner.ShouldGetStringConstants,
-      "Tests.ShouldGetStringConstants"
+      Tests.Runner.ErrorResponseIsAsExpected, "Tests.ErrorResponseIsAsExpected"
+      Tests.Runner.ShouldGetStringConstants, "Tests.ShouldGetStringConstants"
       Tests.Runner.ShouldProcessPayload, "Tests.ShouldProcessPayload"
-      Tests.Runner.WriteJsonLeavesExpectedTraces,
-      "Tests.WriteJsonLeavesExpectedTraces"
+      Tests.Runner.WriteJsonLeavesExpectedTraces, "Tests.WriteJsonLeavesExpectedTraces"
       Tests.Runner.ZipWriteJsonLeavesExpectedTraces,
       "Tests.ZipWriteJsonLeavesExpectedTraces"
-      Tests.Runner.NullPayloadShouldReportNothing,
-      "Tests.NullPayloadShouldReportNothing"
-      Tests.Runner.WriteLeavesExpectedTraces,
-      "Tests.WriteLeavesExpectedTraces"
-      Tests.Runner.ZipWriteLeavesExpectedTraces,
-      "Tests.ZipWriteLeavesExpectedTraces"
+      Tests.Runner.NullPayloadShouldReportNothing, "Tests.NullPayloadShouldReportNothing"
+      Tests.Runner.WriteLeavesExpectedTraces, "Tests.WriteLeavesExpectedTraces"
+      Tests.Runner.ZipWriteLeavesExpectedTraces, "Tests.ZipWriteLeavesExpectedTraces"
       Tests.Runner.ActivePayloadShouldReportAsExpected,
       "Tests.ActivePayloadShouldReportAsExpected"
-      Tests.Runner.CollectShouldReportAsExpected,
-      "Tests.CollectShouldReportAsExpected"
+      Tests.Runner.CollectShouldReportAsExpected, "Tests.CollectShouldReportAsExpected"
       Tests.Runner.JunkPayloadShouldReportAsExpected,
       "Tests.JunkPayloadShouldReportAsExpected"
       Tests.Runner.TrackingPayloadShouldReportAsExpected,
       "Tests.TrackingPayloadShouldReportAsExpected"
-      Tests.Runner.PointProcessShouldCaptureTimes,
-      "Tests.PointProcessShouldCaptureTimes"
+      Tests.Runner.PointProcessShouldCaptureTimes, "Tests.PointProcessShouldCaptureTimes"
       Tests.Runner.PostprocessShouldHandleNullCase,
       "Tests.PostprocessShouldHandleNullCase"
       Tests.Runner.PostprocessShouldHandleEntryAndExitTimes,
@@ -566,8 +524,7 @@ module ExpectoMain =
       "Tests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
       Tests.Runner.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc,
       "Tests.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc"
-      Tests.Runner.JunkTokenShouldDefaultZero,
-      "Tests.JunkTokenShouldDefaultZero"
+      Tests.Runner.JunkTokenShouldDefaultZero, "Tests.JunkTokenShouldDefaultZero"
       Tests.Runner.EmptyJsonGeneratesExpectedSummary,
       "Tests.EmptyJsonGeneratesExpectedSummary"
       Tests.Runner.EmptyJsonGeneratesExpectedTCSummary,
@@ -621,8 +578,7 @@ module ExpectoMain =
       Tests.Runner.NCoverShouldGeneratePlausibleLcovWithMissingFullName,
       "Tests.NCoverShouldGeneratePlausibleLcovWithMissingFullName"
       Tests.Runner.MultiSortDoesItsThing, "Tests.MultiSortDoesItsThing"
-      Tests.Runner.JsonShouldGeneratePlausibleXml,
-      "Tests.JsonShouldGeneratePlausibleXml"
+      Tests.Runner.JsonShouldGeneratePlausibleXml, "Tests.JsonShouldGeneratePlausibleXml"
       Tests.Runner.JsonWithPartialsShouldGeneratePlausibleXml,
       "Tests.JsonWithPartialsShouldGeneratePlausibleXml"
       Tests.Runner.JsonShouldGeneratePlausibleCobertura,
@@ -662,7 +618,7 @@ module ExpectoMain =
     { 0..31 }
     |> Seq.map (fun i ->
       testCase (sprintf "Tests.ShouldUpdateHandlerOK(%d)" i)
-        <| (fun () ->
+      <| (fun () ->
         lock ExpectoTestCommon.sync (fun () ->
           AltCover.Main.init ()
           Tests.Instrument.ShouldUpdateHandlerOK i)))

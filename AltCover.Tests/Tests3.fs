@@ -3274,7 +3274,9 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let bif = SymbolReadException(IndexOutOfRangeException("fail"))
+    let bif =
+      SymbolReadException(IndexOutOfRangeException("fail"))
+
     let fbif () = bif |> raise
 
     Main.I.imageLoadResilient (set1 fbif) (fun x ->
@@ -3735,7 +3737,6 @@ module AltCoverTests3 =
       Console.SetError saved
       Output.verbose <- ignore
 
-#if !NET472
   [<Test>]
   let TargetsPathIsAsExpected () =
     Main.init ()
@@ -3747,13 +3748,8 @@ module AltCoverTests3 =
       Console.SetOut stdout
       Console.SetError stderr
 
-      let main =
-        typeof<Marker>.Assembly
-          .GetType("AltCover.EntryPoint")
-          .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
-
       let returnCode =
-        main.Invoke(nullObject, [| [| "TargetsPath" |] |])
+        AltCover.Main.main true [| "TargetsPath" |]
 
       Assert.That(returnCode, Is.EqualTo 0)
       test <@ stderr.ToString() |> String.IsNullOrEmpty @>
@@ -3781,7 +3777,6 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
-#endif
 
   [<Test>]
   let ErrorResponseIsAsExpected () =
@@ -3793,13 +3788,8 @@ module AltCoverTests3 =
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
 
-      let main =
-        typeof<Marker>.Assembly
-          .GetType("AltCover.EntryPoint")
-          .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
-
       let returnCode =
-        main.Invoke(nullObject, [| [| "-i"; unique |] |])
+        AltCover.Main.main false [| "-i"; unique |]
 
       Assert.That(returnCode, Is.EqualTo 255)
 

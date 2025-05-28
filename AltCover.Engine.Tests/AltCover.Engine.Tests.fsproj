@@ -144,7 +144,6 @@
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Base\AltCover.Base.csproj" />
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
-    <ProjectReference Include="..\AltCover\AltCover.fsproj" />
   </ItemGroup>
 
 </Project>

@@ -1643,8 +1643,7 @@ module AltCoverXTests =
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
-  let runnerInit () = AltCover.Runner.init ()
-
 #if !NET472
+  let runnerInit () = AltCover.Runner.init ()
   let mainInit () = AltCover.Main.init ()
 #endif
