@@ -375,7 +375,11 @@ module ExpectoMain =
       "Tests.NonFinishShouldNotDisposeNullRecordingAssembly"
       Tests.Instrument.FinishShouldLeaveRecordingAssembly,
       "Tests.FinishShouldLeaveRecordingAssembly"
-
+      // Json.fs
+      Tests.Json.NCoverShouldGeneratePlausibleJson,
+      "Tests.NCoverShouldGeneratePlausibleJson"
+      Tests.Json.OpenCoverShouldGeneratePlausibleJson,
+      "Tests.OpenCoverShouldGeneratePlausibleJson"
       ]
 
   let specials =

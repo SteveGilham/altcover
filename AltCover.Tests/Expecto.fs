@@ -46,10 +46,6 @@ module ExpectoTestManifest =
        "Runner.DivertedZipWriteLeavesExpectedTraces"
        Tests.AltCoverRunnerTests.DivertedZipWriteJsonLeavesExpectedTraces,
        "Runner.DivertedZipWriteJsonLeavesExpectedTraces"
-       Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleJson,
-       "Runner.NCoverShouldGeneratePlausibleJson"
-       Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleJson,
-       "Runner.OpenCoverShouldGeneratePlausibleJson"
        Tests.AltCoverRunnerTests.UsageIsAsExpected, "Runner.UsageIsAsExpected"
        Tests.AltCoverRunnerTests.ShouldLaunchWithExpectedOutput,
        "Runner.ShouldLaunchWithExpectedOutput"

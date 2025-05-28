@@ -30,10 +30,14 @@
     <Compile Include="CommandLine.fs" />
     <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" Link="InstrumentationAttribute.fs" />
     <Compile Include="Instrument.fs" />
+    <Compile Include="Json.fs" />
     <Compile Include="Program.fs" />
+    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.Xml" />
     <EmbeddedResource Include="..\AltCover.Tests\issue37.dl_" />
     <EmbeddedResource Include="..\AltCover.Tests\issue37.pd_" />
     <EmbeddedResource Include="..\AltCover.Tests\native.pdb" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCover.json" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1.deps.json" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1.deps.after.json" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1ClassExclusion.xml" />
@@ -42,6 +46,7 @@
     <EmbeddedResource Include="..\AltCover.Tests\Sample2.deps.json" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample2.deps.after.json" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample4.native.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample8.deps.baseline.json" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample8.deps.newtonsoft.json" />
     <EmbeddedResource Include="..\AltCover.Tests\InternalsVisibleTest.snk" />
