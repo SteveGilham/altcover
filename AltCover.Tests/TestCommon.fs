@@ -356,8 +356,7 @@ module ExpectoTestCommon =
     pretest
     =
     testList name
-    <| (((check, "TestCommonTests.ConsistencyCheck")
-         :: regular
+    <| (((check, "TestCommon.ConsistencyCheck") :: regular
          |> List.map (fun (f, name) ->
            testCase name (fun () ->
              lock sync (fun () ->
