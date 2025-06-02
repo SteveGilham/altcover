@@ -2082,7 +2082,7 @@ module Runner =
     let path =
       Path.Combine(
         SolutionRoot.location,
-        "_Binaries/Sample12/Debug+AnyCPU/net9.0/Sample12.dll"
+        "_Binaries/Sample12/Debug+AnyCPU/net10.0/Sample12.dll"
       )
 #endif
 

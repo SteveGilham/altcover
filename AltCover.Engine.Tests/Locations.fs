@@ -14,7 +14,7 @@ module Locations =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net9.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net10.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472")
@@ -22,25 +22,25 @@ module Locations =
 
 #if !NET472
   let sample2path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net9.0/Sample2.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net10.0/Sample2.dll")
 
   let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll")
 
   let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net9.0/Sample8.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net10.0/Sample8.dll")
 
   let sample24path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample24/Debug+AnyCPU/net9.0/Sample24.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample24/Debug+AnyCPU/net10.0/Sample24.dll")
 
   let sample27path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample27/Debug+AnyCPU/net9.0/Sample27.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample27/Debug+AnyCPU/net10.0/Sample27.dll")
 
   let sample30path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample30/Debug+AnyCPU/net9.0/Sample30.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample30/Debug+AnyCPU/net10.0/Sample30.dll")
 
   let sample32path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net9.0/Sample32.dll")
+    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net10.0/Sample32.dll")
 
 #else
   let sample2path =
