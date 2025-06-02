@@ -13,103 +13,18 @@ open AltCover
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
-open N
 
 #nowarn "25"
 
-[<AutoOpen>]
-module Extra =
-  type Hallmark with
-    static member internal Build() =
-      { Assembly = String.Empty
-        Configuration = String.Empty }
+module Visitor =
 
-[<NUnit.Framework.IncludeExcludeAttribute>]
-type ProxyObject() =
-  inherit MarshalByRefObject()
+  [<AutoOpen>]
+  module Extra =
+    type Hallmark with
+      static member internal Build() =
+        { Assembly = String.Empty
+          Configuration = String.Empty }
 
-  member val Type: Type option = None with get, set
-  member val Object = null with get, set
-
-#if !NET472
-  member val Context: System.Runtime.Loader.AssemblyLoadContext = null with get, set
-#endif
-
-  member this.InstantiateObject(assemblyPath: string, typeName: string, args: obj[]) =
-#if !NET472
-    let assembly =
-      this.Context.LoadFromAssemblyPath(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
-#else
-    let assembly =
-      Assembly.LoadFrom(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
-#endif
-    let t =
-      assembly.ExportedTypes
-      |> Seq.filter (fun t -> t.FullName = typeName)
-
-    this.Type <- Seq.tryHead t
-    this.Object <- Activator.CreateInstance(this.Type |> Option.get, args)
-
-  member this.InvokeMethod(methodName: string, args: obj[]) =
-    let t = this.Type |> Option.get
-    let methodinfo = t.GetMethod(methodName)
-    methodinfo.Invoke(this.Object, args)
-
-[<AutoOpen>]
-module Extensions =
-  type internal Exemption with
-    static member internal OfInt i =
-      if i > 0 then
-        Exemption.Visited
-      else if i < -4 then
-        Exemption.None
-      else
-        i
-        |> sbyte
-        |> Microsoft.FSharp.Core.LanguagePrimitives.EnumOfValue<sbyte, Exemption>
-
-module AltCoverTests =
-
-#if !NET472
-  let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net9.0")
-#else
-  let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
-#endif
-
-  let monoSample1path =
-    Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
-
-  let sample1path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
-
-#if !NET472
-  let sample2path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net9.0/Sample2.dll")
-
-  let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
-
-  let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net9.0/Sample8.dll")
-
-  let sample32path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net9.0/Sample32.dll")
-
-#else
-  let sample2path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample2/Debug+AnyCPU/net472/Sample2.dll")
-
-  let sample4path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
-
-  let sample8path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
-
-  let sample32path =
-    Path.Combine(SolutionDir(), "_Binaries/Sample32/Debug+AnyCPU/net472/Sample32.exe")
-#endif
   let recorderSnk =
     typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
     |> Seq.find _.EndsWith(".Recorder.snk", StringComparison.Ordinal)
@@ -118,936 +33,6 @@ module AltCoverTests =
     Assembly.GetExecutingAssembly().GetManifestResourceNames()
     |> Seq.find _.EndsWith("Infrastructure.snk", StringComparison.Ordinal)
 
-  let private ff (a, b, c) = { Scope = a; Regex = b; Sense = c }
-
-  // Augment.fs
-  [<Test>]
-  let ZeroIsNotVisited () =
-    test <@ Exemption.OfInt 0 = Exemption.None @>
-
-  [<Test>]
-  let PositiveIsVisited () =
-    test
-      <@
-        [ 1..255 ]
-        |> Seq.map Exemption.OfInt
-        |> Seq.tryFind (fun x -> x <> Exemption.Visited) = None
-      @>
-
-  [<Test>]
-  let NegativesSpray () =
-    test
-      <@
-        [ 0..5 ]
-        |> Seq.map ((~-) >> Exemption.OfInt)
-        |> Seq.toList = [ Exemption.None
-                          Exemption.Declared
-                          Exemption.Automatic
-                          Exemption.StaticAnalysis
-                          Exemption.Excluded
-                          Exemption.None ]
-      @>
-
-  // ProgramDatabase.fs
-  let isAssemblyType (file: string) =
-#if !NET472
-    [ ".dll" ]
-#else
-    [ ".dll"; ".exe" ]
-#endif
-    |> Seq.exists (fun x -> file.EndsWith(x, StringComparison.OrdinalIgnoreCase))
-
-  [<Test>]
-  let ShouldTrapIndexOutOfRangeException () =
-    let a = [| "a"; "b" |]
-
-    Assert.Throws<SymbolReadException>(fun () ->
-      ProgramDatabase.I.raiseSymbolError (fun () -> printfn "%s" a[2]))
-    |> ignore
-
-    a.[1] <- null
-
-    Assert.Throws<NullReferenceException>(fun () ->
-      ProgramDatabase.I.raiseSymbolError (fun () -> printfn "%d" a[1].Length))
-    |> ignore
-
-  [<Test>]
-  let ShouldGetPdbFromImage () =
-    let files =
-      [ Directory.GetFiles(dir, "AltCover*")
-        Directory.GetFiles(dir, "Sample*") ]
-      |> Seq.concat
-      |> Seq.filter isAssemblyType
-      |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-      |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
-      |> Seq.map (fun x -> (x, AssemblyResolver.ReadAssembly x))
-      |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)
-      |> Seq.toList
-
-    test <@ files <> [] @>
-
-    let pdbs =
-      files
-      |> List.map (fun (f, s) -> f, AltCover.ProgramDatabase.getPdbFromImage s)
-
-    pdbs
-    |> Seq.iter (fun x ->
-      let f = fst x
-      let tokens, pdb = snd x
-
-      test' <@ pdb.IsSome @> f
-
-      let name = pdb.Value
-
-      printfn "%s => %s %s" f name (name |> Path.GetDirectoryName)
-
-      let seperatePdb =
-        name
-        |> Path.GetDirectoryName
-        |> String.IsNullOrEmpty
-        |> not
-
-      Assert.That(
-        AltCover.ProgramDatabase.I.symbolMatch tokens name,
-        Is.EqualTo seperatePdb,
-        f |> Path.GetFileName
-      )
-
-      //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
-      let probe = Path.ChangeExtension(f, ".pdb")
-      let file = FileInfo(probe)
-      let filename = file.Name.Replace("\\", "/")
-
-      Assert.That(
-        "/" + name.Replace("\\", "/"),
-        Does.EndWith("/" + filename),
-        f + " -> " + name
-      ))
-
-  [<Test>]
-  let ShouldGetGUIDfromNativePdb () =
-    let here =
-      System.Reflection.Assembly.GetExecutingAssembly()
-
-    let nativeName =
-      here.GetManifestResourceNames()
-      |> Seq.find _.EndsWith("native.pdb", StringComparison.Ordinal)
-
-    let native =
-      here.GetManifestResourceStream(nativeName)
-
-    use b = new BinaryReader(native)
-
-    let checkFormat =
-      ProgramDatabase.I.checkPdb b
-
-    Assert.That(checkFormat, Is.True, "bad format")
-
-    let buffer = b.ReadBytes(16)
-    let g = Guid buffer
-    test <@ g = Guid("36fc1f5a-f829-41d9-b0f5-e0a935db09f4") @> //for native.pdb
-
-  [<Test>]
-  let ShouldGetEmbeddedPdbFromImage () =
-    let target = sample8path
-    maybeIgnore (fun () -> target |> File.Exists |> not)
-
-    use image =
-      AssemblyResolver.ReadAssembly target
-
-    let (tokens, pdb) =
-      AltCover.ProgramDatabase.getPdbFromImage image
-
-    match pdb with // embedded pdb
-    | Some name -> Assert.That(name, Is.EqualTo "Sample8.pdb", target + " -> " + name)
-
-  [<Test>]
-  let ShouldGetNoMdbFromMonoImage () =
-    let path =
-      Path.GetDirectoryName monoSample1path
-
-    maybeIgnore (fun () -> path |> Directory.Exists |> not)
-
-    let files =
-      Directory.GetFiles(path)
-      |> Seq.filter (fun x ->
-        x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-        || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-      |> Seq.map (fun x -> (x, AssemblyResolver.ReadAssembly x))
-      |> Seq.toList
-
-    Assert.That(files, Is.Not.Empty)
-
-    files
-    |> Seq.iter (fun x ->
-      let probe = (fst x) + ".mdb"
-
-      let pdb =
-        AltCover.ProgramDatabase.getPdbFromImage (snd x)
-
-      match pdb with
-      | (_, None) -> Assert.That(File.Exists probe, probe + " not found"))
-
-  [<Test>]
-  let ShouldGetPdbWithFallback () =
-    Directory.GetFiles(dir)
-    |> Seq.filter isAssemblyType
-    |> Seq.filter (fun x -> (x + ".mdb") |> File.Exists |> not)
-    |> Seq.filter (fun f ->
-      f |> Path.GetFileNameWithoutExtension
-      <> "testhost")
-    |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-    |> Seq.iter (fun x ->
-      use def = AssemblyResolver.ReadAssembly x
-
-      let pdb =
-        AltCover.ProgramDatabase.getPdbWithFallback (def)
-
-      match pdb with
-      | None ->
-        Assert.That(
-          File.Exists(Path.ChangeExtension(x, ".pdb")),
-          Is.Not.True,
-          "No .pdb for " + x
-        )
-      | Some name ->
-        let probe = Path.ChangeExtension(x, ".pdb")
-        let file = FileInfo(probe)
-        let filename = file.Name.Replace("\\", "/")
-
-        Assert.That(
-          "/" + name.Replace("\\", "/"),
-          Does.EndWith("/" + filename),
-          x + " -> " + name
-        ))
-
-  [<Test>]
-  let ShouldGetForeignPdbWithFallback () =
-    let path =
-      Path.Combine(SolutionDir(), "packages")
-
-    let exclude = Path.Combine(path, "altcover")
-
-    // Looking for the Mono.Options symbols
-    let files =
-      Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
-
-    files
-    |> Seq.filter (
-      _.StartsWith(exclude, StringComparison.OrdinalIgnoreCase)
-      >> not
-    )
-    |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
-    |> Seq.iter (fun p ->
-      let dll = Path.ChangeExtension(p, ".dll")
-
-      try
-        use def = AssemblyResolver.ReadAssembly dll
-
-        let pdb =
-          AltCover.ProgramDatabase.getPdbWithFallback (def)
-
-        let normalized =
-          Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
-
-        match pdb with
-        | Some name -> Assert.That(name, Is.EqualTo normalized)
-      //| _ ->
-      //  raise <| InvalidOperationException((sprintf "%A for %A" dll normalized))
-      with :? BadImageFormatException ->
-        ())
-
-  [<Test>]
-  let ShouldGetForeignPdbWithFallbackWhenNotColocated () =
-    try
-      let where =
-        Assembly.GetExecutingAssembly().Location
-
-      let path =
-        Path.Combine(SolutionDir(), "packages")
-
-      let exclude = Path.Combine(path, "altcover")
-
-      // Looking for the Mono.Options symbols
-      let files =
-        Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
-
-      files
-      |> Seq.filter (
-        _.StartsWith(exclude, StringComparison.OrdinalIgnoreCase)
-        >> not
-      )
-      |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
-      |> Seq.iter (fun p ->
-        let dll0 = Path.ChangeExtension(p, ".dll")
-        let unique = Guid.NewGuid().ToString()
-
-        let output =
-          Path.Combine(Path.GetDirectoryName(where), unique)
-
-        Directory.CreateDirectory(output) |> ignore
-
-        let dll =
-          Path.Combine(output, Path.GetFileName dll0)
-
-        System.IO.File.Copy(dll0, dll)
-        ProgramDatabase.symbolFolders.Clear()
-
-        p
-        |> Path.GetDirectoryName
-        |> ProgramDatabase.symbolFolders.Add
-
-        try
-          use def = AssemblyResolver.ReadAssembly dll
-
-          let pdb =
-            AltCover.ProgramDatabase.getPdbWithFallback (def)
-
-          let normalized =
-            Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
-
-          match pdb with
-          | Some name ->
-            Assert.That(name, Is.EqualTo normalized)
-            AltCover.ProgramDatabase.readSymbols def
-            Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName)
-        //| _ ->
-        //  raise <| InvalidOperationException((sprintf "%A for %A" dll normalized))
-        with :? BadImageFormatException ->
-          ())
-    finally
-      ProgramDatabase.symbolFolders.Clear()
-
-  [<Test>]
-  let ShouldGetMdbWithFallback () =
-    let path =
-      Path.GetDirectoryName monoSample1path
-
-    maybeIgnore (fun () -> path |> Directory.Exists |> not)
-    let files = Directory.GetFiles(path)
-
-    files
-    |> Seq.filter (fun x ->
-      x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-      || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.iter (fun x ->
-      use def = AssemblyResolver.ReadAssembly x
-
-      let mdb =
-        AltCover.ProgramDatabase.getPdbWithFallback (def)
-
-      match mdb with
-      //           | None -> Assert.That(File.Exists(x + ".mdb"), Is.Not.True, "No .mdb for " + x)
-      | Some name ->
-        let probe = x + ".mdb"
-        let file = FileInfo(probe)
-        let filename = file.Name.Replace("\\", "/")
-
-        Assert.That(
-          name.Replace("\\", "/") + ".mdb",
-          Does.EndWith("/" + filename),
-          x + " -> " + name
-        ))
-
-  [<Test>]
-  let ShouldGetSymbolsFromPdb () =
-    Directory.GetFiles(dir)
-    |> Seq.filter isAssemblyType
-    |> Seq.filter (fun f ->
-      f |> Path.GetFileNameWithoutExtension
-      <> "testhost")
-    |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-    |> Seq.map AssemblyResolver.ReadAssembly
-    |> Seq.filter (fun x ->
-      not
-      <| x.FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
-    |> Seq.filter (fun x ->
-      not
-      <| x.FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
-    |> Seq.filter (fun x ->
-      not
-      <| x.FullName.StartsWith("AltCover.Recorder", StringComparison.OrdinalIgnoreCase))
-    |> Seq.filter (fun x ->
-      x.FullName.EndsWith(
-        "PublicKeyToken=c02b1a9f5b7cade8",
-        StringComparison.OrdinalIgnoreCase
-      ))
-    |> Seq.iter (fun def ->
-      AltCover.ProgramDatabase.readSymbols def
-      Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
-
-  [<Test>]
-  let ShouldGetSymbolsFromEmbeddedPdb () =
-    let target = sample8path
-    maybeIgnore (fun () -> target |> File.Exists |> not)
-
-    use image =
-      AssemblyResolver.ReadAssembly target
-
-    AltCover.ProgramDatabase.readSymbols image
-    Assert.That(image.MainModule.HasSymbols, image.MainModule.FileName)
-
-  [<Test>]
-  let ShouldNotGetSymbolsWhenNoPdb () =
-    Directory.GetFiles(dir)
-    |> Seq.filter (fun x ->
-      x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-      || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.filter (fun x ->
-      Path.GetFileName(x).StartsWith("BlackFox", StringComparison.OrdinalIgnoreCase))
-    |> Seq.map AssemblyResolver.ReadAssembly
-    |> Seq.filter (fun x ->
-      not
-      <| x.FullName.EndsWith(
-        "PublicKeyToken=c02b1a9f5b7cade8",
-        StringComparison.OrdinalIgnoreCase
-      ))
-    |> Seq.iter (fun def ->
-      AltCover.ProgramDatabase.readSymbols def
-      Assert.That(not def.MainModule.HasSymbols, def.MainModule.FileName))
-
-  [<Test>]
-  let ShouldGetSymbolsFromMdb () =
-    let where =
-      Assembly.GetExecutingAssembly().Location
-
-    let pdb =
-      Path.ChangeExtension(where, ".pdb")
-
-    maybeIgnore (fun () -> monoSample1path |> File.Exists |> not)
-
-    let path =
-      Path.GetDirectoryName monoSample1path
-
-    let files = Directory.GetFiles(path)
-
-    files
-    |> Seq.filter (fun x ->
-      x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-      || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.iter (fun x ->
-      use def = AssemblyResolver.ReadAssembly x
-
-      AltCover.ProgramDatabase.readSymbols def
-      Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
-
-  // Filter.fs
-  [<Test>]
-  let NoneOfTheAboveMatchesNoType () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Type, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Type, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let NoneOfTheAboveMatchesNoAttribute () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Attribute, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Attribute, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let NoneOfTheAboveMatchesNoAssembly () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Assembly, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Assembly, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let NoneOfTheAboveMatchesNoModule () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Module, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Module, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let NoneOfTheAboveMatchesNoFile () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.File, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.File, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let NoneOfTheAboveMatchesNoPath () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Path, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Path, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let NoneOfTheAboveMatchesNoMethod () =
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Method, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` () (ff (FilterScope.Method, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let FileDoesNotMatchNonFileClass () =
-    Assert.That(
-      Filter.``match``
-        (Assembly.GetExecutingAssembly().Location)
-        (ff (FilterScope.Type, Regex "23", Exclude)),
-      Is.False
-    )
-
-  [<Test>]
-  let FileDoesMatchFileClass () =
-    Assert.That(
-      Filter.``match``
-        (Assembly.GetExecutingAssembly().Location)
-        (ff (FilterScope.File, Regex "Cove", Exclude)),
-      Is.True
-    )
-
-    Assert.That(
-      Filter.``match``
-        (Assembly.GetExecutingAssembly().Location)
-        (ff (FilterScope.File, Regex "Cove", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let PathDoesNotMatchNonPathClass () =
-    Assert.That(
-      Filter.``match``
-        (Assembly.GetExecutingAssembly().Location)
-        (ff (FilterScope.Type, Regex "23", Exclude)),
-      Is.False
-    )
-
-  [<Test>]
-  let PathDoesMatchPathClass () =
-    let x =
-      String [| '\\'; Path.DirectorySeparatorChar |]
-
-    Assert.That(
-      Filter.``match``
-        (Assembly.GetExecutingAssembly().Location)
-        (ff (FilterScope.Path, Regex(x + "_Binaries" + x), Exclude)),
-      Is.True
-    )
-
-    Assert.That(
-      Filter.``match``
-        (Assembly.GetExecutingAssembly().Location)
-        (ff (FilterScope.Path, Regex(x + "_Binaries" + x), Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let AssemblyDoesNotMatchNonAssemblyClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    Assert.That(
-      Filter.``match`` def (ff (FilterScope.Type, Regex "23", Exclude)),
-      Is.False
-    )
-
-    Assert.That(
-      Filter.``match`` def (ff (FilterScope.Type, Regex "23", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let AssemblyDoesMatchAssemblyClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    Assert.That(
-      Filter.``match`` def (ff (FilterScope.Assembly, Regex "Cove", Exclude)),
-      Is.True
-    )
-
-    Assert.That(
-      Filter.``match`` def (ff (FilterScope.Assembly, Regex "Cove", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let ModuleDoesNotMatchNonModuleClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    Assert.That(
-      Filter.``match`` def.MainModule (ff (FilterScope.Type, Regex "23", Exclude)),
-      Is.False
-    )
-
-  [<Test>]
-  let ModuleDoesMatchModuleClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    Assert.That(
-      Filter.``match`` def.MainModule (ff (FilterScope.Module, Regex "Cove", Exclude)),
-      Is.True
-    )
-
-    Assert.That(
-      Filter.``match`` def.MainModule (ff (FilterScope.Module, Regex "Cove", Include)),
-      Is.False
-    )
-
-  [<Test>]
-  let TypeDoesNotMatchNonTypeClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    def.MainModule.Types
-    |> Seq.iter (fun t ->
-      Assert.That(
-        Filter.``match`` t (ff (FilterScope.File, Regex "23", Exclude)),
-        Is.False,
-        t.FullName
-      ))
-
-  [<Test>]
-  let TypeDoesMatchTypeClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    def.MainModule.Types
-    |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")) // exclude the many compiler generted chaff classes
-    |> Seq.iter (fun t ->
-      Assert.That(
-        Filter.``match`` t (ff (FilterScope.Type, Regex "Cove", Exclude)),
-        Is.True,
-        t.FullName
-      )
-
-      Assert.That(
-        Filter.``match`` t (ff (FilterScope.Type, Regex "Cove", Include)),
-        Is.False,
-        t.FullName
-      ))
-
-  [<Test>]
-  let MethodDoesNotMatchNonMethodClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    def.MainModule.Types
-    |> Seq.filter _.IsPublic
-    |> Seq.collect _.Methods
-    |> Seq.iter (fun m ->
-      Assert.That(
-        Filter.``match`` m (ff (FilterScope.Type, Regex "23", Exclude)),
-        Is.False
-      ))
-
-  [<Test>]
-  let MethodDoesMatchMethodClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    Assert.That(
-      def.MainModule.Types
-      |> Seq.filter _.IsPublic // exclude the many compiler generated chaff classes
-      |> Seq.collect _.Methods
-      |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-      |> Seq.filter (fun m ->
-        Filter.``match``
-          m
-          (ff (FilterScope.Method, Regex "MethodDoesMatchMethodClass", Exclude)))
-      |> Seq.length,
-      Is.EqualTo(1)
-    )
-
-    Assert.That(
-      def.MainModule.Types
-      |> Seq.filter _.IsPublic // exclude the many compiler generated chaff classes
-      |> Seq.collect _.Methods
-      |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-      |> Seq.filter (fun m ->
-        Filter.``match``
-          m
-          (ff (FilterScope.Method, Regex "MethodDoesMatchMethodClass", Include))
-        |> not)
-      |> Seq.length,
-      Is.EqualTo(1)
-    )
-
-  [<Test>]
-  let AttributeDoesNotMatchNonAttributeClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    def.MainModule.Types
-    |> Seq.iter (fun t ->
-      Assert.That(
-        Filter.``match`` t.CustomAttributes (ff (FilterScope.File, Regex "23", Exclude)),
-        Is.False,
-        t.FullName
-      ))
-
-  [<Test>]
-  let AttributeDoesMatchAttributeClass () =
-    use def =
-      AssemblyResolver.ReadAssembly(Assembly.GetExecutingAssembly().Location)
-
-    def.MainModule.Types
-    |> Seq.filter (fun t ->
-      t.IsPublic
-      && t.Name.Contains("ProxyObject")
-      && (not (t.FullName.Contains("Coverlet.Core.Instrumentation")))) // exclude the many compiler generted chaff classes
-    |> Seq.iter (fun t ->
-      Assert.That(
-        Filter.``match`` t (ff (FilterScope.Attribute, Regex "Exclu", Exclude)),
-        Is.True,
-        t.FullName
-      )
-
-      Assert.That(
-        Filter.``match`` t (ff (FilterScope.Attribute, Regex "Exclu", Include)),
-        Is.False,
-        t.FullName
-      ))
-
-  [<Test>]
-  let CanExcludeCSharpPropertiesByAttribute () =
-    let location =
-      typeof<Sample11.Class1>.Assembly.Location
-
-    let sourceAssembly =
-      AssemblyResolver.ReadAssembly(location)
-
-    let direct =
-      sourceAssembly.MainModule.Types
-      |> Seq.filter (fun x -> x.Name = "Class1")
-      |> Seq.head
-
-    let filter =
-      "ExcludeFromCodeCoverage"
-      |> (Regex
-          >> FilterRegex.Exclude
-          >> FilterClass.Build FilterScope.Attribute)
-
-    let pass =
-      direct.Methods
-      |> Seq.filter (fun x -> Filter.``match`` x filter |> not)
-      |> Seq.map _.Name
-      |> Seq.sort
-      |> Seq.toList
-
-    let expected = [ ".ctor" ]
-    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
-
-  [<Test>]
-  let RefStructsAreNotObsolete () =
-    let location =
-      typeof<Sample11.Class1>.Assembly.Location
-
-    let sourceAssembly =
-      AssemblyResolver.ReadAssembly(location)
-
-    let filter =
-      "Obsolete"
-      |> (Regex
-          >> FilterRegex.Exclude
-          >> FilterClass.Build FilterScope.Attribute)
-
-    let pass =
-      sourceAssembly.MainModule.Types
-      |> Seq.filter (fun x ->
-        x.Namespace = "Sample11"
-        && Filter.``match`` x filter |> not)
-      |> Seq.map _.Name
-      |> Seq.sort
-      |> Seq.toList
-
-    let expected = [ "Class1"; "Token" ]
-    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
-
-  [<Test>]
-  let Sample3Class1IsCSharpAutoproperty () =
-    let sample3 =
-      Path.Combine(dir, "Sample3.dll")
-
-    use def =
-      AssemblyResolver.ReadAssembly(sample3)
-
-    def.MainModule.Types
-    |> Seq.filter (fun t -> t.Name = "Class1")
-    |> Seq.collect _.Methods
-    |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
-    |> Seq.iter (Filter.isCSharpAutoProperty >> Assert.That)
-
-  [<Test>]
-  let Sample3Class2IsNotCSharpAutoproperty () =
-    let sample3 =
-      Path.Combine(dir, "Sample3.dll")
-
-    use def =
-      AssemblyResolver.ReadAssembly(sample3)
-
-    def.MainModule.Types
-    |> Seq.filter (fun t -> t.Name = "Class2")
-    |> Seq.collect _.Methods
-    |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
-    |> Seq.iter (fun m -> Assert.That(Filter.isCSharpAutoProperty m, Is.False))
-
-  [<Test>]
-  let CanIdentifyExcludedFSharpMethods () =
-    let sourceAssembly =
-      AssemblyResolver.ReadAssembly(sample2path)
-
-    let direct =
-      sourceAssembly.MainModule.Types
-      |> Seq.filter (fun x -> x.Namespace = "N")
-      |> Seq.toList
-
-    let indirect =
-      direct
-      |> Seq.filter _.HasNestedTypes
-      |> Seq.collect _.NestedTypes
-      |> Seq.toList // MyUnion, MyThing
-
-    let indirect2 =
-      indirect
-      |> Seq.filter _.HasNestedTypes
-      |> Seq.collect _.NestedTypes
-      |> Seq.toList // Foo, Bar, ...
-
-    let indirect3 =
-      indirect2
-      |> Seq.filter _.HasNestedTypes
-      // |> Seq.collect _.NestedTypes
-      // |> Seq.map _.FullName
-      |> Seq.toList
-
-    Assert.That(indirect3 |> Seq.isEmpty, sprintf "Third order types found %A" indirect3)
-
-    let pass =
-      Seq.concat [ direct; indirect; indirect2 ]
-      |> Seq.collect _.Methods
-      |> Seq.filter (not << Filter.isFSharpInternal)
-      |> Seq.map _.Name
-      |> Seq.sort
-      |> Seq.toList
-
-    let flaky =
-      Seq.concat [ direct; indirect; indirect2 ]
-      |> Seq.collect _.Methods
-      |> Seq.filter _.Name.Equals(".ctor")
-      |> Seq.filter _.DeclaringType.Name.Equals("get_MyBar@44")
-      |> Seq.head
-
-    let skips =
-      [ ("System.Void N.DU/get_MyBar@44::.ctor(N.DU/MyUnion)", 0)
-        ("System.Void N.DU/MyUnion/get_MyBar@44::.ctor(N.DU/MyUnion)", 1) ] // filtered as algebraic
-      |> Map.ofSeq
-
-    let skip = skips |> Map.find flaky.FullName
-
-    let expected =
-      [ ".ctor" // "System.Void N.DU/MyClass::.ctor()";
-        ".ctor" // "System.Void N.DU/get_MyBar@44::.ctor(N.DU/MyUnion)"; <= flaky
-        "Invoke" //  "N.DU/MyUnion N.DU/get_MyBar@44::Invoke(Microsoft.FSharp.Core.Unit)";
-        "as_bar"
-        "bytes"
-        "get_MyBar"
-#if !NET472
-        "main"
-#endif
-        "makeThing"
-        "returnBar"
-        "returnFoo"
-        "testMakeThing"
-        "testMakeUnion" ]
-
-    Assert.That(
-      pass,
-      Is.EquivalentTo(expected |> List.skip skip),
-      sprintf "Got sequence %A" pass
-    )
-
-  [<Test>]
-  let CanIdentifyExcludedCSharpAutoProperties () =
-    let location =
-      typeof<Sample3.Class1>.Assembly.Location
-
-    let sourceAssembly =
-      AssemblyResolver.ReadAssembly(location)
-
-    let direct =
-      sourceAssembly.MainModule.Types
-      |> Seq.filter (fun x -> x.Name = "Class1")
-      |> Seq.head
-
-    let pass =
-      direct.Methods
-      |> Seq.filter (not << Filter.isCSharpAutoProperty)
-      |> Seq.map _.Name
-      |> Seq.sort
-      |> Seq.toList
-
-    let expected = [ ".ctor" ]
-    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
-
-  [<Test>]
-  let CanIdentifyIncludedCSharpProperties () =
-    let location =
-      typeof<Sample3.Class1>.Assembly.Location
-
-    let sourceAssembly =
-      AssemblyResolver.ReadAssembly(location)
-
-    let direct =
-      sourceAssembly.MainModule.Types
-      |> Seq.filter (fun x -> x.Name = "Class2")
-      |> Seq.head
-
-    let pass =
-      direct.Methods
-      |> Seq.filter (not << Filter.isCSharpAutoProperty)
-      |> Seq.map _.Name
-      |> Seq.sort
-      |> Seq.toList
-
-    let expected =
-      [ ".ctor"
-        "get_Property"
-        "set_Property" ]
-
-    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
-
-  // Visitor.fs
   [<Test>]
   let ReportFileShouldBeCorrectlyExtended () =
     try
@@ -1180,7 +165,7 @@ module AltCoverTests =
   let ValidateAutomaticExemption () =
     try
       CoverageParameters.showGenerated.Value <- true
-      let path = Path.Combine(dir, "Sample4.dll")
+      let path = sample4path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -1348,7 +333,7 @@ module AltCoverTests =
   [<Test>]
   let AsyncTestInContext () =
     let sample23 =
-      Path.Combine(dir, "Sample23.dll")
+      sample24path.Replace("24", "23")
 
     use def =
       AssemblyResolver.ReadAssembly(sample23)
@@ -1451,8 +436,7 @@ module AltCoverTests =
 
   [<Test>]
   let AnotherAsyncTestInContext () =
-    let sample24 =
-      Path.Combine(dir, "Sample24.dll")
+    let sample24 = sample24path
 
     use def =
       AssemblyResolver.ReadAssembly(sample24)
@@ -1506,7 +490,7 @@ module AltCoverTests =
   [<Test>]
   let DebugBuildTernaryTestInContext () =
     let sample23 =
-      Path.Combine(dir, "Sample23.dll")
+      sample24path.Replace("24", "23")
 
     use def =
       AssemblyResolver.ReadAssembly(sample23)
@@ -1736,11 +720,11 @@ module AltCoverTests =
 
   [<Test>]
   let CSharpNestedMethods () =
-    let sample3 =
-      Path.Combine(dir, "Sample5.dll")
+    let sample5 =
+      sample24path.Replace("24", "5").Replace("net9.0", "netstandard2.0")
 
     use def =
-      AssemblyResolver.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample5)
 
     // ProgramDatabase.readSymbols def
 
@@ -2009,11 +993,11 @@ module AltCoverTests =
   [<Test>]
   let FSharpNestedMethods5x0x201 () =
     // let sample3 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6_5_0_201.dll")
-    let sample3 =
-      Path.Combine(dir, "Sample6.dll")
+    let sample6 =
+      sample24path.Replace("24", "6")
 
     use def =
-      AssemblyResolver.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample6)
 
     let methods =
       def.MainModule.GetAllTypes()
@@ -2226,6 +1210,8 @@ module AltCoverTests =
     CoverageParameters.nameFilters.Clear()
     Assert.That(CoverageParameters.nameFilters.Count, Is.EqualTo(0))
     Assert.That(typeof<ProxyObject> |> IsItIncluded)
+
+  let private ff (a, b, c) = { Scope = a; Regex = b; Sense = c }
 
   [<Test>]
   let NonEmptyFiltersCatchAnExpectedValue () =
@@ -2537,7 +1523,7 @@ module AltCoverTests =
 
   [<Test>]
   let BranchPointsAreComputedForMatch () =
-    let path = Path.Combine(dir, "Sample17.dll")
+    let path = sample24path.Replace("24", "17")
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -3758,7 +2744,7 @@ module AltCoverTests =
       Report.reportGenerator ()
 
     let path =
-      Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionDir(), "AltCover.TestData/SimpleMix.exe")
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -3969,7 +2955,7 @@ module AltCoverTests =
       OpenCover.reportGenerator ()
 
     let path =
-      Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionDir(), "AltCover.TestData/SimpleMix.exe")
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -4160,7 +3146,7 @@ module AltCoverTests =
       sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
 
     try
-      AltCoverRunnerTests.mainInit ()
+      AltCover.Main.init ()
 
       let visitor1, document1 =
         Report.reportGenerator ()
@@ -5172,7 +4158,7 @@ module AltCoverTests =
       OpenCover.reportGenerator ()
 
     let path =
-      Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionDir(), "AltCover.TestData/SimpleMix.exe")
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -5453,7 +4439,7 @@ module AltCoverTests =
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
         <Module skippedDueTo=\"Filter\" hash=\"C2-87-B9-AA-6B-1D-03-60-30-9A-15-4A-D5-28-87-C2-9E-B9-8E-8D\">
-        <ModulePath>_Binaries\\AltCover.Tests\\Debug+AnyCPU\\Sample1.exe</ModulePath>
+        <ModulePath>_Binaries\\AltCover.TestData\\Debug+AnyCPU\\Sample1.exe</ModulePath>
         <ModuleTime>2018-03-15T14:00:17.3385938Z</ModuleTime>
         <ModuleName>Sample1</ModuleName>
         <Classes />
@@ -5506,7 +4492,7 @@ module AltCoverTests =
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
         <Module skippedDueTo=\"Filter\" hash=\"C2-87-B9-AA-6B-1D-03-60-30-9A-15-4A-D5-28-87-C2-9E-B9-8E-8D\">
-        <ModulePath>_Binaries\\AltCover.Tests\\Debug+AnyCPU\\Sample1.exe</ModulePath>
+        <ModulePath>_Binaries\\AltCover.TestData\\Debug+AnyCPU\\Sample1.exe</ModulePath>
         <ModuleTime>2018-03-15T14:00:17.3385938Z</ModuleTime>
         <ModuleName>Sample1</ModuleName>
         <Classes />
@@ -5931,3 +4917,225 @@ module AltCoverTests =
     doc.Descendants(xn "File")
     |> Seq.iteri (fun i x ->
       Assert.That(x.Attribute(xn "uid").Value, Is.EqualTo(string (1 + i))))
+
+  let MonoBaseline =
+    "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
+<coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
+  <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
+    <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
+      <seqpnt visitcount=\"0\" line=\"11\" column=\"3\" endline=\"11\" endcolumn=\"4\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"12\" column=\"23\" endline=\"12\" endcolumn=\"24\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"4\" endline=\"13\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"12\" endline=\"13\" endcolumn=\"13\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"14\" column=\"4\" endline=\"14\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"5\" endline=\"15\" endcolumn=\"6\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"60\" endline=\"15\" endcolumn=\"61\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"13\" endline=\"15\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"16\" column=\"4\" endline=\"16\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"18\" column=\"4\" endline=\"18\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"5\" endline=\"19\" endcolumn=\"6\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"13\" endline=\"19\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"20\" column=\"4\" endline=\"20\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"21\" column=\"3\" endline=\"21\" endcolumn=\"4\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+    </method>
+  </module>
+</coverage>"
+
+  [<TailCall>]
+  let rec RecursiveValidate result expected depth zero =
+    let rcount = result |> Seq.length
+    let ecount = expected |> Seq.length
+    test' <@ rcount = ecount @> ("Mismatch at depth " + depth.ToString())
+
+    Seq.zip result expected
+    |> Seq.iter (fun (r: XElement, e: XElement) ->
+      test <@ r.Name = e.Name @>
+      let ra = r.Attributes()
+      let ea = e.Attributes()
+
+      Seq.zip ra ea
+      |> Seq.iter (fun (a1: XAttribute, a2: XAttribute) ->
+        test <@ a1.Name = a2.Name @>
+
+        match a1.Name.ToString() with
+        | "profilerVersion"
+        | "driverVersion"
+        | "moduleId"
+        | "metadataToken"
+        | "startTime"
+        | "measureTime" -> ()
+        | "document" ->
+          test'
+            <@ a1.Value.Replace("\\", "/").EndsWith(a2.Value.Replace("\\", "/")) @>
+            (a1.Name.ToString()
+             + " : "
+             + r.ToString()
+             + " -> document")
+        | "visitcount" ->
+          let expected = Maybe zero "0" a2.Value
+          test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+        | _ ->
+          test'
+            <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
+            (r.ToString() + " -> " + a1.Name.ToString()))
+
+      RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportFromMono () =
+    let visitor, documentSource =
+      Report.reportGenerator ()
+
+    let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    Visitor.visit
+      [ visitor ]
+      (Visitor.I.toSeq
+        { AssemblyPath = path
+          Identity = Hallmark.Build()
+          Destinations = [] })
+
+    let expectedText =
+      MonoBaseline.Replace(
+        "name=\"Sample1.exe\"",
+        "name=\"" + (path |> Path.GetFullPath) + "\""
+      )
+
+    let baseline =
+      XDocument.Load(new System.IO.StringReader(expectedText))
+
+    let document =
+      use stash = new MemoryStream()
+      stash |> documentSource
+      stash.Position <- 0L
+      XDocument.Load stash
+
+    let result = document.Elements()
+    let expected = baseline.Elements()
+    RecursiveValidate result expected 0 true
+
+  [<TailCall>]
+  let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
+    let xn name = XName.Get(name)
+    let rcount = result |> Seq.length
+
+    let expected =
+      expected'
+      |> Seq.filter (fun (el: XElement) ->
+        el.Name.LocalName <> "Module"
+        || expectSkipped
+        || "skippedDueTo"
+           |> xn
+           |> el.Attributes
+           |> Seq.isEmpty)
+      |> Seq.toList
+
+    let ecount = expected |> Seq.length
+
+    test'
+      <@ rcount = ecount @>
+      ("Mismatch at depth "
+       + depth.ToString()
+       + " : "
+       + expected.ToString()
+       + " but got"
+       + (result |> Seq.toList).ToString())
+
+    Seq.zip result expected
+    |> Seq.iter (fun (r: XElement, e: XElement) ->
+      test <@ r.Name = e.Name @>
+      let ra = r.Attributes()
+      let ea = e.Attributes()
+
+      Seq.zip ra ea
+      |> Seq.iter (fun (a1: XAttribute, a2: XAttribute) ->
+        test <@ a1.Name = a2.Name @>
+
+        match a1.Name.ToString() with
+        | "bev"
+        | "visited"
+        | "visitedSequencePoints"
+        | "visitedBranchPoints"
+        | "visitedClasses"
+        | "visitedMethods"
+        | "sequenceCoverage"
+        | "branchCoverage"
+        | "uspid"
+        | "minCrapScore"
+        | "maxCrapScore"
+        | "crapScore"
+        | "hash" -> ()
+        | "fullPath" ->
+          test'
+            <@
+              a1.Value
+                .Replace("\\", "/")
+                .Replace("altcover", "AltCover")
+                .Replace("Samples/", String.Empty)
+                .EndsWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover"))
+            @>
+            (a1.Name.ToString()
+             + " : "
+             + r.ToString()
+             + " -> document")
+        | "vc" ->
+          let expected = Maybe zero "0" a2.Value
+          test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+        | _ ->
+          test' <@ a1.Value = a2.Value @> (r.ToString() + " -> " + a1.Name.ToString()))
+
+      RecursiveValidateOpenCover
+        (r.Elements())
+        (e.Elements())
+        (depth + 1)
+        zero
+        expectSkipped)
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle () =
+    let visitor, documentSource =
+      OpenCover.reportGenerator ()
+
+    let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find _.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal)
+
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+      let baseline = XDocument.Load(stream)
+
+      ("ModulePath"
+       |> XName.Get
+       |> baseline.Descendants
+       |> Seq.head)
+        .SetValue
+        path
+
+      let document =
+        use stash = new MemoryStream()
+        stash |> documentSource
+        stash.Position <- 0L
+        XDocument.Load stash
+
+      let result = document.Elements()
+      let expected = baseline.Elements()
+      RecursiveValidateOpenCover result expected 0 true false
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None

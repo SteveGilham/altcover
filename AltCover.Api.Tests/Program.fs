@@ -6,10 +6,10 @@ open Expecto
 
 module ExpectoMain =
   let regular =
-    [ Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
-      Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
-      Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
-      Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+    [ Tests.TestCommonTests.TestMultiple, "TestCommon.TestMultiple"
+      Tests.TestCommonTests.TestIgnoredTests, "TestCommon.TestIgnoredTests"
+      Tests.TestCommonTests.ExerciseItAll, "TestCommon.ExerciseItAll"
+      Tests.TestCommonTests.SelfTest, "TestCommon.SelfTest"
       Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
       Tests.FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState,
       "FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState"

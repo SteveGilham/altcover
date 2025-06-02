@@ -21,7 +21,8 @@ module FSApiTests =
 
     let resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
-      |> Seq.find _.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal)
+      |> Seq.find
+        _.EndsWith("OpenCoverForPester.api.coverlet.xml", StringComparison.Ordinal)
 
     use stream =
       Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -446,7 +447,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     // fix up file path
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/SimpleMix.exe")
 
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
@@ -644,7 +645,7 @@ module FSApiTests =
     let doc = XDocument.Load stream
     // fix up file path
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/SimpleMix.exe")
 
     doc.Descendants("ModulePath".X)
     |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
@@ -723,7 +724,7 @@ module FSApiTests =
         .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
 
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/SimpleMix.exe")
 
     let document = XDocument.Load stream
     let now = DateTime.UtcNow.ToLongDateString()

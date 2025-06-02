@@ -10,87 +10,11 @@ open AltCover
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Mono.Cecil.Cil
+open Newtonsoft.Json.Linq
 
 #nowarn "25"
 
-module AltCoverTests3 =
-  // Main.fs and CommandLine.fs
-  [<Test>]
-  let ShouldLaunchWithExpectedOutput () =
-    Main.init ()
-
-    let path =
-      Path.Combine(SolutionRoot.location, "_Mono/Sample1")
-
-    maybeIgnore (fun () -> path |> Directory.Exists |> not)
-    let files = Directory.GetFiles(path)
-
-    let program =
-      files
-      |> Seq.filter _.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-      |> Seq.head
-
-    let saved = (Console.Out, Console.Error)
-    let e0 = Console.Out.Encoding
-    let e1 = Console.Error.Encoding
-    CommandLine.toConsole ()
-
-    try
-      use stdout =
-        { new StringWriter() with
-            member self.Encoding = e0 }
-
-      test <@ stdout.Encoding = e0 @>
-
-      use stderr =
-        { new StringWriter() with
-            member self.Encoding = e1 }
-
-      test <@ stderr.Encoding = e1 @>
-
-      Console.SetOut stdout
-      Console.SetError stderr
-
-      let nonWindows =
-        System.Environment.GetEnvironmentVariable("OS")
-        <> "Windows_NT"
-
-      let exe, args =
-        Maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
-
-      let r =
-        CommandLine.I.launch
-          exe
-          args
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
-
-      Assert.That(r, Is.EqualTo 0)
-      Assert.That(stderr.ToString(), Is.Empty)
-      let result = stdout.ToString()
-
-      let quote =
-        Maybe
-          (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
-          "\""
-          String.Empty
-
-      let expected =
-        "Command line : '"
-        + quote
-        + exe
-        + quote
-        + " "
-        + args
-        + "\'"
-        + Environment.NewLine
-        + "Where is my rocket pack? "
-        + Environment.NewLine
-
-      Assert.That(result, Is.EqualTo(expected))
-    finally
-      Console.SetOut(fst saved)
-      Console.SetError(snd saved)
-      Output.verbose <- ignore
+module Main =
 
   [<Test>]
   let ShouldHaveExpectedOptions () =
@@ -1401,7 +1325,7 @@ module AltCoverTests3 =
 
       Assert.That(
         String.Join(" ", expected),
-        Is.EqualTo("AltCover.Engine AltCover.Tests")
+        Is.EqualTo("AltCover.Engine AltCover.Engine.Tests")
       )
     finally
       AssemblyConstants.resolutionTable.Clear()
@@ -3241,7 +3165,9 @@ module AltCoverTests3 =
       f ()
       one.Value <- true
 
-    let bif = SymbolReadException(IndexOutOfRangeException("fail"))
+    let bif =
+      SymbolReadException(IndexOutOfRangeException("fail"))
+
     let fbif () = bif |> raise
 
     Main.I.imageLoadResilient (set1 fbif) (fun x ->
@@ -3342,8 +3268,7 @@ module AltCoverTests3 =
 
       Assert.That(sb.ToString(), Is.Empty)
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       let prepared =
         Instrument.I.prepareAssembly (File.OpenRead path)
@@ -3683,7 +3608,7 @@ module AltCoverTests3 =
 
       let expected =
         "Error - usage is:\n"
-        + AltCoverUsage.usageText
+        + Usage.usageText
         + "\nor\n"
         + "  ImportModule               Prints out the PowerShell script to import the\n"
         + "                               associated PowerShell module\n"
@@ -3702,7 +3627,6 @@ module AltCoverTests3 =
       Console.SetError saved
       Output.verbose <- ignore
 
-#if !NET472
   [<Test>]
   let TargetsPathIsAsExpected () =
     Main.init ()
@@ -3714,13 +3638,8 @@ module AltCoverTests3 =
       Console.SetOut stdout
       Console.SetError stderr
 
-      let main =
-        typeof<Marker>.Assembly
-          .GetType("AltCover.EntryPoint")
-          .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
-
       let returnCode =
-        main.Invoke(nullObject, [| [| "TargetsPath" |] |])
+        AltCover.Main.main true [| "TargetsPath" |]
 
       Assert.That(returnCode, Is.EqualTo 0)
       test <@ stderr.ToString() |> String.IsNullOrEmpty @>
@@ -3748,7 +3667,6 @@ module AltCoverTests3 =
     finally
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
-#endif
 
   [<Test>]
   let ErrorResponseIsAsExpected () =
@@ -3760,13 +3678,8 @@ module AltCoverTests3 =
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
 
-      let main =
-        typeof<Marker>.Assembly
-          .GetType("AltCover.EntryPoint")
-          .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
-
       let returnCode =
-        main.Invoke(nullObject, [| [| "-i"; unique |] |])
+        AltCover.Main.main false [| "-i"; unique |]
 
       Assert.That(returnCode, Is.EqualTo 255)
 
@@ -3781,9 +3694,9 @@ module AltCoverTests3 =
         + unique
         + " not found\n"
         + "Error - usage is:\n"
-        + AltCoverUsage.usageText
+        + Usage.usageText
         + "\nor\n"
-        + AltCoverUsage.runnerText
+        + Usage.runnerText
         + "\nor\n"
         + "  ImportModule               Prints out the PowerShell script to import the\n"
         + "                               associated PowerShell module\n"
@@ -3892,1022 +3805,450 @@ module AltCoverTests3 =
     finally
       Console.SetError saved
 
-  // Tasks.fs
-  type Logging() =
-    member val Info: Action<String> = null with get, set
-    member val Warn: Action<String> = null with get, set
-    member val Failure: Action<String> = null with get, set
-    member val Echo: Action<String> = null with get, set
-    member val Verbose: Action<String> = null with get, set
-
-    interface Abstract.ILoggingOptions with
-      member self.Info = self.Info
-      member self.Warn = self.Warn
-      member self.Failure = self.Failure
-      member self.Echo = self.Echo
-      member self.Verbose = self.Verbose
-
   [<Test>]
-  let LoggingCanBeExercised () =
-    Main.init ()
-    Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
-    (AltCover.LoggingOptions.ActionAdapter null) "23"
+  let ADotNetDryRunLooksAsExpected () =
+    let where =
+      Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-    let ignoreAction =
-      new Action<String>(ignore)
+    let here = SolutionDir()
 
-    ignoreAction.Invoke("ignoreAction")
-    Assert.That(AltCover.LoggingOptions.ActionAdapter(ignoreAction), Is.Not.Null)
-    let mutable x = String.Empty
-    let f = (fun s -> x <- s)
-    (AltCover.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
-    Assert.That(x, Is.EqualTo "42")
-    AltCover.LoggingOptions.Create().Info "32"
-    AltCover.LoggingOptions.Create().Warn "32"
-    AltCover.LoggingOptions.Create().Error "32"
-    AltCover.LoggingOptions.Create().Echo "32"
-    AltCover.LoggingOptions.Create().Verbose "32"
+    let path =
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net9.0")
 
-    let o = Logging()
-    o.Info <- null
-    o.Warn <- null
-    o.Failure <- null
-    o.Echo <- null
-    o.Verbose <- null
+    let key0 =
+      Path.Combine(here, "Build/SelfTest.snk")
 
-    Assert.That(o.Info, Is.Null)
-    Assert.That(o.Warn, Is.Null)
-    Assert.That(o.Failure, Is.Null)
-    Assert.That(o.Echo, Is.Null)
-    Assert.That(o.Verbose, Is.Null)
+    let input = path
+    let key = key0
+    let unique = Guid.NewGuid().ToString()
 
-    let p = AltCover.LoggingOptions.Translate o
-    Assert.That(p.Warn, Is.Not.Null)
-    let p2 = AltCover.LoggingOptions.Abstract o
-    p2.Info "32"
-    p2.Warn "32"
-    p2.Error "32"
-    p2.Echo "32"
-    p2.Verbose "32"
+    let unique' =
+      Path.Combine(where, Guid.NewGuid().ToString())
 
-  [<Test>]
-  let EmptyInstrumentIsJustTheDefaults () =
-    Main.init ()
-    let subject = Prepare()
+    Directory.CreateDirectory unique' |> ignore
 
-    subject.GetType().GetProperties()
-    |> Seq.iter (fun p ->
-      let v = p.GetValue(subject)
+    let report =
+      Path.Combine(unique', "ADotNetDryRunLooksAsExpected.json")
 
-      if p.CanWrite then
-        p.SetValue(subject, v))
+    let output =
+      Path.Combine(Path.GetDirectoryName(where), unique)
 
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
+    let outputSaved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
 
-    let aclog =
-      subject
-        .GetType()
-        .GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let inputSaved =
+      CoverageParameters.theInputDirectories
+      |> Seq.toList
 
-    try
-      // subject.ACLog <- Some <| FSApi.Logging.Create()
-      aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+    let reportSaved =
+      CoverageParameters.theReportPath
 
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          255)
+    let keySaved =
+      CoverageParameters.defaultStrongNameKey
 
-      let result = subject.Execute()
-      Assert.That(result, Is.False)
-
-      Assert.That(
-        args,
-        Is.EquivalentTo
-          [ "--reportFormat"
-            "OpenCover"
-            "--save" ]
-      )
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let InstrumentLevelsCanBeSet () =
-    Main.init ()
-    let subject = Prepare()
-
-    subject.GetType().GetProperties()
-    |> Seq.iter (fun p ->
-      let v = p.GetValue(subject)
-
-      if p.CanWrite then
-        p.SetValue(subject, v))
-
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-
-    let aclog =
-      subject
-        .GetType()
-        .GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    try
-      // subject.ACLog <- Some <| FSApi.Logging.Create()
-      [ "Off", [ "-q"; "-q"; "-q" ]
-        "Verbose", [ "--verbose" ]
-        "NoneOfTheAbove", []
-        "Info", []
-        "Warning", [ "-q" ]
-        "Error", [ "-q"; "-q" ] ]
-      |> List.iter (fun (level, q) ->
-        subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
-
-        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
-
-        Main.effectiveMain <-
-          (fun a ->
-            args <- a
-            255)
-
-        let result = subject.Execute()
-        Assert.That(result, Is.False)
-
-        Assert.That(
-          args,
-          Is.EquivalentTo(
-            [ "--reportFormat"
-              "OpenCover"
-              "--save" ]
-            @ q
-          ),
-          level
-        ))
-    finally
-      CommandLine.verbosity <- 0
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let NonDefaultInstrumentObsoleteIsOK () =
-    Main.init ()
-    let subject = Prepare()
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-
-    let aclog =
-      subject
-        .GetType()
-        .GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    try
-      // subject.ACLog <- Some <| FSApi.Logging.Create()
-      aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
-
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          0)
-
-      subject.ReportFormat <- "Ncover"
-      subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
-      subject.SymbolDirectories <- [| "a"; "b" |]
-
-      let result = subject.Execute()
-      Assert.That(result, Is.True)
-
-      Assert.That(
-        args,
-        Is.EquivalentTo
-          [ "-y"
-            "a"
-            "-y"
-            "b"
-            "--reportFormat"
-            "Ncover"
-            "--save"
-            "--"
-            "testing"
-            "1"
-            "2"
-            "3" ]
-      )
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let NonDefaultInstrumentIsOK () =
-    Main.init ()
-    let subject = Prepare()
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-
-    try
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          0)
-
-      subject.ReportFormat <- "ncover"
-      subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
-      subject.SymbolDirectories <- [| "a"; "b" |]
-
-      let result = subject.Execute()
-      Assert.That(result, Is.True)
-
-      Assert.That(
-        args,
-        Is.EquivalentTo
-          [ "-y"
-            "a"
-            "-y"
-            "b"
-            "--reportFormat"
-            "ncover"
-            "--save"
-            "--"
-            "testing"
-            "1"
-            "2"
-            "3" ]
-      )
-
-      let message =
-        subject
-          .GetType()
-          .GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-      let x =
-        Assert.Throws<System.Reflection.TargetInvocationException>(fun () ->
-          ignore (message.Invoke(subject, [| "x" :> obj |])))
-
-      Assert.That(
-        x.InnerException,
-        Is.Not.Null.And.InstanceOf<InvalidOperationException>()
-      )
-
-      Assert.Throws<InvalidOperationException>(fun () -> Output.info "x")
-      |> ignore
-
-      Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x")
-      |> ignore
-
-      Assert.Throws<InvalidOperationException>(fun () -> Output.error "x")
-      |> ignore
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let EmptyCollectIsJustTheDefaults () =
-    Main.init ()
-    let subject = Collect()
-
-    subject.GetType().GetProperties()
-    |> Seq.iter (fun p ->
-      let v = p.GetValue(subject)
-
-      if p.CanWrite then
-        p.SetValue(subject, v))
-
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-
-    let aclog =
-      subject
-        .GetType()
-        .GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    try
-      // subject.ACLog <- Some <| FSApi.Logging.Create()
-      aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
-
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          255)
-
-      let result = subject.Execute()
-      Assert.That(result, Is.False)
-
-      Assert.That(args, Is.EquivalentTo [ "Runner"; "--collect" ])
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let CollectLevelsCanBeSet () =
-    Main.init ()
-    let subject = Collect()
-
-    subject.GetType().GetProperties()
-    |> Seq.iter (fun p ->
-      let v = p.GetValue(subject)
-
-      if p.CanWrite then
-        p.SetValue(subject, v))
-
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-
-    let aclog =
-      subject
-        .GetType()
-        .GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    try
-      [ "Off", [ "-q"; "-q"; "-q" ]
-        "Verbose", [ "--verbose" ]
-        "NoneOfTheAbove", []
-        "Info", []
-        "Warning", [ "-q" ]
-        "Error", [ "-q"; "-q" ] ]
-      |> List.iter (fun (level, q) ->
-        // subject.ACLog <- Some <| FSApi.Logging.Create()
-        subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
-
-        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
-
-        Main.effectiveMain <-
-          (fun a ->
-            args <- a
-            255)
-
-        let result = subject.Execute()
-        Assert.That(result, Is.False)
-        Assert.That(args, Is.EquivalentTo([ "Runner"; "--collect" ] @ q), level))
-    finally
-      CommandLine.verbosity <- 0
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let CollectWithExeIsNotCollecting () =
-    Main.init ()
-    let subject = Collect()
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-
-    try
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          0)
-
-      subject.Executable <- "dotnet"
-      subject.CommandLine <- [| "test" |]
-
-      let result = subject.Execute()
-      Assert.That(result, Is.True)
-
-      Assert.That(
-        args,
-        Is.EquivalentTo
-          [ "Runner"
-            "-x"
-            "dotnet"
-            "--"
-            "test" ]
-      )
-
-      let message =
-        subject
-          .GetType()
-          .GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-      let x =
-        Assert.Throws<System.Reflection.TargetInvocationException>(fun () ->
-          ignore (message.Invoke(subject, [| "x" :> obj |])))
-
-      Assert.That(
-        x.InnerException,
-        Is.Not.Null.And.InstanceOf<InvalidOperationException>()
-      )
-
-      Assert.Throws<InvalidOperationException>(fun () -> Output.info "x")
-      |> ignore
-
-      Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x")
-      |> ignore
-
-      Assert.Throws<InvalidOperationException>(fun () -> Output.error "x")
-      |> ignore
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-
-  [<Test>]
-  let EmptyPowerShellIsJustTheDefaults () =
-    Main.init ()
-    let subject = PowerShell()
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-    let warned = Output.warn
-
-    let io =
-      subject
-        .GetType()
-        .GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    let defaultIO =
-      io.GetValue(subject) :?> AltCover.LoggingOptions
-
-    Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x")
-    |> ignore
-
-    Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x")
-    |> ignore
-    // subject.IO <- FSApi.Logging.Create()
-    io.SetValue(subject, AltCover.LoggingOptions.Create())
-
-    try
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          0)
-
-      let result = subject.Execute()
-      Assert.That(result, Is.True)
-      Assert.That(args, Is.EquivalentTo [ "ImportModule" ])
-      Output.warn "x"
-      Output.error "x"
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-      Output.warn <- warned
-
-  [<Test>]
-  let EmptyVersionIsJustTheDefaults () =
-    Main.init ()
-    let subject = GetVersion()
-    let save = Main.effectiveMain
-    let mutable args = [| "some junk " |]
-    let saved = (Output.info, Output.error)
-    let warned = Output.warn
-
-    let io =
-      subject
-        .GetType()
-        .GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    let defaultIO =
-      io.GetValue(subject) :?> AltCover.LoggingOptions
-
-    Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x")
-    |> ignore
-
-    Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x")
-    |> ignore
-    // subject.IO <- FSApi.Logging.Create()
-    io.SetValue(subject, AltCover.LoggingOptions.Create())
-
-    try
-      Main.effectiveMain <-
-        (fun a ->
-          args <- a
-          0)
-
-      let result = subject.Execute()
-      Assert.That(result, Is.True)
-      Assert.That(args, Is.EquivalentTo [ "Version" ])
-      Output.warn "x"
-      Output.error "x"
-    finally
-      Main.effectiveMain <- save
-      Output.info <- fst saved
-      Output.error <- snd saved
-      Output.warn <- warned
-
-  [<Test>]
-  let EchoWorks () =
-    Main.init ()
     let saved = (Console.Out, Console.Error)
-    let e0 = Console.Out.Encoding
-    let e1 = Console.Error.Encoding
-    let before = Console.ForegroundColor
+    Main.init ()
+    let save2 = (Output.info, Output.error)
 
     try
-      use stdout =
-        { new StringWriter() with
-            member self.Encoding = e0 }
+      Output.error <- CommandLine.writeErr
+      String.Empty |> Output.error
+      Output.info <- CommandLine.writeOut
 
-      test <@ stdout.Encoding = e0 @>
-
-      use stderr =
-        { new StringWriter() with
-            member self.Encoding = e1 }
-
-      test <@ stderr.Encoding = e1 @>
-
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
 
-      let subject = Echo()
-      let unique = Guid.NewGuid().ToString()
-      subject.Text <- unique
-      subject.Colour <- "cyan"
-      Assert.That(subject.Execute(), Is.True)
-      Assert.That(Console.ForegroundColor, Is.EqualTo before)
-      Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.EqualTo(unique + Environment.NewLine))
-    finally
-      Console.SetOut(fst saved)
-      Console.SetError(snd saved)
-
-  [<Test>]
-  let EchoFallsSilent () =
-    Main.init ()
-    let saved = (Console.Out, Console.Error)
-    let e0 = Console.Out.Encoding
-    let e1 = Console.Error.Encoding
-    let before = Console.ForegroundColor
-
-    try
-      use stdout =
-        { new StringWriter() with
-            member self.Encoding = e0 }
-
-      test <@ stdout.Encoding = e0 @>
-
-      use stderr =
-        { new StringWriter() with
-            member self.Encoding = e1 }
-
-      test <@ stderr.Encoding = e1 @>
-
-      Console.SetOut stdout
-      Console.SetError stderr
-
-      let subject = Echo()
-      subject.Verbosity <- "Off"
-      let unique = Guid.NewGuid().ToString()
-      subject.Text <- unique
-      subject.Colour <- "cyan"
-      Assert.That(subject.Execute(), Is.True)
-      Assert.That(Console.ForegroundColor, Is.EqualTo before)
-      Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.Empty)
-    finally
-      Console.SetOut(fst saved)
-      Console.SetError(snd saved)
-
-  let MakeRunSettings () =
-    let subject = RunSettings()
-
-    let temper =
-      subject
-        .GetType()
-        .GetProperty("GetTempFileName", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    let basic =
-      temper.GetValue(subject) :?> (unit -> string)
-
-    let badge =
-      (fun () ->
-        let t1 = basic ()
-        Path.Combine(Path.GetDirectoryName t1, "altcover.test." + Path.GetFileName(t1)))
-
-    temper.SetValue(subject, badge)
-    subject
-
-  [<Test>]
-  let RunSettingsFailsIfCollectorNotFound () =
-    Main.init ()
-    let subject = MakeRunSettings()
-
-    let dc =
-      subject
-        .GetType()
-        .GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    // subject.DataCollector <- Guid.NewGuid().ToString()
-    dc.SetValue(subject, Guid.NewGuid().ToString())
-    subject.Verbosity <- "Verbose"
-
-    let write =
-      subject
-        .GetType()
-        .GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    write.SetValue(subject, Some(fun (s: string) -> ()))
-
-    Assert.That(subject.Execute(), Is.False)
-    Assert.That(subject.Extended, Is.Empty)
-    CommandLine.verbosity <- 0
-
-  let template =
-    """<?xml version="1.0" encoding="utf-8"?>
-<RunSettings>
-{1}  <InProcDataCollectionRunSettings>
-    <InProcDataCollectors>
-      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, {2}" codebase="{0}">
-        <Configuration>
-          <Offload>true</Offload>
-        </Configuration>
-      </InProcDataCollector>
-    </InProcDataCollectors>
-  </InProcDataCollectionRunSettings>
-</RunSettings>"""
-
-  [<Test>]
-  let RunSettingsWorksIfOK () =
-    Main.init ()
-    let subject = MakeRunSettings()
-
-    let dc =
-      subject
-        .GetType()
-        .GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
-    dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
-
-    let assembly =
-      AssemblyName.GetAssemblyName
-      <| Assembly.GetExecutingAssembly().Location
-
-    let write =
-      subject
-        .GetType()
-        .GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    write.SetValue(subject, Some(fun (s: string) -> ()))
-    Assert.That(subject.Execute(), Is.True)
-    Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
-
-    Assert.That(Path.GetFileName(subject.Extended).StartsWith("altcover.test."))
-
-    let result =
-      subject.Extended |> File.ReadAllText
-
-    [ subject.Extended ]
-    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
-
-    Assert.That(
-      result
-        .Replace("\r", String.Empty)
-        .Replace(
-          "Collector://AltCover/Recorder/"
-          + assembly.Version.ToString(),
-          "Collector://AltCover/Recorder/1.0.0.0"
-        ),
-      Is.EqualTo(
-        (String.Format(
-          template,
-          Assembly.GetExecutingAssembly().Location,
-          String.Empty,
-          Assembly.GetExecutingAssembly().FullName
-        ))
-          .Replace("\r", String.Empty)
-      )
-    )
-
-  [<Test>]
-  let RunSettingsExtendsOK () =
-    Main.init ()
-    let subject = MakeRunSettings()
-
-    let dc =
-      subject
-        .GetType()
-        .GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
-    dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
-
-    let write =
-      subject
-        .GetType()
-        .GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    write.SetValue(subject, Some(fun (s: string) -> ()))
-
-    let assembly =
-      AssemblyName.GetAssemblyName
-      <| Assembly.GetExecutingAssembly().Location
-
-    let settings = Path.GetTempFileName()
-    File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
-    subject.TestSetting <- settings
-    Assert.That(subject.Execute(), Is.True)
-    Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
-
-    let result =
-      subject.Extended |> File.ReadAllText
-
-    [ subject.Extended ]
-    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
-
-    Assert.That(
-      result
-        .Replace("\r", String.Empty)
-        .Replace(
-          "Collector://AltCover/Recorder/"
-          + assembly.Version.ToString(),
-          "Collector://AltCover/Recorder/1.0.0.0"
-        ),
-      Is.EqualTo(
-        (String.Format(
-          template,
-          Assembly.GetExecutingAssembly().Location,
-          "  <stuff />\r\n",
-          Assembly.GetExecutingAssembly().FullName
-        ))
-          .Replace("\r", String.Empty)
-      )
-    )
-
-  [<Test>]
-  let RunSettingsThrowsIfUninitialized () =
-    Main.init ()
-    let subject = MakeRunSettings()
-
-    let dc =
-      subject
-        .GetType()
-        .GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
-    dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
-
-    let assembly =
-      AssemblyName.GetAssemblyName
-      <| Assembly.GetExecutingAssembly().Location
-
-    let settings = Path.GetTempFileName()
-    File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
-    subject.TestSetting <- settings
-
-    Assert.Throws<InvalidOperationException>(fun () -> subject.Execute() |> ignore)
-    |> ignore
-
-  [<Test>]
-  let RunSettingsRecoversOK () =
-    Main.init ()
-    let subject = MakeRunSettings()
-
-    let dc =
-      subject
-        .GetType()
-        .GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
-    dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
-    //let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    //write.SetValue(subject, Some (fun (s:string) -> ()))
-    subject.Verbosity <- "Off"
-
-    let assembly =
-      AssemblyName.GetAssemblyName
-      <| Assembly.GetExecutingAssembly().Location
-
-    let settings = Path.GetTempFileName()
-    File.WriteAllText(settings, "<Not XML")
-    subject.TestSetting <- settings
-    Assert.That(subject.Execute(), Is.True)
-    Assert.That(subject.Extended.EndsWith(".altcover.runsettings"))
-
-    let result =
-      subject.Extended |> File.ReadAllText
-
-    [ subject.Extended ]
-    |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
-
-    Assert.That(
-      result
-        .Replace("\r", String.Empty)
-        .Replace(
-          "Collector://AltCover/Recorder/"
-          + assembly.Version.ToString(),
-          "Collector://AltCover/Recorder/1.0.0.0"
-        ),
-      Is.EqualTo(
-        (String.Format(
-          template,
-          Assembly.GetExecutingAssembly().Location,
-          String.Empty,
-          Assembly.GetExecutingAssembly().FullName
-        ))
-          .Replace("\r", String.Empty)
-      )
-    )
-
-  [<Test>]
-  let ContingentCopyTest () =
-    Main.init ()
-    let subject = ContingentCopy()
-    let unique = Guid.NewGuid().ToString()
-
-    let where =
-      Assembly.GetExecutingAssembly().Location
-      |> Path.GetDirectoryName
-
-    let relative = where |> Path.GetFileName
-
-    subject.BuildOutputDirectory <- where |> Path.GetDirectoryName
-    subject.InstrumentDirectory <- Path.Combine(where, unique)
-    test <@ subject.Execute() @>
-
-    test
-      <@
-        subject.InstrumentDirectory
-        |> Directory.Exists
-        |> not
-      @>
-
-    subject.FileName <- "Sample2.pdb"
-
-    let from =
-      Path.Combine(subject.BuildOutputDirectory, relative, subject.FileName)
-
-    test <@ from |> File.Exists @>
-
-    test
-      <@
-        subject.InstrumentDirectory
-        |> Directory.Exists
-        |> not
-      @>
-
-    test <@ subject.Execute() @>
-
-    test
-      <@
-        subject.InstrumentDirectory
-        |> Directory.Exists
-        |> not
-      @>
-
-    subject.RelativeDir <- relative
-    test <@ subject.Execute() @>
-
-    test
-      <@
-        subject.InstrumentDirectory
-        |> Directory.Exists
-        |> not
-      @>
-
-    subject.RelativeDir <- String.Empty
-    subject.CopyToOutputDirectory <- "Always"
-    test <@ subject.Execute() @>
-
-    test
-      <@
-        subject.InstrumentDirectory
-        |> Directory.Exists
-        |> not
-      @>
-
-    subject.RelativeDir <- where
-    test <@ subject.Execute() @>
-
-    test
-      <@
-        subject.InstrumentDirectory
-        |> Directory.Exists
-        |> not
-      @>
-
-    subject.RelativeDir <- relative
-    test <@ subject.Execute() @>
-
-    let target =
-      Path.Combine(subject.InstrumentDirectory, relative, subject.FileName)
-
-    test <@ target |> File.Exists @>
-
-    subject.FileName <- "Foo.txt"
-
-    let projectdir =
-      Path.Combine(SolutionRoot.location, "Samples/Sample4")
-
-    let builddir =
-      Path.Combine(
-        SolutionRoot.location,
-#if !NET472
-        "_Binaries/Sample4/Debug+AnyCPU/net9.0"
-      )
-#else
-        "_Binaries/Sample4/Debug+AnyCPU/net472"
-      )
-#endif
-
-    subject.RelativeDir <- Path.Combine(projectdir, "Data/Deeper")
-    subject.BuildOutputDirectory <- builddir
-    subject.ProjectDir <- projectdir
-
-    let target2 =
-      Path.Combine(subject.InstrumentDirectory, "Data/Deeper/Foo.txt")
-
-    test
-      <@
-        Path.Combine(builddir, "Data/Deeper/Foo.txt")
-        |> File.Exists
-      @>
-
-    test <@ target2 |> File.Exists |> not @>
-    test <@ subject.Execute() @>
-    test <@ target2 |> File.Exists @>
-
-    let write =
-      subject
-        .GetType()
-        .GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
-
-    let ex =
-      Assert.Throws<TargetInvocationException>(fun () ->
-        write.Invoke(subject, [| "xx" |]) |> ignore)
-
-    test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
-
-  [<Test>]
-  let RetryDeleteTest () =
-    Main.init ()
-    let subject = RetryDelete()
-    let unique = Guid.NewGuid().ToString()
-
-    let where =
-      Assembly.GetExecutingAssembly().Location
-      |> Path.GetDirectoryName
-
-    let from =
-      Path.Combine(where, "Sample2.pdb")
-
-    let target = Path.Combine(where, unique)
-    File.Copy(from, target, true)
-    test <@ File.Exists target @>
-    subject.Files <- [| target |]
-    test <@ subject.Execute() @>
-    test <@ target |> File.Exists |> not @>
-
-    [ IOException() :> Exception
-      System.Security.SecurityException() :> Exception
-      UnauthorizedAccessException() :> Exception ]
-    |> List.iter (fun ex ->
-      let builder = System.Text.StringBuilder()
-
-      CommandLine.I.doRetry (fun _ -> raise ex) (builder.Append >> ignore) 2 0 0 target
+      let args =
+        [| "-i"
+           input
+           "-o"
+           output
+           "-r"
+           report
+           "--reportFormat"
+           "Json"
+           "--sn"
+           key
+           "-s=Adapter"
+           "-s=xunit"
+           "-s=nunit"
+           "-e=Sample"
+           "-c=[Test]"
+           "--localSource"
+           "--save" |]
+
+      let result = Main.I.doInstrumentation args
+      test' <@ result = 0 @> <| stderr.ToString()
+      test <@ stderr.ToString() |> Seq.isEmpty @>
+
+      let expected =
+        "Creating folder "
+        + (canonicalDirectory output)
+        + "\nInstrumenting files from "
+        + (canonicalDirectory input)
+        + "\nWriting files to "
+        + (canonicalDirectory output)
+        + "\n   => "
+        + Path.Combine(canonicalDirectory input, "Sample4.dll")
+        + "\n\nCoverage Report: "
+        + report
+        + "\n\n\n    "
+        + Path.Combine(canonicalDirectory output, "Sample4.dll")
+        + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       test
-        <@ builder.ToString().StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
+        <@
+          (expected.Replace("\\", "/")) = stdout
+            .ToString()
+            .Replace("\r\n", "\n")
+            .Replace("\\", "/")
+        @>
 
-    let builder = System.Text.StringBuilder()
-    let monitor (s: string) = s |> builder.Append |> ignore
+      test
+        <@
+          CoverageParameters.outputDirectories ()
+          |> Seq.head = canonicalDirectory output
+        @>
 
-    Assert.Throws<InvalidDataException>(fun () ->
-      CommandLine.I.doRetry
-        (fun _ -> raise <| InvalidDataException())
-        monitor
-        2
-        0
-        0
-        target)
-    |> ignore
+      test
+        <@
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
+            input)
+            .Replace("\\", "/"))
+        @>
 
-    test <@ builder.ToString() |> String.IsNullOrEmpty @>
+      test <@ CoverageParameters.reportPath () = report @>
 
-    monitor ("Hello")
-    test <@ builder.ToString() = "Hello" @>
+      use stream =
+        new FileStream(key, FileMode.Open)
 
-    let write0 =
-      subject
-        .GetType()
-        .GetMethod("Write0", BindingFlags.NonPublic ||| BindingFlags.Instance)
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
 
-    let mutable written = "written"
+      let snk =
+        StrongNameKeyData.Make(buffer.ToArray())
 
-    write0.Invoke(
-      subject,
-      [| (fun x -> written <- x)
-         "xx"
-         "yy" |]
-    )
-    |> ignore
+      test <@ (CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk)) @>
+      test <@ CoverageParameters.keys.Count = 2 @>
 
-    test <@ written = "Failed to delete file xx" @>
+      test <@ (File.Exists report) @>
+      test <@ (File.Exists(report + ".acv")) @>
 
-    let write =
-      subject
-        .GetType()
-        .GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
+      let expected =
+        [ "AltCover.Recorder.g.dll"
+          "FSharp.Core.dll"
+          "Newtonsoft.Json.dll"
+          "Sample4.deps.json"
+          "Sample4.dll"
+          "Sample4.runtimeconfig.json"
+          "Sample4.pdb"
+          "Unquote.dll"
+          "xunit.abstractions.dll"
+          "xunit.assert.dll"
+          "xunit.core.dll"
+          "xunit.execution.dotnet.dll"
+          "xunit.runner.visualstudio.testadapter.dll" ]
 
-    let ex =
-      Assert.Throws<TargetInvocationException>(fun () ->
-        write.Invoke(subject, [| "xx"; "yy" |]) |> ignore)
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
-    test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
-// Recorder.fs => Recorder.Tests
+      let theFiles =
+        expected |> List.sortBy _.ToUpperInvariant()
+
+      let actualFiles =
+        Directory.GetFiles(output)
+        |> Seq.map Path.GetFileName
+        |> Seq.filter (fun f ->
+          f.EndsWith(".tmp", StringComparison.Ordinal)
+          |> not)
+        |> Seq.filter (fun f -> Path.GetFileNameWithoutExtension f <> "testhost")
+        |> Seq.filter (fun f ->
+          (Path.GetFileNameWithoutExtension f)
+            .StartsWith("Microsoft.", StringComparison.Ordinal)
+          |> not)
+        |> Seq.sortBy _.ToUpperInvariant()
+        |> Seq.toList
+
+      test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
+
+      let recordedJson =
+        use stream = File.OpenRead report
+
+        match
+          DocumentType.LoadReportStream CoverageParameters.theReportFormat.Value stream
+        with
+        | JSON j -> j
+
+      test <@ recordedJson.Keys |> Seq.toList = [ "Sample4.dll" ] @>
+    finally
+      CoverageParameters.trackingNames.Clear()
+      CoverageParameters.theReportFormat <- None
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange outputSaved
+      CoverageParameters.theInputDirectories.AddRange inputSaved
+      CoverageParameters.theReportPath <- reportSaved
+      CoverageParameters.defaultStrongNameKey <- keySaved
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+      CoverageParameters.keys.Clear()
+      CoverageParameters.nameFilters.Clear()
+      Output.error <- snd save2
+      Output.info <- fst save2
+
+    let before =
+      File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
+
+    test <@ before.IndexOf("AltCover.Recorder.g") = -1 @>
+
+    let o =
+      JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
+
+    let target =
+      ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+
+    let targets =
+      (o.Properties()
+       |> Seq.find (fun p -> p.Name = "targets"))
+        .Value
+      :?> JObject
+
+    let targeted =
+      (targets.Properties()
+       |> Seq.find (fun p -> p.Name = target))
+        .Value
+      :?> JObject
+
+    let app =
+      (targeted.PropertyValues() |> Seq.head) :?> JObject
+
+    let existingDependencies =
+      app.Properties()
+      |> Seq.tryFind (fun p -> p.Name = "dependencies")
+
+    let reset =
+      match existingDependencies with
+      | Some p ->
+        (p.Value :?> JObject).Properties()
+        |> Seq.map _.Name
+        |> Set.ofSeq
+
+    test <@ reset |> Set.contains "AltCover.Recorder.g" @>
+
+    let aux =
+      targeted.Properties()
+      |> Seq.map _.Name
+      |> Set.ofSeq
+
+    test
+      <@
+        (aux
+         |> Set.contains (
+           "AltCover.Recorder.g/"
+           + AltCover.AssemblyVersionInformation.AssemblyVersion
+         ))
+      @>
+
+    let libraries =
+      (o.Properties()
+       |> Seq.find (fun p -> p.Name = "libraries"))
+        .Value
+      :?> JObject
+
+    let lib =
+      libraries.Properties()
+      |> Seq.map _.Name
+      |> Set.ofSeq
+
+    test
+      <@
+        (lib
+         |> Set.contains (
+           "AltCover.Recorder.g/"
+           + AltCover.AssemblyVersionInformation.AssemblyVersion
+         ))
+      @>
+
+  [<Test>]
+  let ADryRunLooksAsExpected () =
+    let where =
+      Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
+    let path =
+      monoSample1path
+      |> Path.GetDirectoryName
+      |> Path.GetFullPath
+
+    maybeIgnore (fun () -> path |> Directory.Exists |> not)
+
+    let key =
+      Path.Combine(SolutionDir(), "Build/SelfTest.snk")
+
+    let unique = Guid.NewGuid().ToString()
+
+    let unique' =
+      Path.Combine(where, Guid.NewGuid().ToString())
+
+    Directory.CreateDirectory unique' |> ignore
+
+    let report =
+      Path.Combine(unique', "ADryRunLooksAsExpected.xml")
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(where), unique)
+
+    let outputSaved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    let inputSaved =
+      CoverageParameters.theInputDirectories
+      |> Seq.toList
+
+    let reportSaved =
+      CoverageParameters.theReportPath
+
+    let keySaved =
+      CoverageParameters.defaultStrongNameKey
+
+    let saved = (Console.Out, Console.Error)
+    let save2 = (Output.info, Output.error)
+    Main.init ()
+
+    try
+      Output.error <- CommandLine.writeErr
+      String.Empty |> Output.error
+      Output.info <- CommandLine.writeOut
+
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let args =
+        [| "-i"
+           path
+           "-o"
+           output
+           "-r"
+           report
+           "--reportFormat"
+           "ncov"
+           "-sn"
+           key |]
+
+      let result = Main.I.doInstrumentation args
+      test' <@ result = 0 @> <| stderr.ToString()
+      test <@ stderr.ToString() |> Seq.isEmpty @>
+
+      let subjectAssembly =
+        Path.Combine(path, "Sample1.exe")
+
+      let expected =
+        "Creating folder "
+        + (canonicalDirectory output)
+        + "\nInstrumenting files from "
+        + (canonicalDirectory path)
+        + "\nWriting files to "
+        + (canonicalDirectory output)
+        + "\n   => "
+        + monoSample1path
+        + "\n\nCoverage Report: "
+        + report
+        + "\n\n\n    "
+        + Path.Combine(canonicalDirectory output, "Sample1.exe")
+        + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+
+      let console = stdout.ToString()
+
+      test
+        <@
+          console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/"))
+        @>
+
+      test
+        <@
+          CoverageParameters.outputDirectories ()
+          |> Seq.head = (canonicalDirectory output)
+        @>
+
+      test
+        <@
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
+            path)
+            .Replace("\\", "/"))
+        @>
+
+      test <@ CoverageParameters.reportPath () = report @>
+
+      use stream =
+        new FileStream(key, FileMode.Open)
+
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+
+      let snk =
+        StrongNameKeyData.Make(buffer.ToArray())
+
+      test <@ CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk) @>
+      test <@ CoverageParameters.keys.Count = 2 @>
+
+      test <@ File.Exists report @>
+
+      let theFiles =
+        [ "AltCover.Recorder.g.dll"
+          "Sample1.exe"
+          "Sample1.exe.mdb" ]
+
+      let actual =
+        Directory.GetFiles(output)
+        |> Seq.map Path.GetFileName
+        |> Seq.toList
+        |> List.sortBy _.ToUpperInvariant()
+
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+
+      let expected =
+        theFiles |> List.sortBy _.ToUpperInvariant()
+
+      test <@ actual = expected @>
+
+      let expectedText =
+        MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
+
+      let expectedXml =
+        XDocument.Load(new StringReader(expectedText))
+
+      let recordedXml =
+        use stream = File.OpenRead report
+
+        match DocumentType.LoadReportStream ReportFormat.OpenCover stream with
+        | XML x -> x
+
+      RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange outputSaved
+      CoverageParameters.theInputDirectories.AddRange inputSaved
+      CoverageParameters.theReportPath <- reportSaved
+      CoverageParameters.defaultStrongNameKey <- keySaved
+      Console.SetOut(fst saved)
+      Console.SetError(snd saved)
+      CoverageParameters.keys.Clear()
+      Output.error <- snd save2
+      Output.info <- fst save2
+
+  [<Test>]
+  let ValidateAssemblyOption () =
+    test
+      <@
+        Assembly.GetExecutingAssembly()
+        |> Some
+        |> Main.I.isMSBuild
+        |> not
+      @>

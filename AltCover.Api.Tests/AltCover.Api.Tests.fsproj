@@ -16,42 +16,42 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\nupkg\build\AltCover.proj" Link="AltCover.proj" />
-    <EmbeddedResource Include="..\AltCover.Tests\CompressBoth.xml" Link="CompressBoth.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Compressible.xml" Link="Compressible.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\CompressInterior.xml" Link="CompressInterior.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.Xml" Link="GenuineNCover158.Xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158Chart.html" Link="GenuineNCover158Chart.html" />
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.json" Link="HandRolledToNCover.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartials.json" Link="JsonWithPartials.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\JsonFromNCoverWithPartials.json" Link="JsonFromNCoverWithPartials.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToXml.xml" Link="JsonWithPartialsToXml.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.cob.xml" Link="NCoverWithPartials.cob.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.xml" Link="NCoverWithPartials.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverFromNCoverWithPartials.xml" Link="OpenCoverFromNCoverWithPartials.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.lcov" Link="OpenCoverWithPartials.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.xml" Link="OpenCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\CompressBoth.xml" Link="CompressBoth.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Compressible.xml" Link="Compressible.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\CompressInterior.xml" Link="CompressInterior.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158.Xml" Link="GenuineNCover158.Xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158Chart.html" Link="GenuineNCover158Chart.html" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledToNCover.json" Link="HandRolledToNCover.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartials.json" Link="JsonWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonFromNCoverWithPartials.json" Link="JsonFromNCoverWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartialsToXml.xml" Link="JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.cob.xml" Link="NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.xml" Link="NCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverFromNCoverWithPartials.xml" Link="OpenCoverFromNCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.lcov" Link="OpenCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.xml" Link="OpenCoverWithPartials.xml" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenCoverForPester.coverlet.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\SameSpan.xml" Link="SameSpan.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.xml" Link="Sample1WithNCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.Prepare.xml" Link="Sample4.Prepare.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.coverlet.json" Link="Sample4.coverlet.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.fromcoverletjson.xml" Link="Sample4.fromcoverletjson.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverForPester.api.coverlet.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\SameSpan.xml" Link="SameSpan.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithNCover.xml" Link="Sample1WithNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.Prepare.xml" Link="Sample4.Prepare.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.json" Link="Sample4.coverlet.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.fromcoverletjson.xml" Link="Sample4.fromcoverletjson.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
-    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.json" Link="GenuineNCover158.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCover.json" Link="OpenCover.json" />
-    <EmbeddedResource Include="OpenCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.xml" Link="Sample4FullTracking.xml" />
+    <Compile Include="..\AltCover.TestData\TestCommon.fs" Link="TestCommon.fs" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158.json" Link="GenuineNCover158.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCover.json" Link="OpenCover.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.xml" Link="Sample4FullTracking.xml" />
     <Compile Include="FSApiTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

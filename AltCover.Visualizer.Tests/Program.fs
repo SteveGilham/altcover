@@ -6,10 +6,10 @@ open Expecto
 
 module TestMain =
   let regular =
-    [ Tests.TestCommonTests.TestMultiple, "Tests.TestCommonTests.TestMultiple"
-      Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
-      Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
-      Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
+    [ Tests.TestCommonTests.TestMultiple, "TestCommon.TestMultiple"
+      Tests.TestCommonTests.ExerciseItAll, "TestCommon.ExerciseItAll"
+      Tests.TestCommonTests.SelfTest, "TestCommon.SelfTest"
+      Tests.TestCommonTests.TestIgnoredTests, "TestCommon.TestIgnoredTests"
       Tests.VisualizerTests.AugmentNullableDetectNulls,
       "VisualizerTests.AugmentNullableDetectNulls"
       Tests.VisualizerTests.AugmentNonNullableDetectNoNulls,

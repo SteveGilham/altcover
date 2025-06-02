@@ -1,0 +1,154 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>AltCover.Engine.Tests</AssemblyName>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType Condition="'$(TargetFramework)' != 'net472'">Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
+    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">WINDOWS</ExtraDefines>
+    <DefineConstants>DEBUG;TRACE;RUNNER_TESTS;$(ExtraDefines)</DefineConstants>
+    <NoWarn>NU1901;NU1902;NU1903;$(NoWarn)</NoWarn>
+    <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277;$(NoWarn)</NoWarn>
+    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\_Generated\SolutionRoot.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" />
+    <Compile Include="..\AltCover.TestData\TestCommon.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" />
+    <Compile Include="ProxyObject.fs" />
+    <Compile Include="Locations.fs" />
+    <Compile Include="Augment.fs" />
+    <Compile Include="ProgramDatabase.fs" />
+    <Compile Include="Filter.fs" />
+    <Compile Include="Visitor.fs" />
+    <Compile Include="CommandLine.fs" />
+    <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" />
+    <Compile Include="Instrument.fs" />
+    <Compile Include="Json.fs" />
+    <Compile Include="Runner.fs" />
+    <Compile Include="CoverageFiles.fs" />
+    <Compile Include="Arguments.fs" />
+    <Compile Include="Main.fs" />
+    <Compile Include="Tasks.fs" />
+    <Compile Include="Program.fs" />
+    <EmbeddedResource Include="..\AltCover.TestData\AltCover.Usage.txt" />
+    <EmbeddedResource Include="..\AltCover.TestData\AltCover.Runner.Usage.txt" />
+    <EmbeddedResource Include="..\AltCover.TestData\coverage-04.xsd" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158.Xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\InternalsVisibleTest.snk" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue122.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue122.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.json.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.NCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.NCover.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.NCover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.OpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.OpenCover.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue37.dl_" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue37.pd_" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartialsToRawXml.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\native.pdb" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCover122.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCover122.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverBugFix.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverBugFix.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCover.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1.deps.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1.deps.after.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1ClassExclusion.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1MethodExclusion.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2.deps.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2.deps.after.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.native.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.syntheticvisits.native.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.native.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.native.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.ncover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.ncover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.ncover.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.raw-native.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample8.deps.baseline.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample8.deps.newtonsoft.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\SwitchSample.dl_" />
+    <EmbeddedResource Include="..\AltCover.TestData\SwitchSample.pd_" />
+    <EmbeddedResource Include="..\AltCover.TestData\TailCallSample.dl_" />
+    <EmbeddedResource Include="..\Build\Infrastructure.snk" />
+    <EmbeddedResource Include="..\Build\Recorder.snk" />
+    <EmbeddedResource Include="..\nupkg\build\AltCover.proj" />
+    <EmbeddedResource Include="..\_Repack\AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.net20.dll</Link>
+    </EmbeddedResource>
+    <ProjectReference Include="..\Samples\Sample2\Sample2.fsproj" />
+    <ProjectReference Include="..\Samples\Sample3\Sample3.csproj" />
+    <ProjectReference Include="..\Samples\Sample11\Sample11.csproj" />
+    <ProjectReference Include="..\Samples\Sample16\Sample16.csproj" />
+  </ItemGroup>
+
+  <ItemGroup />
+
+  <ItemGroup>
+    <PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
+    <PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
+    <Reference Include="Manatee.Json">
+      <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+      <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
+      <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
+      <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
+      <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
+    </Reference>
+    <Reference Include="Mono.Options">
+      <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.Base\AltCover.Base.csproj" />
+    <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
+  </ItemGroup>
+
+</Project>

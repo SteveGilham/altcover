@@ -75,6 +75,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="16.0.461" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
@@ -82,9 +85,6 @@
     </PackageReference>
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="System.IO.Compression" />
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

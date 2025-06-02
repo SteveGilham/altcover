@@ -2,20 +2,26 @@
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Reflection
-open System.Security
-open System.Security.Cryptography
 
 open AltCover
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
-open Mono.Options
 
 #nowarn "25"
 
-module AltCoverTests2 =
+[<AutoOpen>]
+module HallmarkExtra =
+  type Hallmark with
+    static member internal Build() =
+      { Assembly = String.Empty
+        Configuration = String.Empty }
+
+module Instrument =
+
   let recorderSnk =
     typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
     |> Seq.find _.EndsWith(".Recorder.snk", StringComparison.Ordinal)
@@ -83,8 +89,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToClearTheStrongNameKey () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -103,8 +108,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToUpdateTheStrongNameKeyWherePossible () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -144,8 +148,7 @@ module AltCoverTests2 =
     try
       CoverageParameters.keys.Clear()
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -158,8 +161,7 @@ module AltCoverTests2 =
     try
       CoverageParameters.keys.Clear()
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -214,8 +216,7 @@ module AltCoverTests2 =
       let where =
         Assembly.GetExecutingAssembly().Location
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -233,8 +234,7 @@ module AltCoverTests2 =
       let where =
         Assembly.GetExecutingAssembly().Location
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -250,8 +250,7 @@ module AltCoverTests2 =
       let where =
         Assembly.GetExecutingAssembly().Location
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -268,8 +267,7 @@ module AltCoverTests2 =
       let where =
         Assembly.GetExecutingAssembly().Location
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -322,8 +320,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let GuardShouldDisposeRecordingAssemblyOnException () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     use prepared =
       AssemblyResolver.ReadAssembly path
@@ -522,8 +519,7 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
       Main.init ()
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       let prepared =
         Instrument.I.prepareAssembly (File.OpenRead path)
@@ -686,8 +682,7 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
       Main.init ()
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       let unique = Guid.NewGuid().ToString()
       let output = Path.GetTempFileName()
@@ -836,7 +831,7 @@ module AltCoverTests2 =
   let ShouldHandleNullConstantsOK () =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/NullConst.dll")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/NullConst.dll")
 
     use ``module`` =
       AssemblyResolver.ReadAssembly path
@@ -866,7 +861,7 @@ module AltCoverTests2 =
   let ShouldRescopeMonoMethodOK () =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/Sample31.dll")
 
     use ``module`` =
       AssemblyResolver.ReadAssembly path
@@ -1066,8 +1061,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     try
       CoverageParameters.keys.Clear()
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let path = Path.Combine(dir, "Sample3.dll")
 
       let unique = Guid.NewGuid().ToString()
       let output = Path.GetTempFileName()
@@ -1174,7 +1168,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ShouldUpdateHandlerOK ([<NUnit.Framework.Range(0, 31)>] selection) =
-    let path = AltCoverTests.sample1path
+    let path = sample1path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -1282,8 +1276,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ShouldSubstituteInstructionOperand () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -1316,8 +1309,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ShouldNotSubstituteDifferentInstructionOperand () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -1358,8 +1350,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ShouldSubstituteIntoInstructionOperandArray () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -1398,8 +1389,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ShouldNotSubstituteOutsideInstructionOperandArray () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -1436,8 +1426,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ShouldNotSubstituteOtherOperand () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -1606,12 +1595,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAMethodWithNonVoidReturn () =
     use recstream = recorderStream ()
 
-    let sample24 =
-      Path.Combine(
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetDirectoryName,
-        "Sample24.dll"
-      )
+    let sample24 = sample24path
 
     use def =
       AssemblyResolver.ReadAssembly sample24
@@ -1681,12 +1665,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAnAsyncMethod () =
     use recstream = recorderStream ()
 
-    let sample24 =
-      Path.Combine(
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetDirectoryName,
-        "Sample24.dll"
-      )
+    let sample24 = sample24path
 
     use def =
       AssemblyResolver.ReadAssembly sample24
@@ -1756,12 +1735,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAnFSAsyncMethod () =
     use recstream = recorderStream ()
 
-    let sample27 =
-      Path.Combine(
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetDirectoryName,
-        "Sample27.dll"
-      )
+    let sample27 = sample27path
 
     use def =
       AssemblyResolver.ReadAssembly sample27
@@ -1831,12 +1805,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAnFSTaskMethod () =
     use recstream = recorderStream ()
 
-    let sample30 =
-      Path.Combine(
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetDirectoryName,
-        "Sample30.dll"
-      )
+    let sample30 = sample30path
 
     use def =
       AssemblyResolver.ReadAssembly sample30
@@ -2237,7 +2206,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let where =
       Assembly.GetExecutingAssembly().Location
 
-    let path = AltCoverTests.sample1path
+    let path = sample1path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2355,8 +2324,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let IncludedMethodShouldChangeState () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2388,8 +2356,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ExcludedAfterMethodShouldNotChangeState () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2448,8 +2415,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let IncludedAfterMethodShouldRewriteMethod () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2500,8 +2466,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let NoStrongNameShouldUpdateVisibleTo () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
     ProgramDatabase.readSymbols def
@@ -2529,8 +2494,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let NewStrongNameShouldUpdateVisibleTo () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2567,8 +2531,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let UpdateStrongReferencesShouldChangeSigningKeyWherePossible () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2603,7 +2566,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assembly.GetExecutingAssembly().Location
 
     let path =
-      Path.Combine(AltCoverTests.dir, Path.GetFileName(here))
+      Path.Combine(dir, Path.GetFileName(here))
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2650,8 +2613,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let UpdateStrongReferencesShouldRemoveSigningKeyIfRequired () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2711,8 +2673,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let UpdateStrongReferencesShouldTrackReferences () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2746,8 +2707,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   [<Test>]
   let UpdateStrongReferencesShouldTrackReferencesEvenFakes () =
     try
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample2.dll")
+      let path = sample2path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -2798,8 +2758,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ExcludedAssemblyRefsAreNotUpdated () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2839,10 +2798,9 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let IncludedAssemblyRefsAreUpdated () =
     // do trivial coverage here where the type's absence is felt
     let dummy =
-      AltCover.Recorder.InstrumentationAttribute()
+      AltCover.Recorder.InstrumentationAttribute() // Constructor has all the instrumented code
 
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2883,8 +2841,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample2.dll")
+      let path = sample2path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -2915,8 +2872,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample2.dll")
+      let path = sample2path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -2942,8 +2898,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample2.dll")
+      let path = sample2path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -2974,8 +2929,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample2.dll")
+      let path = sample2path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -3050,8 +3004,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let ExcludedMethodPointIsPassThrough () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -3074,8 +3027,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let IncludedMethodPointInsertsVisit () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample2.dll")
+    let path = sample2path
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -3132,8 +3084,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       let where =
         Assembly.GetExecutingAssembly().Location
 
-      let path =
-        Path.Combine(AltCoverTests.dir, "Sample2.dll")
+      let path = sample2path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -3360,8 +3311,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let NonFinishShouldDisposeRecordingAssembly () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     use prepared =
       AssemblyResolver.ReadAssembly path
@@ -3397,8 +3347,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let NonFinishShouldDisposeThreadingAssembly () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     use prepared =
       AssemblyResolver.ReadAssembly path
@@ -3445,8 +3394,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let NonFinishShouldNotDisposeNullRecordingAssembly () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     let state =
       { InstrumentContext.Build [] with
@@ -3463,8 +3411,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let FinishShouldLeaveRecordingAssembly () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     let state =
       { InstrumentContext.Build [] with
@@ -3496,674 +3443,262 @@ has been prefixed with Ldc_I4_1 (1 byte)
       )
       |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
-  // CommandLine.fs
   [<Test>]
-  let VerbosityShouldBeHonoured () =
-    let saved = (Console.Out, Console.Error)
-    let e0 = Console.Out.Encoding
-    let e1 = Console.Error.Encoding
+  let AfterAssemblyCommitsThatAssembly () =
+    let path = sample4path
 
-    let expected =
-      [ [ true; true; true; true; true ], "info|warn", "echo|error||or|  ImportModule"
-        [ false; false; true; true; true ], "warn", "error||or|  ImportModule"
-        [ false; false; false; true; true ], String.Empty, "error||or|  ImportModule"
-        [ false; false; false; false; false ], String.Empty, String.Empty
-        [ false; false; false; false; false ], String.Empty, String.Empty ]
+    let def = AssemblyResolver.ReadAssembly path
 
-    try
-      expected
-      |> Seq.iteri (fun verbosity (expect, toOut, toErr) ->
-        CommandLine.toConsole ()
+    use recstream = recorderStream ()
 
-        use stdout =
-          { new StringWriter() with
-              member self.Encoding = e0 }
+    use recdef =
+      AssemblyResolver.ReadAssembly recstream
 
-        test <@ stdout.Encoding = e0 @>
-
-        use stderr =
-          { new StringWriter() with
-              member self.Encoding = e1 }
-
-        test <@ stderr.Encoding = e1 @>
-
-        Console.SetOut stdout
-        Console.SetError stderr
-
-        let first =
-          [ Output.info :> obj
-            Output.echo :> obj
-            Output.warn :> obj
-            Output.error :> obj
-            Output.usage :> obj ]
-
-        CommandLine.verbosity <- verbosity
-        CommandLine.applyVerbosity ()
-
-        Output.info "info"
-        Output.echo "echo"
-        Output.warn "warn"
-        Output.error "error"
-
-        Output.usage
-          { Intro = "intro"
-            Options = Mono.Options.OptionSet()
-            Options2 = Mono.Options.OptionSet() }
-
-        test
-          <@
-            [ Output.info :> obj
-              Output.echo :> obj
-              Output.warn :> obj
-              Output.error :> obj
-              Output.usage :> obj ]
-            |> List.zip first
-            |> List.map (fun (a, b) -> Object.ReferenceEquals(a, b)) = expect
-          @>
-
-        test <@ stdout.ToString().Trim().Replace(Environment.NewLine, "|") = toOut @>
-
-        if toErr.Length = 0 then
-          test <@ stderr.ToString().Length = 0 @>
-        else
-          test
-            <@
-              stderr
-                .ToString()
-                .Trim()
-                .Replace(Environment.NewLine, "|")
-                .StartsWith(toErr, StringComparison.Ordinal)
-            @>
-
-      )
-    finally
-      CommandLine.toConsole ()
-      Output.verbose <- ignore
-      CommandLine.verbosity <- 0
-      Console.SetOut(fst saved)
-      Console.SetError(snd saved)
-
-  [<Test>]
-  let StrongNameKeyCanBeValidated () =
-    let input =
-      Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
-
-    let (pair, ok) =
-      CommandLine.validateStrongNameKey "key" input
-
-    Assert.That(ok, Is.True, "Strong name is OK")
-    Assert.That(pair, Is.Not.Null)
-    Assert.That(pair.PublicKey, Is.Not.Null)
-
-    Assert.That(
-      CommandLine.validateStrongNameKey "key" (String(Path.GetInvalidPathChars())),
-      Is.EqualTo((StrongNameKeyData.Empty(), false))
-    )
-
-    Assert.That(
-      CommandLine.validateStrongNameKey "key"
-      <| Assembly.GetExecutingAssembly().Location,
-      Is.EqualTo((StrongNameKeyData.Empty(), false))
-    )
-
-  [<Test>]
-  let CryptographicExceptionIsTransformed () =
+    ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
 
-    let raiser =
-      fun x -> Maybe x (unique |> CryptographicException |> raise) ()
+    let output =
+      Path.Combine(Path.GetDirectoryName(dir), unique)
 
-    let arg = fun () -> raiser true
+    Directory.CreateDirectory(output) |> ignore
 
-    let arranged =
-      fun () -> CommandLine.I.transformCryptographicException arg
-
-    let ex =
-      Assert.Throws<SecurityException>(fun () -> arranged ())
-
-    Assert.That(ex.Message, Is.EqualTo unique)
-    Assert.That(ex.InnerException, Is.InstanceOf<CryptographicException>())
-
-  [<Test>]
-  let OutputCanBeExercised () =
-    let sink = StringSink(ignore)
-    let setInfo (x: StringSink) = Output.info <- x.Invoke
-    let setError (x: StringSink) = Output.error <- x.Invoke
-    let setWarn (x: StringSink) = Output.warn <- x.Invoke
-
-    setInfo sink
-    setError sink
-    setWarn sink
-    Output.echo <- ignore
-    Output.usage <- ignore
-    Output.echo "echo"
-
-    Output.usage
-      { Intro = "usage"
-        Options = OptionSet()
-        Options2 = OptionSet() }
-
-    Assert.That(Output.usage, Is.Not.Null)
-
-    typeof<SummaryFormat>.Assembly.GetTypes()
-    |> Seq.filter (fun t ->
-      (string t = "AltCover.Output")
-      || (string t = "AltCover.AltCover"))
-    |> Seq.collect _.GetNestedTypes(BindingFlags.NonPublic)
-    |> Seq.filter (fun t ->
-      let tokens =
-        [ "info"
-          "echo"
-          "error"
-          "usage"
-          "warn"
-          "toConsole" ]
-
-      let name = t.Name
-      tokens |> List.exists name.StartsWith)
-    |> Seq.iter (fun t ->
-      let p =
-        t.GetType().GetProperty("DeclaredConstructors")
-
-      let c =
-        p.GetValue(t, null) :?> ConstructorInfo[]
-
-      let c0 = c |> Seq.head
-      let p = c0.GetParameters().Length
-
-      let o =
-        c0.Invoke(Maybe (p = 0) null [| sink |])
-
-      let invoke = t.GetMethod("Invoke")
-
-      let param =
-        invoke.GetParameters() |> Seq.head
-
-      let arg: obj =
-        if param.ParameterType = typeof<String> then
-          String.Empty :> obj
-        else
-          { Intro = String.Empty
-            Options = OptionSet()
-            Options2 = OptionSet() }
-          :> obj
-
-      invoke.Invoke(o, [| arg |]) |> ignore)
-
-    setWarn sink
-    setError sink |> ignore
-    setInfo sink |> ignore
-    Output.warn "warn"
-    Output.error "error"
-    Output.info "info"
-
-  [<Test>]
-  let NoThrowNoErrorLeavesAllOK () =
-    try
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      CommandLine.doPathOperation ignore () true
-      Assert.That(CommandLine.error, Is.Empty)
-      Assert.That(CommandLine.exceptions, Is.Empty)
-    finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-  [<Test>]
-  let NoThrowWithErrorIsSignalled () =
-    try
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-      CommandLine.doPathOperation
-        (fun () -> CommandLine.error <- [ "NoThrowWithErrorIsSignalled" ])
-        ()
-        true
-
-      Assert.That(CommandLine.error, Is.Not.Empty)
-      Assert.That(CommandLine.exceptions, Is.Empty)
-    finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-  [<Test>]
-  let ArgumentExceptionWrites () =
-    let saved = (Output.info, Output.error)
-    let err = System.Text.StringBuilder()
-    let info = System.Text.StringBuilder()
-
-    let f1 =
-      fun (s: String) -> info.Append(s).Append("|") |> ignore
-
-    let f2 =
-      fun (s: String) -> err.Append(s).Append("|") |> ignore
-
-    f1 "f1"
-    Assert.That(info.ToString(), Is.Not.Empty)
-    info.Clear() |> ignore
-    Assert.That(info.ToString(), Is.Empty)
-
-    f2 "f2"
-    Assert.That(err.ToString(), Is.Not.Empty)
-    err.Clear() |> ignore
-    Assert.That(err.ToString(), Is.Empty)
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
 
     try
-      Output.info <- f1
-      Output.error <- f2
-
-      let unique =
-        "ArgumentException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-      CommandLine.doPathOperation
-        (fun () ->
-          let inner = InvalidOperationException()
-          ArgumentException(unique, inner) |> raise)
-        ()
-        true
-
-      Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-
-      Assert.That(
-        CommandLine.exceptions |> List.map _.Message,
-        Is.EquivalentTo [ unique ]
-      )
-
-      let here =
-        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-
-      let there =
-        Path.Combine(here, Guid.NewGuid().ToString())
-
-      let toInfo = Directory.CreateDirectory there
       CoverageParameters.theOutputDirectories.Clear()
-      CoverageParameters.theInputDirectories.Clear()
-      CoverageParameters.theOutputDirectories.Add toInfo.FullName
-      CoverageParameters.theInputDirectories.Add here
-      Assert.That(info.ToString(), Is.Empty)
-      Assert.That(err.ToString(), Is.Empty)
-      let name = "ArgumentExceptionWrites"
-      CommandLine.I.logExceptionsToFile name false
+      CoverageParameters.theOutputDirectories.Add output
 
-      let target =
-        Path.Combine(toInfo.FullName, name)
+      let visited =
+        Node.AfterAssembly
+          { Assembly = def
+            Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
+            Destinations = CoverageParameters.outputDirectories () }
 
-      let target' = Path.Combine(here, name)
-      Assert.That(File.Exists target, target)
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
 
-      let lines' =
-        target |> File.ReadAllLines |> Seq.toList
+      let result =
+        Instrument.I.instrumentationVisitor input visited
 
-      let head = lines' |> List.head
+      test' <@ Object.ReferenceEquals(result, input) @> "result differs"
+
+      let created =
+        Path.Combine(output, "Sample4.dll")
+
+      test' <@ File.Exists created @> (created + " not found")
+
+    finally
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let AfterAssemblyCommitsThatAssemblyForMono () =
+    // Hack for running while instrumented
+    let where =
+      Assembly.GetExecutingAssembly().Location
+
+    let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    use recstream = recorderStream ()
+
+    use recdef =
+      AssemblyResolver.ReadAssembly recstream
+
+    ProgramDatabase.readSymbols def
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(where), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange [ output ]
+
+      let visited =
+        Node.AfterAssembly
+          { Assembly = def
+            Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
+            Destinations = CoverageParameters.outputDirectories () }
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
+
+      let result =
+        Instrument.I.instrumentationVisitor input visited
+
+      test' <@ Object.ReferenceEquals(result, input) @> "result differs"
+
+      let created =
+        Path.Combine(output, "Sample1.exe")
+
+      test' <@ File.Exists created @> (created + " not found")
+
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let FinishCommitsTheRecordingAssembly () =
+    let where =
+      Assembly.GetExecutingAssembly().Location
+
+    let path = Path.Combine(dir, "Sample3.dll")
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    ProgramDatabase.readSymbols def
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(dir), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = def }
+
+      let result =
+        Instrument.I.instrumentationVisitor input Finish
+
+      test <@ result.RecordingAssembly |> isNull @>
+
+      let created =
+        Path.Combine(output, "Sample3.dll")
+
+      test' <@ File.Exists created @> (created + " not found")
+
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let FinishCommitsTheAsyncRecordingAssembly () =
+    let path = sample4path
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    ProgramDatabase.readSymbols def
+
+    use from =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Engine.Tests.AltCover.Recorder.net20.dll")
+
+    use recorder =
+      AssemblyResolver.ReadAssembly from
+
+    ProgramDatabase.readSymbols recorder
+
+    let md =
+      def.MainModule.Types
+      |> Seq.filter (fun t -> t.FullName = "Tests.M")
+      |> Seq.collect _.Methods
+      |> Seq.filter (fun m -> m.Name = "makeThing")
+      |> Seq.head
+
+    let support = AsyncSupport.Update md
+
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(dir), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = recorder
+            AsyncSupport = Some support }
+
+      let result =
+        Instrument.I.instrumentationVisitor input Finish
+
+      test <@ result.RecordingAssembly |> isNull @>
+      test <@ result.AsyncSupport |> Option.isNone @>
+
+      let created =
+        Path.Combine(output, "AltCover.Recorder.dll")
+
+      test' <@ File.Exists created @> (created + " not found")
+      printfn "%A" created
+
+      let alc =
+        new TestAssemblyLoadContext(
+          "FinishCommitsTheAsyncRecordingAssembly",
+          created |> Path.GetDirectoryName
+        )
+
+      try
 #if !NET472
-      Assert.That(head.Length, Is.LessThanOrEqualTo 80)
-
-      let lines =
-        let t = lines' |> List.tail
-        (head + List.head t) :: (List.tail t)
+        let assembly =
+          alc.LoadFromAssemblyPath(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
 #else
-      Assert.That(head.Length, Is.GreaterThan 80)
-      let lines = lines'
+        let assembly = Assembly.LoadFrom(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
 #endif
 
-      Assert.That(
-        lines.[0],
-        Is.EqualTo(
-          "System.ArgumentException: "
-          + unique
-          + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."
-        ),
-        sprintf "lines = %A" lines
-      )
+        let t =
+          assembly.DefinedTypes
+          |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+          |> Seq.head
 
-      Assert.That(
-        lines.[1],
-        Does.StartWith("   --- End of inner exception stack trace ---")
-      )
+        let t1 =
+          t.GetNestedType("I", BindingFlags.NonPublic)
 
-      Assert.That(
-        lines.[2].Replace("+", ".").Trim(),
-        Does.StartWith("at Tests.AltCoverTests2.ArgumentExceptionWrites@")
-      )
+        let t2 =
+          t1.GetNestedType("CallTrack", BindingFlags.NonPublic)
 
-      Assert.That(
-        lines.[3].Trim().Replace("Line+I.doPath", "Line.I.doPath"),
-        Does.StartWith("at AltCover.PathOperation.DoPathOperation")
-      )
+        let p =
+          t2.GetProperty("Value", BindingFlags.NonPublic ||| BindingFlags.Static)
 
-      Assert.That(lines |> List.skip 4, Is.Not.Empty)
-      Assert.That(info.ToString(), Is.Empty)
-      Assert.That(err.ToString().Trim(), Is.EqualTo("Details written to " + target + "|"))
+        let v = p.GetValue(nullObject)
+
+        test <@ v.IsNotNull @>
+        test <@ v.GetType() = typeof<System.Threading.AsyncLocal<Stack<int>>> @>
+
+        let m =
+          t2.GetMethod("Instance", BindingFlags.NonPublic ||| BindingFlags.Static)
+
+        let v2 = m.Invoke(nullObject, [||])
+
+        test <@ v2.IsNotNull @>
+        test <@ v2.GetType() = typeof<Stack<int>> @>
+
+      finally
+        alc.Unload()
+
     finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      Output.info <- (fst saved)
-      Output.error <- (snd saved)
       CoverageParameters.theOutputDirectories.Clear()
-
-  [<Test>]
-  let ArgumentExceptionWritesEx () =
-    let saved = (Output.info, Output.error)
-    let err = System.Text.StringBuilder()
-    let info = System.Text.StringBuilder()
-
-    let f1 =
-      fun (s: String) -> info.Append(s).Append("|") |> ignore
-
-    let f2 =
-      fun (s: String) -> err.Append(s).Append("|") |> ignore
-
-    f1 "f1"
-    Assert.That(info.ToString(), Is.Not.Empty)
-    info.Clear() |> ignore
-    Assert.That(info.ToString(), Is.Empty)
-
-    f2 "f2"
-    Assert.That(err.ToString(), Is.Not.Empty)
-    err.Clear() |> ignore
-    Assert.That(err.ToString(), Is.Empty)
-
-    try
-      Output.info <- f1
-      Output.error <- f2
-
-      let unique =
-        "ArgumentException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-      CommandLine.doPathOperation
-        (fun () ->
-          let inner = InvalidOperationException()
-          ArgumentException(unique, inner) |> raise)
-        ()
-        true
-
-      Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-
-      Assert.That(
-        CommandLine.exceptions |> List.map _.Message,
-        Is.EquivalentTo [ unique ]
-      )
-
-      let here =
-        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-
-      let there =
-        Path.Combine(here, Guid.NewGuid().ToString())
-
-      let toInfo = Directory.CreateDirectory there
-      CoverageParameters.theOutputDirectories.Clear()
-      CoverageParameters.theInputDirectories.Clear()
-      CoverageParameters.theOutputDirectories.Add toInfo.FullName
-      CoverageParameters.theInputDirectories.Add here
-      Assert.That(info.ToString(), Is.Empty)
-      Assert.That(err.ToString(), Is.Empty)
-      let name = "ArgumentExceptionWrites"
-      CommandLine.I.logExceptionsToFile name true
-
-      let target =
-        Path.Combine(toInfo.FullName, name)
-
-      let target' = Path.Combine(here, name)
-      Assert.That(File.Exists target, target)
-
-      let lines' =
-        target |> File.ReadAllLines |> Seq.toList
-
-      let head = lines' |> List.head
-#if !NET472
-      Assert.That(head.Length, Is.LessThanOrEqualTo 80)
-
-      let lines =
-        let t = lines' |> List.tail
-        (head + List.head t) :: (List.tail t)
-#else
-      Assert.That(head.Length, Is.GreaterThan 80)
-      let lines = lines'
-#endif
-
-      Assert.That(
-        lines.[0],
-        Is.EqualTo(
-          "System.ArgumentException: "
-          + unique
-          + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."
-        ),
-        sprintf "lines = %A" lines
-      )
-
-      Assert.That(
-        lines.[1],
-        Does.StartWith("   --- End of inner exception stack trace ---")
-      )
-
-      Assert.That(
-        lines.[2].Replace("+", ".").Trim(),
-        Does.StartWith("at Tests.AltCoverTests2.ArgumentExceptionWritesEx@")
-      )
-
-      Assert.That(
-        lines.[3].Trim().Replace("Line+I.doPath", "Line.I.doPath"),
-        Does.StartWith("at AltCover.PathOperation.DoPathOperation")
-      )
-
-      Assert.That(lines |> List.skip 4, Is.Not.Empty)
-      Assert.That(info.ToString(), Is.Empty)
-
-      Assert.That(
-        err.ToString().Trim().Replace("\r", String.Empty).Replace("\n", "|"),
-        Is.EqualTo(
-          "Details written to "
-          + target
-          + "|If this problem was detected in the pre-test instrumentation stage of `dotnet test`, then the file may have been moved to "
-          + target'
-          + " when the task completes.|"
-        )
-      )
-    finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      Output.info <- (fst saved)
-      Output.error <- (snd saved)
-      CoverageParameters.theOutputDirectories.Clear()
-
-  [<Test>]
-  let IOExceptionWrites () =
-    let saved = (Output.info, Output.error)
-    let err = System.Text.StringBuilder()
-    let info = System.Text.StringBuilder()
-
-    let f1 =
-      fun (s: String) -> info.Append(s).Append("|") |> ignore
-
-    let f2 =
-      fun (s: String) -> err.Append(s).Append("|") |> ignore
-
-    f1 "f1"
-    Assert.That(info.ToString(), Is.Not.Empty)
-    info.Clear() |> ignore
-    Assert.That(info.ToString(), Is.Empty)
-
-    f2 "f2"
-    Assert.That(err.ToString(), Is.Not.Empty)
-    err.Clear() |> ignore
-    Assert.That(err.ToString(), Is.Empty)
-
-    try
-      Output.info <- f1
-      Output.error <- f2
-
-      let unique =
-        "IOException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) () false
-      Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-      CommandLine.reportErrors "Instrumentation" false
-      Assert.That(info.ToString(), Is.Empty)
-
-      let logged =
-        err.ToString().Replace("\r", String.Empty).Replace("\n", "|")
-
-      Assert.That(
-        logged,
-        Is.EqualTo(
-          "|ERROR *** Instrumentation phase failed|||"
-          + unique
-          + "|"
-        )
-      )
-
-      Assert.That(CommandLine.exceptions, Is.Empty)
-    finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      Output.info <- (fst saved)
-      Output.error <- (snd saved)
-
-  [<Test>]
-  let NotSupportedExceptionWrites () =
-    let saved = (Output.info, Output.error)
-    let err = System.Text.StringBuilder()
-    let info = System.Text.StringBuilder()
-
-    let f1 =
-      fun (s: String) -> info.Append(s).Append("|") |> ignore
-
-    let f2 =
-      fun (s: String) -> err.Append(s).Append("|") |> ignore
-
-    f1 "f1"
-    Assert.That(info.ToString(), Is.Not.Empty)
-    info.Clear() |> ignore
-    Assert.That(info.ToString(), Is.Empty)
-
-    f2 "f2"
-    Assert.That(err.ToString(), Is.Not.Empty)
-    err.Clear() |> ignore
-    Assert.That(err.ToString(), Is.Empty)
-
-    try
-      Output.info <- f1
-      Output.error <- f2
-
-      let unique =
-        "NotSupportedException "
-        + Guid.NewGuid().ToString()
-
-      CommandLine.error <- []
-
-      CommandLine.doPathOperation
-        (fun () -> NotSupportedException(unique) |> raise)
-        ()
-        false
-
-      Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-      Assert.That(info.ToString(), Is.Empty)
-      Assert.That(err.ToString(), Is.Empty)
-      Assert.That(CommandLine.exceptions, Is.Empty)
-    finally
-      CommandLine.error <- []
-      Output.info <- (fst saved)
-      Output.error <- (snd saved)
-
-  [<Test>]
-  let SecurityExceptionWrites () =
-    let saved = (Output.info, Output.error)
-    let err = System.Text.StringBuilder()
-    let info = System.Text.StringBuilder()
-
-    let f1 =
-      fun (s: String) -> info.Append(s).Append("|") |> ignore
-
-    let f2 =
-      fun (s: String) -> err.Append(s).Append("|") |> ignore
-
-    f1 "f1"
-    Assert.That(info.ToString(), Is.Not.Empty)
-    info.Clear() |> ignore
-    Assert.That(info.ToString(), Is.Empty)
-
-    f2 "f2"
-    Assert.That(err.ToString(), Is.Not.Empty)
-    err.Clear() |> ignore
-    Assert.That(err.ToString(), Is.Empty)
-
-    try
-      Output.info <- f1
-      Output.error <- f2
-
-      let unique =
-        "SecurityException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-      CommandLine.doPathOperation
-        (fun () -> System.Security.SecurityException(unique) |> raise)
-        ()
-        false
-
-      Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-      Assert.That(info.ToString(), Is.Empty)
-      Assert.That(err.ToString(), Is.Empty)
-      Assert.That(CommandLine.exceptions, Is.Empty)
-    finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      Output.info <- (fst saved)
-      Output.error <- (snd saved)
-
-  [<Test>]
-  let UnauthorizedAccessExceptionWrites () =
-    let saved = (Output.info, Output.error)
-    let err = System.Text.StringBuilder()
-    let info = System.Text.StringBuilder()
-
-    let f1 =
-      fun (s: String) -> info.Append(s).Append("|") |> ignore
-
-    let f2 =
-      fun (s: String) -> err.Append(s).Append("|") |> ignore
-
-    f1 "f1"
-    Assert.That(info.ToString(), Is.Not.Empty)
-    info.Clear() |> ignore
-    Assert.That(info.ToString(), Is.Empty)
-
-    f2 "f2"
-    Assert.That(err.ToString(), Is.Not.Empty)
-    err.Clear() |> ignore
-    Assert.That(err.ToString(), Is.Empty)
-
-    try
-      Output.info <- f1
-      Output.error <- f2
-
-      let unique =
-        "UnauthorizedAccessException "
-        + Guid.NewGuid().ToString()
-
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-
-      CommandLine.doPathOperation
-        (fun () -> UnauthorizedAccessException(unique) |> raise)
-        ()
-        false
-
-      Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-      Assert.That(info.ToString(), Is.Empty)
-      Assert.That(err.ToString(), Is.Empty)
-      Assert.That(CommandLine.exceptions, Is.Empty)
-    finally
-      CommandLine.error <- []
-      CommandLine.exceptions <- []
-      Output.info <- (fst saved)
-      Output.error <- (snd saved)
+      CoverageParameters.theOutputDirectories.AddRange saved

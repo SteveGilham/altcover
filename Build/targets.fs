@@ -1683,7 +1683,7 @@ module Targets =
             Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
             Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
+              "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/AltCover.Engine.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
             Path.getFullName
@@ -1741,8 +1741,8 @@ module Targets =
           |> (testWithCLITaggedArguments "UnitTestDotNet"))
 
       try
-        [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
-          Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+        [ Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+          Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj"
           //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
           Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
           Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
@@ -1764,8 +1764,8 @@ module Targets =
               :: p.Properties
             DoRestore = true }
 
-      [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
-        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+      [ Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+        Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj"
         Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
         Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
         Path.getFullName
@@ -1785,8 +1785,8 @@ module Targets =
 
       try
         let l =
-          [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
-            Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+          [ Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+            Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj"
             Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
             Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
             Path.getFullName
@@ -1878,7 +1878,7 @@ module Targets =
         [ Path.getFullName
             "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
           Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
+            "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/AltCover.Engine.Tests.dll"
           Path.getFullName
             "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
 
@@ -2008,7 +2008,7 @@ module Targets =
 
       // net4x tests
       let testDirectory =
-        Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472"
+        Path.getFullName "_Binaries/AltCover.TestData // /Debug+AnyCPU/net472"
 
       let weakDir =
         Path.getFullName
@@ -2019,6 +2019,9 @@ module Targets =
 
       let apiDir =
         Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
+
+      let engineDir =
+        Path.getFullName "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472"
 
       // TODO/maybes
       //let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
@@ -2037,11 +2040,13 @@ module Targets =
               Report = altReport
               InputDirectories =
                 [| "."
+                   engineDir
                    weakDir
                    recorder4Dir
                    apiDir (*; visDir ; monitorDir*) |]
               OutputDirectories =
                 [| "./__UnitTestWithAltCover"
+                   engineDir @@ "__EngineTestWithAltCover"
                    weakDir @@ "__VGEWithAltCover"
                    recorder4Dir @@ "__RecorderTestWithAltCover"
                    apiDir
@@ -2076,15 +2081,15 @@ module Targets =
             "--work=."
             "--result=./_Reports/UnitTestWithAltCoverReport.xml"
             Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/AltCover.Tests.dll"
-            Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
+            Path.getFullName
+              "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Engine.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__VGEWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
             Path.getFullName
               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
             Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
+              "_Binaries/AltCover.TestData/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
 
         Actions.Run (nunitConsole, ".", baseArgs) "Main NUnit failed"
       with x ->
@@ -2132,21 +2137,21 @@ module Targets =
       let eagerfilter = baseFilter >> eager
 
       let tests =
-        [ (Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472", // test directory
-           "./__UnitTestWithAltCoverRunner", // relative output
-           "UnitTestWithAltCoverRunner.xml", // coverage report
-           "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
-           [ Path.getFullName // test assemblies
-               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll" ],
-           eagerfilter, // And single visit, too
-           keyfile)
-          (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472", // test directory
+        [ (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472", // test directory
            "./__ApiTestWithAltCoverRunner", // relative output
            "ApiTestWithAltCoverRunner.xml", // coverage report
            "./_Reports/ApiTestWithAltCoverRunnerReport.xml", // relative nunit reporting
            [ Path.getFullName // test assemblies
                "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCoverRunner/AltCover.Api.Tests.dll" ],
            baseFilter,
+           keyfile)
+          (Path.getFullName "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472", // test directory
+           "./__EngineTestWithAltCoverRunner", // relative output
+           "EngineTestWithAltCoverRunner.xml", // coverage report
+           "./_Reports/EngineTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+           [ Path.getFullName // test assemblies
+               "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/__EngineTestWithAltCoverRunner/AltCover.Engine.Tests.dll" ],
+           eagerfilter, // And single visit, too
            keyfile)
           (Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472", // test directory
            "./__VisualizerTestWithAltCoverRunner", // relative output
@@ -2319,13 +2324,7 @@ module Targets =
         Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
 
       let tests = // TODO monitor!not, Visualizer
-        [ (Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net9.0", // testDirectory
-           Path.getFullName
-             "_Binaries/UnitTestWithAltCoverCore_AltCover.Expecto.Tests/Debug+AnyCPU/net9.0", // output
-           reports @@ "UnitTestWithAltCoverCore.xml", // report
-           "AltCover.Expecto.Tests.fsproj", // project
-           Path.getFullName "AltCover.Expecto.Tests") // workingDirectory
-          (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net9.0",
+        [ (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net9.0",
            Path.getFullName
              "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder.Tests/Debug+AnyCPU/net9.0",
            reports @@ "RecorderTestWithAltCoverCore.xml",
@@ -2343,6 +2342,12 @@ module Targets =
            reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
            "AltCover.Api.Tests.fsproj", // project
            Path.getFullName "AltCover.Api.Tests") // workingDirectory
+          (Path.getFullName "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net9.0", // testDirectory
+           Path.getFullName
+             "_Binaries/UnitTestWithAltCoverCore_AltCover.Engine.Tests/Debug+AnyCPU/net9.0", // output
+           reports @@ "EngineUnitTestWithAltCoverCore.xml", // report
+           "AltCover.Engine.Tests.fsproj", // project
+           Path.getFullName "AltCover.Engine.Tests") // workingDirectory
           (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net9.0", // testDirectory
            Path.getFullName
              "_Binaries/UnitTestWithAltCoverCore_AltCover.Monitor.Tests/Debug+AnyCPU/net9.0", // output
@@ -2450,8 +2455,10 @@ module Targets =
       let reports = Path.getFullName "./_Reports"
 
       let tests =
-        [ (reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
-           Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj")
+        [ (reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
+           Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj")
+          (reports @@ "EngineTestWithAltCoverCoreRunner.xml", // report // cannot be first
+           Path.getFullName "./AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj")
           (reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
            Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj")
           (reports @@ "MonitorTestWithAltCoverCoreRunner.xml", // report
@@ -7857,7 +7864,7 @@ module Targets =
         result
 
       let coberturaStrict =
-        schemaOf "./AltCover.Tests/coverage-04.xsd"
+        schemaOf "./AltCover.TestData/coverage-04.xsd"
 
       let cobertura34 =
         schemaOf "./AltCover.Toolkit/xsd/Cobertura.xsd"
@@ -7906,8 +7913,8 @@ module Targets =
       let expected =
         [ // 3 broken visit counts + 1 alien format
           "AltCover.Recorder.Tests/SimpleCoverage.xml"
-          "AltCover.Tests/NCover122.xml"
-          "__AltCover.Recorder.Tests/SimpleCoverage.xml"
+          "AltCover.TestData/NCover122.xml"
+          "AltCover.TestData/SimpleCoverage.xml"
           "Samples/Sample20/Reports/mprof-report.xml" ]
         |> List.map Path.getFullName
         |> List.filter File.Exists
@@ -7934,9 +7941,9 @@ module Targets =
           !!(@"./_Binaries/**/FlushLeavesExpectedTracesWhenDiverted.xml")
           |> Seq.toList
           [ "_Packaging/HandRolledMonoNCover.xml"
-            "AltCover.Tests/HandRolledToNCover.xml"
-            "AltCover.Tests/NCoverWithEmbeds.xml"
-            "AltCover.Tests/NCoverWithPartials.xml" ]
+            "AltCover.TestData/HandRolledToNCover.xml"
+            "AltCover.TestData/NCoverWithEmbeds.xml"
+            "AltCover.TestData/NCoverWithPartials.xml" ]
           |> List.map Path.getFullName ]
         |> List.concat
         |> List.filter File.Exists
@@ -8001,9 +8008,9 @@ module Targets =
 
       let o1expect =
         [ "AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
-          "AltCover.Tests/issue122.xml" // ditto
-          "AltCover.Tests/Sample1WithOpenCover.xml" // ditto
-          "__AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
+          "AltCover.TestData/issue122.xml" // ditto
+          "AltCover.TestData/Sample1WithOpenCover.xml" // ditto
+          "AltCover.TestData/Sample1WithModifiedOpenCover.xml" // vc broken
           "Samples/Sample20/Reports/OpenCover_coverlet.xml" ] // coverlet spelling error upsid "The required attribute 'uspid' is missing."
         |> List.map Path.getFullName
         |> List.filter File.Exists

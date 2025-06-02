@@ -174,14 +174,13 @@
   <Project Path="AltCover.DotNet/AltCover.DotNet.fsproj">
     <Build Solution="*|x86" Project="false" />
   </Project>
+  <Project Path="AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj">
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
   <Project Path="AltCover.Engine/AltCover.Engine.fsproj">
     <BuildDependency Project="AltCover.Base/AltCover.Base.csproj" />
     <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
     <Build Solution="*|x86" Project="false" />
-  </Project>
-  <Project Path="AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj">
-      <Build Solution="*|x86" Project="false" />
-      <Build Solution="Release|Any CPU" Project="false" />
   </Project>
   <Project Path="AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj">
     <Build Solution="*|x86" Project="false" />
@@ -208,10 +207,6 @@
   </Project>
   <Project Path="AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj">
     <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
-    <Build Solution="*|x86" Project="false" />
-    <Build Solution="Release|Any CPU" Project="false" />
-  </Project>
-  <Project Path="AltCover.Tests/AltCover.Tests.fsproj">
     <Build Solution="*|x86" Project="false" />
     <Build Solution="Release|Any CPU" Project="false" />
   </Project>

@@ -18,7 +18,7 @@ open Mono.Options
 #nowarn "25" // partial pattern match
 #nowarn "3559" // TODO
 
-module AltCoverUsage =
+module Usage =
   let internal usageText =
     let usage =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -41,12 +41,8 @@ module AltCoverUsage =
     use reader = new StreamReader(stream)
     reader.ReadToEnd()
 
-module AltCoverRunnerTests =
-  // fs
-
-  let runnerInit () = AltCover.Runner.init ()
-
-  let mainInit () = AltCover.Main.init ()
+module Runner =
+  // TODO needs tests breaking out for other modules (LCov, Json etc.)
 
   [<Test>]
   let ShouldFailXmlDataForNativeJson () =
@@ -80,7 +76,7 @@ module AltCoverRunnerTests =
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
-    runnerInit ()
+    AltCover.Runner.init ()
     let key = " "
 
     let index =
@@ -309,140 +305,6 @@ module AltCoverRunnerTests =
       Is.EquivalentTo [ "2"; "2" ]
     )
 
-  //Json.fs
-  [<Test>]
-  let NCoverShouldGeneratePlausibleJson () =
-    Runner.init ()
-
-    let resource =
-      Assembly.GetExecutingAssembly().GetManifestResourceNames()
-      |> Seq.find _.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal)
-
-    use stream =
-      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
-
-    let baseline = XDocument.Load(stream)
-    // fix up file path
-    let exe =
-      Path.Combine(SolutionRoot.location, "Samples/Sample19", "ConsoleApplication1.exe")
-
-    baseline.Root.Descendants(XName.Get "module")
-    |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
-
-    let unique =
-      Path.Combine(
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetDirectoryName,
-        Guid.NewGuid().ToString()
-        + "/GenuineNCover158.json"
-      )
-
-    Json.path.Value <- Some unique
-
-    unique
-    |> Path.GetDirectoryName
-    |> Directory.CreateDirectory
-    |> ignore
-
-    try
-      Assert.That(unique |> File.Exists, Is.False)
-
-      let result =
-        Json.xmlToJson baseline ReportFormat.NCover
-
-      let resource2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("GenuineNCover158.json", StringComparison.Ordinal)
-
-      use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
-
-      use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd()
-      //printfn "%s" result
-      let result1 =
-        result.Replace("\r", String.Empty).Replace("\n", String.Empty)
-
-      let expected1 =
-        expected.Replace("\r", String.Empty).Replace("\n", String.Empty)
-
-      testEqualValue result1 expected1
-    finally
-      Json.path.Value <- None
-
-  [<Test>]
-  let OpenCoverShouldGeneratePlausibleJson () =
-    let dummy =
-      SortedDictionary<string, NativeJson.Documents>()
-
-    dummy.Add("\"\\\b\f\n\r\tA<>\u2012", SortedDictionary<string, NativeJson.Classes>())
-
-    let escaped =
-      NativeJson.toText(dummy).Replace("\r", String.Empty).Replace("\n", String.Empty)
-
-    let expectedEscapes =
-      """{ "\"\\\b\f\n\r\tA\u003C\u003E\u2012": {  }}"""
-
-    Assert.That(escaped, Is.EqualTo expectedEscapes)
-    test <@ escaped = expectedEscapes @>
-
-    Runner.init ()
-
-    let resource =
-      Assembly.GetExecutingAssembly().GetManifestResourceNames()
-      |> Seq.find _.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal)
-
-    use stream =
-      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
-
-    let baseline = XDocument.Load(stream)
-
-    let unique =
-      Path.Combine(
-        Assembly.GetExecutingAssembly().Location
-        |> Path.GetDirectoryName,
-        Guid.NewGuid().ToString() + "/OpenCover.json"
-      )
-
-    Json.path.Value <- Some unique
-
-    unique
-    |> Path.GetDirectoryName
-    |> Directory.CreateDirectory
-    |> ignore
-
-    try
-      let result =
-        Json.xmlToJson baseline ReportFormat.OpenCover
-
-      let resource2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("OpenCover.json", StringComparison.Ordinal)
-
-      use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
-
-      use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd()
-      //printfn "%s" result
-      let result1 =
-        result
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-
-      let expected1 =
-        expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |])
-
-      testEqualValue result1 expected1
-    finally
-      Json.path.Value <- None
-
   // Runner.fs and CommandLine.fs
   [<Test>]
   let UsageIsAsExpected () =
@@ -465,7 +327,7 @@ module AltCoverRunnerTests =
 
       let expected =
         "Error - usage is:\n"
-        + AltCoverUsage.runnerText
+        + Usage.runnerText
         + "\nor\n"
         + "  ImportModule               Prints out the PowerShell script to import the\n"
         + "                               associated PowerShell module\n"
@@ -2209,9 +2071,13 @@ module AltCoverRunnerTests =
     // Hack for running while instrumented
     let where =
       Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
 #if NET472
     let path =
-      Path.Combine(where, "Sample12.exe")
+      Path.Combine(
+        SolutionRoot.location,
+        "_Binaries/Sample12/Debug+AnyCPU/net472/Sample12.exe"
+      )
 #else
     let path =
       Path.Combine(
@@ -2359,13 +2225,8 @@ module AltCoverRunnerTests =
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
 
-      let main =
-        typeof<Marker>.Assembly
-          .GetType("AltCover.EntryPoint")
-          .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
-
       let returnCode =
-        main.Invoke(nullObject, [| [| "RuNN"; "-r"; unique |] |])
+        AltCover.Main.main false [| "RuNN"; "-r"; unique |]
 
       Assert.That(returnCode, Is.EqualTo 255)
 
@@ -2380,9 +2241,9 @@ module AltCoverRunnerTests =
         + unique
         + " not found\n"
         + "Error - usage is:\n"
-        + AltCoverUsage.usageText
+        + Usage.usageText
         + "\nor\n"
-        + AltCoverUsage.runnerText
+        + Usage.runnerText
         + "\nor\n"
         + "  ImportModule               Prints out the PowerShell script to import the\n"
         + "                               associated PowerShell module\n"
@@ -5461,7 +5322,7 @@ module AltCoverRunnerTests =
 
       let resource2 =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("NCover.lcov", StringComparison.Ordinal)
+        |> Seq.find _.EndsWith("Tests.NCover.lcov", StringComparison.Ordinal)
 
       use stream2 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
@@ -5932,7 +5793,7 @@ module AltCoverRunnerTests =
     use stream =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Tests.coverage-04.xsd")
+        .GetManifestResourceStream("AltCover.Engine.Tests.coverage-04.xsd")
 
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
@@ -7061,3 +6922,116 @@ module AltCoverRunnerTests =
     Runner.init ()
     let dict: Dictionary<int, int> = null
     Assert.That(PostProcess.tryGetValue dict 0 |> fst, Is.False)
+
+  [<Test>]
+  let ShouldDoCoverage () =
+    let start = Directory.GetCurrentDirectory()
+
+    let where =
+      Path.Combine(dir, Guid.NewGuid().ToString())
+
+    Directory.CreateDirectory(where) |> ignore
+    Directory.SetCurrentDirectory where
+
+    let create =
+      Path.Combine(where, "AltCover.Recorder.g.dll")
+
+    if create |> File.Exists |> not then
+      try
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+
+        use from =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream(
+              "AltCover.Engine.Tests.AltCover.Recorder.net20.dll"
+            )
+
+        let updated =
+          Instrument.I.prepareAssembly from
+
+        Instrument.I.writeAssembly updated create
+      finally
+        CoverageParameters.theReportFormat <- None
+
+    let save = Runner.J.recorderName
+    let save1 = Runner.J.getPayload
+    let save2 = Runner.J.getMonitor
+    let save3 = Runner.J.doReport
+
+    let codedreport =
+      "coverage.xml" |> Path.GetFullPath
+
+    let alternate =
+      "not-coverage.xml" |> Path.GetFullPath
+
+    try
+      Runner.J.recorderName <- "AltCover.Recorder.g.dll"
+
+      let payload (rest: string list) =
+        test <@ rest = [ "test"; "1" ] @>
+        255
+
+      test <@ payload [ "test"; "1" ] = 255 @>
+
+      let monitor
+        (hits: Dictionary<string, Dictionary<int, PointVisit>>)
+        (token: string)
+        _
+        _
+        =
+        test' <@ token = codedreport @> "should be default coverage file"
+        test <@ hits |> Seq.isEmpty @>
+        127
+
+      let write
+        (hits: Dictionary<string, Dictionary<int, PointVisit>>)
+        format
+        (report: string)
+        (output: String option)
+        =
+        test' <@ report = codedreport @> "should be default coverage file"
+        test <@ output = Some alternate @>
+
+        use stream =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Engine.Tests.GenuineNCover158.Xml")
+
+        use fs = File.Create(alternate)
+        stream.CopyTo fs
+
+        test <@ hits |> Seq.isEmpty @>
+        TimeSpan.Zero
+
+      Runner.J.getPayload <- payload
+      Runner.J.getMonitor <- monitor
+      Runner.J.doReport <- write
+      let empty = OptionSet()
+      let dummy = codedreport + ".xx.acv"
+
+      do
+        use temp = File.Create dummy
+        test <@ dummy |> File.Exists @>
+
+      let r =
+        Runner.doCoverage
+          [| "Runner"
+             "-x"
+             "test"
+             "-r"
+             where
+             "-o"
+             alternate
+             "--"
+             "1" |]
+          empty
+
+      test <@ dummy |> File.Exists |> not @>
+      test <@ r = 127 @>
+    finally
+      Runner.J.getPayload <- save1
+      Runner.J.getMonitor <- save2
+      Runner.J.doReport <- save3
+      Runner.J.recorderName <- save
+      Directory.SetCurrentDirectory start

@@ -17,12 +17,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants Condition="'$(TargetFramework)' == 'net472'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' != 'net472'">TRACE;DEBUG;CODE_ANALYSIS;GLOBALTOOL</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants Condition="'$(TargetFramework)' == 'net472'">TRACE</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' != 'net472'">TRACE;GLOBALTOOL</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
