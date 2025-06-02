@@ -40,7 +40,6 @@ module ProgramDatabase =
         Directory.GetFiles(dir, "Sample*") ]
       |> Seq.concat
       |> Seq.filter isAssemblyType
-      |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
       |> Seq.map (fun x -> (x, AssemblyResolver.ReadAssembly x))
       |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)

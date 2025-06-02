@@ -107,7 +107,6 @@ open System.Runtime.CompilerServices
 
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Engine.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
@@ -124,7 +123,6 @@ using System.Runtime.CompilerServices;
 
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug {0}")]
-[assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")]
 [assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")]
 [assembly: InternalsVisibleTo("AltCover.Engine.Tests, PublicKey={1}")]
 [assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={1}")]

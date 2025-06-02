@@ -165,7 +165,7 @@ module Visitor =
   let ValidateAutomaticExemption () =
     try
       CoverageParameters.showGenerated.Value <- true
-      let path = Path.Combine(dir, "Sample4.dll")
+      let path = sample4path
 
       use def = AssemblyResolver.ReadAssembly path
 
@@ -333,7 +333,7 @@ module Visitor =
   [<Test>]
   let AsyncTestInContext () =
     let sample23 =
-      Path.Combine(dir, "Sample23.dll")
+      sample24path.Replace("24", "23")
 
     use def =
       AssemblyResolver.ReadAssembly(sample23)
@@ -436,8 +436,7 @@ module Visitor =
 
   [<Test>]
   let AnotherAsyncTestInContext () =
-    let sample24 =
-      Path.Combine(dir, "Sample24.dll")
+    let sample24 = sample24path
 
     use def =
       AssemblyResolver.ReadAssembly(sample24)
@@ -491,7 +490,7 @@ module Visitor =
   [<Test>]
   let DebugBuildTernaryTestInContext () =
     let sample23 =
-      Path.Combine(dir, "Sample23.dll")
+      sample24path.Replace("24", "23")
 
     use def =
       AssemblyResolver.ReadAssembly(sample23)
@@ -721,11 +720,11 @@ module Visitor =
 
   [<Test>]
   let CSharpNestedMethods () =
-    let sample3 =
-      Path.Combine(dir, "Sample5.dll")
+    let sample5 =
+      sample24path.Replace("24", "5").Replace("net9.0", "netstandard2.0")
 
     use def =
-      AssemblyResolver.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample5)
 
     // ProgramDatabase.readSymbols def
 
@@ -994,11 +993,11 @@ module Visitor =
   [<Test>]
   let FSharpNestedMethods5x0x201 () =
     // let sample3 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6_5_0_201.dll")
-    let sample3 =
-      Path.Combine(dir, "Sample6.dll")
+    let sample6 =
+      sample24path.Replace("24", "6")
 
     use def =
-      AssemblyResolver.ReadAssembly(sample3)
+      AssemblyResolver.ReadAssembly(sample6)
 
     let methods =
       def.MainModule.GetAllTypes()
@@ -1524,7 +1523,7 @@ module Visitor =
 
   [<Test>]
   let BranchPointsAreComputedForMatch () =
-    let path = Path.Combine(dir, "Sample17.dll")
+    let path = sample24path.Replace("24", "17")
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -2745,7 +2744,7 @@ module Visitor =
       Report.reportGenerator ()
 
     let path =
-      Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionDir(), "AltCover.TestData/SimpleMix.exe")
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -2956,7 +2955,7 @@ module Visitor =
       OpenCover.reportGenerator ()
 
     let path =
-      Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionDir(), "AltCover.TestData/SimpleMix.exe")
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -4159,7 +4158,7 @@ module Visitor =
       OpenCover.reportGenerator ()
 
     let path =
-      Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionDir(), "AltCover.TestData/SimpleMix.exe")
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -4440,7 +4439,7 @@ module Visitor =
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
         <Module skippedDueTo=\"Filter\" hash=\"C2-87-B9-AA-6B-1D-03-60-30-9A-15-4A-D5-28-87-C2-9E-B9-8E-8D\">
-        <ModulePath>_Binaries\\AltCover.Tests\\Debug+AnyCPU\\Sample1.exe</ModulePath>
+        <ModulePath>_Binaries\\AltCover.TestData\\Debug+AnyCPU\\Sample1.exe</ModulePath>
         <ModuleTime>2018-03-15T14:00:17.3385938Z</ModuleTime>
         <ModuleName>Sample1</ModuleName>
         <Classes />
@@ -4493,7 +4492,7 @@ module Visitor =
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
         <Module skippedDueTo=\"Filter\" hash=\"C2-87-B9-AA-6B-1D-03-60-30-9A-15-4A-D5-28-87-C2-9E-B9-8E-8D\">
-        <ModulePath>_Binaries\\AltCover.Tests\\Debug+AnyCPU\\Sample1.exe</ModulePath>
+        <ModulePath>_Binaries\\AltCover.TestData\\Debug+AnyCPU\\Sample1.exe</ModulePath>
         <ModuleTime>2018-03-15T14:00:17.3385938Z</ModuleTime>
         <ModuleName>Sample1</ModuleName>
         <Classes />

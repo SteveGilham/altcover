@@ -1685,8 +1685,6 @@ module Targets =
             Path.getFullName
               "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/AltCover.Engine.Tests.dll"
             Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
-            Path.getFullName
               "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
             Path.getFullName
               "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
@@ -1882,8 +1880,6 @@ module Targets =
           Path.getFullName
             "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/AltCover.Engine.Tests.dll"
           Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
-          Path.getFullName
             "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
 
       let recorder4Files =
@@ -2012,7 +2008,7 @@ module Targets =
 
       // net4x tests
       let testDirectory =
-        Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472"
+        Path.getFullName "_Binaries/AltCover.TestData // /Debug+AnyCPU/net472"
 
       let weakDir =
         Path.getFullName
@@ -2085,8 +2081,6 @@ module Targets =
             "--work=."
             "--result=./_Reports/UnitTestWithAltCoverReport.xml"
             Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/AltCover.Tests.dll"
-            Path.getFullName
               "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
             Path.getFullName
               "_Binaries/AltCover.Engine.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Engine.Tests.dll"
@@ -2095,7 +2089,7 @@ module Targets =
             Path.getFullName
               "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
             Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
+              "_Binaries/AltCover.TestData/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll" ]
 
         Actions.Run (nunitConsole, ".", baseArgs) "Main NUnit failed"
       with x ->
@@ -2143,15 +2137,7 @@ module Targets =
       let eagerfilter = baseFilter >> eager
 
       let tests =
-        [ (Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472", // test directory
-           "./__UnitTestWithAltCoverRunner", // relative output
-           "UnitTestWithAltCoverRunner.xml", // coverage report
-           "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
-           [ Path.getFullName // test assemblies
-               "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll" ],
-           eagerfilter, // And single visit, too
-           keyfile)
-          (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472", // test directory
+        [ (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472", // test directory
            "./__ApiTestWithAltCoverRunner", // relative output
            "ApiTestWithAltCoverRunner.xml", // coverage report
            "./_Reports/ApiTestWithAltCoverRunnerReport.xml", // relative nunit reporting
@@ -7878,7 +7864,7 @@ module Targets =
         result
 
       let coberturaStrict =
-        schemaOf "./AltCover.Tests/coverage-04.xsd"
+        schemaOf "./AltCover.TestData/coverage-04.xsd"
 
       let cobertura34 =
         schemaOf "./AltCover.Toolkit/xsd/Cobertura.xsd"
@@ -7927,8 +7913,8 @@ module Targets =
       let expected =
         [ // 3 broken visit counts + 1 alien format
           "AltCover.Recorder.Tests/SimpleCoverage.xml"
-          "AltCover.Tests/NCover122.xml"
-          "__AltCover.Recorder.Tests/SimpleCoverage.xml"
+          "AltCover.TestData/NCover122.xml"
+          "AltCover.TestData/SimpleCoverage.xml"
           "Samples/Sample20/Reports/mprof-report.xml" ]
         |> List.map Path.getFullName
         |> List.filter File.Exists
@@ -7955,9 +7941,9 @@ module Targets =
           !!(@"./_Binaries/**/FlushLeavesExpectedTracesWhenDiverted.xml")
           |> Seq.toList
           [ "_Packaging/HandRolledMonoNCover.xml"
-            "AltCover.Tests/HandRolledToNCover.xml"
-            "AltCover.Tests/NCoverWithEmbeds.xml"
-            "AltCover.Tests/NCoverWithPartials.xml" ]
+            "AltCover.TestData/HandRolledToNCover.xml"
+            "AltCover.TestData/NCoverWithEmbeds.xml"
+            "AltCover.TestData/NCoverWithPartials.xml" ]
           |> List.map Path.getFullName ]
         |> List.concat
         |> List.filter File.Exists
@@ -8022,9 +8008,9 @@ module Targets =
 
       let o1expect =
         [ "AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
-          "AltCover.Tests/issue122.xml" // ditto
-          "AltCover.Tests/Sample1WithOpenCover.xml" // ditto
-          "__AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
+          "AltCover.TestData/issue122.xml" // ditto
+          "AltCover.TestData/Sample1WithOpenCover.xml" // ditto
+          "AltCover.TestData/Sample1WithModifiedOpenCover.xml" // vc broken
           "Samples/Sample20/Reports/OpenCover_coverlet.xml" ] // coverlet spelling error upsid "The required attribute 'uspid' is missing."
         |> List.map Path.getFullName
         |> List.filter File.Exists

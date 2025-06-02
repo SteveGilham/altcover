@@ -34,7 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
+    <Compile Include="..\AltCover.TestData\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
@@ -44,7 +44,7 @@
     <Compile Include="..\AltCover.Engine\Abstraction.fs" Link="Abstraction.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Engine\Gendarme.fs" Link="Gendarme.fs" />
-    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Compile Include="..\AltCover.TestData\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>

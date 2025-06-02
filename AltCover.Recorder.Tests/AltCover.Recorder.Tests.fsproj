@@ -31,9 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
-    <EmbeddedResource Include="Sample2NCoverage.xml" />
-    <EmbeddedResource Include="SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithModifiedOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2NCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.xml" />
   </ItemGroup>
 
   <ItemGroup>

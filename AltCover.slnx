@@ -210,10 +210,6 @@
     <Build Solution="*|x86" Project="false" />
     <Build Solution="Release|Any CPU" Project="false" />
   </Project>
-  <Project Path="AltCover.Tests/AltCover.Tests.fsproj">
-    <Build Solution="*|x86" Project="false" />
-    <Build Solution="Release|Any CPU" Project="false" />
-  </Project>
   <Project Path="AltCover.Toolkit/AltCover.Toolkit.fsproj">
     <Build Solution="*|x86" Project="false" />
   </Project>

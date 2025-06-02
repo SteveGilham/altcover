@@ -831,7 +831,7 @@ module Instrument =
   let ShouldHandleNullConstantsOK () =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/NullConst.dll")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/NullConst.dll")
 
     use ``module`` =
       AssemblyResolver.ReadAssembly path
@@ -861,7 +861,7 @@ module Instrument =
   let ShouldRescopeMonoMethodOK () =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/Sample31.dll")
 
     use ``module`` =
       AssemblyResolver.ReadAssembly path
@@ -1595,8 +1595,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAMethodWithNonVoidReturn () =
     use recstream = recorderStream ()
 
-    let sample24 =
-      Path.Combine(dir, "Sample24.dll")
+    let sample24 = sample24path
 
     use def =
       AssemblyResolver.ReadAssembly sample24
@@ -1666,8 +1665,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAnAsyncMethod () =
     use recstream = recorderStream ()
 
-    let sample24 =
-      Path.Combine(dir, "Sample24.dll")
+    let sample24 = sample24path
 
     use def =
       AssemblyResolver.ReadAssembly sample24
@@ -1737,8 +1735,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAnFSAsyncMethod () =
     use recstream = recorderStream ()
 
-    let sample27 =
-      Path.Combine(dir, "Sample27.dll")
+    let sample27 = sample27path
 
     use def =
       AssemblyResolver.ReadAssembly sample27
@@ -1808,8 +1805,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
   let ShouldBeAbleToTrackAnFSTaskMethod () =
     use recstream = recorderStream ()
 
-    let sample30 =
-      Path.Combine(dir, "Sample30.dll")
+    let sample30 = sample30path
 
     use def =
       AssemblyResolver.ReadAssembly sample30
@@ -2570,7 +2566,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       Assembly.GetExecutingAssembly().Location
 
     let path =
-      Path.Combine(testdir, Path.GetFileName(here))
+      Path.Combine(dir, Path.GetFileName(here))
 
     use def = AssemblyResolver.ReadAssembly path
 
@@ -3449,7 +3445,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let AfterAssemblyCommitsThatAssembly () =
-    let path = Path.Combine(dir, "Sample4.dll")
+    let path = sample4path
 
     let def = AssemblyResolver.ReadAssembly path
 

@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
-    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
-    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" Link="Base.Tests.fs" />
+    <Compile Include="..\_Generated\SolutionRoot.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" />
+    <Compile Include="..\AltCover.TestData\TestCommon.fs" />
+    <Compile Include="..\AltCover.Recorder.Tests\Base.Tests.fs" />
     <Compile Include="ProxyObject.fs" />
     <Compile Include="Locations.fs" />
     <Compile Include="Augment.fs" />
@@ -28,7 +28,7 @@
     <Compile Include="Filter.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="CommandLine.fs" />
-    <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" Link="InstrumentationAttribute.fs" />
+    <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="Runner.fs" />
@@ -37,72 +37,72 @@
     <Compile Include="Main.fs" />
     <Compile Include="Tasks.fs" />
     <Compile Include="Program.fs" />
-    <EmbeddedResource Include="..\AltCover.Tests\AltCover.Usage.txt" />
-    <EmbeddedResource Include="..\AltCover.Tests\AltCover.Runner.Usage.txt" />
-    <EmbeddedResource Include="..\AltCover.Tests\coverage-04.xsd" />
-    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.Xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\InternalsVisibleTest.snk" />
-    <EmbeddedResource Include="..\AltCover.Tests\issue122.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\issue122.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.json.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.NCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.NCover.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.NCover.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.OpenCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Issue222.OpenCover.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\issue37.dl_" />
-    <EmbeddedResource Include="..\AltCover.Tests\issue37.pd_" />
-    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartials.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToRawXml.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToXml.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\native.pdb" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCover.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCover122.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCover122.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverBugFix.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverBugFix.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.cob.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCover.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCover.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.cob.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1.deps.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1.deps.after.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1ClassExclusion.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1MethodExclusion.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample2.deps.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample2.deps.after.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.coverlet.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.coverlet.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.native.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4.syntheticvisits.native.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample5.native.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample5.native.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample5.ncover.lcov" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample5.ncover.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample5.ncover.cobertura" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample5.raw-native.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample8.deps.baseline.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\Sample8.deps.newtonsoft.json" />
-    <EmbeddedResource Include="..\AltCover.Tests\SimpleCoverage.json" />
-    <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
-    <EmbeddedResource Include="..\AltCover.Tests\SwitchSample.dl_" />
-    <EmbeddedResource Include="..\AltCover.Tests\SwitchSample.pd_" />
-    <EmbeddedResource Include="..\AltCover.Tests\TailCallSample.dl_" />
-    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
-    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
-    <EmbeddedResource Include="..\nupkg\build\AltCover.proj" Link="AltCover.proj" />
+    <EmbeddedResource Include="..\AltCover.TestData\AltCover.Usage.txt" />
+    <EmbeddedResource Include="..\AltCover.TestData\AltCover.Runner.Usage.txt" />
+    <EmbeddedResource Include="..\AltCover.TestData\coverage-04.xsd" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\GenuineNCover158.Xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\InternalsVisibleTest.snk" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue122.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue122.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.json.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.NCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.NCover.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.NCover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.OpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Issue222.OpenCover.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue37.dl_" />
+    <EmbeddedResource Include="..\AltCover.TestData\issue37.pd_" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartials.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartialsToRawXml.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\native.pdb" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCover122.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCover122.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverBugFix.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverBugFix.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\NCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCover.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\OpenCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1.deps.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1.deps.after.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1ClassExclusion.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1MethodExclusion.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithNCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2.deps.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2.deps.after.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.native.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4.syntheticvisits.native.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.native.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.native.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.ncover.lcov" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.ncover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.ncover.cobertura" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample5.raw-native.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample8.deps.baseline.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample8.deps.newtonsoft.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.json" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\SwitchSample.dl_" />
+    <EmbeddedResource Include="..\AltCover.TestData\SwitchSample.pd_" />
+    <EmbeddedResource Include="..\AltCover.TestData\TailCallSample.dl_" />
+    <EmbeddedResource Include="..\Build\Infrastructure.snk" />
+    <EmbeddedResource Include="..\Build\Recorder.snk" />
+    <EmbeddedResource Include="..\nupkg\build\AltCover.proj" />
     <EmbeddedResource Include="..\_Repack\AltCover.Recorder.dll">
       <Link>AltCover.Recorder.net20.dll</Link>
     </EmbeddedResource>
