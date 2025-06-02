@@ -1,7 +1,7 @@
 Import-Module "./_Packaging/Unpack/tools/net8.0/AltCover.PowerShell.dll"
 
 
-$files = ("_Reports/UnitTestWithAltCoverCoreRunner.xml",
+$files = ("_Reports/EngineTestWithAltCoverCoreRunner.net9.0.xml",
           "_Reports/Recorder2TestWithAltCoverCoreRunner.xml",
           "_Reports/ApiTestWithAltCoverCoreRunner.net9.0.xml",
           "_Reports/MonitorTestWithAltCoverCoreRunner.net9.0.xml",
