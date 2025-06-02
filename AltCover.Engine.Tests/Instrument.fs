@@ -3449,8 +3449,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
   [<Test>]
   let AfterAssemblyCommitsThatAssembly () =
-    let path =
-      Path.Combine(dir, "Sample4.dll")
+    let path = Path.Combine(dir, "Sample4.dll")
 
     let def = AssemblyResolver.ReadAssembly path
 
@@ -3563,8 +3562,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
     let where =
       Assembly.GetExecutingAssembly().Location
 
-    let path =
-      Path.Combine(dir, "Sample3.dll")
+    let path = Path.Combine(dir, "Sample3.dll")
 
     let def = AssemblyResolver.ReadAssembly path
 

@@ -440,8 +440,7 @@ module ExpectoMain =
       Tests.Runner.DivertedZipWriteJsonLeavesExpectedTraces,
       "Runner.DivertedZipWriteJsonLeavesExpectedTraces"
       Tests.Runner.UsageIsAsExpected, "Runner.UsageIsAsExpected"
-      Tests.Runner.ShouldLaunchWithExpectedOutput,
-      "Runner.ShouldLaunchWithExpectedOutput"
+      Tests.Runner.ShouldLaunchWithExpectedOutput, "Runner.ShouldLaunchWithExpectedOutput"
       Tests.Runner.ShouldHaveExpectedOptions, "Runner.ShouldHaveExpectedOptions"
       Tests.Runner.ParsingJunkIsAnError, "Runner.ParsingJunkIsAnError"
       Tests.Runner.ParsingJunkAfterSeparatorIsExpected,

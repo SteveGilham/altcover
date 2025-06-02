@@ -6943,7 +6943,9 @@ module Runner =
         use from =
           Assembly
             .GetExecutingAssembly()
-            .GetManifestResourceStream("AltCover.Engine.Tests.AltCover.Recorder.net20.dll")
+            .GetManifestResourceStream(
+              "AltCover.Engine.Tests.AltCover.Recorder.net20.dll"
+            )
 
         let updated =
           Instrument.I.prepareAssembly from

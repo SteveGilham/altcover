@@ -761,6 +761,7 @@ module CommandLine =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Output.verbose <- ignore
+
   [<Test>]
   let OutputVerbose () =
     let save1 = Output.info
