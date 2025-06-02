@@ -4242,3 +4242,13 @@ module Main =
       CoverageParameters.keys.Clear()
       Output.error <- snd save2
       Output.info <- fst save2
+
+  [<Test>]
+  let ValidateAssemblyOption () =
+    test
+      <@
+        Assembly.GetExecutingAssembly()
+        |> Some
+        |> Main.I.isMSBuild
+        |> not
+      @>

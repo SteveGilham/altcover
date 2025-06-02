@@ -761,3 +761,30 @@ module CommandLine =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Output.verbose <- ignore
+  [<Test>]
+  let OutputVerbose () =
+    let save1 = Output.info
+    let save2 = CommandLine.verbosity
+
+    try
+      let mutable buffer = String.Empty
+      Output.verbose <- ignore
+
+      Output.maybeVerbose false "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Output.maybeVerbose true "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Output.verbose <- fun x -> buffer <- x
+
+      Output.maybeVerbose false "OutputVerbose"
+      test <@ buffer |> String.IsNullOrEmpty @>
+
+      Output.maybeVerbose true "OutputVerbose"
+      test <@ buffer = "OutputVerbose" @>
+
+    finally
+      Output.info <- save1
+      CommandLine.verbosity <- save2
+      Output.verbose <- ignore

@@ -6922,3 +6922,114 @@ module Runner =
     Runner.init ()
     let dict: Dictionary<int, int> = null
     Assert.That(PostProcess.tryGetValue dict 0 |> fst, Is.False)
+
+  [<Test>]
+  let ShouldDoCoverage () =
+    let start = Directory.GetCurrentDirectory()
+
+    let where =
+      Path.Combine(dir, Guid.NewGuid().ToString())
+
+    Directory.CreateDirectory(where) |> ignore
+    Directory.SetCurrentDirectory where
+
+    let create =
+      Path.Combine(where, "AltCover.Recorder.g.dll")
+
+    if create |> File.Exists |> not then
+      try
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+
+        use from =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Engine.Tests.AltCover.Recorder.net20.dll")
+
+        let updated =
+          Instrument.I.prepareAssembly from
+
+        Instrument.I.writeAssembly updated create
+      finally
+        CoverageParameters.theReportFormat <- None
+
+    let save = Runner.J.recorderName
+    let save1 = Runner.J.getPayload
+    let save2 = Runner.J.getMonitor
+    let save3 = Runner.J.doReport
+
+    let codedreport =
+      "coverage.xml" |> Path.GetFullPath
+
+    let alternate =
+      "not-coverage.xml" |> Path.GetFullPath
+
+    try
+      Runner.J.recorderName <- "AltCover.Recorder.g.dll"
+
+      let payload (rest: string list) =
+        test <@ rest = [ "test"; "1" ] @>
+        255
+
+      test <@ payload [ "test"; "1" ] = 255 @>
+
+      let monitor
+        (hits: Dictionary<string, Dictionary<int, PointVisit>>)
+        (token: string)
+        _
+        _
+        =
+        test' <@ token = codedreport @> "should be default coverage file"
+        test <@ hits |> Seq.isEmpty @>
+        127
+
+      let write
+        (hits: Dictionary<string, Dictionary<int, PointVisit>>)
+        format
+        (report: string)
+        (output: String option)
+        =
+        test' <@ report = codedreport @> "should be default coverage file"
+        test <@ output = Some alternate @>
+
+        use stream =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Engine.Tests.GenuineNCover158.Xml")
+
+        use fs = File.Create(alternate)
+        stream.CopyTo fs
+
+        test <@ hits |> Seq.isEmpty @>
+        TimeSpan.Zero
+
+      Runner.J.getPayload <- payload
+      Runner.J.getMonitor <- monitor
+      Runner.J.doReport <- write
+      let empty = OptionSet()
+      let dummy = codedreport + ".xx.acv"
+
+      do
+        use temp = File.Create dummy
+        test <@ dummy |> File.Exists @>
+
+      let r =
+        Runner.doCoverage
+          [| "Runner"
+             "-x"
+             "test"
+             "-r"
+             where
+             "-o"
+             alternate
+             "--"
+             "1" |]
+          empty
+
+      test <@ dummy |> File.Exists |> not @>
+      test <@ r = 127 @>
+    finally
+      Runner.J.getPayload <- save1
+      Runner.J.getMonitor <- save2
+      Runner.J.doReport <- save3
+      Runner.J.recorderName <- save
+      Directory.SetCurrentDirectory start

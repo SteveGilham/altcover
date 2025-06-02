@@ -2,16 +2,14 @@
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Reflection
-open System.Security
-open System.Security.Cryptography
 
 open AltCover
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
-open Mono.Options
 
 #nowarn "25"
 
@@ -3448,3 +3446,265 @@ has been prefixed with Ldc_I4_1 (1 byte)
         (Path.GetFileNameWithoutExtension output) + ".*"
       )
       |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
+
+  [<Test>]
+  let AfterAssemblyCommitsThatAssembly () =
+    let path =
+      Path.Combine(dir, "Sample4.dll")
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    use recstream = recorderStream ()
+
+    use recdef =
+      AssemblyResolver.ReadAssembly recstream
+
+    ProgramDatabase.readSymbols def
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(dir), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+
+      let visited =
+        Node.AfterAssembly
+          { Assembly = def
+            Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
+            Destinations = CoverageParameters.outputDirectories () }
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
+
+      let result =
+        Instrument.I.instrumentationVisitor input visited
+
+      test' <@ Object.ReferenceEquals(result, input) @> "result differs"
+
+      let created =
+        Path.Combine(output, "Sample4.dll")
+
+      test' <@ File.Exists created @> (created + " not found")
+
+    finally
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let AfterAssemblyCommitsThatAssemblyForMono () =
+    // Hack for running while instrumented
+    let where =
+      Assembly.GetExecutingAssembly().Location
+
+    let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    use recstream = recorderStream ()
+
+    use recdef =
+      AssemblyResolver.ReadAssembly recstream
+
+    ProgramDatabase.readSymbols def
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(where), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange [ output ]
+
+      let visited =
+        Node.AfterAssembly
+          { Assembly = def
+            Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
+            Destinations = CoverageParameters.outputDirectories () }
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
+
+      let result =
+        Instrument.I.instrumentationVisitor input visited
+
+      test' <@ Object.ReferenceEquals(result, input) @> "result differs"
+
+      let created =
+        Path.Combine(output, "Sample1.exe")
+
+      test' <@ File.Exists created @> (created + " not found")
+
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let FinishCommitsTheRecordingAssembly () =
+    let where =
+      Assembly.GetExecutingAssembly().Location
+
+    let path =
+      Path.Combine(dir, "Sample3.dll")
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    ProgramDatabase.readSymbols def
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(dir), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = def }
+
+      let result =
+        Instrument.I.instrumentationVisitor input Finish
+
+      test <@ result.RecordingAssembly |> isNull @>
+
+      let created =
+        Path.Combine(output, "Sample3.dll")
+
+      test' <@ File.Exists created @> (created + " not found")
+
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let FinishCommitsTheAsyncRecordingAssembly () =
+    let path = sample4path
+
+    let def = AssemblyResolver.ReadAssembly path
+
+    ProgramDatabase.readSymbols def
+
+    use from =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Engine.Tests.AltCover.Recorder.net20.dll")
+
+    use recorder =
+      AssemblyResolver.ReadAssembly from
+
+    ProgramDatabase.readSymbols recorder
+
+    let md =
+      def.MainModule.Types
+      |> Seq.filter (fun t -> t.FullName = "Tests.M")
+      |> Seq.collect _.Methods
+      |> Seq.filter (fun m -> m.Name = "makeThing")
+      |> Seq.head
+
+    let support = AsyncSupport.Update md
+
+    let unique = Guid.NewGuid().ToString()
+
+    let output =
+      Path.Combine(Path.GetDirectoryName(dir), unique)
+
+    Directory.CreateDirectory(output) |> ignore
+
+    let saved =
+      CoverageParameters.theOutputDirectories
+      |> Seq.toList
+
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+
+      let input =
+        { InstrumentContext.Build [] with
+            RecordingAssembly = recorder
+            AsyncSupport = Some support }
+
+      let result =
+        Instrument.I.instrumentationVisitor input Finish
+
+      test <@ result.RecordingAssembly |> isNull @>
+      test <@ result.AsyncSupport |> Option.isNone @>
+
+      let created =
+        Path.Combine(output, "AltCover.Recorder.dll")
+
+      test' <@ File.Exists created @> (created + " not found")
+      printfn "%A" created
+
+      let alc =
+        new TestAssemblyLoadContext(
+          "FinishCommitsTheAsyncRecordingAssembly",
+          created |> Path.GetDirectoryName
+        )
+
+      try
+#if !NET472
+        let assembly =
+          alc.LoadFromAssemblyPath(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+#else
+        let assembly = Assembly.LoadFrom(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+#endif
+
+        let t =
+          assembly.DefinedTypes
+          |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+          |> Seq.head
+
+        let t1 =
+          t.GetNestedType("I", BindingFlags.NonPublic)
+
+        let t2 =
+          t1.GetNestedType("CallTrack", BindingFlags.NonPublic)
+
+        let p =
+          t2.GetProperty("Value", BindingFlags.NonPublic ||| BindingFlags.Static)
+
+        let v = p.GetValue(nullObject)
+
+        test <@ v.IsNotNull @>
+        test <@ v.GetType() = typeof<System.Threading.AsyncLocal<Stack<int>>> @>
+
+        let m =
+          t2.GetMethod("Instance", BindingFlags.NonPublic ||| BindingFlags.Static)
+
+        let v2 = m.Invoke(nullObject, [||])
+
+        test <@ v2.IsNotNull @>
+        test <@ v2.GetType() = typeof<Stack<int>> @>
+
+      finally
+        alc.Unload()
+
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved

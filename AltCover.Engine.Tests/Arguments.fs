@@ -12,6 +12,13 @@ open AltCover
 
 module Arguments =
   [<Test>]
+  let NullListsAreEmpty () =
+    let subject =
+      Args.itemList String.Empty null
+
+    test <@ subject |> List.isEmpty @>
+
+  [<Test>]
   let CollectOptionsCanBeValidated () =
     CommandLine.error <- []
 

@@ -237,6 +237,11 @@ module ExpectoMain =
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
       Tests.Visitor.ShouldSortFileIds, "Visitor.ShouldSortFileIds"
+      Tests.Visitor.ShouldGenerateExpectedXmlReportFromMono,
+      "Visitor.ShouldGenerateExpectedXmlReportFromMono"
+      Tests.Visitor.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle,
+      "Visitor.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle"
+
       // CommandLine.fs
       Tests.CommandLine.StrongNameKeyCanBeValidated,
       "CommandLine.StrongNameKeyCanBeValidated"
@@ -257,6 +262,8 @@ module ExpectoMain =
       "CommandLine.UnauthorizedAccessExceptionWrites"
       Tests.CommandLine.ShouldLaunchWithExpectedOutput,
       "CommandLine.ShouldLaunchWithExpectedOutput"
+      Tests.CommandLine.OutputVerbose, "CommandLine.OutputVerbose"
+
       // Instrument.fs
       Tests.Instrument.ShouldBeAbleToGetTheVisitReportMethod,
       "Instrument.ShouldBeAbleToGetTheVisitReportMethod"
@@ -393,6 +400,15 @@ module ExpectoMain =
       "Instrument.NonFinishShouldNotDisposeNullRecordingAssembly"
       Tests.Instrument.FinishShouldLeaveRecordingAssembly,
       "Instrument.FinishShouldLeaveRecordingAssembly"
+      Tests.Instrument.AfterAssemblyCommitsThatAssembly,
+      "Instrument.AfterAssemblyCommitsThatAssembly"
+      Tests.Instrument.AfterAssemblyCommitsThatAssemblyForMono,
+      "Instrument.AfterAssemblyCommitsThatAssemblyForMono"
+      Tests.Instrument.FinishCommitsTheRecordingAssembly,
+      "Instrument.FinishCommitsTheRecordingAssembly"
+      Tests.Instrument.FinishCommitsTheAsyncRecordingAssembly,
+      "Instrument.FinishCommitsTheAsyncRecordingAssembly"
+
       // Json.fs
       Tests.Json.NCoverShouldGeneratePlausibleJson,
       "Json.NCoverShouldGeneratePlausibleJson"
@@ -425,8 +441,8 @@ module ExpectoMain =
       "Runner.DivertedZipWriteJsonLeavesExpectedTraces"
       Tests.Runner.UsageIsAsExpected, "Runner.UsageIsAsExpected"
       Tests.Runner.ShouldLaunchWithExpectedOutput,
-      "Runner.Runner.ShouldLaunchWithExpectedOutput"
-      Tests.Runner.ShouldHaveExpectedOptions, "Runner.Runner.ShouldHaveExpectedOptions"
+      "Runner.ShouldLaunchWithExpectedOutput"
+      Tests.Runner.ShouldHaveExpectedOptions, "Runner.ShouldHaveExpectedOptions"
       Tests.Runner.ParsingJunkIsAnError, "Runner.ParsingJunkIsAnError"
       Tests.Runner.ParsingJunkAfterSeparatorIsExpected,
       "Runner.ParsingJunkAfterSeparatorIsExpected"
@@ -630,6 +646,8 @@ module ExpectoMain =
       Tests.Runner.ThresholdViolationShouldBeReported,
       "Runner.ThresholdViolationShouldBeReported"
       Tests.Runner.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
+      Tests.Runner.ShouldDoCoverage, "Runner.ShouldDoCoverage"
+
       // Arguments.fs
       Tests.Arguments.CollectOptionsCanBeValidated,
       "Arguments.CollectOptionsCanBeValidated"
@@ -667,6 +685,8 @@ module ExpectoMain =
       "Arguments.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency"
       Tests.Arguments.PrepareOptionsCanBeValidatedWithErrors,
       "Arguments.PrepareOptionsCanBeValidatedWithErrors"
+      Tests.Arguments.NullListsAreEmpty, "Arguments.NullListsAreEmpty"
+
       // Main.fs
       Tests.Main.ShouldHaveExpectedOptions, "Main.ShouldHaveExpectedOptions"
       Tests.Main.ParsingJunkIsAnError, "Main.ParsingJunkIsAnError"
@@ -813,9 +833,9 @@ module ExpectoMain =
       Tests.Main.TargetsPathIsAsExpected, "Main.TargetsPathIsAsExpected"
       Tests.Main.UsageIsAsExpected, "Main.UsageIsAsExpected"
       Tests.Main.ErrorResponseIsAsExpected, "Main.ErrorResponseIsAsExpected"
-
       Tests.Main.ADotNetDryRunLooksAsExpected, "Main.ADotNetDryRunLooksAsExpected"
       Tests.Main.ADryRunLooksAsExpected, "Main.ADryRunLooksAsExpected"
+      Tests.Main.ValidateAssemblyOption, "Main.ValidateAssemblyOption"
 
       // Tasks.fs
       Tests.Tasks.LoggingCanBeExercised, "Tasks.LoggingCanBeExercised"

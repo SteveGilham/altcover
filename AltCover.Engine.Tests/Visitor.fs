@@ -4918,3 +4918,225 @@ module Visitor =
     doc.Descendants(xn "File")
     |> Seq.iteri (fun i x ->
       Assert.That(x.Attribute(xn "uid").Value, Is.EqualTo(string (1 + i))))
+
+  let MonoBaseline =
+    "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
+<coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
+  <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
+    <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
+      <seqpnt visitcount=\"0\" line=\"11\" column=\"3\" endline=\"11\" endcolumn=\"4\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"12\" column=\"23\" endline=\"12\" endcolumn=\"24\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"4\" endline=\"13\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"12\" endline=\"13\" endcolumn=\"13\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"14\" column=\"4\" endline=\"14\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"5\" endline=\"15\" endcolumn=\"6\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"60\" endline=\"15\" endcolumn=\"61\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"13\" endline=\"15\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"16\" column=\"4\" endline=\"16\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"18\" column=\"4\" endline=\"18\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"5\" endline=\"19\" endcolumn=\"6\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"13\" endline=\"19\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"20\" column=\"4\" endline=\"20\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"21\" column=\"3\" endline=\"21\" endcolumn=\"4\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+    </method>
+  </module>
+</coverage>"
+
+  [<TailCall>]
+  let rec RecursiveValidate result expected depth zero =
+    let rcount = result |> Seq.length
+    let ecount = expected |> Seq.length
+    test' <@ rcount = ecount @> ("Mismatch at depth " + depth.ToString())
+
+    Seq.zip result expected
+    |> Seq.iter (fun (r: XElement, e: XElement) ->
+      test <@ r.Name = e.Name @>
+      let ra = r.Attributes()
+      let ea = e.Attributes()
+
+      Seq.zip ra ea
+      |> Seq.iter (fun (a1: XAttribute, a2: XAttribute) ->
+        test <@ a1.Name = a2.Name @>
+
+        match a1.Name.ToString() with
+        | "profilerVersion"
+        | "driverVersion"
+        | "moduleId"
+        | "metadataToken"
+        | "startTime"
+        | "measureTime" -> ()
+        | "document" ->
+          test'
+            <@ a1.Value.Replace("\\", "/").EndsWith(a2.Value.Replace("\\", "/")) @>
+            (a1.Name.ToString()
+             + " : "
+             + r.ToString()
+             + " -> document")
+        | "visitcount" ->
+          let expected = Maybe zero "0" a2.Value
+          test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+        | _ ->
+          test'
+            <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
+            (r.ToString() + " -> " + a1.Name.ToString()))
+
+      RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportFromMono () =
+    let visitor, documentSource =
+      Report.reportGenerator ()
+
+    let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    Visitor.visit
+      [ visitor ]
+      (Visitor.I.toSeq
+        { AssemblyPath = path
+          Identity = Hallmark.Build()
+          Destinations = [] })
+
+    let expectedText =
+      MonoBaseline.Replace(
+        "name=\"Sample1.exe\"",
+        "name=\"" + (path |> Path.GetFullPath) + "\""
+      )
+
+    let baseline =
+      XDocument.Load(new System.IO.StringReader(expectedText))
+
+    let document =
+      use stash = new MemoryStream()
+      stash |> documentSource
+      stash.Position <- 0L
+      XDocument.Load stash
+
+    let result = document.Elements()
+    let expected = baseline.Elements()
+    RecursiveValidate result expected 0 true
+
+  [<TailCall>]
+  let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
+    let xn name = XName.Get(name)
+    let rcount = result |> Seq.length
+
+    let expected =
+      expected'
+      |> Seq.filter (fun (el: XElement) ->
+        el.Name.LocalName <> "Module"
+        || expectSkipped
+        || "skippedDueTo"
+           |> xn
+           |> el.Attributes
+           |> Seq.isEmpty)
+      |> Seq.toList
+
+    let ecount = expected |> Seq.length
+
+    test'
+      <@ rcount = ecount @>
+      ("Mismatch at depth "
+       + depth.ToString()
+       + " : "
+       + expected.ToString()
+       + " but got"
+       + (result |> Seq.toList).ToString())
+
+    Seq.zip result expected
+    |> Seq.iter (fun (r: XElement, e: XElement) ->
+      test <@ r.Name = e.Name @>
+      let ra = r.Attributes()
+      let ea = e.Attributes()
+
+      Seq.zip ra ea
+      |> Seq.iter (fun (a1: XAttribute, a2: XAttribute) ->
+        test <@ a1.Name = a2.Name @>
+
+        match a1.Name.ToString() with
+        | "bev"
+        | "visited"
+        | "visitedSequencePoints"
+        | "visitedBranchPoints"
+        | "visitedClasses"
+        | "visitedMethods"
+        | "sequenceCoverage"
+        | "branchCoverage"
+        | "uspid"
+        | "minCrapScore"
+        | "maxCrapScore"
+        | "crapScore"
+        | "hash" -> ()
+        | "fullPath" ->
+          test'
+            <@
+              a1.Value
+                .Replace("\\", "/")
+                .Replace("altcover", "AltCover")
+                .Replace("Samples/", String.Empty)
+                .EndsWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover"))
+            @>
+            (a1.Name.ToString()
+             + " : "
+             + r.ToString()
+             + " -> document")
+        | "vc" ->
+          let expected = Maybe zero "0" a2.Value
+          test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+        | _ ->
+          test' <@ a1.Value = a2.Value @> (r.ToString() + " -> " + a1.Name.ToString()))
+
+      RecursiveValidateOpenCover
+        (r.Elements())
+        (e.Elements())
+        (depth + 1)
+        zero
+        expectSkipped)
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle () =
+    let visitor, documentSource =
+      OpenCover.reportGenerator ()
+
+    let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Identity = Hallmark.Build()
+            Destinations = [] })
+
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find _.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal)
+
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+      let baseline = XDocument.Load(stream)
+
+      ("ModulePath"
+       |> XName.Get
+       |> baseline.Descendants
+       |> Seq.head)
+        .SetValue
+        path
+
+      let document =
+        use stash = new MemoryStream()
+        stash |> documentSource
+        stash.Position <- 0L
+        XDocument.Load stash
+
+      let result = document.Elements()
+      let expected = baseline.Elements()
+      RecursiveValidateOpenCover result expected 0 true false
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
