@@ -163,7 +163,7 @@ using System.Runtime.CompilerServices;
     Array.append prefix buffer
 
   let InternalsVisibleTo version =
-    use stream = // fsharplint:disable-next-line  RedundantNewKeyword
+    use stream =
       new System.IO.FileStream(
         "./Build/Infrastructure.snk",
         System.IO.FileMode.Open,
@@ -223,7 +223,7 @@ using System.Runtime.CompilerServices;
     (result, majmin, now)
 
   let ValidateFSharpTypes simpleReport others =
-    use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+    use coverageFile =
       new FileStream(
         simpleReport,
         FileMode.Open,
@@ -255,7 +255,7 @@ using System.Runtime.CompilerServices;
     )
 
   let ValidateFSharpTypesCoverage simpleReport =
-    use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+    use coverageFile =
       new FileStream(
         simpleReport,
         FileMode.Open,
@@ -288,7 +288,7 @@ using System.Runtime.CompilerServices;
 
   let ValidateSample1 simpleReport sigil =
     // get recorded details from here
-    use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+    use coverageFile =
       new FileStream(
         simpleReport,
         FileMode.Open,
@@ -576,8 +576,10 @@ a:hover {color: #ecc;}
     let recorded =
       coverageDocument.Descendants(XName.Get("Method"))
       |> Seq.collect _.Descendants(XName.Get("Name"))
-      |> Seq.map _.Value.Replace("Tests.Program", "Program/Program")
-      |> Seq.map _.Replace("Tests.DU/MyUnion/get_MyBar", "Tests.DU/get_MyBar") // flaky
+      |> Seq.map (
+        _.Value.Replace("Tests.Program", "Program/Program")
+        >> _.Replace("Tests.DU/MyUnion/get_MyBar", "Tests.DU/get_MyBar")
+      ) // flaky
       |> Seq.sort
       |> Seq.toList
 
@@ -605,7 +607,7 @@ a:hover {color: #ecc;}
 
   let CheckSample4Content x =
     do
-      use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+      use coverageFile =
         new FileStream(
           x,
           FileMode.Open,
@@ -725,7 +727,7 @@ a:hover {color: #ecc;}
 
   let CheckSample4Visits before x =
     do
-      use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+      use coverageFile =
         new FileStream(
           x,
           FileMode.Open,
@@ -744,7 +746,7 @@ a:hover {color: #ecc;}
 
   let CheckSample4 before x =
     do
-      use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+      use coverageFile =
         new FileStream(
           x,
           FileMode.Open,

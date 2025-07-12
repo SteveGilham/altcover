@@ -32,6 +32,7 @@ module DriveApi =
       (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force)
       o
 
+  // fsharplint:disable-next-line  ParameterNames
   let DoIt =
     (fun _ ->
       let expected = "{0}"

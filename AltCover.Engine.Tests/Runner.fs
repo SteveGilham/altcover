@@ -1,5 +1,5 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.Collections.Generic
@@ -89,7 +89,7 @@ module Runner =
     Runner.init ()
 
     let visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+      Dictionary<string, Dictionary<int, PointVisit>>()
 
     visits.Add(" ", Dictionary<int, PointVisit>())
 
@@ -110,7 +110,7 @@ module Runner =
     Runner.init ()
 
     let visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+      Dictionary<string, Dictionary<int, PointVisit>>()
 
     visits.Add(" ", Dictionary<int, PointVisit>())
 
@@ -132,7 +132,7 @@ module Runner =
     Runner.init ()
 
     let visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+      Dictionary<string, Dictionary<int, PointVisit>>()
 
     visits.Add(" ", Dictionary<int, PointVisit>())
     visits.Add("key", Dictionary<int, PointVisit>())
@@ -155,7 +155,7 @@ module Runner =
     Runner.init ()
 
     let visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+      Dictionary<string, Dictionary<int, PointVisit>>()
 
     visits.Add(" ", Dictionary<int, PointVisit>())
 
@@ -178,7 +178,7 @@ module Runner =
     Runner.init ()
 
     let visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+      Dictionary<string, Dictionary<int, PointVisit>>()
 
     visits.Add(" ", Dictionary<int, PointVisit>())
 
@@ -202,7 +202,7 @@ module Runner =
     Runner.init ()
 
     let visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+      Dictionary<string, Dictionary<int, PointVisit>>()
 
     visits.Add(" ", Dictionary<int, PointVisit>())
 
@@ -5788,7 +5788,7 @@ module Runner =
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
   // Also, this rule is deprecated
   let private loadSchema () =
-    let schemas = new XmlSchemaSet()
+    let schemas = XmlSchemaSet()
 
     use stream =
       Assembly

@@ -626,7 +626,6 @@ module private Gui =
       va.Value <- adjust)
 
 #if !NET472
-  // fsharplint:disable-next-line RedundantNewKeyword
   let latch =
     new Threading.ManualResetEvent false
 #endif

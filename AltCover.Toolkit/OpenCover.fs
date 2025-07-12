@@ -450,7 +450,7 @@ module OpenCover =
   //-----------------------------------------------------------------------------------------
 
   let blankOpenCover () =
-    use reader = // fsharplint:disable-next-line  RedundantNewKeyword
+    use reader =
       new StringReader(
         """<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>"""
       )

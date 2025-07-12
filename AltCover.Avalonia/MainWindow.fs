@@ -137,7 +137,7 @@ type MainWindow() as this =
   let ofd = OpenFileDialog()
 #endif
 
-  // fsharplint:disable-next-line  RedundantNewKeyword
+  // fsharplint:disable-next-line RedundantNewKeyword
   let iconMaker (x: Stream) = new Bitmap(x)
 
   [<NonSerialized>]

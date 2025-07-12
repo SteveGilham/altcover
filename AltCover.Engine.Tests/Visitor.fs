@@ -1,5 +1,5 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.Collections.Generic
@@ -1903,7 +1903,7 @@ module Visitor =
 
     // [<TailCall>]
     let rec stateful l =
-      new Fix<Node>(fun node ->
+      Fix<Node>(fun node ->
         called <- called + 1
         stateful node)
 
@@ -1919,7 +1919,7 @@ module Visitor =
 
     // [<TailCall>]
     let rec stateful l =
-      new Fix<Node>(fun node ->
+      Fix<Node>(fun node ->
         called <- called + 1
         stateful node)
 
@@ -2396,7 +2396,7 @@ module Visitor =
     Assert.That(names, Is.EquivalentTo expected)
 
   // Report.fs
-  let TTBaseline =
+  let ttBaseline =
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
@@ -2416,7 +2416,7 @@ module Visitor =
 </module>
 </coverage>"
 
-  let TriviaBaseline =
+  let triviaBaseline =
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
@@ -2504,7 +2504,7 @@ module Visitor =
 
       use def = AssemblyResolver.ReadAssembly path
 
-      let xml = TTBaseline
+      let xml = ttBaseline
 
       let xml' =
         xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
@@ -2549,7 +2549,7 @@ module Visitor =
 
       use def = AssemblyResolver.ReadAssembly path
 
-      let xml = TriviaBaseline
+      let xml = triviaBaseline
 
       let xml' =
         xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
@@ -3608,7 +3608,7 @@ module Visitor =
 
       use def = AssemblyResolver.ReadAssembly path
 
-      let xml = TTBaseline
+      let xml = ttBaseline
 
       let xml' =
         xml
@@ -4918,7 +4918,7 @@ module Visitor =
     |> Seq.iteri (fun i x ->
       Assert.That(x.Attribute(xn "uid").Value, Is.EqualTo(string (1 + i))))
 
-  let MonoBaseline =
+  let monoBaseline =
     "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
   <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
@@ -4997,7 +4997,7 @@ module Visitor =
           Destinations = [] })
 
     let expectedText =
-      MonoBaseline.Replace(
+      monoBaseline.Replace(
         "name=\"Sample1.exe\"",
         "name=\"" + (path |> Path.GetFullPath) + "\""
       )

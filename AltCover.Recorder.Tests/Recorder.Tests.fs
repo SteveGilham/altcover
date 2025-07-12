@@ -8,7 +8,7 @@ namespace Tests.Recorder.Core
 namespace Tests.Recorder.Clr4
 #endif
 
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.Collections.Generic
@@ -1286,9 +1286,7 @@ module AltCoverTests =
 
   let internal makeStreamTrace s1 =
     let mutable t = Tracer.Create(null)
-    // fsharplint:disable-next-line  RedundantNewKeyword
     t.Stream <- new System.IO.MemoryStream()
-    // fsharplint:disable-next-line  RedundantNewKeyword
     t.Formatter <- new System.IO.BinaryWriter(s1)
     t.Runner <- true
     t.Definitive <- false

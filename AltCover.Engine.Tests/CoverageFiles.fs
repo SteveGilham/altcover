@@ -7,7 +7,7 @@ open AltCover
 [<AutoOpen>]
 module CoverageFiles =
 
-  let MonoBaseline =
+  let monoBaseline =
     "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
   <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">

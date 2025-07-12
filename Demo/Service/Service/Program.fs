@@ -1,5 +1,5 @@
 ﻿namespace AltCover.Test
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.ComponentModel

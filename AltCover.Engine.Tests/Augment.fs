@@ -1,5 +1,5 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open AltCover
 

@@ -1,5 +1,5 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.IO
@@ -953,6 +953,7 @@ module Main =
       let pcom a b =
         Path.Combine(b, a) |> canonicalDirectory
 
+      // fsharplint:disable-next-line  PrivateValuesNames
       let AssertAreEqual (a: obj, b: obj) = Assert.That(a, Is.EqualTo b)
 
       match parse with
@@ -4218,7 +4219,7 @@ module Main =
       test <@ actual = expected @>
 
       let expectedText =
-        MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
+        monoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
 
       let expectedXml =
         XDocument.Load(new StringReader(expectedText))
