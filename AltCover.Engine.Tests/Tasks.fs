@@ -1,5 +1,5 @@
 namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.IO
@@ -34,14 +34,13 @@ module Tasks =
     Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
     (AltCover.LoggingOptions.ActionAdapter null) "23"
 
-    let ignoreAction =
-      new Action<String>(ignore)
+    let ignoreAction = Action<String>(ignore)
 
     ignoreAction.Invoke("ignoreAction")
     Assert.That(AltCover.LoggingOptions.ActionAdapter(ignoreAction), Is.Not.Null)
     let mutable x = String.Empty
     let f = (fun s -> x <- s)
-    (AltCover.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
+    (AltCover.LoggingOptions.ActionAdapter(Action<String>(f))) "42"
     Assert.That(x, Is.EqualTo "42")
     AltCover.LoggingOptions.Create().Info "32"
     AltCover.LoggingOptions.Create().Warn "32"

@@ -1,5 +1,7 @@
 ﻿// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
 
+// fsharplint:disable ParameterNames
+
 //copy ..\cecil\bin\Release\netstandard2.0\Mono.Cecil.dll .\ThirdParty\cecil\ -force
 //copy ..\cecil\rocks\bin\Release\netstandard2.0\Mono.Cecil.Rocks.dll .\ThirdParty\cecil\ -force
 //copy ..\cecil\symbols\mdb\bin\Release\netstandard2.0\Mono.Cecil.Mdb.dll .\ThirdParty\cecil\ -force
@@ -829,7 +831,7 @@ module Targets =
         let xml =
           XDocument.Load("./AltCover.Recorder/Strings.resx")
 
-        use resw = // fsharplint:disable-next-line  RedundantNewKeyword
+        use resw =
           new System.Resources.ResourceWriter("./AltCover.Recorder/Strings.resources")
 
         xml.Descendants(XName.Get "data")
@@ -3184,7 +3186,7 @@ module Targets =
 
       System.Threading.Thread.Sleep(1000)
 
-      use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+      use coverageFile =
         new FileStream(
           simpleReport,
           FileMode.Open,
@@ -3423,7 +3425,7 @@ module Targets =
       Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             simpleReport,
             FileMode.Open,
@@ -3464,7 +3466,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             simpleReport,
             FileMode.Open,
@@ -3551,7 +3553,7 @@ module Targets =
         "RecordResumeTrackingTest 2"
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             simpleReport,
             FileMode.Open,
@@ -3592,7 +3594,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             simpleReport,
             FileMode.Open,
@@ -3684,7 +3686,7 @@ module Targets =
         "RecordResumeTestDotNet 2"
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             simpleReport,
             FileMode.Open,
@@ -3725,7 +3727,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             simpleReport,
             FileMode.Open,
@@ -5245,7 +5247,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             x,
             FileMode.Open,
@@ -5304,7 +5306,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             x1,
             FileMode.Open,
@@ -5354,7 +5356,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             x2,
             FileMode.Open,
@@ -5433,7 +5435,7 @@ module Targets =
       |> AltCoverCommand.run
 
       do
-        use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+        use coverageFile =
           new FileStream(
             x3,
             FileMode.Open,
@@ -6437,7 +6439,7 @@ module Targets =
         )
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               xx,
               FileMode.Open,
@@ -6485,7 +6487,7 @@ module Targets =
         Assert.That(filepath |> File.Exists, filepath + " should exist")
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               xxa,
               FileMode.Open,
@@ -6565,7 +6567,7 @@ module Targets =
         )
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               xx,
               FileMode.Open,
@@ -6613,7 +6615,7 @@ module Targets =
         )
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               xxa,
               FileMode.Open,
@@ -6686,7 +6688,7 @@ module Targets =
           Path.getFullName "./_DotnetTestLineCover/coverage.xml"
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               x,
               FileMode.Open,
@@ -6718,7 +6720,7 @@ module Targets =
           Path.getFullName "./_DotnetTestLineCoverInPlace/coverage.xml"
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               xa,
               FileMode.Open,
@@ -6782,7 +6784,7 @@ module Targets =
           Path.getFullName "./_DotnetTestBranchCoverInPlace/coverage.xml"
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               x,
               FileMode.Open,
@@ -6824,7 +6826,7 @@ module Targets =
           Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               x,
               FileMode.Open,
@@ -7313,7 +7315,7 @@ module Targets =
           ""
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               "./Samples/Sample16/Test/_Issue72/original.Test.xml",
               FileMode.Open,
@@ -7378,7 +7380,7 @@ module Targets =
           ""
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               "./Samples/Sample16/Test/_Issue72/combined.Test.xml",
               FileMode.Open,
@@ -7441,7 +7443,7 @@ module Targets =
           ""
 
         do
-          use coverageFile = // fsharplint:disable-next-line  RedundantNewKeyword
+          use coverageFile =
             new FileStream(
               "./Samples/Sample16/Test/_Issue72/single.Test.xml",
               FileMode.Open,

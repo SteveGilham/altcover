@@ -1,5 +1,5 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.Collections.Generic
@@ -762,7 +762,7 @@ module Instrument =
         Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"), "wrong token")
 
         let alc =
-          new TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
+          TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
 
         try
           let proxyObject = alc.CreateObject()
@@ -1032,7 +1032,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
         Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
 
         let alc =
-          new TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
+          TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
 
         try
           let proxyObject = alc.CreateObject()
@@ -1117,7 +1117,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
           Assembly.GetExecutingAssembly().Location
 
         let alc =
-          new TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
+          TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
 
         try
           let proxyObject = alc.CreateObject()
@@ -2483,8 +2483,12 @@ has been prefixed with Ldc_I4_1 (1 byte)
           "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
         ))
       |> Seq.toList
-      |> List.map (_.ConstructorArguments >> Seq.head)
-      |> List.map (_.Value >> string)
+      |> List.map (
+        _.ConstructorArguments
+        >> Seq.head
+        >> _.Value
+        >> string
+      )
 
     let expected =
       [ "AltCover.Tests.Visualizer, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916443A2EE1D294E8CFA7666FB3F512D998D7CEAC4909E35EDB2AC1E104DE68890A93716D1D1931F7228AAC0523CACF50FD82CDB4CCF4FF4BF0DED95E3A383F4F371E3B82C45502CE74D7D572583495208C1905E0F1E8A3CCE66C4C75E4CA32E9A8F8DEE64E059C0DC0266E8D2CB6D7EBD464B47E062F80B63D390E389217FB7"
@@ -2520,8 +2524,12 @@ has been prefixed with Ldc_I4_1 (1 byte)
           "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
         ))
       |> Seq.toList
-      |> List.map (_.ConstructorArguments >> Seq.head)
-      |> List.map (_.Value >> string)
+      |> List.map (
+        _.ConstructorArguments
+        >> Seq.head
+        >> _.Value
+        >> string
+      )
 
     let expected =
       [ "AltCover.Tests.Visualizer, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916443A2EE1D294E8CFA7666FB3F512D998D7CEAC4909E35EDB2AC1E104DE68890A93716D1D1931F7228AAC0523CACF50FD82CDB4CCF4FF4BF0DED95E3A383F4F371E3B82C45502CE74D7D572583495208C1905E0F1E8A3CCE66C4C75E4CA32E9A8F8DEE64E059C0DC0266E8D2CB6D7EBD464B47E062F80B63D390E389217FB7"
@@ -3656,7 +3664,7 @@ has been prefixed with Ldc_I4_1 (1 byte)
       printfn "%A" created
 
       let alc =
-        new TestAssemblyLoadContext(
+        TestAssemblyLoadContext(
           "FinishCommitsTheAsyncRecordingAssembly",
           created |> Path.GetDirectoryName
         )

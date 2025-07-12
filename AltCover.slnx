@@ -38,6 +38,7 @@
     <File Path="Directory.Build.targets" />
     <File Path="Directory.Packages.props" />
     <File Path="Fragments.txt" />
+    <File Path="fsharplint.json" />
     <File Path="fullbuild.ps1" />
     <File Path="global.json" />
     <File Path="nupkg/build/AltCover.proj" />

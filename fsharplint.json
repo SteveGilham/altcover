@@ -258,10 +258,7 @@
     },
     "typography": {
         "indentation": { 
-            "enabled": false,
-            "config": {
-                "numberOfIndentationSpaces": 4
-            }
+            "enabled": false
         },
         "maxCharactersOnLine": { 
             "enabled": false,

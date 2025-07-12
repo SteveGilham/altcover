@@ -275,9 +275,14 @@ module internal Instrument =
         assembly.CustomAttributes.Add inject
 
       va
-      |> List.map (_.ConstructorArguments >> Seq.head)
-      |> List.map (_.Value.ToString())
-      |> List.map (_.Split(',') >> Seq.head >> tag)
+      |> List.map (
+        _.ConstructorArguments
+        >> Seq.head
+        >> _.Value.ToString()
+        >> _.Split(',')
+        >> Seq.head
+        >> tag
+      )
       |> List.iter injectRef
 
       assembly

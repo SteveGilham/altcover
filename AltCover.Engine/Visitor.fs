@@ -1688,7 +1688,7 @@ module internal Visitor =
   let internal encloseState (visitor: 'TState -> 'T -> 'TState) (current: 'TState) =
     // [<TailCall>]
     let rec stateful l =
-      new Fix<'T>(fun (node: 'T) ->
+      Fix<'T>(fun (node: 'T) ->
         let next = visitor l node
         stateful next)
 
