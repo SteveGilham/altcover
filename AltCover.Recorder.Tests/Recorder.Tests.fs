@@ -8,8 +8,6 @@ namespace Tests.Recorder.Core
 namespace Tests.Recorder.Clr4
 #endif
 
-// fsharplint:disable  MemberNames NonPublicValuesNames
-
 open System
 open System.Collections.Generic
 open System.IO

@@ -161,7 +161,7 @@ type internal Handler() =
       (message: string)
       (messageType: AltCover.MessageType)
       =
-      use md =
+      use md = // IDisposable
         new MessageDialog( // fsharplint:disable-line  RedundantNewKeyword
           parent,
           DialogFlags.Modal

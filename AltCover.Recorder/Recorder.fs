@@ -57,7 +57,7 @@ module Instance =
 #if DEBUG
       mutable
 #endif
-      internal CoverageFormat = // fsharplint:disable-line NonPublicValuesNames
+      internal CoverageFormat = // internal API
     ReportFormat.NCover
 
   /// <summary>
@@ -72,7 +72,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal Sample = Sampling.All // fsharplint:disable-line NonPublicValuesNames
+  let internal Sample = Sampling.All // internal API
 
   /// <summary>
   /// Gets the unique token for this instance

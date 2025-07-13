@@ -138,7 +138,7 @@ type MainWindow() as this =
 #endif
 
   // fsharplint:disable-next-line RedundantNewKeyword
-  let iconMaker (x: Stream) = new Bitmap(x)
+  let iconMaker (x: Stream) = new Bitmap(x) // IDisposable
 
   [<NonSerialized>]
   let icons = Icons(iconMaker)

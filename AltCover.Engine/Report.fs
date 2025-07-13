@@ -183,4 +183,5 @@ module internal Report =
     let result =
       Visitor.encloseState reportVisitor List.empty<XElement>
 
-    (result, (fun (s: System.IO.Stream) -> document.Save s)) // fsharplint:disable-line
+    // fsharplint:disable-next-line ReimplementsFunction
+    (result, (fun (s: System.IO.Stream) -> document.Save s)) // disambiguates overloads
