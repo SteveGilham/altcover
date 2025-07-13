@@ -105,7 +105,7 @@ type internal AssemblyResolver() as self =
   static member ReadAssembly(file: Stream) =
     let reader = ReaderParameters()
     // fsharplint:disable-next-line  RedundantNewKeyword
-    reader.AssemblyResolver <- new AssemblyResolver() //IDisposable
+    reader.AssemblyResolver <- new AssemblyResolver() // IDisposable
 
     AssemblyDefinition.ReadAssembly(file, reader)
 
