@@ -99,13 +99,14 @@ type internal AssemblyResolver() as self =
   static member ReadAssembly(path: String) =
     let reader = ReaderParameters()
     // fsharplint:disable-next-line  RedundantNewKeyword
-    reader.AssemblyResolver <- new AssemblyResolver()
+    reader.AssemblyResolver <- new AssemblyResolver() // IDisposable
     AssemblyDefinition.ReadAssembly(path, reader)
 
   static member ReadAssembly(file: Stream) =
     let reader = ReaderParameters()
     // fsharplint:disable-next-line  RedundantNewKeyword
-    reader.AssemblyResolver <- new AssemblyResolver()
+    reader.AssemblyResolver <- new AssemblyResolver() //IDisposable
+
     AssemblyDefinition.ReadAssembly(file, reader)
 
   [<SuppressMessage("Gendarme.Rules.Performance",

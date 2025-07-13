@@ -1,5 +1,4 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.Collections.Generic
@@ -1902,7 +1901,7 @@ module Visitor =
     let mutable called = 0
 
     // [<TailCall>]
-    let rec stateful l =
+    let rec stateful _ =
       Fix<Node>(fun node ->
         called <- called + 1
         stateful node)
@@ -1918,7 +1917,7 @@ module Visitor =
     let mutable called = 0
 
     // [<TailCall>]
-    let rec stateful l =
+    let rec stateful _ =
       Fix<Node>(fun node ->
         called <- called + 1
         stateful node)

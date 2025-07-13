@@ -1,5 +1,4 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.IO

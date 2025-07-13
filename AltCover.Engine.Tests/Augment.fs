@@ -1,5 +1,4 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open AltCover
 
@@ -22,11 +21,6 @@ module Augment =
 
   [<Test>]
   let ZeroIsNotVisited () =
-    // DELETE ME
-    let x = ProxyObject()
-    test <@ x.IsNotNull @>
-    // end DELETE ME
-
     test <@ Exemption.OfInt 0 = Exemption.None @>
 
   [<Test>]

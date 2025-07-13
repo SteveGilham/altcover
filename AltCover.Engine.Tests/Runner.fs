@@ -1,5 +1,4 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.Collections.Generic
@@ -2684,7 +2683,7 @@ module Runner =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let doc = XDocument.Load stream
-      Zip.save (fun s -> doc.Save s) reportFile true // fsharplint:disable-line
+      Zip.save doc.Save reportFile true
 
       let hits = List<string * int * Track>()
 
@@ -2846,7 +2845,7 @@ module Runner =
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
-      Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
+      Zip.save stream.CopyTo reportFile true
 
       let tracks t : Track array =
         [| Null() :> Track
@@ -3246,7 +3245,7 @@ module Runner =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
       let doc = XDocument.Load stream
-      Zip.save (fun s -> doc.Save s) reportFile true // fsharplint:disable-line
+      Zip.save doc.Save reportFile true
 
       let hits = List<string * int * Track>()
 
@@ -3416,7 +3415,7 @@ module Runner =
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
 
-      Zip.save (stream.CopyTo) reportFile true // fsharplint:disable-line
+      Zip.save (stream.CopyTo) reportFile true
 
       let tracks t : Track array =
         [| Null() :> Track
@@ -4130,6 +4129,9 @@ module Runner =
       after.OuterXml
     )
 
+  let RemoveElement (el: XmlElement) =
+    el |> el.ParentNode.RemoveChild |> ignore
+
   [<Test>]
   let PostprocessShouldRestoreDegenerateOpenCoverState () =
     Runner.init ()
@@ -4166,12 +4168,12 @@ module Runner =
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
     |> Seq.toList
-    |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore) // fsharplint:disable-line
+    |> List.iter RemoveElement
 
     after.DocumentElement.SelectNodes("//MethodPoint")
     |> Seq.cast<XmlElement>
     |> Seq.toList
-    |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore) // fsharplint:disable-line
+    |> List.iter RemoveElement
 
     let before =
       after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
@@ -4250,7 +4252,7 @@ module Runner =
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
     |> Seq.toList
-    |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore) // fsharplint:disable-line
+    |> List.iter RemoveElement
 
     after.DocumentElement.SelectNodes("//MethodPoint")
     |> Seq.cast<XmlElement>

@@ -1,5 +1,4 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames
 
 open System
 open System.IO
@@ -953,20 +952,19 @@ module Main =
       let pcom a b =
         Path.Combine(b, a) |> canonicalDirectory
 
-      // fsharplint:disable-next-line  PrivateValuesNames
-      let AssertAreEqual (a: obj, b: obj) = Assert.That(a, Is.EqualTo b)
+      let doAssertAreEqual (a: obj, b: obj) = Assert.That(a, Is.EqualTo b)
 
       match parse with
       | Right _ ->
         CoverageParameters.inputDirectories ()
         |> Seq.toList
         |> List.zip ([ "."; ".." ] |> List.map canonicalDirectory)
-        |> List.iter AssertAreEqual
+        |> List.iter doAssertAreEqual
 
         CoverageParameters.outputDirectories ()
         |> Seq.toList
         |> List.zip ([ "."; ".." ] |> List.map (pcom "__Instrumented"))
-        |> List.iter AssertAreEqual
+        |> List.iter doAssertAreEqual
 
         CoverageParameters.inplace.Value <- true
         CoverageParameters.theOutputDirectories.Add "maybe"
@@ -976,7 +974,7 @@ module Main =
         |> List.zip
           [ canonicalDirectory "maybe"
             ".." |> (pcom "__Saved") ]
-        |> List.iter AssertAreEqual
+        |> List.iter doAssertAreEqual
 
     finally
       CoverageParameters.theOutputDirectories.Clear()

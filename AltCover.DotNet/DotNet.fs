@@ -231,11 +231,11 @@ module DotNet =
 #endif
 
   // fsharplint:disable-next-line  ParameterNames
-  let ImportModuleProperties =
+  let ImportModuleProperties = // API for `dotnet test` ImportModule option
     [ ("AltCoverImportModule", "true") ]
 
   // fsharplint:disable-next-line  ParameterNames
-  let GetVersionProperties =
+  let GetVersionProperties = // API for `dotnet test` GetVersion option
     [ ("AltCoverGetVersion", "true") ]
 
 #if RUNNER
