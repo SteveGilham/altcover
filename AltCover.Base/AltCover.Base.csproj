@@ -39,7 +39,6 @@
     <Reference Include="Mono.Cecil.Pdb" Condition="'$(LocalCecil)' == 'true'">
       <HintPath>..\ThirdParty\cecil\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
-    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

@@ -493,7 +493,7 @@ type MainWindow() as this =
       Dispatcher.UIThread.Post(fun _ ->
         stack.Children.Clear()
 
-        for l in 1 .. lines.Length do
+        for l in seq { 1 .. lines.Length } do
           let pic = Image()
 
           let pix =

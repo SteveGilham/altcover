@@ -112,7 +112,7 @@ module Transformer =
         |> Int32.TryParse
         |> snd
 
-      { 1..second }
+      seq { 1..second }
       |> Seq.iteri (fun i _ ->
         let vc = if i < first then "1" else "0"
 
