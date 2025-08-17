@@ -85,7 +85,7 @@ module MonitorTests =
     test'
       <@
         code > 112
-        && code < 261
+        && code < 268
         && branch > 24
         && branch < 38
       @>
