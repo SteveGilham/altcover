@@ -11,6 +11,7 @@ open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
+open System.Text.RegularExpressions
 #endif
 
 type Assert = NUnit.Framework.Assert
@@ -220,13 +221,34 @@ false"""
 
     //printfn "%s" m
 
+#if NET472
     let m2 =
+#else
+    let m2a =
+#endif
       m.Replace(
         """Expected: True
 Actual:   False
 """,
         String.Empty
       )
+
+#if !NET472
+    // Remove the stack trace lines that are not useful
+    let m20 =
+      Regex.Split(m2a, Environment.NewLine)
+      |> Array.filter (fun s -> not (s.StartsWith("     at ")))
+      |> Array.filter (fun s -> not (s.StartsWith("   at ")))
+      |> String.concat Environment.NewLine
+
+    let m2 =
+      m20.Replace(
+        Environment.NewLine
+        + Environment.NewLine
+        + Environment.NewLine,
+        Environment.NewLine + Environment.NewLine
+      )
+#endif
 
     //printfn "%s" m2
 
