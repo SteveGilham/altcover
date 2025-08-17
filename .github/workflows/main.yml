@@ -33,6 +33,12 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.304'
+        cache: true
+        cache-dependency-path: |
+          **/*.csproj
+          **/*.fsproj
+          **/packages.lock.json
+          **/Directory.Packages.props
     - name: Tools
       run: dotnet tool restore
     - name: Setup
@@ -64,6 +70,12 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.304'
+        cache: true
+        cache-dependency-path: |
+          **/*.csproj
+          **/*.fsproj
+          **/packages.lock.json
+          **/Directory.Packages.props
     - name: Install mono 
       run: sudo apt-get update && sudo apt-get install -y mono-devel
     - name: Tools

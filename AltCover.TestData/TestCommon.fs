@@ -11,7 +11,6 @@ open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
-open System.Text.RegularExpressions
 #endif
 
 type Assert = NUnit.Framework.Assert
@@ -236,9 +235,9 @@ Actual:   False
 #if !NET472
     // Remove the stack trace lines that are not useful
     let m20 =
-      Regex.Split(m2a, Environment.NewLine)
-      |> Array.filter (fun s -> not (s.StartsWith("     at ")))
-      |> Array.filter (fun s -> not (s.StartsWith("   at ")))
+      m2a.Split([| Environment.NewLine |], StringSplitOptions.None)
+      |> Array.filter (fun s -> not (s.StartsWith("     at ", StringComparison.Ordinal)))
+      |> Array.filter (fun s -> not (s.StartsWith("   at ", StringComparison.Ordinal)))
       |> String.concat Environment.NewLine
 
     let m2 =
