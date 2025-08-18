@@ -220,13 +220,34 @@ false"""
 
     //printfn "%s" m
 
+#if NET472
     let m2 =
+#else
+    let m2a =
+#endif
       m.Replace(
         """Expected: True
 Actual:   False
 """,
         String.Empty
       )
+
+#if !NET472
+    // Remove the stack trace lines that are not useful
+    let m20 =
+      m2a.Split([| Environment.NewLine |], StringSplitOptions.None)
+      |> Array.filter (fun s -> not (s.StartsWith("     at ", StringComparison.Ordinal)))
+      |> Array.filter (fun s -> not (s.StartsWith("   at ", StringComparison.Ordinal)))
+      |> String.concat Environment.NewLine
+
+    let m2 =
+      m20.Replace(
+        Environment.NewLine
+        + Environment.NewLine
+        + Environment.NewLine,
+        Environment.NewLine + Environment.NewLine
+      )
+#endif
 
     //printfn "%s" m2
 
