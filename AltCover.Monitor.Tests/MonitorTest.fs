@@ -78,39 +78,38 @@ module MonitorTests =
     let branch = b.Branch
 
     let xml, expect = coverageXml ()
-    let text = xml |> File.ReadAllText
     let result = (code, branch)
-    let t2 = sprintf "%A" result
 
-    //test'
-    //  <@
-    //    code > 112
-    //    && code < 268
-    //    && branch > 24
-    //    && branch < 38
-    //  @>
-    //  (text + Environment.NewLine + t2)
+    // Original hardcodes
+    // Sequence points (112, 268)
+    // Branch points (24, 38)
 
-    // CodeRabbit derived suggestion
+    test <@ expect |> List.isEmpty |> not @>
+
     // Derive bounds and allowed branches from the discovered expectations
     let expectedCodes = expect |> List.map fst
-    // use the observed miniumum from other runs which is far less than (expectedCodes |> List.min)
+    // use the observed minimum from other runs which is far less than (expectedCodes |> List.min)
     let minExpectedCode = 112
     // Allow some headroom to absorb minor toolchain changes
-    let maxExpectedCodeWithSlack = (expectedCodes |> List.max) + 10
+    let maxExpectedCodeWithSlack =
+      (expectedCodes |> List.max) + 10
+
     let expectedBranches = (24, 38) // as historically observed
 
     test'
       <@
         code >= minExpectedCode
         && code <= maxExpectedCodeWithSlack
-        && branch > fst expectedBranches
-        && branch < snd expectedBranches
+        // destructure once for readability
+        && (let minB, maxB = expectedBranches
+            branch > minB && branch < maxB)
+
       @>
-      (sprintf "%s%sGot %A; expected codes in [%d..%d], branches in %A"
-         xml
-         (Environment.NewLine)
-         result
-         minExpectedCode
-         maxExpectedCodeWithSlack
-         expectedBranches)
+      (sprintf
+        "%s%sGot %A; expected codes in [%d..%d], branches in %A"
+        xml
+        (Environment.NewLine)
+        result
+        minExpectedCode
+        maxExpectedCodeWithSlack
+        expectedBranches)
