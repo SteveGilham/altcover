@@ -6,7 +6,7 @@ on:
     - master
     - feature/*
     - release/*
-    - develop/github/*    
+    - develop/github/*
   pull_request:
     branches:
     - master
@@ -27,12 +27,12 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v5.0.0
       with:
-        fetch-depth: 0
+        fetch-depth: 2
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.304'
+        global-json-file: global.json
         cache: true
         cache-dependency-path: |
           **/*.csproj
@@ -42,12 +42,12 @@ jobs:
     - name: Tools
       run: dotnet tool restore
     - name: Setup
-      run: dotnet run --project .\Build\Setup.fsproj
+      run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
-      run: dotnet run --project .\Build\Build.fsproj
+      run: dotnet run --project ./Build/Build.fsproj
     - uses: actions/upload-artifact@v4
       with:
           name: nupkgs
@@ -64,12 +64,12 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v5.0.0
       with:
-        fetch-depth: 0
+        fetch-depth: 2
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.304'
+        global-json-file: global.json
         cache: true
         cache-dependency-path: |
           **/*.csproj
@@ -83,7 +83,7 @@ jobs:
     - name: Setup
       run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
-      run: dotnet run --project ./Build/Build.fsproj 
+      run: dotnet run --project ./Build/Build.fsproj
     - uses: actions/upload-artifact@v4
       if: failure()
       with:
