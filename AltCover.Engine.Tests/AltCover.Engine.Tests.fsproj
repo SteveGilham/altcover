@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Engine.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -11,7 +11,7 @@
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
     <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">WINDOWS</ExtraDefines>
     <DefineConstants>DEBUG;TRACE;RUNNER_TESTS;$(ExtraDefines)</DefineConstants>
-    <NoWarn>NU1901;NU1902;NU1903;$(NoWarn)</NoWarn>
+    <NoWarn>NU1901;NU1902;NU1903;NU1510;$(NoWarn)</NoWarn>
     <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277;$(NoWarn)</NoWarn>
     <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903</MSBuildWarningsAsMessages>
   </PropertyGroup>
@@ -134,6 +134,7 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="System.IO.Compression" />
     <Reference Include="Manatee.Json">
       <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
       <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->

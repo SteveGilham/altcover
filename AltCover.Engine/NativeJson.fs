@@ -440,7 +440,7 @@ module
       s
 
   let private slugs =
-    { 0..14 }
+    seq { 0..14 }
     |> Seq.map (fun i -> (i, String(' ', i)))
     |> Map.ofSeq
 
