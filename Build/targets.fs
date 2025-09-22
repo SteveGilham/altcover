@@ -1547,19 +1547,19 @@ module Targets =
           "--opencover"
           + " -i "
           + coverage
-          + " --repoToken "
+          + " --repoToken \""
           + (Environment.environVar "COVERALLS_REPO_TOKEN")
-          + " --commitId "
+          + "\" --commitId "
           + commitHash
           + " --commitBranch "
           + Information.getBranchName (".")
-          + " --commitAuthor "
+          + " --commitAuthor \""
           + (maybe "COMMIT_AUTHOR" "")
-          + " --commitEmail "
+          + "\" --commitEmail \""
           + (maybe "COMMIT_AUTHOR_EMAIL" "")
-          + " --commitMessage "
+          + "\" --commitMessage \""
           + commit
-          + " --jobId "
+          + "\" --jobId "
           + DateTime.UtcNow.ToString("yyMMdd-HHmmss")
 
         Actions.RunDotnet options "csmacnz.Coveralls" args "Coveralls upload failed"
