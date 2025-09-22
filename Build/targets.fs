@@ -1538,31 +1538,28 @@ module Targets =
         let gap = log.IndexOf ' '
         let commit = log.Substring gap
 
-        let options =
-          dotnetOptions
-          >> withWorkingDirectoryVN "_Reports"
-          >> dotnetOptionsWithRollForwards
-
-        let args =
-          "--opencover"
-          + " -i "
-          + coverage
-          + " --repoToken \""
-          + (Environment.environVar "COVERALLS_REPO_TOKEN")
-          + "\" --commitId "
-          + commitHash
-          + " --commitBranch "
-          + Information.getBranchName (".")
-          + " --commitAuthor \""
-          + (maybe "COMMIT_AUTHOR" "")
-          + "\" --commitEmail \""
-          + (maybe "COMMIT_AUTHOR_EMAIL" "")
-          + "\" --commitMessage \""
-          + commit
-          + "\" --jobId "
-          + DateTime.UtcNow.ToString("yyMMdd-HHmmss")
-
-        Actions.RunDotnet options "csmacnz.Coveralls" args "Coveralls upload failed"
+        Actions.Run
+          ("dotnet",
+           "_Reports",
+           [ "csmacnz.Coveralls"
+             "--opencover"
+             "-i"
+             coverage
+             "--repoToken"
+             Environment.environVar "COVERALLS_REPO_TOKEN"
+             "--commitId"
+             commitHash
+             "--commitBranch"
+             Information.getBranchName (".")
+             "--commitAuthor"
+             maybe "COMMIT_AUTHOR" ""
+             "--commitEmail"
+             maybe "COMMIT_AUTHOR_EMAIL" ""
+             "--commitMessage"
+             commit
+             "--jobId"
+             DateTime.UtcNow.ToString("yyMMdd-HHmmss") ])
+          "Coveralls upload failed"
 
       printfn "Dump uncovered lines"
 
