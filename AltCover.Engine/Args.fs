@@ -106,7 +106,9 @@ module internal Args =
   let internal counts (args: Abstract.IPrepareOptions) =
     args
     |> countItems
-    |> List.collect (fun (a, b) -> seq { 0..b } |> Seq.map (fun _ -> a) |> Seq.toList)
+      |> List.collect (fun (a, b) ->
+           let n = max 0 (b + 1)
+           List.replicate n a)
 
   let prepare (args: Abstract.IPrepareOptions) =
     let argsList =
@@ -153,7 +155,9 @@ module internal Args =
     let counts (args: Abstract.ICollectOptions) =
       args
       |> countItems
-      |> List.collect (fun (a, b) -> seq { 0..b } |> Seq.map (fun _ -> a) |> Seq.toList)
+      |> List.collect (fun (a, b) ->
+           let n = max 0 (b + 1)
+           List.replicate n a)
 
     [ [ "Runner" ]
       item "-r" args.RecorderDirectory
