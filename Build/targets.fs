@@ -208,7 +208,9 @@ module Targets =
 
   let dotnetOptionsWithRollForwards (o: DotNet.Options) =
     let env =
-      o.Environment.Add("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
+      o.Environment
+        .Add("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
+        .Add("DOTNET_ROLL_FORWARD", "Major")
 
     o.WithEnvironment env
 
@@ -987,6 +989,7 @@ module Targets =
 
       let doLint f =
         CreateProcess.fromRawCommand "dotnet" [ "fsharplint"; "lint"; "-l"; cfg; f ]
+        |> CreateProcess.setEnvironmentVariable "DOTNET_ROLL_FORWARD" "Major"
         |> CreateProcess.setEnvironmentVariable
           "DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"
           "2"
