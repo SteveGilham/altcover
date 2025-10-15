@@ -863,7 +863,7 @@ module ExpectoMain =
       Tests.Tasks.RetryDeleteTest, "Tasks.RetryDeleteTest" ]
 
   let specials =
-    { 0..31 }
+    seq { 0..31 }
     |> Seq.map (fun i ->
       testCase (sprintf "Tests.ShouldUpdateHandlerOK(%d)" i)
       <| (fun () ->

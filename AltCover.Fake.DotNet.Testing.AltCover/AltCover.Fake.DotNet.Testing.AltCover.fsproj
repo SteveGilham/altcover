@@ -42,9 +42,9 @@
 
   <ItemGroup>
     <PackageReference Include="BlackFox.CommandLine" />
-    <PackageReference Include="FAKE.Core.Environment" VersionOverride="6.0.0" />
-    <PackageReference Include="FAKE.Core.Process" VersionOverride="6.0.0" />
-    <PackageReference Include="FAKE.DotNet.Cli" VersionOverride="6.0.0" />
+    <PackageReference Include="FAKE.Core.Environment" />
+    <PackageReference Include="FAKE.Core.Process" />
+    <PackageReference Include="FAKE.DotNet.Cli" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

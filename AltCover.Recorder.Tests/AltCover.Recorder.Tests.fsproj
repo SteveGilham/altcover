@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
     <!-- see https://github.com/NuGet/Home/issues/8797 -->
-    <NoWarn>NU1702;$(NoWarn)</NoWarn>
-    <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
+    <NoWarn>NU1702;NU1510;$(NoWarn)</NoWarn>
+    <MSBuildWarningsAsMessages>NU1702;NU1510</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
