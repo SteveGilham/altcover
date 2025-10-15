@@ -6,8 +6,6 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Linq
-open System.Reflection
-open System.Resources
 open System.Security
 open System.Security.Cryptography
 open System.Text.RegularExpressions
