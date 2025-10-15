@@ -85,7 +85,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" />
-    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

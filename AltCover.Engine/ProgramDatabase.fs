@@ -121,7 +121,7 @@ module internal ProgramDatabase =
         let streams = b.ReadInt16() |> int // # of stream headers
 
         let headers =
-          { 1..streams }
+          seq { 1..streams }
           |> Seq.map (fun _ ->
             let offset = b.ReadInt32()
             let size = b.ReadInt32()
