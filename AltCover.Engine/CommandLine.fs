@@ -498,6 +498,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@294::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@292::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()

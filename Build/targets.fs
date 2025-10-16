@@ -5191,7 +5191,7 @@ module Targets =
             .Replace("{1}", version)
         )
 
-        [ (" --version 5.0.0", "build.cake")
+        [ (" --version 5.1.0", "build.cake")
           (String.Empty, "build.cake") ]
         |> List.iter (fun (cakeversion, script) ->
           try
