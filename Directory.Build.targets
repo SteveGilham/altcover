@@ -1,3 +1,6 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)\OutputBuildTargets.props" />
+	<Import Project="$(MSBuildThisFileDirectory)\OutputBuildTargets.props" />
+	<PropertyGroup>
+		<RestoreEnablePackagePruning Condition="'$(TargetFramework)' == 'net472' "> false</RestoreEnablePackagePruning>
+	</PropertyGroup>
 </Project>
