@@ -5,7 +5,8 @@
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Engine</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
-  </PropertyGroup>
+		<NoWarn>$(NoWarn);NU1702</NoWarn>
+	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>

@@ -9,9 +9,6 @@
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <NoWarn>NU1901;NU1902;NU1903;$(NoWarn)</NoWarn>
-    <NoWarn Condition="'$(LocalCecil)' == 'true'">MSB3277;$(NoWarn)</NoWarn>
-    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>
