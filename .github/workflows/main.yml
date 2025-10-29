@@ -48,11 +48,11 @@ jobs:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
       run: dotnet run --project ./Build/Build.fsproj
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
           name: nupkgs
           path: _Packagin*/*.nupkg
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: failure()
       with:
           name: reports.windows
@@ -84,7 +84,7 @@ jobs:
       run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
       run: dotnet run --project ./Build/Build.fsproj
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: failure()
       with:
           name: reports.linux
