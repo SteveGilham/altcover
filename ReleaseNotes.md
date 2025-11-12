@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Indori series release 2)
+# (Indori series release 3)
+
+# 9.0.102 (Indori series release 2)
 * Net10.0 support
 * Fix issue #238 - some symbol errors cause instrumentation to abort rather than skip that assembly.
 * Move to Fake 6.1.4 for all purposes, ending legacy support for 6.0.x
