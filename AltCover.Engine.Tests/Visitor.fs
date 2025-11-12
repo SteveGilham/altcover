@@ -2863,7 +2863,7 @@ module Visitor =
 
       let nativeJson =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
+        |> Seq.find _.EndsWith("Sample4-10.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)

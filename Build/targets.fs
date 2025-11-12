@@ -7392,7 +7392,7 @@ module Targets =
 
     _Target "JsonReporting" jsonReporting
     _Target "MSBuildTest" msbuildTest
-    _Target "cake5plusTest" cake6plusTest
+    _Target "cake6plusTest" cake6plusTest
     _Target "ApiUse" apiUse
     _Target "DotnetTestIntegration" dotnetTestIntegration
     _Target "Issue20" issue20
@@ -7635,7 +7635,7 @@ module Targets =
 
     "Unpack" ==> "ApiUse" ==> "Deployment" |> ignore
 
-    "Unpack" ==> "cake5plusTest" ==> "Deployment"
+    "Unpack" ==> "cake6plusTest" ==> "Deployment"
     |> ignore
 
     "Unpack"
