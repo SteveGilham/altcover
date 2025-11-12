@@ -1,3 +1,7 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)\OutputBuildTargets.props" />
+	<Import Project="$(MSBuildThisFileDirectory)\OutputBuildTargets.props" />
+	<PropertyGroup>
+		<!-- Suppress security warnings about Fake.Build packages -->
+		<NoWarn>$(NoWarn);NU1904;NU1903</NoWarn>
+	</PropertyGroup>
 </Project>

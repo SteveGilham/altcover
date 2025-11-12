@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Echo/Echo.csproj" />
+  <Project Path="Test/Test.csproj" />
+</Solution>

@@ -6,8 +6,6 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Linq
-open System.Reflection
-open System.Resources
 open System.Security
 open System.Security.Cryptography
 open System.Text.RegularExpressions
@@ -209,7 +207,7 @@ module internal CommandLine =
     [<SuppressMessage("Gendarme.Rules.Smells",
                       "AvoidLongParameterListsRule",
                       Justification = "Long enough but no longer")>]
-    [<TailCall>]
+    //Stopped working in 9.0.200 [<TailCall>]
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
@@ -293,9 +291,7 @@ module internal CommandLine =
 
       let transform array = array |> Array.map (descape >> qRegex)
 
-      x
-        .Replace(";;", "\u0000")
-        .Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
       |> transform
 
   // "Public" interface
@@ -502,6 +498,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@294::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@292::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()

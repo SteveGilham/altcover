@@ -24,6 +24,7 @@ public interface IPrepareOptions
 
 | name | description |
 | --- | --- |
+| [All](Abstract.IPrepareOptions/All-apidoc) { get; } | Corresponds to command line option `--all` |
 | [AssemblyExcludeFilter](Abstract.IPrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
 | [AssemblyFilter](Abstract.IPrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](Abstract.IPrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
@@ -31,8 +32,8 @@ public interface IPrepareOptions
 | [BranchCover](Abstract.IPrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
 | [CallContext](Abstract.IPrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](Abstract.IPrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
-| [Defer](Abstract.IPrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
 | [Dependencies](Abstract.IPrepareOptions/Dependencies-apidoc) { get; } | Corresponds to command line option `-d, --dependency=VALUE` |
+| [Eager](Abstract.IPrepareOptions/Eager-apidoc) { get; } | Corresponds to command line option `--eager` |
 | [ExposeReturnCode](Abstract.IPrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](Abstract.IPrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](Abstract.IPrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
@@ -52,7 +53,6 @@ public interface IPrepareOptions
 | [Save](Abstract.IPrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](Abstract.IPrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](Abstract.IPrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
-| [SingleVisit](Abstract.IPrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
 | [SourceLink](Abstract.IPrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Abstract.IPrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Abstract.IPrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |

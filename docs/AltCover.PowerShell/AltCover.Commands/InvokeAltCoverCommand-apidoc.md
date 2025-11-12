@@ -25,6 +25,7 @@ public class InvokeAltCoverCommand : PSCmdlet
 | name | description |
 | --- | --- |
 | [InvokeAltCoverCommand](InvokeAltCoverCommand/InvokeAltCoverCommand-apidoc)() | The default constructor. |
+| [All](InvokeAltCoverCommand/All-apidoc) { get; set; } | only record the first hit at any location (or first for that context if `-CallContext` is operating). |
 | [AssemblyExcludeFilter](InvokeAltCoverCommand/AssemblyExcludeFilter-apidoc) { get; set; } | Assembly names to exclude from instrumentation (linked to instrumented assemblies) |
 | [AssemblyFilter](InvokeAltCoverCommand/AssemblyFilter-apidoc) { get; set; } | Assembly names to exclude from instrumentation (linked by instrumented assemblies) |
 | [AttributeFilter](InvokeAltCoverCommand/AttributeFilter-apidoc) { get; set; } | Attribute names to exclude from instrumentation |
@@ -33,9 +34,9 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [CallContext](InvokeAltCoverCommand/CallContext-apidoc) { get; set; } | Tracking either times of visits in ticks or designated method calls leading to the visits. |
 | [Cobertura](InvokeAltCoverCommand/Cobertura-apidoc) { get; set; } | File path for Cobertura format version of the collected data |
 | [CommandLine](InvokeAltCoverCommand/CommandLine-apidoc) { get; set; } | Arguments for a launched process |
-| [Defer](InvokeAltCoverCommand/Defer-apidoc) { get; set; } | Defers writing runner-mode coverage data until process exit. |
 | [Dependency](InvokeAltCoverCommand/Dependency-apidoc) { get; set; } | Assembly paths to resolve missing references. |
 | [DropReturnCode](InvokeAltCoverCommand/DropReturnCode-apidoc) { get; set; } | Do not report any non-zero return code from a launched process. |
+| [Eager](InvokeAltCoverCommand/Eager-apidoc) { get; set; } | Write runner-mode coverage data immediately. |
 | [Executable](InvokeAltCoverCommand/Executable-apidoc) { get; set; } | The executable to run e.g. `dotnet` |
 | [FileFilter](InvokeAltCoverCommand/FileFilter-apidoc) { get; set; } | Source file names to exclude from instrumentation |
 | [InPlace](InvokeAltCoverCommand/InPlace-apidoc) { get; set; } | Instrument the inputDirectory, rather than the outputDirectory (e.g. for `dotnet test`) |
@@ -59,7 +60,6 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [Save](InvokeAltCoverCommand/Save-apidoc) { get; set; } | Write raw coverage data to file for later processing |
 | [ShowGenerated](InvokeAltCoverCommand/ShowGenerated-apidoc) { get; set; } | Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited |
 | [ShowStatic](InvokeAltCoverCommand/ShowStatic-apidoc) { get; set; } | Instrument and show code that is by default skipped as trivial. |
-| [Single](InvokeAltCoverCommand/Single-apidoc) { get; set; } | only record the first hit at any location (or first for that context if `-CallContext` is operating). |
 | [SourceLink](InvokeAltCoverCommand/SourceLink-apidoc) { get; set; } | Display sourcelink URLs rather than file paths if present. |
 | [StrongNameKey](InvokeAltCoverCommand/StrongNameKey-apidoc) { get; set; } | The default strong naming key to apply to instrumented assemblies |
 | [SummaryFormat](InvokeAltCoverCommand/SummaryFormat-apidoc) { get; set; } | Selects summary format |

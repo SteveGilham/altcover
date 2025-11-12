@@ -13,21 +13,29 @@
   </PropertyGroup>
 
   <UsingTask TaskName="AltCover.Prepare"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.Collect"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.PowerShell"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.GetVersion"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.Echo"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.RunSettings"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.ContingentCopy"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.RetryDelete"
+        Condition="'$(AltCoverEngine)' != ''"
         AssemblyFile="$(AltCoverEngine)" />
 
-  <Import Project="$(MSBuildThisFileDirectory)\$(MSBuildThisFileName).proj" Condition="'$(AltCover)' == 'true' AND '$(IsTestProject)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\$(MSBuildThisFileName).proj" Condition="'$(AltCover)' == 'true' AND '$(IsTestProject)' == 'true' and '$(AltCoverEngine)' != ''" />
 </Project>

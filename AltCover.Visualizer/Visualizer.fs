@@ -1,7 +1,5 @@
 ﻿namespace AltCover
 
-// fsharplint:disable  RedundantNewKeyword
-
 open System
 open System.Collections.Generic
 open System.IO
@@ -19,7 +17,8 @@ open System.Diagnostics.CodeAnalysis
 module private Gui =
 
   // --------------------------  General Purpose ---------------------------
-  let icons = Icons(fun x -> new Pixbuf(x))
+  // IDisposable for the Pixbuf type
+  let icons = Icons(fun x -> new Pixbuf(x)) // fsharplint:disable-line RedundantNewKeyword
 
   // --------------------------  Persistence ---------------------------
 
@@ -35,7 +34,7 @@ module private Gui =
 #if !NET472
     |> List.iter (fun name ->
       use b =
-        new Builder(
+        new Builder( // fsharplint:disable-line RedundantNewKeyword
           System.Reflection.Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
@@ -150,12 +149,12 @@ module private Gui =
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "Added to classStructureTree'")>]
   let private prepareTreeLine (handler: Handler) i =
-    let column = new Gtk.TreeViewColumn()
-    let icon = new Gtk.CellRendererPixbuf()
+    let column = new Gtk.TreeViewColumn() // fsharplint:disable-line RedundantNewKeyword
+    let icon = new Gtk.CellRendererPixbuf() // fsharplint:disable-line RedundantNewKeyword
     column.PackStart(icon, true)
-    let cell = new Gtk.CellRendererText()
+    let cell = new Gtk.CellRendererText() // fsharplint:disable-line RedundantNewKeyword
     column.PackEnd(cell, true)
-    let note = new Gtk.CellRendererText()
+    let note = new Gtk.CellRendererText() // fsharplint:disable-line RedundantNewKeyword
     note.Alignment <- Pango.Alignment.Right
 
     let font =
@@ -188,7 +187,8 @@ module private Gui =
     |> Seq.iter (prepareTreeLine handler)
 
     handler.classStructureTree.Model <-
-      new TreeStore(
+      // IDisposable for the TreeStore
+      new TreeStore( // fsharplint:disable-line RedundantNewKeyword
         typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<string>,
@@ -207,7 +207,8 @@ module private Gui =
       )
 
     handler.auxModel <-
-      new TreeStore(
+      // IDisposable for the TreeStore
+      new TreeStore( // fsharplint:disable-line RedundantNewKeyword
         typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<string>,
@@ -268,7 +269,8 @@ module private Gui =
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "Added to 'openFileDialog'")>]
   let private addFilter (openFileDialog: Gtk.IFileChooser) (t: string) =
-    let filter = new FileFilter()
+    //IDisposable for the FileFilter
+    let filter = new FileFilter() // fsharplint:disable-line RedundantNewKeyword
     let data = t.Split([| '%' |])
     filter.Name <- data.[0]
     filter.AddPattern("*." + data.[1])
@@ -281,8 +283,8 @@ module private Gui =
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "'openFileDialog' is returned")>]
   let private prepareOpenFileDialog (handler: Handler) =
-    let openFileDialog =
-      new FileChooserDialog(
+    let openFileDialog = // IDisposable for the FileChooserDialog
+      new FileChooserDialog( // fsharplint:disable-line RedundantNewKeyword
         Resource.GetResourceString "OpenFile",
         handler.mainWindow,
         FileChooserAction.Open,
@@ -294,9 +296,7 @@ module private Gui =
       )
 
     let data =
-      Resource
-        .GetResourceString("SelectXml")
-        .Split([| '|' |])
+      Resource.GetResourceString("SelectXml").Split([| '|' |])
 
     data |> Seq.iter (addFilter openFileDialog)
 
@@ -319,10 +319,7 @@ module private Gui =
 
     openFileDialog.InitialDirectory <- Persistence.readFolder ()
 
-    openFileDialog.Filter <-
-      Resource
-        .GetResourceString("SelectXml")
-        .Replace("%", "|*.")
+    openFileDialog.Filter <- Resource.GetResourceString("SelectXml").Replace("%", "|*.")
 
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
@@ -378,9 +375,7 @@ module private Gui =
               else
                 handler.coverageFiles.[i]
             )
-        Display =
-          (handler :> IVisualizerWindow)
-            .ShowMessageOnGuiThread
+        Display = (handler :> IVisualizerWindow).ShowMessageOnGuiThread
         UpdateMRUFailure =
           fun info ->
             Handler.InvokeOnGuiThread(fun () ->
@@ -477,7 +472,8 @@ module private Gui =
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "'tag' is subsumed")>]
   let private applyTag font (buffer: TextBuffer) (style: string, fg, bg) =
-    let tag = new TextTag(style)
+    // IDisposable for the TextTag
+    let tag = new TextTag(style) // fsharplint:disable-line RedundantNewKeyword
     tag.Font <- font
     tag.Foreground <- fg
     tag.Background <- bg
@@ -511,8 +507,9 @@ module private Gui =
     let branches =
       HandlerCommon.TagBranches root file
 
-    for l in 1 .. buff.LineCount do
-      let image = new Image()
+    for l in seq { 1 .. buff.LineCount } do
+      // IDisposable for the Image
+      let image = new Image() // fsharplint:disable-line RedundantNewKeyword
 
       let pix =
         HandlerCommon.IconForBranches icons branches l (fun text ->
@@ -521,7 +518,8 @@ module private Gui =
       let mutable i =
         buff.GetIterAtLineOffset(l - 1, 7)
 
-      let a = new TextChildAnchor()
+      // IDisposable for the TextChildAnchor
+      let a = new TextChildAnchor() // fsharplint:disable-line RedundantNewKeyword
       buff.InsertChildAnchor(&i, a)
       image.Pixbuf <- pix
       image.Visible <- true
@@ -633,7 +631,6 @@ module private Gui =
       va.Value <- adjust)
 
 #if !NET472
-  // fsharplint:disable-next-line RedundantNewKeyword
   let latch =
     new Threading.ManualResetEvent false
 #endif
@@ -684,14 +681,12 @@ module private Gui =
         let message =
           Resource.Format(
             "No source location",
-            [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
-                .Text
+            [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText).Text
               |> replace ("<", "&lt;")
               |> replace (">", "&gt;") ]
           )
 
-        (handler :> IVisualizerWindow)
-          .ShowMessageOnGuiThread
+        (handler :> IVisualizerWindow).ShowMessageOnGuiThread
           AltCover.MessageType.Info
           message
 
@@ -738,8 +733,7 @@ module private Gui =
                     Justification = "IDisposables are added to other widgets")>]
   let private addLabelWidget g (button: ToolButton, resource) =
     let keytext =
-      (resource |> Resource.GetResourceString)
-        .Split('|')
+      (resource |> Resource.GetResourceString).Split('|')
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))
@@ -752,15 +746,18 @@ module private Gui =
       AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
     )
 
-    let label = new TextView()
+    // IDisposable for the TextView
+    let label = new TextView() // fsharplint:disable-line RedundantNewKeyword
     let buffer = label.Buffer
-    let tag0 = new TextTag("baseline")
+    // IDisposable for the TextTag
+    let tag0 = new TextTag("baseline") // fsharplint:disable-line RedundantNewKeyword
     tag0.Justification <- Justification.Center
     tag0.Background <- "#FFFFFF"
 
     let tt = buffer.TagTable
     tt.Add tag0 |> ignore
-    let tag = new TextTag("underline")
+    // IDisposable for the TextTag
+    let tag = new TextTag("underline") // fsharplint:disable-line RedundantNewKeyword
     tag.Underline <- Pango.Underline.Single
     tt.Add tag |> ignore
 
@@ -783,11 +780,13 @@ module private Gui =
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "IDisposables are added to other widgets")>]
   let private setToolButtons (h: Handler) =
-    let g = new AccelGroup()
+    // IDisposable for the AccelGroup
+    let g = new AccelGroup() // fsharplint:disable-line RedundantNewKeyword
     h.mainWindow.AddAccelGroup(g)
 #if !NET472
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
-    let prov = new CssProvider()
+    // IDisposable for the CssProvider
+    let prov = new CssProvider() // fsharplint:disable-line RedundantNewKeyword
     let nl = Environment.NewLine
 
     let style =
@@ -850,7 +849,8 @@ module private Gui =
       handler.codeView.ModifyBase(state, whiteSmoke)
       handler.codeView.ModifyBg(state, whiteSmoke))
 #else
-    let prov = new CssProvider()
+    // IDisposable for the CssProvider
+    let prov = new CssProvider() // fsharplint:disable-line RedundantNewKeyword
 
     let nl = Environment.NewLine
 
@@ -980,8 +980,8 @@ module private Gui =
       let format =
         Resource.GetResourceString "SelectFont"
 #if !NET472
-      use selector =
-        new FontChooserDialog(format, handler.mainWindow)
+      use selector = // IDisposable
+        new FontChooserDialog(format, handler.mainWindow) // fsharplint:disable-line RedundantNewKeyword
 
       selector.Font <- Persistence.readFont ()
 

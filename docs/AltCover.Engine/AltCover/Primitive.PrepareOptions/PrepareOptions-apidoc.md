@@ -9,9 +9,9 @@ public PrepareOptions(IEnumerable<string> inputDirectories, IEnumerable<string> 
     IEnumerable<string> attributeFilter, IEnumerable<string> pathFilter, 
     IEnumerable<string> attributeTopLevel, IEnumerable<string> typeTopLevel, 
     IEnumerable<string> methodTopLevel, IEnumerable<string> callContext, string reportFormat, 
-    bool inPlace, bool save, bool zipFile, bool methodPoint, bool singleVisit, bool lineCover, 
+    bool inPlace, bool save, bool zipFile, bool methodPoint, bool all, bool lineCover, 
     bool branchCover, IEnumerable<string> commandLine, bool exposeReturnCode, bool sourceLink, 
-    bool defer, bool localSource, bool visibleBranches, string showStatic, bool showGenerated, 
+    bool eager, bool localSource, bool visibleBranches, string showStatic, bool showGenerated, 
     TraceLevel verbosity, bool trivia, string outputRoot, bool portable)
 ```
 

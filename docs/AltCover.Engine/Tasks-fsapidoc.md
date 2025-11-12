@@ -7,12 +7,12 @@ Both the .net framework/mono and .net core releases publish MSBuild tasks from t
 For the C# programmer,  attributes have the extra angle-brackets, while `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
 
 
-For `AltCover.Prepare` and `AltCover.Collect`, the task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, `SingleVisit` represents the `--single` option, `ExposeReturnCode` is the converse of the command line option `dropReturnCode`, and `CommandLine` is everything after a `--` .  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
+For `AltCover.Prepare` and `AltCover.Collect`, the task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, `ExposeReturnCode` is the converse of the command line option `dropReturnCode`, and `CommandLine` is everything after a `--` .  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
 ```
 namespace AltCover
 ```
 ## Task `AltCover.Prepare`
-This is the instrumentation mode with `--save --inplace --defer` as default.  Associated parameters are
+This is the instrumentation mode with `--save --inplace` as default.  Associated parameters are
 ```
 type Prepare =
   class
@@ -42,13 +42,13 @@ type Prepare =
     member Save : bool with get, set
     member ZipFile : bool with get, set
     member MethodPoint : bool with get, set
-    member SingleVisit : bool with get, set
+    member All : bool with get, set
     member LineCover : bool with get, set
     member BranchCover : bool with get, set
     member CommandLine : string array with get, set
     member ExposeReturnCode : bool with get, set
     member SourceLink : bool with get, set
-    member Defer : bool with get, set
+    member Eager : bool with get, set
     member LocalSource : bool with get, set
     member VisibleBranches : bool with get, set
     member ShowStatic : string with get, set

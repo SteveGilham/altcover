@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net9.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <Reference Include="Unquote">
       <HintPath>..\..\ThirdParty\Unquote.dll</HintPath>
     </Reference>

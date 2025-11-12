@@ -1,5 +1,4 @@
 ﻿namespace Tests
-// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
 open System.IO
@@ -20,15 +19,12 @@ module FSApiTests =
       typeof<Tests.DU.MyClass>.Assembly.Location
 
     let resource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
-      |> Seq.find _.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal)
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
+      |> Seq.find
+        _.EndsWith("OpenCoverForPester.api.coverlet.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
     let baseline = XDocument.Load(stream)
 
@@ -40,15 +36,11 @@ module FSApiTests =
     let schemata = XmlSchemaSet()
 
     let sresource =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("OpenCoverStrict.xsd", StringComparison.Ordinal)
 
     use sstream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(sresource)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(sresource)
 
     use sreader = new StreamReader(sstream)
 
@@ -67,15 +59,11 @@ module FSApiTests =
       DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
 
     let resource2 =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(resource2)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
 
     let after = XDocument.Load(stream)
     let setAttribute (x: XElement) n v = x.Attribute(XName.Get n).Value <- v
@@ -458,7 +446,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     // fix up file path
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/SimpleMix.exe")
 
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
@@ -587,10 +575,7 @@ module FSApiTests =
     use rdr = new StreamReader(mstream2)
 
     let result =
-      rdr
-        .ReadToEnd()
-        .Replace("\r", String.Empty)
-        .Replace("ID0ES", "ID0ET") // flakiness in label autogenerator
+      rdr.ReadToEnd().Replace("\r", String.Empty).Replace("ID0ES", "ID0ET") // flakiness in label autogenerator
 
     use stream2 =
       Assembly
@@ -600,10 +585,7 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream2)
 
     let expected =
-      rdr2
-        .ReadToEnd()
-        .Replace("&#x2442;", "\u2442")
-        .Replace("\r", String.Empty)
+      rdr2.ReadToEnd().Replace("&#x2442;", "\u2442").Replace("\r", String.Empty)
 
     testEqualValue result expected
 
@@ -662,7 +644,7 @@ module FSApiTests =
     let doc = XDocument.Load stream
     // fix up file path
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/SimpleMix.exe")
 
     doc.Descendants("ModulePath".X)
     |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
@@ -741,7 +723,7 @@ module FSApiTests =
         .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
 
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.TestData/SimpleMix.exe")
 
     let document = XDocument.Load stream
     let now = DateTime.UtcNow.ToLongDateString()
@@ -832,10 +814,7 @@ module FSApiTests =
     use rdr = new StreamReader(stream)
 
     let expected =
-      rdr
-        .ReadToEnd()
-        .Replace("\r", String.Empty)
-        .Replace("&#x2442;", "\u2442")
+      rdr.ReadToEnd().Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
 
     rdr.BaseStream.Position <- 0L
     let doc = XmlDocument()
@@ -870,11 +849,7 @@ module FSApiTests =
       XmlTypes.ToXDocument converted
 
     testWithFallback
-      <@
-        reverted
-          .ToString()
-          .Replace(Environment.NewLine, String.Empty) = documentText
-      @>
+      <@ reverted.ToString().Replace(Environment.NewLine, String.Empty) = documentText @>
       (reverted.ToString())
       (Is.EqualTo documentText)
 
@@ -924,11 +899,7 @@ module FSApiTests =
       coverage.Attribute(XName.Get "timestamp").Value
 
     let expected =
-      rdr2
-        .ReadToEnd()
-        .Replace("{0}", v)
-        .Replace("{1}", t)
-        .Replace("\r", String.Empty)
+      rdr2.ReadToEnd().Replace("{0}", v).Replace("{1}", t).Replace("\r", String.Empty)
 
     testEqualValue result expected
 
@@ -958,10 +929,7 @@ module FSApiTests =
     use rdr = new StreamReader(stream2a)
 
     let result =
-      rdr
-        .ReadToEnd()
-        .Replace("\r", String.Empty)
-        .Replace("\\", "/")
+      rdr.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
 
     //printfn "FSApi.NCoverToCobertura\r\n%s" result
 
@@ -1009,10 +977,7 @@ module FSApiTests =
     use rdr = new StreamReader(mstream2)
 
     let result =
-      rdr
-        .ReadToEnd()
-        .Replace("html >", "html>")
-        .Replace("\r", String.Empty)
+      rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty)
 
     use stream2 =
       Assembly
@@ -1145,15 +1110,11 @@ module FSApiTests =
       AltCover.CollectOptions.Primitive pcoll
 
     let targets =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceNames()
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith("AltCover.proj", StringComparison.Ordinal)
 
     use stream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream(targets)
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(targets)
 
     let doc = XDocument.Load stream
 
@@ -1285,8 +1246,7 @@ module FSApiTests =
 
     test
       <@
-        (DotNet.CLIOptions.Many [ a; force; fail ])
-          .ShowSummary
+        (DotNet.CLIOptions.Many [ a; force; fail ]).ShowSummary
         |> String.IsNullOrEmpty
       @>
 
@@ -1462,9 +1422,7 @@ module FSApiTests =
 
     test
       <@
-        summary
-          .ToString()
-          .Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />"
+        summary.ToString().Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />"
       @>
 
 // TODO -- recursive validation

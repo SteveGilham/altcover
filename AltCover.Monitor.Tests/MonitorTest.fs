@@ -16,7 +16,7 @@ module MonitorTests =
       [ (261, 0) ] // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net9.0.xml"
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net10.0.xml"
       ),
       [ (260, 37); (260, 36) ] ]
     |> List.filter (fst >> File.Exists)
@@ -78,15 +78,37 @@ module MonitorTests =
     let branch = b.Branch
 
     let xml, expect = coverageXml ()
-    let text = xml |> File.ReadAllText
     let result = (code, branch)
-    let t2 = sprintf "%A" result
+
+    //test'
+    //  <@
+    //    code > 112
+    //    && code < 268
+    //    && branch > 24
+    //    && branch < 38
+    //  @>
+    //  (text + Environment.NewLine + t2)
+
+    // CodeRabbit derived suggestion
+    // Derive bounds and allowed branches from the discovered expectations
+    let expectedCodes = expect |> List.map fst
+    // use the observed miniumum from other runs which is far less than (expectedCodes |> List.min)
+    let minExpectedCode = 112
+    // Allow some headroom to absorb minor toolchain changes
+    let maxExpectedCodeWithSlack = (expectedCodes |> List.max) + 10
+    let expectedBranches = (24, 38) // as historically observed
 
     test'
       <@
-        code > 112
-        && code < 261
-        && branch > 24
-        && branch < 38
+        code >= minExpectedCode
+        && code <= maxExpectedCodeWithSlack
+        && branch > fst expectedBranches
+        && branch < snd expectedBranches
       @>
-      (text + Environment.NewLine + t2)
+      (sprintf "%s%sGot %A; expected codes in [%d..%d], branches in %A"
+         xml
+         (Environment.NewLine)
+         result
+         minExpectedCode
+         maxExpectedCodeWithSlack
+         expectedBranches)

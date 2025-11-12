@@ -41,9 +41,7 @@ let checkCalls (m: MethodDefinition) =
     let p = v.Previous
 
     if
-      p.OpCode
-        .ToString()
-        .StartsWith("ldc.i4", StringComparison.OrdinalIgnoreCase)
+      p.OpCode.ToString().StartsWith("ldc.i4", StringComparison.OrdinalIgnoreCase)
       |> not
     then
       eprintfn "Suspicious call in %s - visit number = %A" m.FullName p

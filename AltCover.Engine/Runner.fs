@@ -436,9 +436,7 @@ module internal Runner =
             let nc1 =
               nc |> Int32.TryParse |> snd |> float
 
-            Math
-              .Round(vc1 * 100.0 / nc1, 2)
-              .ToString(CultureInfo.InvariantCulture)
+            Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
         | Some x -> summary.Attribute(x.X).Value
 
       if go then
@@ -563,9 +561,7 @@ module internal Runner =
 
             let nc1 = nc |> float
 
-            Math
-              .Round(vc1 * 100.0 / nc1, 2)
-              .ToString(CultureInfo.InvariantCulture)
+            Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
 
         if go then
           writeSummary key vc nc pc
@@ -1012,8 +1008,7 @@ module internal Runner =
             timer.Restart()
 
             let length =
-              FileInfo(f)
-                .Length.ToString("#,#", CultureInfo.CurrentCulture)
+              FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentCulture)
 
             sprintf "... %s (%sb)" f length |> Output.info
             use fileStream = File.OpenRead f

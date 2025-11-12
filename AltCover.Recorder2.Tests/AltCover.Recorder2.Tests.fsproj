@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder2.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <NoWarn>NU1702</NoWarn>
-    <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
   </PropertyGroup>
 
@@ -18,9 +16,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
-    <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample2NCoverage.xml" Link="Sample2NCoverage.xml" />
-    <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2NCoverage.xml" Link="Sample2NCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
@@ -39,6 +37,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="NUnit" VersionOverride="3.14.0" />
     <PackageReference Include="NUnit3TestAdapter">
       <PrivateAssets>all</PrivateAssets>
@@ -47,7 +46,6 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

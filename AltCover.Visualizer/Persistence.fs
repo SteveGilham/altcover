@@ -49,7 +49,7 @@ module internal Persistence =
       let display = w.Display
 
       let monitor =
-        { 0 .. display.NMonitors }
+        seq { 0 .. display.NMonitors }
         |> Seq.filter (fun i ->
           use monitor = display.GetMonitor(i)
           let bounds = monitor.Geometry
@@ -141,7 +141,7 @@ module internal Persistence =
       key.GetValue("y", bounds0.Top + ((bounds0.Height - height) / 2)) :?> int
 
     let monitor =
-      { 0 .. screen.NMonitors }
+      seq { 0 .. screen.NMonitors }
       |> Seq.filter (fun i ->
         let bounds = screen.GetMonitorGeometry(i)
 

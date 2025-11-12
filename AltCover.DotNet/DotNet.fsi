@@ -75,39 +75,39 @@ module DotNet = begin
 // * value `ForceDelete` gives the `/AltCoverForce` value this represents
 // * value `Summary` gives the `/AltCoverShowSummary` value this represents
 #if TRACE // cheat mode here
-    module internal I = begin
-      val private arg : name:string -> s:string -> (string*string)
-      val private listArg : name:string -> s:seq<System.String> -> (string*string)
-      val private isSet : s:string -> bool
-      val private fromList : name:string -> s:seq<System.String> -> (string*string) * bool
-      val fromArg : name:string -> s:string -> (string*string) * bool
-      val toPrepareListArgumentList :
-        prepare:Abstract.IPrepareOptions ->
-          ((string -> #seq<System.String> -> (string*string) * bool) * string *
-           System.String seq) list
-      val toPrepareFromArgArgumentList :
-        prepare:Abstract.IPrepareOptions ->
-          ((string -> string -> (string*string) * bool) * string * System.String) list
-      val toPrepareArgArgumentList :
-        prepare:Abstract.IPrepareOptions ->
-          ((string -> string -> (string*string)) * string * string * bool) list
-      val toCollectFromArgArgumentList :
-        collect:Abstract.ICollectOptions ->
-          ((string -> string -> (string*string)* bool) * string * System.String) list
-      val toCollectListArgArgumentList :
-        collect:Abstract.ICollectOptions ->
-          ((string -> #seq<System.String> -> (string*string) * bool) * string *
-           System.String seq) list
-      val toSharedFromValueArgumentList :
-        verbosity : System.Diagnostics.TraceLevel ->
-       ((string -> obj -> bool -> (string*string)*bool) * string * obj * bool) list
-      val toCLIOptionsFromArgArgumentList :
-        options:ICLIOptions ->
-          ((string -> string -> (string*string) * bool) * string * string) list
-      val toCLIOptionsArgArgumentList :
-        options:ICLIOptions ->
-          ((string -> string -> (string*string)) * string * string * bool) list
-    end
+  module internal I = begin
+    val private arg : name:string -> s:string -> (string*string)
+    val private listArg : name:string -> s:seq<System.String> -> (string*string)
+    val private isSet : s:string -> bool
+    val private fromList : name:string -> s:seq<System.String> -> (string*string) * bool
+    val fromArg : name:string -> s:string -> (string*string) * bool
+    val toPrepareListArgumentList :
+      prepare:Abstract.IPrepareOptions ->
+        ((string -> #seq<System.String> -> (string*string) * bool) * string *
+          System.String seq) list
+    val toPrepareFromArgArgumentList :
+      prepare:Abstract.IPrepareOptions ->
+        ((string -> string -> (string*string) * bool) * string * System.String) list
+    val toPrepareArgArgumentList :
+      prepare:Abstract.IPrepareOptions ->
+        ((string -> string -> (string*string)) * string * string * bool) list
+    val toCollectFromArgArgumentList :
+      collect:Abstract.ICollectOptions ->
+        ((string -> string -> (string*string)* bool) * string * System.String) list
+    val toCollectListArgArgumentList :
+      collect:Abstract.ICollectOptions ->
+        ((string -> #seq<System.String> -> (string*string) * bool) * string *
+          System.String seq) list
+    val toSharedFromValueArgumentList :
+      verbosity : System.Diagnostics.TraceLevel ->
+      ((string -> obj -> bool -> (string*string)*bool) * string * obj * bool) list
+    val toCLIOptionsFromArgArgumentList :
+      options:ICLIOptions ->
+        ((string -> string -> (string*string) * bool) * string * string) list
+    val toCLIOptionsArgArgumentList :
+      options:ICLIOptions ->
+        ((string -> string -> (string*string)) * string * string * bool) list
+  end
 #endif
 // ### Composing the whole command line
 // ```

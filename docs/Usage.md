@@ -8,7 +8,7 @@
 
 The full command line is 
 ```
-AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
+AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--all] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--eager] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--trivia] [--portable] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
 AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/p[ackage]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [-q] [--verbose] [--?|help|h] [-- ] [...]
 or
@@ -104,9 +104,8 @@ In detail
       --methodpoint          Optional: record only whether a method has been
                                visited or not.  Overrides the --linecover and --
                                branchcover options.
-      --single               Optional: only record the first hit at any
-                               location, or first hit for each context if --
-                               callContext is operating.
+      --all                  Optional: record every hit at any location, and
+                               for each context if --callContext is operating.
       --linecover            Optional: Do not record branch coverage.  Ignored
                                for the --reportFormat=NCover option.
                                    Incompatible with --branchcover.
@@ -117,8 +116,8 @@ In detail
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
-      --defer                Optional, defers writing runner-mode coverage data
-                               until process exit.
+      --eager                Optional, writes runner-mode coverage data
+                               immediately.
   -v, --visibleBranches      Optional: Hide complex internal IL branching
                                implementation details in switch/match
                                constructs, and just show what the source level
@@ -249,8 +248,6 @@ or, for the global tool only
 * Except where being driven by AltCover in "runner" mode, coverage statistics are written to the file nominated by the `r|report=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
 * valid arguments for `--teamcity` are `B`, `R`, `+B`, `+R` or nothing at all (same as `B`).  The letter indicates which symbol to use in the TeamCity format for branch coverage (`B` is for `Block`, which by experiment did show in the build report, and `R` is for `bRanch` which is documented, but did not show when I tried it), the optional `+` indicates that the OpenCover summary should also be emitted.
-
-* valid arguments for `--defer` are `+`, `-` or nothing at all (same as `+`).  `+` keeps coverage data in memory until process exit, `-` writes promptly to file in runner mode, i.e. acts as in previous releases since 1.6).
 
 * `ImportModule` will print a string on Mono/non-Windows, but Windows PowerShell won't be there to make use of it.
 

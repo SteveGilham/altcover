@@ -6,7 +6,7 @@ on:
     - master
     - feature/*
     - release/*
-    - develop/github/*    
+    - develop/github/*
   pull_request:
     branches:
     - master
@@ -27,26 +27,32 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5.0.0
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '9.0.100'
+        global-json-file: global.json
+        cache: true
+        cache-dependency-path: |
+          **/*.csproj
+          **/*.fsproj
+          **/packages.lock.json
+          **/Directory.Packages.props
     - name: Tools
       run: dotnet tool restore
     - name: Setup
-      run: dotnet run --project .\Build\Setup.fsproj
+      run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
-      run: dotnet run --project .\Build\Build.fsproj
-    - uses: actions/upload-artifact@v4
+      run: dotnet run --project ./Build/Build.fsproj
+    - uses: actions/upload-artifact@v5
       with:
           name: nupkgs
           path: _Packagin*/*.nupkg
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: failure()
       with:
           name: reports.windows
@@ -58,19 +64,27 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5.0.0
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '9.0.100'
+        global-json-file: global.json
+        cache: true
+        cache-dependency-path: |
+          **/*.csproj
+          **/*.fsproj
+          **/packages.lock.json
+          **/Directory.Packages.props
+    - name: Install mono 
+      run: sudo apt-get update && sudo apt-get install -y mono-devel
     - name: Tools
       run: dotnet tool restore
     - name: Setup
       run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
-      run: dotnet run --project ./Build/Build.fsproj 
-    - uses: actions/upload-artifact@v4
+      run: dotnet run --project ./Build/Build.fsproj
+    - uses: actions/upload-artifact@v5
       if: failure()
       with:
           name: reports.linux

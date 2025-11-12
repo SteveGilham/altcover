@@ -118,14 +118,10 @@ module CoverageFormats =
       let source = identities.[identity]
       let files = Dictionary<string, string>()
 
-      target
-        .Descendants(XName.Get "File")
-        .OfType<XElement>()
+      target.Descendants(XName.Get "File").OfType<XElement>()
       |> Seq.iter (fun f ->
         files.Add(
-          f
-            .Attribute(XName.Get "fullPath")
-            .Value.Replace('\\', '/'),
+          f.Attribute(XName.Get "fullPath").Value.Replace('\\', '/'),
           f.Attribute(XName.Get "uid").Value
         ))
 
@@ -144,9 +140,7 @@ module CoverageFormats =
           s.Attribute(XName.Get "endcolumn").Value
 
         let key =
-          s
-            .Attribute(XName.Get "document")
-            .Value.Replace('\\', '/')
+          s.Attribute(XName.Get "document").Value.Replace('\\', '/')
 
         let uid = files.[key]
 

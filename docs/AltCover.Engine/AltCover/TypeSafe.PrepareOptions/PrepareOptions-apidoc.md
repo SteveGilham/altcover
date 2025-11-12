@@ -7,8 +7,8 @@ public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDire
     Filters assemblyExcludeFilter, Filters typeFilter, Filters methodFilter, 
     Filters attributeFilter, Filters pathFilter, Filters attributeTopLevel, Filters typeTopLevel, 
     Filters methodTopLevel, Context callContext, ReportFormat reportFormat, Flag inPlace, 
-    Flag save, Flag zipFile, Flag methodPoint, Flag singleVisit, Flag lineCover, Flag branchCover, 
-    CommandLine commandLine, Flag exposeReturnCode, Flag sourceLink, Flag defer, Flag localSource, 
+    Flag save, Flag zipFile, Flag methodPoint, Flag all, Flag lineCover, Flag branchCover, 
+    CommandLine commandLine, Flag exposeReturnCode, Flag sourceLink, Flag eager, Flag localSource, 
     Flag visibleBranches, StaticFormat showStatic, Flag showGenerated, TraceLevel verbosity, 
     Flag trivia, FilePath outputRoot, Flag portable)
 ```

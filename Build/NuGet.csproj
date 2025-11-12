@@ -32,6 +32,5 @@
     <PackageReference Include="AltCode.Dixon" />
     <PackageReference Include="altcode.gendarme" />
     <PackageReference Include="XmlDoc2CmdletDoc" />
-    <PackageReference Include="System.ValueTuple" VersionOverride="4.0.0-rc3-24212-01" />
   </ItemGroup>
 </Project>

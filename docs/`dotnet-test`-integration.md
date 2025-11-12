@@ -41,7 +41,7 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverOutputRoot=`"path of root folder for saved/instrumented output for `dotnet test`, default `$(TargetDir)`"
 * `/p:AltCoverZipFile="true|false"` - set "true" to store the coverage report in a `.zip` archive
 * `/p:AltCoverMethodPoint="true|false"` - set "true" to record only the first point of each method
-* `/p:AltCoverSingle="true|false"` - set "true" to record only the first visit to each point
+* `/p:AltCoverAll="true|false"` - set "true" to record every visit to each point
 * `/p:AltCoverLineCover="true|false"` - set "true" to record only line coverage in OpenCover format
 * `/p:AltCoverBranchCover="true|false"` - set "true" to record only branch coverage in OpenCover format
 * `/p:AltCoverSourceLink=true|false` to opt for SourceLink document URLs for tracked files

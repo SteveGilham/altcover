@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <AssemblyName>Sample2</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="NUnit3TestAdapter">

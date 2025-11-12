@@ -229,7 +229,6 @@ Fields that are not applicable to the use case or platform are silently ignored.
 The members correspond to the like-named command line options for `AltCover`, except
 * `ExposeReturnCode` being the converse of the `dropReturnCode` option
 * `CommandLine` being the material after a `-- `
-* `SingleVisit` being the name for `--single`
 
 ```
     [<NoComparison>]
@@ -258,13 +257,13 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Save: Flag
         ZipFile: Flag
         MethodPoint: Flag
-        SingleVisit: Flag
+        All: Flag
         LineCover: Flag
         BranchCover: Flag
         CommandLine: CommandLine
         ExposeReturnCode: Flag
         SourceLink: Flag
-        Defer: Flag
+        Eager: Flag
         LocalSource: Flag
         VisibleBranches: Flag
         ShowStatic: StaticFormat

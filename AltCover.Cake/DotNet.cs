@@ -48,7 +48,9 @@ namespace AltCover.Cake
           return collect;
       }
 
+#pragma warning disable IDE0301 // Collection initialization
       return new AltCover.ValidatedCommandLine(FSharpList<string>.Empty, Enumerable.Empty<string>());
+#pragma warning restore IDE0301 // Collection initialization
     }
 
     /// <summary>
@@ -141,9 +143,15 @@ namespace AltCover.Cake
                 DotNetTestSettings testSettings,
                 CoverageSettings coverageSettings)
     {
+#if NET8_0_OR_GREATER
+      ArgumentNullException.ThrowIfNull(project, nameof(project));
+      ArgumentNullException.ThrowIfNull(testSettings, nameof(testSettings));
+      ArgumentNullException.ThrowIfNull(coverageSettings, nameof(coverageSettings));
+#else
       if (project == null) throw new ArgumentNullException(nameof(project));
       if (testSettings == null) throw new ArgumentNullException(nameof(testSettings));
       if (coverageSettings == null) throw new ArgumentNullException(nameof(coverageSettings));
+#endif
 
       testSettings.ArgumentCustomization = coverageSettings.Concatenate(testSettings.ArgumentCustomization);
 

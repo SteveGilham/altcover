@@ -42,9 +42,9 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./_Binaries/Invoke-Altcover_Sample2/Debug+AnyCPU/net9.0"
+        $o = "./_Binaries/Invoke-Altcover_Sample2/Debug+AnyCPU/net10.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-        $i = "./_Binaries/Sample2/Debug+AnyCPU/net9.0"
+        $i = "./_Binaries/Sample2/Debug+AnyCPU/net10.0"
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
@@ -69,7 +69,7 @@ Describe "Invoke-Altcover" {
         $w | Should -Be "A total of 0 visits recorded"
 
         $env:AltCoverTag = "Invoke-Altcover_"
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net9.0", "Sample2.fsproj") #, "/p:AltCoverTag=Invoke-Altcover_")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net10.0", "Sample2.fsproj") #, "/p:AltCoverTag=Invoke-Altcover_")
         $env:AltCoverTag = ""
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
@@ -79,7 +79,7 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net9.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net10.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
@@ -118,7 +118,7 @@ Describe "Invoke-Altcover" {
 
 Describe "ConvertTo-XDocument" {
     It "converts" {
-        $xml = [xml](Get-Content "./AltCover.Tests/Sample1WithNCover.xml")
+        $xml = [xml](Get-Content "./AltCover.TestData/Sample1WithNCover.xml")
         $xd = $xml | ConvertTo-XDocument
         $xd | Should -BeOfType [xdoc]
         $header = $xd.Declaration.ToString().Replace(" standalone=`"`"", "") + "`n" 
@@ -143,7 +143,7 @@ Describe "ConvertTo-XDocument" {
 
 Describe "ConvertTo-XmlDocument" {
     It "converts" {
-        $xd = [xdoc]::Load("./AltCover.Tests/Sample1WithNCover.xml")
+        $xd = [xdoc]::Load("./AltCover.TestData/Sample1WithNCover.xml")
         $xml = $xd | ConvertTo-XmlDocument
         $xml | Should -BeOfType "System.Xml.XmlDocument"
         $sw = new-object System.IO.StringWriter @()
@@ -160,36 +160,36 @@ Describe "ConvertTo-XmlDocument" {
 
 Describe "ConvertTo-Lcov" {
     It "Converts OpenCover Data" {
-        ConvertTo-LCov -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
-        $expected = [String]::Join("`n", (Get-Content "./AltCover.Tests/HandRolledMonoCoverage.lcov"))
+        ConvertTo-LCov -InputFile "./AltCover.TestData/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
+        $expected = [String]::Join("`n", (Get-Content "./AltCover.TestData/HandRolledMonoCoverage.lcov"))
         $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.lcov"))
         $got | Should -Be $expected.Replace("`r", "")
     }
 
   It "Converts NCover Data" {
-      $lines = (Get-Content "./AltCover.Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
+      $lines = (Get-Content "./AltCover.TestData/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
       $lines | Set-Content "./_Packaging/NCover.lcov.xml"
       ConvertTo-LCov -InputFile "./_Packaging/NCover.lcov.xml" -OutputFile "./_Packaging/NCover.lcov"
-      $expected = [String]::Join("`n", (Get-Content "./AltCover.Tests/NCoverBugFix.lcov"))
+      $expected = [String]::Join("`n", (Get-Content "./AltCover.TestData/NCoverBugFix.lcov"))
       $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
       $got | Should -Be $expected.Replace("`r", "")
   }
 
   It "Converts Real NCover Data" {
     $ev = ""
-    [xdoc]::Load("./AltCover.Tests/GenuineNCover158.Xml") | ConvertTo-LCov -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
+    [xdoc]::Load("./AltCover.TestData/GenuineNCover158.Xml") | ConvertTo-LCov -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
     $ev | Should -BeFalse
   }
 }
 
 Describe "ConvertTo-Cobertura" {
   It "Converts OpenCover Data" {
-    $x = ConvertTo-Cobertura -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.ConvertTo.cobertura"
+    $x = ConvertTo-Cobertura -InputFile "./AltCover.TestData/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.ConvertTo.cobertura"
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
 
-    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/OpenCover.ConvertTo.cobertura"))).Replace("`$v", $v).Replace("`$t", $t)
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.TestData/OpenCover.ConvertTo.cobertura"))).Replace("`$v", $v).Replace("`$t", $t)
 
     $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.ConvertTo.cobertura"))
     $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
@@ -199,14 +199,14 @@ Describe "ConvertTo-Cobertura" {
   }
 
   It "Converts NCover Data" {
-    $lines = (Get-Content "./AltCover.Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
+    $lines = (Get-Content "./AltCover.TestData/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
     $lines | Set-Content "./_Packaging/NCover.cob.xml"
     $x = ConvertTo-Cobertura -InputFile "./_Packaging/NCover.cob.xml" -OutputFile "./_Packaging/NCover.ConvertTo.cobertura"
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
 
-    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/NCover.ConvertTo.cobertura"))).Replace("`$v", $v).Replace("`$t", $t)
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.TestData/NCover.ConvertTo.cobertura"))).Replace("`$v", $v).Replace("`$t", $t)
     $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.ConvertTo.cobertura"))
     $got | Should -Be $expected.Replace("`r", "")
 
@@ -215,7 +215,7 @@ Describe "ConvertTo-Cobertura" {
   }
 
   It "Converts With the pipeline" {
-    $raw = [xdoc]::Load("./AltCover.Tests/Sample1WithNCover.xml")
+    $raw = [xdoc]::Load("./AltCover.TestData/Sample1WithNCover.xml")
     $raw.Descendants() | % {
       if ($_.Attribute("excluded")) { $_.Attribute("excluded").Value = "false" }
     }
@@ -224,7 +224,7 @@ Describe "ConvertTo-Cobertura" {
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
 
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/Sample1WithNCover.cob.xml")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/Sample1WithNCover.cob.xml")
     $expected = $expected.Replace("{0}", $v).Replace("{1}", $t)
     $header = $x.Declaration.ToString() + "`n"
     ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
@@ -232,14 +232,14 @@ Describe "ConvertTo-Cobertura" {
 
   It "Converts Real NCover Data" {
     $ev = ""
-    ConvertTo-Cobertura -InputFile "./AltCover.Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
+    ConvertTo-Cobertura -InputFile "./AltCover.TestData/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
     $ev | Should -BeFalse
   }
 }
 
 Describe "ConvertTo-NCover" {
   It "converts" {
-      $xml = ConvertTo-NCover -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
+      $xml = ConvertTo-NCover -InputFile "./AltCover.TestData/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
       $xml | Should -BeOfType [xdoc]
 
       $sw = new-object System.IO.StringWriter @()
@@ -283,7 +283,7 @@ Describe "ConvertTo-NCover" {
   }
 
   It "converts with the pipeline" {
-    $xml = [xdoc]::Load("./AltCover.Tests/HandRolledMonoCoverage.xml") | ConvertTo-NCover
+    $xml = [xdoc]::Load("./AltCover.TestData/HandRolledMonoCoverage.xml") | ConvertTo-NCover
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -295,14 +295,14 @@ Describe "ConvertTo-NCover" {
     $xw.Close()
     $time = $xml.Descendants("coverage") | Select-Object -First 1 
     $time = $time.Attribute("startTime").Value
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/HandRolledToNCover.xml")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/HandRolledToNCover.xml")
     $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("{0}", $time)
   }
 }
 
 Describe "ConvertTo-BarChart" {
   It "converts NCover" {
-    $xml = ConvertTo-BarChart -InputFile "./AltCover.Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
+    $xml = ConvertTo-BarChart -InputFile "./AltCover.TestData/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -313,7 +313,7 @@ Describe "ConvertTo-BarChart" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/GenuineNCover158Chart.html")
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/GenuineNCover158Chart.html")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/GenuineNCover158Chart.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
     $result | Should -Be $expected.Replace("`r", "").Replace("`"utf-8`"?>", "`"utf-16`"?>")
@@ -321,7 +321,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [xdoc]::Load("./AltCover.Tests/HandRolledVisualized.xml") | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
+    $xml = [xdoc]::Load("./AltCover.TestData/HandRolledVisualized.xml") | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -331,7 +331,7 @@ Describe "ConvertTo-BarChart" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/HandRolledVisualized.html")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/HandRolledVisualized.html")
 
     # swap out unique identifiers
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>")
@@ -353,7 +353,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts OpenCover" {
-    $xml = ConvertTo-BarChart -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
+    $xml = ConvertTo-BarChart -InputFile "./AltCover.TestData/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -364,7 +364,7 @@ Describe "ConvertTo-BarChart" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/HandRolledMonoCoverage.html")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("ID0ES", "ID0ET") # flakiness in label autogenerator
     $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString()).Replace("`"utf-8`"?>", "`"utf-16`"?>")
@@ -375,7 +375,7 @@ Describe "ConvertTo-BarChart" {
 Describe "ConvertFrom-NCover" {
   It "converts" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll"
     $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
     $xml | Should -BeOfType [xdoc]
 
@@ -387,7 +387,7 @@ Describe "ConvertFrom-NCover" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/AltCoverFSharpTypes.xml")
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/AltCoverFSharpTypes.n3.xml")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/AltCoverFSharpTypes.n3.xml")
 
     $xml = ConvertTo-XDocument $xml
     $hash = $xml.Descendants("Module").Attribute("hash").Value
@@ -400,7 +400,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
     $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll",
-                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll"))
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("Tests.DU/MyUnion/get_MyBa", "Tests.DU/get_MyBa")
@@ -412,7 +412,7 @@ Describe "ConvertFrom-NCover" {
 
   It "converts from the pipeline" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll"
     $xml = [xdoc]::Load("./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
     $xml | Should -BeOfType [xdoc]
 
@@ -424,7 +424,7 @@ Describe "ConvertFrom-NCover" {
     $xml.WriteTo($xw)
     $xw.Close()
 
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/AltCoverFSharpTypes.n3.xml")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/AltCoverFSharpTypes.n3.xml")
 
     $xml = ConvertTo-XDocument $xml
     $hash = $xml.Descendants("Module").Attribute("hash").Value
@@ -437,7 +437,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
     $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/net6.0/Sample4.dll",
-                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll"))
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("Tests.DU/MyUnion/get_MyBa", "Tests.DU/get_MyBa")
@@ -448,7 +448,7 @@ Describe "ConvertFrom-NCover" {
 
 Describe "Compress-Branching" {
   It "Removes interior branches" {
-    $xml = Compress-Branching -WithinSequencePoint -InputFile "./AltCover.Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+    $xml = Compress-Branching -WithinSequencePoint -InputFile "./AltCover.TestData/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -459,14 +459,14 @@ Describe "Compress-Branching" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/CompressInterior.xml")
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/CompressInterior.xml").Replace("`r", "")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/CompressInterior.xml").Replace("`r", "")
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")  
     $result | Should -Be $expected
     $written.Replace("`r", "") | Should -Be  $expected
   }
   It "Unifies equivalent branches" {
-    $xml = Compress-Branching -SameSpan -InputFile "./AltCover.Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
+    $xml = Compress-Branching -SameSpan -InputFile "./AltCover.TestData/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -477,14 +477,14 @@ Describe "Compress-Branching" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/SameSpan.xml")
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/SameSpan.xml").Replace("`r", "")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/SameSpan.xml").Replace("`r", "")
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")  
     $result | Should -Be $expected
     $written.Replace("`r", "") | Should -Be  $expected
   }
   It "DoesBoth" {
-    $xml = [xdoc]::Load("./AltCover.Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
+    $xml = [xdoc]::Load("./AltCover.TestData/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
     $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
@@ -495,7 +495,7 @@ Describe "Compress-Branching" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/CompressBoth.xml")
-    $expected = ([System.IO.File]::ReadAllText("./AltCover.Tests/CompressBoth.xml")).Replace("`r", "")
+    $expected = ([System.IO.File]::ReadAllText("./AltCover.TestData/CompressBoth.xml")).Replace("`r", "")
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
     $result | Should -Be $expected
@@ -504,7 +504,7 @@ Describe "Compress-Branching" {
   It "DoesAtLeastOne" {
     $fail = $false
     try {
-      Compress-Branching -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"
+      Compress-Branching -InputFile "./AltCover.TestData/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"
       $fail = $true
     }
     catch {
@@ -552,7 +552,7 @@ Describe "Write-OpenCoverDerivedState" {
     $check = [xml](Get-Content "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml")
     if ($check.CoverageSession.Summary.visitedSequencePoints -ne "11")
     {
-      $inputFile = "./AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
+      $inputFile = "./AltCover.TestData/OpenCoverForPester.coverlet.expected.xml"
       [System.Console]::WriteLine("Substituting coverlet file")
     }
     $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
@@ -562,7 +562,7 @@ Describe "Write-OpenCoverDerivedState" {
     $hactual = $doc.CoverageSession.Modules.Module.hash
     $hactual | Should -BeExactly $hexpected
 
-    $expected = [xml](Get-Content "./AltCover.Tests/OpenCoverForPester.coverlet.xml")
+    $expected = [xml](Get-Content "./AltCover.TestData/OpenCoverForPester.coverlet.xml")
     $expected.CoverageSession.Modules.Module.hash = $hactual
     $expected.CoverageSession.Modules.Module.ModulePath = $assembly
     $expected.CoverageSession.Modules.Module.ModuleTime = $doc.CoverageSession.Modules.Module.ModuleTime
@@ -584,7 +584,7 @@ Describe "Write-OpenCoverDerivedState" {
 
   It "Works the pipeline" {
     
-    $xmlIn = [xdoc]::Load("./AltCover.Tests/BasicCSharp.xml")
+    $xmlIn = [xdoc]::Load("./AltCover.TestData/BasicCSharp.xml")
 
     $xml = $xmlIn | Write-OpenCoverDerivedState -BranchOrdinal SL
     $xml | Should -BeOfType [xdoc]
@@ -600,14 +600,14 @@ Describe "Write-OpenCoverDerivedState" {
     $xw.Close()
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
 
-    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/BasicCSharp.postprocessed.xml").Replace("`r", "")
+    $expected = [System.IO.File]::ReadAllText("./AltCover.TestData/BasicCSharp.postprocessed.xml").Replace("`r", "")
     $result | Should -BeExactly $expected
   }
 }
 
 Describe "ConvertTo-CoverageJson" {
     It "converts from a document" {
-        $xd = [xdoc]::Load("./AltCover.Tests/GenuineNCover158.Xml")
+        $xd = [xdoc]::Load("./AltCover.TestData/GenuineNCover158.Xml")
 
         ## fix up file path
         $exe = [System.IO.Path]::Combine("./Samples/Sample19", "ConsoleApplication1.exe")
@@ -617,25 +617,25 @@ Describe "ConvertTo-CoverageJson" {
 
         $json = ConvertTo-CoverageJson $xd
         $json.Trim() | Set-Content "./_Packaging/GenuineNCover158.json"
-        $expect = Get-Content "./AltCover.Tests/GenuineNCover158.json" 
+        $expect = Get-Content "./AltCover.TestData/GenuineNCover158.json" 
         $result = Get-Content "./_Packaging/GenuineNCover158.json"
         $result | Should -BeExactly $expect
     }
 
     It "Converts from a file" {
-        $path = "./AltCover.Tests/Sample4FullTracking.xml"
+        $path = "./AltCover.TestData/Sample4FullTracking.xml"
         $json = ConvertTo-CoverageJson $path
         $json.Trim() | Set-Content("./_Packaging/OpenCover.json")
-        $expect = Get-Content "./AltCover.Tests/OpenCover.json" 
+        $expect = Get-Content "./AltCover.TestData/OpenCover.json" 
         $result = Get-Content "./_Packaging/OpenCover.json"
         $result | Should -BeExactly $expect
     }
 
     It "Converts Coverlet near-OpenCover format" {
-        $path = "./AltCover.Tests/Sample4.coverlet.xml"
+        $path = "./AltCover.TestData/Sample4.coverlet.xml"
         $json = ConvertTo-CoverageJson $path
         $json.Trim() | Set-Content("./_Packaging/Coverlet.FromXml.json")
-        $expect = Get-Content "./AltCover.Tests/Coverlet.FromXml.json" 
+        $expect = Get-Content "./AltCover.TestData/Coverlet.FromXml.json" 
         $result = Get-Content "./_Packaging/Coverlet.FromXml.json"
         $result | Should -BeExactly $expect
     }
@@ -643,22 +643,22 @@ Describe "ConvertTo-CoverageJson" {
 
 Describe "ConvertFrom-CoverageJson" {
   It "Converts coverlet Data" {
-    $x = ConvertFrom-CoverageJson -InputFile "./AltCover.Tests/Sample4.coverlet.json" -OutputFile "./_Packaging/Sample4.fromcoverletjson.xml"
+    $x = ConvertFrom-CoverageJson -InputFile "./AltCover.TestData/Sample4.coverlet.json" -OutputFile "./_Packaging/Sample4.fromcoverletjson.xml"
 
-    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/Sample4.fromcoverletjson.xml")))
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.TestData/Sample4.fromcoverletjson.xml")))
 
     $got = [String]::Join("`n", (Get-Content "./_Packaging/Sample4.fromcoverletjson.xml"))
     $got | Should -Be $expected
   }
 
   It "Converts With the pipeline" {
-    $raw = Get-Content "./AltCover.Tests/Sample5.native.json"
+    $raw = Get-Content "./AltCover.TestData/Sample5.native.json"
     $raw = [String]::Join("`n", $raw)
     $x = $raw | ConvertFrom-CoverageJson
 
     $x.Save("./_Packaging/Sample5.native.xml")
 
-    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/Sample5.native.xml")))
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.TestData/Sample5.native.xml")))
     $actual = ([String]::Join("`n", (Get-Content "./_Packaging/Sample5.native.xml")))
     $actual | Should -Be $expected
   }
@@ -666,7 +666,7 @@ Describe "ConvertFrom-CoverageJson" {
 
 Describe "MergeOpenCover" {
   It "Absorbs Unsupported Xml Files" {
-    $xml = dir -recurse "./AltCover.Tests/*.cobertura" | Merge-OpenCover
+    $xml = dir -recurse "./AltCover.TestData/*.cobertura" | Merge-OpenCover
     $xml | Should -BeOfType [xdoc]
 
     $expected = @"
@@ -680,15 +680,15 @@ Describe "MergeOpenCover" {
   }
 
   It "Selects Single OpenCover Files" {
-    $files = ("./AltCover.Tests/HandRolledMonoCoverage.xml", "./AltCover.Tests/Sample1WithNCover.xml","./AltCover.Tests/OpenCover.cobertura")
+    $files = ("./AltCover.TestData/HandRolledMonoCoverage.xml", "./AltCover.TestData/Sample1WithNCover.xml","./AltCover.TestData/OpenCover.cobertura")
     $xml = $files | Merge-OpenCover
        $xml | Should -BeOfType [xdoc]
-       $expected = [xdoc]::Load("./AltCover.Tests/HandRolledMonoCoverage.xml")
+       $expected = [xdoc]::Load("./AltCover.TestData/HandRolledMonoCoverage.xml")
        $xml.ToString() | Should -BeExactly $expected.ToString().Replace(' standalone="yes"', '')
   }
 
   It "Combines Top Level Summaries" {
-    $files = ("./AltCover.Tests/HandRolledMonoCoverage.xml", "./AltCover.Tests/Sample4FullTracking.xml")
+    $files = ("./AltCover.TestData/HandRolledMonoCoverage.xml", "./AltCover.TestData/Sample4FullTracking.xml")
     $xml = $files | Merge-OpenCover -OutputFile "./_Packaging/OpenCoverCombination-1.xml"
     $xml | Should -BeOfType [xdoc]
     $summary = ($xml.Descendants("Summary") | Select-Object -First 1).ToString()

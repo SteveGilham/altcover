@@ -32,164 +32,157 @@ module DriveApi =
       (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect force)
       o
 
-  let DoIt =
-    (fun _ ->
-      let expected = "{0}"
-      let acv = AltCover.Command.Version()
-      printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
-      test <@ acv.ToString() = expected @>
+  let doIt _ =
+    let expected = "{0}"
+    let acv = AltCover.Command.Version()
+    printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
+    test <@ acv.ToString() = expected @>
 
-      let acfv =
-        AltCover.Command.FormattedVersion()
+    let acfv =
+      AltCover.Command.FormattedVersion()
 
-      test <@ acfv = (sprintf "AltCover version %s" expected) @>
+    test <@ acfv = (sprintf "AltCover version %s" expected) @>
 
-      printfn
-        "AltCover.Command.FormattedVersion - Returned '%s' expected %A"
-        acfv
-        expected
+    printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
 
-      let afcv =
-        AltCover.Fake.Command.Version().ToString()
+    let afcv =
+      AltCover.Fake.Command.Version().ToString()
 
-      afcv |> Trace.trace
-      printfn "expected %A" expected
+    afcv |> Trace.trace
+    printfn "expected %A" expected
 
-      test <@ afcv.ToString() = expected @>
+    test <@ afcv.ToString() = expected @>
 
-      let collect =
-        AltCover.CollectOptions.Primitive
-          { Primitive.CollectOptions.Create() with
-              LcovReport = "x" }
+    let collect =
+      AltCover.CollectOptions.Primitive
+        { Primitive.CollectOptions.Create() with
+            LcovReport = "x" }
 
-      let prepare =
-        AltCover.PrepareOptions.Primitive
-          { Primitive.PrepareOptions.Create() with
-              All = true
-              TypeFilter = [| "a"; "b" |] }
-
-      // let t = prepare.GetType()
-      // printfn "prepare type is %A" t.FullName
-
-      // t.GetInterfaces()
-      // |> Seq.iter (fun i -> printfn "\timplements %A" i.FullName)
-
-      let forceTrue = DotNet.CLIOptions.Force true
-
-      //      printfn
-      //        "Test arguments : '%s'"
-      //        (AltCover.DotNet.ToTestArgumentList prepare collect forceTrue)
-      printfn
-        "Test arguments : '%A'"
-        (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList
-          prepare
-          collect
-          forceTrue)
-
-      let t =
-        DotNet.TestOptions.Create()
-        |> (withAltCoverOptions prepare collect forceTrue)
-
-      printfn "WithAltCoverOptions returned '%A'" t.Common.Environment
-
-      let p2 =
+    let prepare =
+      AltCover.PrepareOptions.Primitive
         { Primitive.PrepareOptions.Create() with
-            LocalSource = true
             All = true
-            CallContext = [| "[Fact]"; "0" |]
-            AssemblyFilter = [| "xunit" |] }
+            TypeFilter = [| "a"; "b" |] }
 
-      let pp2 =
-        AltCover.PrepareOptions.Primitive p2
+    // let t = prepare.GetType()
+    // printfn "prepare type is %A" t.FullName
 
-      let c2 = Primitive.CollectOptions.Create()
+    // t.GetInterfaces()
+    // |> Seq.iter (fun i -> printfn "\timplements %A" i.FullName)
 
-      let cc2 =
-        AltCover.CollectOptions.Primitive c2
+    let forceTrue = DotNet.CLIOptions.Force true
 
-      let setBaseOptions (o: DotNet.Options) =
-        { o with
-            WorkingDirectory = Path.getFullName "./_DotnetTest"
-            Verbosity = Some DotNet.Verbosity.Minimal }
+    //      printfn
+    //        "Test arguments : '%s'"
+    //        (AltCover.DotNet.ToTestArgumentList prepare collect forceTrue)
+    printfn
+      "Test arguments : '%A'"
+      (AltCoverFake.DotNet.Testing.DotNet.ToTestPropertiesList prepare collect forceTrue)
 
-      let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
-        let msb =
-          { o.MSBuildParams with
-              ConsoleLogParameters = []
-              DistributedLoggers = None
-              DisableInternalBinLog = true }
+    let t =
+      DotNet.TestOptions.Create()
+      |> (withAltCoverOptions prepare collect forceTrue)
 
-        { o with MSBuildParams = msb }
+    printfn "WithAltCoverOptions returned '%A'" t.Common.Environment
 
-      DotNet.test
-        ((fun to' ->
-          to'.WithCommon(setBaseOptions)
-          |> (withAltCoverOptions pp2 cc2 forceTrue))
-         >> testWithCLIArguments)
-        "apiuse_dotnettest.fsproj"
+    let p2 =
+      { Primitive.PrepareOptions.Create() with
+          LocalSource = true
+          All = true
+          CallContext = [| "[Fact]"; "0" |]
+          AssemblyFilter = [| "xunit" |] }
 
-      let im = AltCover.Command.ImportModule()
-      printfn "Import module %A" im
+    let pp2 =
+      AltCover.PrepareOptions.Primitive p2
 
-      let importModule =
-        (im.Trim().Split()
-         |> Seq.take 2
-         |> Seq.skip 1
-         |> Seq.head)
-          .Trim([| '"' |])
+    let c2 = Primitive.CollectOptions.Create()
 
-      let command =
-        "$ImportModule = '"
-        + importModule
-        + "'; Import-Module $ImportModule; ConvertTo-BarChart -?"
+    let cc2 =
+      AltCover.CollectOptions.Primitive c2
 
-      let corePath =
-        AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.DotNetCore
+    let setBaseOptions (o: DotNet.Options) =
+      { o with
+          WorkingDirectory = Path.getFullName "./_DotnetTest"
+          Verbosity = Some DotNet.Verbosity.Minimal }
 
-      printfn "corePath = %A" corePath
+    let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) =
+      let msb =
+        { o.MSBuildParams with
+            ConsoleLogParameters = []
+            DistributedLoggers = None
+            DisableInternalBinLog = true }
 
-      let frameworkPath =
-        AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.Framework
+      { o with MSBuildParams = msb }
 
-      printfn "frameworkPath = %A" frameworkPath
+    DotNet.test
+      ((fun to' ->
+        to'.WithCommon(setBaseOptions)
+        |> (withAltCoverOptions pp2 cc2 forceTrue))
+       >> testWithCLIArguments)
+      "apiuse_dotnettest.fsproj"
 
-      if frameworkPath |> String.IsNullOrEmpty |> not then
-        let framework =
-          Fake.DotNet.ToolType.CreateFullFramework()
+    let im = AltCover.Command.ImportModule()
+    printfn "Import module %A" im
 
-        { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create
-            AltCoverFake.DotNet.Testing.AltCoverCommand.ArgumentType.GetVersion with
-            ToolType = framework
-            ToolPath = frameworkPath }
-        |> AltCoverFake.DotNet.Testing.AltCoverCommand.run
+    let importModule =
+      (im.Trim().Split()
+       |> Seq.take 2
+       |> Seq.skip 1
+       |> Seq.head)
+        .Trim([| '"' |])
 
-      let core =
-        Fake.DotNet.ToolType.CreateFrameworkDependentDeployment id
+    let command =
+      "$ImportModule = '"
+      + importModule
+      + "'; Import-Module $ImportModule; ConvertTo-BarChart -?"
+
+    let corePath =
+      AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.DotNetCore
+
+    printfn "corePath = %A" corePath
+
+    let frameworkPath =
+      AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.Framework
+
+    printfn "frameworkPath = %A" frameworkPath
+
+    if frameworkPath |> String.IsNullOrEmpty |> not then
+      let framework =
+        Fake.DotNet.ToolType.CreateFullFramework()
 
       { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create
           AltCoverFake.DotNet.Testing.AltCoverCommand.ArgumentType.GetVersion with
-          ToolType = core
-          ToolPath = corePath }
+          ToolType = framework
+          ToolPath = frameworkPath }
       |> AltCoverFake.DotNet.Testing.AltCoverCommand.run
 
-      let pwsh =
-        if Environment.isWindows then
-          Fake.Core.ProcessUtils.findLocalTool
-            String.Empty
-            "pwsh.exe"
-            [ Environment.environVar "ProgramFiles"
-              @@ "PowerShell" ]
-        else
-          "pwsh"
+    let core =
+      Fake.DotNet.ToolType.CreateFrameworkDependentDeployment id
 
-      let r =
-        CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
-        |> CreateProcess.withWorkingDirectory "."
-        |> Proc.run
+    { AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create
+        AltCoverFake.DotNet.Testing.AltCoverCommand.ArgumentType.GetVersion with
+        ToolType = core
+        ToolPath = corePath }
+    |> AltCoverFake.DotNet.Testing.AltCoverCommand.run
 
-      if (r.ExitCode <> 0) then
-        InvalidOperationException("Non zero return code")
-        |> raise)
+    let pwsh =
+      if Environment.isWindows then
+        Fake.Core.ProcessUtils.findLocalTool
+          String.Empty
+          "pwsh.exe"
+          [ Environment.environVar "ProgramFiles"
+            @@ "PowerShell" ]
+      else
+        "pwsh"
+
+    let r =
+      CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
+      |> CreateProcess.withWorkingDirectory "."
+      |> Proc.run
+
+    if (r.ExitCode <> 0) then
+      InvalidOperationException("Non zero return code")
+      |> raise
 
   let Execute argv =
     argv
@@ -198,7 +191,7 @@ module DriveApi =
     |> Context.RuntimeContext.Fake
     |> Context.setExecutionContext
 
-    _Target "DoIt" DoIt
+    _Target "DoIt" doIt
     Target.runOrDefault "DoIt"
 
 #if !INTERACTIVE

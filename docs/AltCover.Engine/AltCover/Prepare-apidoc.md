@@ -11,6 +11,7 @@ public class Prepare : Task
 | name | description |
 | --- | --- |
 | [Prepare](Prepare/Prepare-apidoc)() | The default constructor |
+| [All](Prepare/All-apidoc) { get; set; } | Corresponds to command line option `--all` |
 | [AssemblyExcludeFilter](Prepare/AssemblyExcludeFilter-apidoc) { get; set; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
 | [AssemblyFilter](Prepare/AssemblyFilter-apidoc) { get; set; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](Prepare/AttributeFilter-apidoc) { get; set; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
@@ -18,8 +19,8 @@ public class Prepare : Task
 | [BranchCover](Prepare/BranchCover-apidoc) { get; set; } | Corresponds to command line option `--branchcover` |
 | [CallContext](Prepare/CallContext-apidoc) { get; set; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](Prepare/CommandLine-apidoc) { get; set; } | Corresponds to the command line to run, given after a `-- ` |
-| [Defer](Prepare/Defer-apidoc) { get; set; } | Corresponds to command line option `--defer` |
 | [Dependencies](Prepare/Dependencies-apidoc) { get; set; } | Corresponds to command line option `-d, --dependency=VALUE` |
+| [Eager](Prepare/Eager-apidoc) { get; set; } | Corresponds to command line option `--eager` |
 | [ExposeReturnCode](Prepare/ExposeReturnCode-apidoc) { get; set; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](Prepare/FileFilter-apidoc) { get; set; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](Prepare/InPlace-apidoc) { get; set; } | Corresponds to command line option `--inplace` |
@@ -38,7 +39,6 @@ public class Prepare : Task
 | [Save](Prepare/Save-apidoc) { get; set; } | Corresponds to command line option `--save` |
 | [ShowGenerated](Prepare/ShowGenerated-apidoc) { get; set; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](Prepare/ShowStatic-apidoc) { get; set; } | Corresponds to command line option `--showstatic[=VALUE]` |
-| [SingleVisit](Prepare/SingleVisit-apidoc) { get; set; } | Corresponds to command line option `--single` |
 | [SourceLink](Prepare/SourceLink-apidoc) { get; set; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |

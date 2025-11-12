@@ -13,7 +13,7 @@ This method is a `[CakeMethodAlias]` extension method on `ICakeContext`, and `[C
 
 ```csharp
 public static void DotNetTest(this ICakeContext context, FilePath project, 
-    DotNetCoreTestSettings testSettings, CoverageSettings coverageSettings)
+    DotNetTestSettings testSettings, CoverageSettings coverageSettings)
 ```
 
 | parameter | description |

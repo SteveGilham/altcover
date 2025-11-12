@@ -26,9 +26,7 @@ module AssemblyConstants =
 
   let internal dotnetDir =
     let list =
-      Environment
-        .GetEnvironmentVariable("PATH")
-        .Split([| Path.PathSeparator |])
+      Environment.GetEnvironmentVariable("PATH").Split([| Path.PathSeparator |])
       |> Seq.map _.Trim([| '"' |])
 
     let files = [ "dotnet"; "dotnet.exe" ]
@@ -101,13 +99,14 @@ type internal AssemblyResolver() as self =
   static member ReadAssembly(path: String) =
     let reader = ReaderParameters()
     // fsharplint:disable-next-line  RedundantNewKeyword
-    reader.AssemblyResolver <- new AssemblyResolver()
+    reader.AssemblyResolver <- new AssemblyResolver() // IDisposable
     AssemblyDefinition.ReadAssembly(path, reader)
 
   static member ReadAssembly(file: Stream) =
     let reader = ReaderParameters()
     // fsharplint:disable-next-line  RedundantNewKeyword
-    reader.AssemblyResolver <- new AssemblyResolver()
+    reader.AssemblyResolver <- new AssemblyResolver() // IDisposable
+
     AssemblyDefinition.ReadAssembly(file, reader)
 
   [<SuppressMessage("Gendarme.Rules.Performance",
@@ -121,24 +120,19 @@ type internal AssemblyResolver() as self =
     else
       // Placate Gendarme here
       let share =
-        "|usr|share"
-          .Replace('|', Path.DirectorySeparatorChar)
+        "|usr|share".Replace('|', Path.DirectorySeparatorChar)
 
       let shareLocal =
-        "|usr|local|share"
-          .Replace('|', Path.DirectorySeparatorChar)
+        "|usr|local|share".Replace('|', Path.DirectorySeparatorChar)
 
       let dotnetShared =
-        "dotnet|shared"
-          .Replace('|', Path.DirectorySeparatorChar)
+        "dotnet|shared".Replace('|', Path.DirectorySeparatorChar)
 
       let wingac =
-        "Microsoft.NET|assembly"
-          .Replace('|', Path.DirectorySeparatorChar)
+        "Microsoft.NET|assembly".Replace('|', Path.DirectorySeparatorChar)
 
       let monogac =
-        "lib|mono|gac"
-          .Replace('|', Path.DirectorySeparatorChar)
+        "lib|mono|gac".Replace('|', Path.DirectorySeparatorChar)
 
       let sources =
         [ AssemblyConstants.packageEnv
@@ -351,10 +345,7 @@ module internal CecilExtension =
 
     ilProcessor.InsertBefore(newReturn, endFinally)
 
-    if
-      (findFirstInstruction body)
-        .Equals(firstInstruction)
-    then
+    if (findFirstInstruction body).Equals(firstInstruction) then
       let tryStart =
         Instruction.Create(OpCodes.Nop)
 

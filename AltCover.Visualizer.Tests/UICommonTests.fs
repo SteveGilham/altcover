@@ -38,7 +38,7 @@ module VisualizerTests =
       Path.Combine(SolutionRoot.location, "Sample20")
       |> Path.GetFullPath
 
-    use sr1 = // fsharplint:disable-next-line  RedundantNewKeyword
+    use sr1 =
       new StreamReader(
         Assembly
           .GetExecutingAssembly()
@@ -55,7 +55,7 @@ module VisualizerTests =
     let after =
       Transformer.transformFromCobertura before
 
-    use sr2 = // fsharplint:disable-next-line  RedundantNewKeyword
+    use sr2 =
       new StreamReader(
         Assembly
           .GetExecutingAssembly()

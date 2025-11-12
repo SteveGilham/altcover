@@ -167,8 +167,7 @@ FN:4,(anonymous_0)
               methods
               |> Seq.iter (fun m ->
                 let l =
-                  (I.lineOfPartialMethod m)
-                    .ToString(CultureInfo.InvariantCulture)
+                  (I.lineOfPartialMethod m).ToString(CultureInfo.InvariantCulture)
 
                 let (mx, pts) = m
                 let name = fullname mx
@@ -306,8 +305,7 @@ FN:4,(anonymous_0)
               methods
               |> Seq.iter (fun m ->
                 let l =
-                  (I.slOfPartialMethod m)
-                    .ToString(CultureInfo.InvariantCulture)
+                  (I.slOfPartialMethod m).ToString(CultureInfo.InvariantCulture)
 
                 let (mx, pts) = m
                 let name = fullname mx

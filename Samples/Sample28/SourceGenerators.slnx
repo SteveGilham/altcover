@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GeneratedDemo/CSharpGeneratedDemo.csproj" />
+  <Project Path="SourceGeneratorSamples/CSharpSourceGeneratorSamples.csproj" />
+</Solution>

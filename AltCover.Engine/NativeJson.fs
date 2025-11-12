@@ -434,18 +434,13 @@ module
         | '\r' -> sb.Append("\\r")
         | '\t' -> sb.Append("\\t")
         | h when (int h) >= 128 || Array.get allowed (int h) = 0uy ->
-          sb
-            .Append("\\u")
-            .Append(
-              ((int) c)
-                .ToString("X4", CultureInfo.InvariantCulture)
-            )
+          sb.Append("\\u").Append(((int) c).ToString("X4", CultureInfo.InvariantCulture))
         | _ -> sb.Append(c))
       builder
       s
 
   let private slugs =
-    { 0..14 }
+    seq { 0..14 }
     |> Seq.map (fun i -> (i, String(' ', i)))
     |> Map.ofSeq
 
@@ -825,16 +820,14 @@ module
     sd.Attribute(XName.Get "numBranchPoints").Value <-
       nb.ToString(CultureInfo.InvariantCulture)
 
-    sd
-      .Attribute(XName.Get "visitedBranchPoints")
-      .Value <- vb.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "visitedBranchPoints").Value <-
+      vb.ToString(CultureInfo.InvariantCulture)
 
     sd.Attribute(XName.Get "numSequencePoints").Value <-
       ns.ToString(CultureInfo.InvariantCulture)
 
-    sd
-      .Attribute(XName.Get "visitedSequencePoints")
-      .Value <- vs.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "visitedSequencePoints").Value <-
+      vs.ToString(CultureInfo.InvariantCulture)
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
@@ -906,11 +899,8 @@ module
         |> Seq.groupBy _.Line
         |> Seq.sumBy (fun (_1, x) -> x |> Seq.distinctBy _.EndOffset |> Seq.length)
 
-      m
-        .Attribute(XName.Get "cyclomaticComplexity")
-        .Value <-
-        (1 + targets)
-          .ToString(CultureInfo.InvariantCulture)
+      m.Attribute(XName.Get "cyclomaticComplexity").Value <-
+        (1 + targets).ToString(CultureInfo.InvariantCulture)
 
     if value.SeqPnts.IsNotNull then
       value.SeqPnts
@@ -1529,7 +1519,7 @@ type internal DocumentType =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.NativeJson/getMethodRecord@1299::Invoke(AltCover.NativeJson/JsonContext,System.String,Mono.Cecil.Cil.Document)",
+                              "AltCover.NativeJson/getMethodRecord@1289::Invoke(AltCover.NativeJson/JsonContext,System.String,Mono.Cecil.Cil.Document)",
                             Justification = "not at netstandard2.0")>]
 ()
 #endif

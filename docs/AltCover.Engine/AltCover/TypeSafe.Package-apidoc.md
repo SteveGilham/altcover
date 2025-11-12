@@ -1,6 +1,6 @@
 # TypeSafe.Package class
 
-Corresponds to a value after `-- ` on the command line
+Corresponds to a cobertura package source root
 
 ```csharp
 public sealed class Package : IEquatable<Package>, IStructuralEquatable
@@ -12,6 +12,7 @@ public sealed class Package : IEquatable<Package>, IStructuralEquatable
 | --- | --- |
 | static [NewPackage](TypeSafe.Package/NewPackage-apidoc)(…) |  |
 | [AsString](TypeSafe.Package/AsString-apidoc)() | Returns the string to be used as a package root |
+
 ## See Also
 
 * class [TypeSafe](./TypeSafe-apidoc)

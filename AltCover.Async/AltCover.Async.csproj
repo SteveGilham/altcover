@@ -6,7 +6,8 @@
     <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-  </PropertyGroup>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+	</PropertyGroup>
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -16,11 +17,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
