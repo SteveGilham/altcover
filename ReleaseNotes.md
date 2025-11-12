@@ -7,7 +7,7 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 * Net10.0 support
 * Fix issue #238 - some symbol errors cause instrumention to abort rather than skip that assembly.
 * Move to Fake 6.1.4 for all purposes, ending legacy support for 6.0.x
-* Move to Cake 5.1.0 for all purposes, ending legacy support for 5.0(.x)
+* Move to Cake 6.0.0 for all purposes, ending legacy support for 5.x
 
 # 9.0.1 (Indori series release 1)
 * Net9.0 support

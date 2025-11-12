@@ -5108,7 +5108,7 @@ module Targets =
                 @ tmp.MSBuildParams.Properties })
         "Sample4LongForm.fsproj")
 
-  let cake5plusTest =
+  let cake6plusTest =
     (fun () ->
       let before = Actions.ticksNow ()
 
@@ -5191,7 +5191,7 @@ module Targets =
             .Replace("{1}", version)
         )
 
-        [ (" --version 5.1.0", "build.cake")
+        [ (" --version 6.0.0", "build.cake")
           (String.Empty, "build.cake") ]
         |> List.iter (fun (cakeversion, script) ->
           try
@@ -7392,7 +7392,7 @@ module Targets =
 
     _Target "JsonReporting" jsonReporting
     _Target "MSBuildTest" msbuildTest
-    _Target "cake5plusTest" cake5plusTest
+    _Target "cake5plusTest" cake6plusTest
     _Target "ApiUse" apiUse
     _Target "DotnetTestIntegration" dotnetTestIntegration
     _Target "Issue20" issue20
