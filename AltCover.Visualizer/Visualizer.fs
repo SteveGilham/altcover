@@ -507,7 +507,7 @@ module private Gui =
     let branches =
       HandlerCommon.TagBranches root file
 
-    for l in 1 .. buff.LineCount do
+    for l in seq { 1 .. buff.LineCount } do
       // IDisposable for the Image
       let image = new Image() // fsharplint:disable-line RedundantNewKeyword
 

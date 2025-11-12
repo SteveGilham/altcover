@@ -16,7 +16,7 @@ module MonitorTests =
       [ (261, 0) ] // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net9.0.xml"
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net10.0.xml"
       ),
       [ (260, 37); (260, 36) ] ]
     |> List.filter (fst >> File.Exists)
@@ -80,36 +80,35 @@ module MonitorTests =
     let xml, expect = coverageXml ()
     let result = (code, branch)
 
-    // Original hardcodes
-    // Sequence points (112, 268)
-    // Branch points (24, 38)
+    //test'
+    //  <@
+    //    code > 112
+    //    && code < 268
+    //    && branch > 24
+    //    && branch < 38
+    //  @>
+    //  (text + Environment.NewLine + t2)
 
-    test <@ expect |> List.isEmpty |> not @>
-
+    // CodeRabbit derived suggestion
     // Derive bounds and allowed branches from the discovered expectations
     let expectedCodes = expect |> List.map fst
-    // use the observed minimum from other runs which is far less than (expectedCodes |> List.min)
+    // use the observed miniumum from other runs which is far less than (expectedCodes |> List.min)
     let minExpectedCode = 112
     // Allow some headroom to absorb minor toolchain changes
-    let maxExpectedCodeWithSlack =
-      (expectedCodes |> List.max) + 10
-
+    let maxExpectedCodeWithSlack = (expectedCodes |> List.max) + 10
     let expectedBranches = (24, 38) // as historically observed
 
     test'
       <@
         code >= minExpectedCode
         && code <= maxExpectedCodeWithSlack
-        // destructure once for readability
-        && (let minB, maxB = expectedBranches
-            branch > minB && branch < maxB)
-
+        && branch > fst expectedBranches
+        && branch < snd expectedBranches
       @>
-      (sprintf
-        "%s%sGot %A; expected codes in [%d..%d], branches in %A"
-        xml
-        (Environment.NewLine)
-        result
-        minExpectedCode
-        maxExpectedCodeWithSlack
-        expectedBranches)
+      (sprintf "%s%sGot %A; expected codes in [%d..%d], branches in %A"
+         xml
+         (Environment.NewLine)
+         result
+         minExpectedCode
+         maxExpectedCodeWithSlack
+         expectedBranches)

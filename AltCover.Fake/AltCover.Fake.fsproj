@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FAKE.Core.Trace" VersionOverride="6.0.0" />
-    <PackageReference Include="FAKE.DotNet.Cli" VersionOverride="6.0.0" />
+    <PackageReference Include="FAKE.Core.Trace" />
+    <PackageReference Include="FAKE.DotNet.Cli" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

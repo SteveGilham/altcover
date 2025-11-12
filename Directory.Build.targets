@@ -1,3 +1,12 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)\OutputBuildTargets.props" />
+	<Import Project="$(MSBuildThisFileDirectory)\OutputBuildTargets.props" />
+	<PropertyGroup>
+		<!-- Disable package pruning for .NET Framework projects to avoid issues with missing reference assemblies -->
+		<!-- For arcane reasons of build system ordering, it has to be in this file, and no other, to pick up `$(TargetFrameworkIdentifier)` -->
+		<!-- In a project file `$(TargetFramework)` works just as well - and inded it does here, too -->
+		<!-- See https://github.com/dotnet/sdk/issues/51304 for more -->
+		<RestoreEnablePackagePruning Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' "> false</RestoreEnablePackagePruning>
+		<!-- Suppress security warnings about Fake.Build packages -->
+		<NoWarn>$(NoWarn);NU1904;NU1903</NoWarn>
+	</PropertyGroup>
 </Project>
