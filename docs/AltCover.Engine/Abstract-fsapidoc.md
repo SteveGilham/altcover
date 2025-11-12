@@ -46,7 +46,6 @@ The members correspond to the like-named command line options for `AltCover Runn
 The members correspond to the like-named command line options for `AltCover`, except
 * `ExposeReturnCode` being the converse of the `dropReturnCode` option
 * `CommandLine` being the material after a `-- `
-* `SingleVisit` being the name for `--single`
 
 ```
   type IPrepareOptions =
@@ -73,13 +72,13 @@ The members correspond to the like-named command line options for `AltCover`, ex
     abstract member Save : bool with get
     abstract member ZipFile : bool with get
     abstract member MethodPoint : bool with get
-    abstract member SingleVisit : bool with get
+    abstract member All : bool with get
     abstract member LineCover : bool with get
     abstract member BranchCover : bool with get
     abstract member CommandLine : IEnumerable<String> with get
     abstract member ExposeReturnCode : bool with get
     abstract member SourceLink : bool with get
-    abstract member Defer : bool with get
+    abstract member Eager : bool with get
     abstract member LocalSource : bool with get
     abstract member VisibleBranches : bool with get
     abstract member ShowStatic : string with get

@@ -616,7 +616,7 @@ Accept wildcard characters?  false
 ```
 
 #### `-Package <string[]>` 
-Output as file path
+Package source roots
 
 ```
 Required?                    false
@@ -1129,19 +1129,19 @@ Invoke-AltCover [-Runner] <SwitchParameter> -RecorderDirectory <string> [-Cobert
 | RPlus | BPlus}] [-Threshold <string>] [-Verbosity {Off | Error | Warning | Info | Verbose}]
 [-WorkingDirectory <string>] [<CommonParameters>]
 
-Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>] [-AttributeFilter
-<string[]>] [-AttributeTopLevel <string[]>] [-BranchCover <SwitchParameter>] [-CallContext
-<string[]>] [-CommandLine <string[]>] [-Defer <SwitchParameter>] [-Dependency <string[]>]
-[-DropReturnCode <SwitchParameter>] [-FileFilter <string[]>] [-InPlace <SwitchParameter>]
-[-InputDirectory <string[]>] [-Key <string[]>] [-LineCover <SwitchParameter>] [-LocalSource
-<SwitchParameter>] [-MethodFilter <string[]>] [-MethodPoint <SwitchParameter>] [-MethodTopLevel
-<string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-Portable <SwitchParameter>]
-[-Report <string>] [-ReportFormat {NCover | OpenCover | Json}] [-Save <SwitchParameter>]
-[-ShowGenerated <SwitchParameter>] [-ShowStatic {KeepHidden | Mark | Reveal}] [-Single
-<SwitchParameter>] [-SourceLink <SwitchParameter>] [-StrongNameKey <string>] [-SymbolDirectory
-<string[]>] [-Trivia <SwitchParameter>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>]
-[-Verbosity {Off | Error | Warning | Info | Verbose}] [-VisibleBranches <SwitchParameter>] [-ZipFile
-<SwitchParameter>] [<CommonParameters>]
+Invoke-AltCover [-All <SwitchParameter>] [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter
+<string[]>] [-AttributeFilter <string[]>] [-AttributeTopLevel <string[]>] [-BranchCover
+<SwitchParameter>] [-CallContext <string[]>] [-CommandLine <string[]>] [-Dependency <string[]>]
+[-DropReturnCode <SwitchParameter>] [-Eager <SwitchParameter>] [-FileFilter <string[]>] [-InPlace
+<SwitchParameter>] [-InputDirectory <string[]>] [-Key <string[]>] [-LineCover <SwitchParameter>]
+[-LocalSource <SwitchParameter>] [-MethodFilter <string[]>] [-MethodPoint <SwitchParameter>]
+[-MethodTopLevel <string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-Portable
+<SwitchParameter>] [-Report <string>] [-ReportFormat {NCover | OpenCover | Json}] [-Save
+<SwitchParameter>] [-ShowGenerated <SwitchParameter>] [-ShowStatic {KeepHidden | Mark | Reveal}]
+[-SourceLink <SwitchParameter>] [-StrongNameKey <string>] [-SymbolDirectory <string[]>] [-Trivia
+<SwitchParameter>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>] [-Verbosity {Off | Error |
+Warning | Info | Verbose}] [-VisibleBranches <SwitchParameter>] [-ZipFile <SwitchParameter>]
+[<CommonParameters>]
 
 Invoke-AltCover [-Version] <SwitchParameter> [<CommonParameters>]
 
@@ -1552,7 +1552,7 @@ Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
 
-#### `-Single <SwitchParameter>` 
+#### `-All <SwitchParameter>` 
 only record the first hit at any location (or first for that context if `-CallContext` is
 operating).
 
@@ -1621,8 +1621,8 @@ Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
 
-#### `-Defer <SwitchParameter>` 
-Defers writing runner-mode coverage data until process exit.
+#### `-Eager <SwitchParameter>` 
+Write runner-mode coverage data immediately.
 
 ```
 Required?                    false

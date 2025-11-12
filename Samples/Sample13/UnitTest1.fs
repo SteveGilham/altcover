@@ -11,9 +11,7 @@ type SimpleTest() =
   [<SetUp>]
   member this.Setup() =
     let here =
-      System.Reflection.Assembly
-        .GetExecutingAssembly()
-        .Location
+      System.Reflection.Assembly.GetExecutingAssembly().Location
 
     let heredir = here |> Path.GetDirectoryName
     let herefile = here |> Path.GetFileName

@@ -13,6 +13,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | static [NewAbstract](AltCover.PrepareOptions/NewAbstract-apidoc)(…) |  |
 | static [NewPrimitive](AltCover.PrepareOptions/NewPrimitive-apidoc)(…) |  |
 | static [NewTypeSafe](AltCover.PrepareOptions/NewTypeSafe-apidoc)(…) |  |
+| [All](AltCover.PrepareOptions/All-apidoc) { get; } | Corresponds to command line option `--all` |
 | [AssemblyExcludeFilter](AltCover.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
 | [AssemblyFilter](AltCover.PrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](AltCover.PrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
@@ -20,8 +21,8 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [BranchCover](AltCover.PrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
 | [CallContext](AltCover.PrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](AltCover.PrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
-| [Defer](AltCover.PrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
 | [Dependencies](AltCover.PrepareOptions/Dependencies-apidoc) { get; } | Corresponds to command line option `-d, --dependency=VALUE` |
+| [Eager](AltCover.PrepareOptions/Eager-apidoc) { get; } | Corresponds to command line option `--eager` |
 | [ExposeReturnCode](AltCover.PrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](AltCover.PrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](AltCover.PrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
@@ -41,7 +42,6 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [Save](AltCover.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](AltCover.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option `--showGenerated` |
 | [ShowStatic](AltCover.PrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
-| [SingleVisit](AltCover.PrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
 | [SourceLink](AltCover.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |

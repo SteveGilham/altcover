@@ -230,10 +230,12 @@ module DotNet =
     ToTestArgumentList prepare collect options |> join
 #endif
 
-  let ImportModuleProperties =
+  // fsharplint:disable-next-line  ParameterNames
+  let ImportModuleProperties = // API for `dotnet test` ImportModule option
     [ ("AltCoverImportModule", "true") ]
 
-  let GetVersionProperties =
+  // fsharplint:disable-next-line  ParameterNames
+  let GetVersionProperties = // API for `dotnet test` GetVersion option
     [ ("AltCoverGetVersion", "true") ]
 
 #if RUNNER

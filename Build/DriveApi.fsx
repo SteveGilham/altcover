@@ -4,9 +4,10 @@
 
 #r "nuget: AltCover.Api, {0}"
 #r "nuget: AltCover.Fake, {0}"
-#r "nuget: Fake.Core.Target, 6.0.0"
-#r "nuget: Fake.DotNet.Cli, 6.0.0"
-#r "nuget: Unquote, 6.1.0"
+#r "nuget: Fake.Core.Target, {3}"
+#r "nuget: Fake.DotNet.Cli, {4}"
+#r "nuget: Unquote, {5}"
+#r "nuget: System.Collections.Immutable, {6}"
 #load "DriveApi.fs"
 
 ApiUse.DriveApi.Execute [||]

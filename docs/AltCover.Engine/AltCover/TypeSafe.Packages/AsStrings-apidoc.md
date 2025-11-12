@@ -8,7 +8,7 @@ public IEnumerable<string> AsStrings()
 
 ## Return Value
 
-the strings to be used to be used as package roots
+the strings to be used as package roots
 
 ## See Also
 

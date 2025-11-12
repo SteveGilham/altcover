@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="System1/System1.fsproj" />
+  <Project Path="System2/System2.fsproj" />
+  <Project Path="Test1/Test1.fsproj" />
+  <Project Path="Test2/Test2.fsproj" />
+</Solution>

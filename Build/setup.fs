@@ -111,7 +111,7 @@ module Setup =
     Console.ForegroundColor <- consoleBefore |> fst
     Console.BackgroundColor <- consoleBefore |> snd
 
-  let FxCop =
+  let fxCop =
     (fun () ->
       fxcop
       |> Option.iter (fun fx ->
@@ -145,7 +145,7 @@ module Setup =
     Target.createFinal "ResetConsoleColours" resetColours
     Target.activateFinal "ResetConsoleColours"
 
-    _Target "FxCop" FxCop
+    _Target "FxCop" fxCop
 
     _Target "Preparation" ignore
 

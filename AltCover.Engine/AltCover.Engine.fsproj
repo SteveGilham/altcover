@@ -5,7 +5,8 @@
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Engine</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
-  </PropertyGroup>
+		<NoWarn>$(NoWarn);NU1702</NoWarn>
+	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
@@ -75,16 +76,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="16.0.461" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" />
-    <PackageReference Include="System.IO.Compression" />
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

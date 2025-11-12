@@ -62,6 +62,8 @@ namespace AltCover.Cake
                   Justification = "Property name")]
     public IEnumerable<string> OutputDirectories => throw new NotImplementedException("OutputDirectories not used");
 
+#pragma warning disable IDE0301 // Collection initialization
+
     ///<summary>
     /// Corresponds to command line option `-y, --symbolDirectory=VALUE`
     ///</summary>
@@ -263,6 +265,8 @@ namespace AltCover.Cake
     /// Corresponds to command line option `--portable`
     ///</summary>
     public virtual bool Portable => false;
+
+#pragma warning restore IDE0301 // Collection initialization
   }
 
   /// <summary>
@@ -326,10 +330,14 @@ namespace AltCover.Cake
                       Justification = "Lcov is a name")]
     public virtual string Cobertura => String.Empty;
 
+#pragma warning disable IDE0301 // Collection initialization
+
     ///<summary>
     /// Corresponds to command line option `-p, --package=VALUE`
     ///</summary>
     public IEnumerable<string> Packages => Enumerable.Empty<string>();
+
+#pragma warning restore IDE0301 // Collection initialization
 
     ///<summary>
     /// Corresponds to command line option `-o, --outputFile=VALUE`

@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="Samples/Sample26/Sample26.fsproj" />
+  <Project Path="Samples/Sample9/sample9.csproj" />
+</Solution>

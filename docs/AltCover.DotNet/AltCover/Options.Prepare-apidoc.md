@@ -9,6 +9,7 @@ public class Prepare
 | name | description |
 | --- | --- |
 | [Prepare](Options.Prepare/Prepare-apidoc)() | The default constructor. |
+| [All](Options.Prepare/All-apidoc) { get; set; } |  |
 | [AssemblyExcludeFilter](Options.Prepare/AssemblyExcludeFilter-apidoc) { get; set; } |  |
 | [AssemblyFilter](Options.Prepare/AssemblyFilter-apidoc) { get; set; } |  |
 | [AttributeFilter](Options.Prepare/AttributeFilter-apidoc) { get; set; } |  |
@@ -16,8 +17,8 @@ public class Prepare
 | [BranchCover](Options.Prepare/BranchCover-apidoc) { get; set; } |  |
 | [CallContext](Options.Prepare/CallContext-apidoc) { get; set; } |  |
 | [CommandLine](Options.Prepare/CommandLine-apidoc) { get; set; } |  |
-| [Defer](Options.Prepare/Defer-apidoc) { get; set; } |  |
 | [Dependencies](Options.Prepare/Dependencies-apidoc) { get; set; } |  |
+| [Eager](Options.Prepare/Eager-apidoc) { get; set; } |  |
 | [ExposeReturnCode](Options.Prepare/ExposeReturnCode-apidoc) { get; set; } |  |
 | [FileFilter](Options.Prepare/FileFilter-apidoc) { get; set; } |  |
 | [InPlace](Options.Prepare/InPlace-apidoc) { get; set; } |  |
@@ -37,7 +38,6 @@ public class Prepare
 | [Save](Options.Prepare/Save-apidoc) { get; set; } |  |
 | [ShowGenerated](Options.Prepare/ShowGenerated-apidoc) { get; set; } |  |
 | [ShowStatic](Options.Prepare/ShowStatic-apidoc) { get; set; } |  |
-| [SingleVisit](Options.Prepare/SingleVisit-apidoc) { get; set; } |  |
 | [SourceLink](Options.Prepare/SourceLink-apidoc) { get; set; } |  |
 | [StrongNameKey](Options.Prepare/StrongNameKey-apidoc) { get; set; } |  |
 | [SymbolDirectories](Options.Prepare/SymbolDirectories-apidoc) { get; set; } |  |

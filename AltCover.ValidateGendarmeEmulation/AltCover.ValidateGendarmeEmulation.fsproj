@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GendarmeVersion>2024.6.28.12460</GendarmeVersion>
     <GendarmeToolDir>..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
@@ -25,6 +25,7 @@
     <Reference Include="Gendarme.Rules.Maintainability">
       <HintPath>$(GendarmeToolDir)Gendarme.Rules.Maintainability.dll</HintPath>
     </Reference>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="mono.cecil" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
@@ -33,7 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
+    <Compile Include="..\AltCover.TestData\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
@@ -43,7 +44,7 @@
     <Compile Include="..\AltCover.Engine\Abstraction.fs" Link="Abstraction.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Engine\Gendarme.fs" Link="Gendarme.fs" />
-    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Compile Include="..\AltCover.TestData\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>

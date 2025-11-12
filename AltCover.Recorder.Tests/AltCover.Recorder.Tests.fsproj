@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <!-- see https://github.com/NuGet/Home/issues/8797 -->
-    <NoWarn>NU1702</NoWarn>
-    <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
-  </PropertyGroup>
+		<NoWarn  Condition="'$(TargetFramework)'!='net472'">$(NoWarn);NU1702</NoWarn>
+	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
@@ -31,9 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
-    <EmbeddedResource Include="Sample2NCoverage.xml" />
-    <EmbeddedResource Include="SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample1WithModifiedOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\Sample2NCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\SimpleCoverage.xml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +40,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="NUnit3TestAdapter">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

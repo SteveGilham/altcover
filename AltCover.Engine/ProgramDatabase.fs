@@ -12,6 +12,17 @@ open Mono.Cecil.Rocks
 
 open AltCover.Shared
 open System.Reflection
+open System.Diagnostics.CodeAnalysis
+
+[<SuppressMessage("Gendarme.Rules.Exceptions",
+                  "MissingExceptionConstructorsRule",
+                  Justification = "Just YAGNI, you know")>]
+[<SuppressMessage("Gendarme.Rules.Serialization",
+                  "MissingSerializationConstructorRule",
+                  Justification = "Just YAGNI, you know")>]
+[<Sealed>]
+type public SymbolReadException(x: exn) =
+  inherit Exception(x.Message, x)
 
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
@@ -21,11 +32,20 @@ module internal ProgramDatabase =
   // Implementation details
   module internal I =
 
+    let private handledSymbolFault (x: exn) = (x :? IndexOutOfRangeException)
+
+    let raiseSymbolError f =
+      try
+        f ()
+      with x when handledSymbolFault x ->
+        // This is a workaround for a Mono.Cecil bug that causes an IndexOutOfRangeException
+        // see issue #238
+        SymbolReadException(x) |> raise
+
     // We no longer have to violate Cecil encapsulation to get the PDB path
     // but we do to get the embedded PDB info
     let internal getEmbed =
-      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly
-        .GetTypes()
+      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes()
        |> Seq.filter (fun m -> m.FullName == "Mono.Cecil.Mixin")
        |> Seq.head)
         .GetMethod("GetEmbeddedPortablePdbEntry")
@@ -101,7 +121,7 @@ module internal ProgramDatabase =
         let streams = b.ReadInt16() |> int // # of stream headers
 
         let headers =
-          { 1..streams }
+          seq { 1..streams }
           |> Seq.map (fun _ ->
             let offset = b.ReadInt32()
             let size = b.ReadInt32()
@@ -257,8 +277,7 @@ module internal ProgramDatabase =
             I.symbolMatch tokens ]
           |> List.forall (fun f -> f s))
          || (s == (assembly.Name.Name + ".pdb")
-             && (assembly |> I.getEmbeddedPortablePdbEntry)
-               .IsNotNull))
+             && (assembly |> I.getEmbeddedPortablePdbEntry).IsNotNull))
        |> Seq.map fst
        |> Seq.tryHead))
 
@@ -294,6 +313,10 @@ module internal ProgramDatabase =
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "not locally owned")>]
+
   let internal readSymbols (assembly: AssemblyDefinition) =
     getPdbWithFallback assembly
     |> Option.iter (fun pdbpath ->
@@ -306,7 +329,7 @@ module internal ProgramDatabase =
       let reader =
         provider.GetSymbolReader(assembly.MainModule, pdbpath)
 
-      assembly.MainModule.ReadSymbols(reader))
+      I.raiseSymbolError (fun () -> assembly.MainModule.ReadSymbols(reader)))
 
   // reflective short-cuts don't work.
   // maybe move this somewhere else, now?
@@ -318,11 +341,10 @@ module internal ProgramDatabase =
     |> Seq.distinctBy _.Url
     |> Seq.toList
 
-[<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
-                                                            "InstantiateArgumentExceptionCorrectlyRule",
-                                                            Scope = "member",
-                                                            Target =
-                                                              "AltCover.ProgramDatabase/I/construct@143::Invoke(System.String,System.Object[])",
-                                                            Justification =
-                                                              "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
+                            "InstantiateArgumentExceptionCorrectlyRule",
+                            Scope = "member",
+                            Target =
+                              "AltCover.ProgramDatabase/I/construct@163::Invoke(System.String,System.Object[])",
+                            Justification = "Compiler generated")>]
 ()

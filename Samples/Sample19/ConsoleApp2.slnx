@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ConsoleApp2/ConsoleApp2.fsproj">
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+  <Project Path="ConsoleApplication1/ConsoleApplication1.fsproj">
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+</Solution>

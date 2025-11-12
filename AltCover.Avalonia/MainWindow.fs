@@ -137,8 +137,8 @@ type MainWindow() as this =
   let ofd = OpenFileDialog()
 #endif
 
-  // fsharplint:disable-next-line  RedundantNewKeyword
-  let iconMaker (x: Stream) = new Bitmap(x)
+  // fsharplint:disable-next-line RedundantNewKeyword
+  let iconMaker (x: Stream) = new Bitmap(x) // IDisposable
 
   [<NonSerialized>]
   let icons = Icons(iconMaker)
@@ -493,7 +493,7 @@ type MainWindow() as this =
       Dispatcher.UIThread.Post(fun _ ->
         stack.Children.Clear()
 
-        for l in 1 .. lines.Length do
+        for l in seq { 1 .. lines.Length } do
           let pic = Image()
 
           let pix =
@@ -712,8 +712,7 @@ type MainWindow() as this =
     ofd.AllowMultiple <- false
 
     let filterBits =
-      (Resource.GetResourceString "SelectXml")
-        .Split([| '|' |])
+      (Resource.GetResourceString "SelectXml").Split([| '|' |])
       |> Seq.map (fun f ->
         let entry = f.Split([| '%' |])
 #if !AVALONIA11
@@ -842,10 +841,7 @@ type MainWindow() as this =
       "exit" ]
     |> Seq.iter (fun n ->
       let cap =
-        n
-          .First()
-          .ToString()
-          .ToUpper(CultureInfo.InvariantCulture)
+        n.First().ToString().ToUpper(CultureInfo.InvariantCulture)
         + n.Substring(1)
 
       let raw =
@@ -942,9 +938,7 @@ type MainWindow() as this =
         -1)
 
     let select =
-      this
-        .FindControl<MenuItem>("List")
-        .Items.OfType<MenuItem>()
+      this.FindControl<MenuItem>("List").Items.OfType<MenuItem>()
       |> Seq.mapi (fun n (i: MenuItem) -> i.Click |> Event.map (fun _ -> n))
     // The sum of all these events -- we have explicitly selected a file
     let fileSelection =
@@ -1102,9 +1096,7 @@ type MainWindow() as this =
 #endif
               )
 
-              this
-                .FindControl<StackPanel>("Branches")
-                .Children.Clear()
+              this.FindControl<StackPanel>("Branches").Children.Clear()
 
 #if AVALONIA11
 

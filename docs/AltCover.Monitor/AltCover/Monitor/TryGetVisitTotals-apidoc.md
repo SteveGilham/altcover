@@ -16,7 +16,7 @@ True if running under AltCover coverage
 
 ## Remarks
 
-Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
+Current implementation requires `dotnet test`, or other command-line testing with `--eager` NOT set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
 
 ## See Also
 

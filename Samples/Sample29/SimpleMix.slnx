@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="../../Build/targets.fsx" />
+  </Folder>
+  <Project Path="SimpleMix/SimpleMix.vcxproj" />
+</Solution>

@@ -242,9 +242,7 @@ module ExpectoTestCommon =
 
   let consistencyCheck (regular: ((unit -> unit) * string) list) expected =
     let here =
-      System.Reflection.Assembly
-        .GetExecutingAssembly()
-        .Location
+      System.Reflection.Assembly.GetExecutingAssembly().Location
 
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly(here)

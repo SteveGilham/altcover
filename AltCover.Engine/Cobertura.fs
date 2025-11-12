@@ -394,8 +394,7 @@ module internal Cobertura =
           copyup "branches-covered" bv
 
           target.Attribute("complexity".X).Value <-
-            (summary.Attribute("maxCyclomaticComplexity".X))
-              .Value
+            (summary.Attribute("maxCyclomaticComplexity".X)).Value
 
       let doBranch bec bev uspid (line: XElement) =
         let pc =

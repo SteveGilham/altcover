@@ -89,6 +89,7 @@ nunit-agent_*.log
 $*/
 *.orig
 ThirdParty/BlackFox.CommandLine.8.dll
+ThirdParty/BlackFox.CommandLine.9.dll
 ThirdParty/BlackFox.CommandLine.il
 ThirdParty/FSharpOptimizationData.BlackFox.CommandLine
 ThirdParty/FSharpSignatureData.BlackFox.CommandLine

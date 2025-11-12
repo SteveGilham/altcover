@@ -1,0 +1,224 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Build Items/">
+    <File Path=".config/dotnet-tools.json" />
+    <File Path=".editorconfig" />
+    <File Path=".fantomasignore" />
+    <File Path=".github/dependabot.yml" />
+    <File Path=".github/workflows/main.yml" />
+    <File Path="AltCover.Tests/NCover.ConvertTo.cobertura" />
+    <File Path="AltCover.Tests/OpenCover.ConvertTo.cobertura" />
+    <File Path="Build/actions.fs" />
+    <File Path="Build/AddStrongName.fsx" />
+    <File Path="Build/AltCover.nuspec" />
+    <File Path="Build/Apply-Xslt.ps1" />
+    <File Path="Build/build.cake" />
+    <File Path="Build/build.fsx" />
+    <File Path="Build/common-rules.xml" />
+    <File Path="Build/coverletArgs.runsettings" />
+    <File Path="Build/coverletArgs.sample.runsettings" />
+    <File Path="Build/DriveApi.fs" />
+    <File Path="Build/dump-uncovered.ps1" />
+    <File Path="Build/get-token.fsx" />
+    <File Path="Build/Infrastructure.snk" />
+    <File Path="Build/merge-coverage.ps1" />
+    <File Path="Build/msbuildtest.proj" />
+    <File Path="Build/pester.ps1" />
+    <File Path="Build/Pester.Tests.ps1" />
+    <File Path="Build/prepareDocumentation.ps1" />
+    <File Path="Build/Program.fs" />
+    <File Path="Build/Recorder.snk" />
+    <File Path="Build/SelfTest.snk" />
+    <File Path="Build/setup.fs" />
+    <File Path="Build/targets.fs" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Fragments.txt" />
+    <File Path="fsharplint.json" />
+    <File Path="fullbuild.ps1" />
+    <File Path="global.json" />
+    <File Path="nupkg/build/AltCover.proj" />
+    <File Path="nupkg/build/AltCover.props" />
+    <File Path="nupkg/build/AltCover.targets" />
+    <File Path="OutputBuildProps.props" />
+    <File Path="OutputBuildTargets.props" />
+    <File Path="ReleaseNotes - Previously.md" />
+    <File Path="ReleaseNotes.md" />
+    <File Path="ToolUpdate.ps1" />
+    <File Path="version.json" />
+    <Project Path="Build/NuGet.csproj">
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/Build Items/Cecil/">
+    <File Path="ThirdParty/cecil/Mono.Cecil.dll" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.Mdb.dll" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.Mdb.pdb" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.pdb" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.Pdb.dll" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.Pdb.pdb" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.Rocks.dll" />
+    <File Path="ThirdParty/cecil/Mono.Cecil.Rocks.pdb" />
+  </Folder>
+  <Folder Name="/Documents/">
+    <File Path="README.md" />
+    <File Path="ReleaseNotes.md" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Sample0/Sample0.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample1/Sample1.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample10/Sample10.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample11/Sample11.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample12/Sample12.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample13/Sample13.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample16/Sample16.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample17/Sample17.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample18/Sample18.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample2/Sample2.fsproj">
+      <Platform Solution="Debug|x86" Project="x86" />
+      <Build Solution="Release|*" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample21/Sample21.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample23/Sample23.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample24/Sample24.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample25/Sample25.csproj">
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample27/Sample27.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample3/Sample3.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample30/Sample30.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample32/Sample32.csproj">
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample4/Sample4.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample5/Sample5.csproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample6/Sample6.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Samples/Sample7/Sample7.fsproj">
+      <Build Solution="*|x86" Project="false" />
+      <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+  </Folder>
+  <Project Path="AltCover.Api.Tests/AltCover.Api.Tests.fsproj">
+    <Build Solution="*|x86" Project="false" />
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
+  <Project Path="AltCover.Async/AltCover.Async.csproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Base/AltCover.Base.csproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Cake/AltCover.Cake.csproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.DataCollector/AltCover.DataCollector.csproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.DotNet/AltCover.DotNet.fsproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Engine.Tests/AltCover.Engine.Tests.fsproj">
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
+  <Project Path="AltCover.Engine/AltCover.Engine.fsproj">
+    <BuildDependency Project="AltCover.Base/AltCover.Base.csproj" />
+    <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Fake/AltCover.Fake.fsproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj">
+    <Build Solution="*|x86" Project="false" />
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
+  <Project Path="AltCover.Monitor/AltCover.Monitor.csproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.PowerShell/AltCover.PowerShell.fsproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj">
+    <Build Solution="*|x86" Project="false" />
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
+  <Project Path="AltCover.Recorder/AltCover.Recorder.csproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj">
+    <BuildDependency Project="AltCover.Recorder/AltCover.Recorder.csproj" />
+    <Build Solution="*|x86" Project="false" />
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
+  <Project Path="AltCover.Toolkit/AltCover.Toolkit.fsproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj">
+    <Build Solution="*|x86" Project="false" />
+    <Build Solution="Release|Any CPU" Project="false" />
+  </Project>
+  <Project Path="AltCover/AltCover.fsproj">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+</Solution>

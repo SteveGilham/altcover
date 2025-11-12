@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Demo/">
+    <File Path="Grant-NetworkServiceExecuteAccess.ps1" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Service/Service.fsproj" />
+</Solution>

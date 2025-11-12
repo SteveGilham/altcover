@@ -199,11 +199,7 @@ module internal Counter =
           "driverVersion",
           "AltCover.Recorder "
           + System.Diagnostics.FileVersionInfo
-            .GetVersionInfo(
-              System.Reflection.Assembly
-                .GetExecutingAssembly()
-                .Location
-            )
+            .GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location)
             .FileVersion
         )
 

@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/Build Items/">
+    <File Path=".config/dotnet-tools.json" />
+    <File Path="Build/actions.fs" />
+    <File Path="Build/AddStrongName.fsx" />
+    <File Path="Build/AltCover.nuspec" />
+    <File Path="Build/Apply-Xslt.ps1" />
+    <File Path="Build/common-rules.xml" />
+    <File Path="Build/get-token.fsx" />
+    <File Path="Build/Infrastructure.snk" />
+    <File Path="Build/msbuildtest.proj" />
+    <File Path="Build/pester.ps1" />
+    <File Path="Build/Pester.Tests.ps1" />
+    <File Path="Build/powershell.ps1" />
+    <File Path="Build/Recorder.snk" />
+    <File Path="Build/SelfTest.snk" />
+    <File Path="Build/setup.fs" />
+    <File Path="Build/targets.fs" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="nupkg/build/netstandard2.0/AltCover.props" />
+    <File Path="nupkg/build/netstandard2.0/AltCover.targets" />
+    <File Path="OutputBuildProps.props" />
+    <File Path="OutputBuildTargets.props" />
+    <File Path="ReleaseNotes.md" />
+    <Project Path="Build/NuGet.csproj">
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Project Path="AltCover.Avalonia/AltCover.Avalonia.fsproj" />
+  <Project Path="AltCover.Avalonia/AltCover.Avalonia11.fsproj" />
+  <Project Path="AltCover.FontSupport/AltCover.FontSupport.csproj" />
+  <Project Path="AltCover.UICommon/AltCover.UICommon.fsproj" />
+  <Project Path="AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj">
+    <Build Solution="Release|*" Project="false" />
+  </Project>
+  <Project Path="AltCover.Visualizer/AltCover.Visualizer.fsproj" />
+  <Project Path="AltCover.Visualizer/AltCover.Visualizer3.fsproj" />
+</Solution>

@@ -1,7 +1,7 @@
 ﻿       <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Monitor.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="NUnit3TestAdapter" />
@@ -30,12 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\AltCover.TestData\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\AltCover.Engine\Abstraction.fs" Link="Abstraction.fs" />
     <Compile Include="Extras.fs" />
-    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Compile Include="..\AltCover.TestData\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="MonitorTest.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

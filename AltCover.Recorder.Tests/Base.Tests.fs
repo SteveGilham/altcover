@@ -31,7 +31,7 @@ module BaseTests =
     Assert.That(not <| b2.Equals(b))
     Assert.That(not <| b2.Equals(String.Empty))
     Assert.That(not <| b2.Value.Equals(String.Empty))
-    Assert.That(b.GetHashCode(), Is.EqualTo <| b1.GetHashCode())
+    Assert.That(b.GetHashCode(), Is.EqualTo(b1.GetHashCode()))
     Assert.That(b.ToString(), Is.EqualTo("AltCover.Both : AltCover.Pair(Time=0, Call=0)"))
 
   [<Test>]
@@ -42,7 +42,7 @@ module BaseTests =
     Assert.That(b1.Equals(b))
     Assert.That(not <| b2.Equals(b))
     Assert.That(not <| b2.Equals(String.Empty))
-    Assert.That(b.GetHashCode(), Is.EqualTo <| b1.GetHashCode())
+    Assert.That(b.GetHashCode(), Is.EqualTo(b1.GetHashCode()))
     Assert.That(b.ToString(), Is.EqualTo("AltCover.Call : 0"))
 
   [<Test>]
@@ -53,7 +53,7 @@ module BaseTests =
     Assert.That(b1.Equals(b))
     Assert.That(not <| b2.Equals(b))
     Assert.That(not <| b2.Equals(String.Empty))
-    Assert.That(b.GetHashCode(), Is.EqualTo <| b1.GetHashCode())
+    Assert.That(b.GetHashCode(), Is.EqualTo(b1.GetHashCode()))
     Assert.That(b.ToString(), Is.EqualTo("AltCover.Time : 0"))
 
   [<Test>]
@@ -62,7 +62,7 @@ module BaseTests =
     let b1 = Null()
     Assert.That(b1.Equals(b))
     Assert.That(not <| b.Equals(String.Empty))
-    Assert.That(b.GetHashCode(), Is.EqualTo <| b1.GetHashCode())
+    Assert.That(b.GetHashCode(), Is.EqualTo(b1.GetHashCode()))
     Assert.That(b.ToString(), Is.EqualTo("AltCover.Null"))
 
   [<Test>]
@@ -71,12 +71,12 @@ module BaseTests =
     let p1 = PointVisit.Create()
     Assert.That(p1.Equals(p))
     Assert.That(not <| p.Equals(String.Empty))
-    Assert.That(p.GetHashCode(), Is.EqualTo <| p1.GetHashCode())
+    Assert.That(p.GetHashCode(), Is.EqualTo(p1.GetHashCode()))
     Assert.That(p.ToString(), Is.EqualTo("AltCover.PointVisit : Count = 0 Tracks = ''"))
     p.Track(Null())
     p1.Track(Null())
     Assert.That(p1.Equals(p))
-    Assert.That(p.GetHashCode(), Is.EqualTo <| p1.GetHashCode())
+    Assert.That(p.GetHashCode(), Is.EqualTo(p1.GetHashCode()))
 
     Assert.That(
       p.ToString(),
@@ -87,7 +87,7 @@ module BaseTests =
     Assert.That(p1.Equals(p) |> not)
     p1.Step()
     Assert.That(p1.Equals(p))
-    Assert.That(p.GetHashCode(), Is.EqualTo <| p1.GetHashCode())
+    Assert.That(p.GetHashCode(), Is.EqualTo(p1.GetHashCode()))
     p.Track(Both(Pair.Create(1L, 2)))
     Assert.That(p1.Equals(p) |> not)
 

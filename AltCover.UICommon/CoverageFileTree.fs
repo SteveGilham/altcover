@@ -138,9 +138,7 @@ module CoverageFileTree =
             let start = s.Substring(0, index)
 
             let middle =
-              s
-                .Substring(index, stop - index)
-                .Replace("::", ".")
+              s.Substring(index, stop - index).Replace("::", ".")
 
             let finish = s.Substring(stop)
             step (start + middle + finish) index
@@ -569,9 +567,7 @@ module CoverageFileTree =
         populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
       let assemblies =
-        coverage.Document
-          .CreateNavigator()
-          .Select("//module")
+        coverage.Document.CreateNavigator().Select("//module")
         |> Seq.cast<XPathNavigator>
 
       // UI thread needed here
@@ -593,9 +589,7 @@ module CoverageFileTree =
           assemblies
           |> Seq.map (fun node ->
             (node,
-             node
-               .GetAttribute("assemblyIdentity", String.Empty)
-               .Split(',')
+             node.GetAttribute("assemblyIdentity", String.Empty).Split(',')
              |> Seq.head))
           |> Seq.sortBy snd
           |> Seq.iter (applyToModel model))
@@ -614,12 +608,12 @@ module CoverageFileTree =
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethod@167::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
+                              "AltCover.CoverageFileTree/applyMethod@165::Invoke(AltCover.CoverageTreeContext`2<TModel,TRow>,AltCover.GuiCommon/MethodKey)",
                             Justification = "Possibly too much work")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CoverageFileTree/applyMethods@359-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
+                              "AltCover.CoverageFileTree/applyMethods@357-1::Invoke(System.Tuple`2<System.Tuple`2<System.String,AltCover.GuiCommon/MethodType>,a>[])",
                             Justification = "Inlined library code")>]
 ()

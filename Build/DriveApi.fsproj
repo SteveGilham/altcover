@@ -1,22 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <NoWarn>MSB3243;NU1902,NU1903,NU1904</NoWarn>
-    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904</MSBuildWarningsAsMessages>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="DriveApi.fs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Include="DriveApi.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AltCover.Api" VersionOverride="8.6.14" />
-    <PackageReference Include="AltCover.Fake" VersionOverride="8.6.14" />
-    <PackageReference Include="Fake.Core.Target" />
-    <PackageReference Include="Fake.DotNet.Cli" />
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="9.0.0" />
-    <PackageReference Include="Unquote" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AltCover.Api" VersionOverride="9.0.1" />
+		<PackageReference Include="AltCover.Fake" VersionOverride="9.0.1" />
+		<PackageReference Include="Fake.Core.Target" />
+		<PackageReference Include="Fake.DotNet.Cli" />
+		<PackageReference Include="System.Collections.Immutable" />
+		<PackageReference Include="Unquote" />
+	</ItemGroup>
 </Project>

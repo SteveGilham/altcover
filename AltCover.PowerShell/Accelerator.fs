@@ -93,9 +93,7 @@ type AddAcceleratorCommand() =
     let sma =
       env
       |> Seq.find (fun a ->
-        a
-          .GetName()
-          .Name.Equals("System.Management.Automation", StringComparison.Ordinal))
+        a.GetName().Name.Equals("System.Management.Automation", StringComparison.Ordinal))
 
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")
@@ -180,9 +178,7 @@ type GetAcceleratorCommand() =
     let sma =
       env
       |> Seq.find (fun a ->
-        a
-          .GetName()
-          .Name.Equals("System.Management.Automation", StringComparison.Ordinal))
+        a.GetName().Name.Equals("System.Management.Automation", StringComparison.Ordinal))
 
     let acceleratorsType =
       sma.GetType("System.Management.Automation.TypeAccelerators")

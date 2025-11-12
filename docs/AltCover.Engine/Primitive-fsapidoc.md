@@ -56,7 +56,6 @@ Fields that are not applicable to the use case or platform are silently ignored.
 The members correspond to the like-named command line options for `AltCover`, except
 * `ExposeReturnCode` being the converse of the `dropReturnCode` option
 * `CommandLine` being the material after a `-- `
-* `SingleVisit` being the name for `--single`
 
 ```
     [<NoComparison>]
@@ -85,13 +84,13 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Save: bool
         ZipFile: bool
         MethodPoint: bool
-        SingleVisit: bool
+        All: bool
         LineCover: bool
         BranchCover: bool
         CommandLine: seq<System.String>
         ExposeReturnCode: bool
         SourceLink: bool
-        Defer: bool
+        Eager: bool
         LocalSource: bool
         VisibleBranches: bool
         ShowStatic: string

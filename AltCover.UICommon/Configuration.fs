@@ -143,8 +143,7 @@ module Configuration =
       |> Seq.toList
     with
     | [] ->
-      (config.FirstNode :?> XElement)
-        .AddFirst(XElement(XName.Get "CoveragePath", path))
+      (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
     | x :: _ ->
       x.RemoveAll()
       x.Add path

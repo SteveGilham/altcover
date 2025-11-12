@@ -1,6 +1,6 @@
 # TypeSafe.Packages class
 
-Corresponds to the values after `-- ` on the command line
+Corresponds to a collection of cobertura package source roots
 
 ```csharp
 public abstract class Packages : IEquatable<Packages>, IStructuralEquatable

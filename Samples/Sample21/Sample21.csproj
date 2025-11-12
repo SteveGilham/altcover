@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework net9.0 /p:AltCover="true" /p:AltCoverForce=true -->
+  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework net10.0 /p:AltCover="true" /p:AltCoverForce=true -->
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="NUnit3TestAdapter" />
