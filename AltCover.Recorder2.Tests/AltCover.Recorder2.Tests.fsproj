@@ -46,7 +46,6 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>
