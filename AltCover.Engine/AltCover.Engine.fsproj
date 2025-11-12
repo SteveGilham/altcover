@@ -5,7 +5,8 @@
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Engine</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
-  </PropertyGroup>
+		<NoWarn>$(NoWarn);NU1702</NoWarn>
+	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
@@ -84,7 +85,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" />
-    <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

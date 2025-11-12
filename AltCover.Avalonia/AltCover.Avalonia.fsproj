@@ -1,68 +1,67 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>AltCover.Visualizer</RootNamespace>
-    <AssemblyName>AltCover.Visualizer</AssemblyName>
-    <PackAsTool>True</PackAsTool>
-    <ToolCommandName>altcover.visualizer</ToolCommandName>
-    <GlobalDefineConstants>AVALONIA;$(TOGGLE)</GlobalDefineConstants>
-    <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
-    <NoWarn>$(NoWarn);NU1902,NU1903,NU1904</NoWarn>
-    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904;NETSDK1206</MSBuildWarningsAsMessages>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<RootNamespace>AltCover.Visualizer</RootNamespace>
+		<AssemblyName>AltCover.Visualizer</AssemblyName>
+		<PackAsTool>True</PackAsTool>
+		<ToolCommandName>altcover.visualizer</ToolCommandName>
+		<GlobalDefineConstants>AVALONIA;$(TOGGLE)</GlobalDefineConstants>
+		<UseStandardResourceNames>True</UseStandardResourceNames>
+		<Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
+		<MSBuildWarningsAsMessages>NETSDK1206</MSBuildWarningsAsMessages>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="nuget.config" />
-    <EmbeddedResource Include="AltCover.MainWindow.xaml">
-      <LogicalName>AltCover.MainWindow.xaml</LogicalName>
-    </EmbeddedResource>
+	<ItemGroup>
+		<None Include="nuget.config" />
+		<EmbeddedResource Include="AltCover.MainWindow.xaml">
+			<LogicalName>AltCover.MainWindow.xaml</LogicalName>
+		</EmbeddedResource>
 
-    <EmbeddedResource Include="AltCover.App.xaml">
-      <LogicalName>AltCover.App.xaml</LogicalName>
-    </EmbeddedResource>
+		<EmbeddedResource Include="AltCover.App.xaml">
+			<LogicalName>AltCover.App.xaml</LogicalName>
+		</EmbeddedResource>
 
-    <EmbeddedResource Include="AltCover.AboutBox.xaml">
-      <LogicalName>AltCover.AboutBox.xaml</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
+		<EmbeddedResource Include="AltCover.AboutBox.xaml">
+			<LogicalName>AltCover.AboutBox.xaml</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="..\AltCover.Visualizer\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
-    <Compile Include="Persistence.fs" />
-    <Compile Include="MainWindow.fs" />
-    <Compile Include="App.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+		<Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+		<Compile Include="..\AltCover.Visualizer\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
+		<Compile Include="Persistence.fs" />
+		<Compile Include="MainWindow.fs" />
+		<Compile Include="App.fs" />
+		<Compile Include="Program.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia" VersionOverride="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" VersionOverride="0.10.18" />
-    <PackageReference Include="MessageBox.Avalonia" VersionOverride="2.1.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Mono.Options" />
-    <PackageReference Include="System.Reactive.Core" />
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" VersionOverride="0.10.18" />
+		<PackageReference Include="Avalonia.Desktop" VersionOverride="0.10.18" />
+		<PackageReference Include="MessageBox.Avalonia" VersionOverride="2.1.0" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Mono.Options" />
+		<PackageReference Include="System.Reactive.Core" />
+		<PackageReference Include="FSharp.Core">
+			<ExcludeAssets>contentfiles</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\AltCover.FontSupport\AltCover.FontSupport.csproj" />
-    <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AltCover.FontSupport\AltCover.FontSupport.csproj" />
+		<ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
+	</ItemGroup>
 </Project>

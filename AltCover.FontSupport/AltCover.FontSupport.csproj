@@ -1,31 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
-    <RootNamespace>AltCover.FontSupport</RootNamespace>
-    <AssemblyName>AltCover.FontSupport</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <NoWarn>$(NoWarn);1701;1702;8002</NoWarn>
-    <WarningsAsErrors>NU1605</WarningsAsErrors>
-    <DocumentationFile />
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+		<RootNamespace>AltCover.FontSupport</RootNamespace>
+		<AssemblyName>AltCover.FontSupport</AssemblyName>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<NoWarn>$(NoWarn);8002</NoWarn>
+		<WarningsAsErrors>NU1605</WarningsAsErrors>
+		<DocumentationFile />
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Fake.Core.Process" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Fake.Core.Process" Condition="'$(TargetFramework)' != 'net472'" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 </Project>

@@ -1,52 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>AltCover.Visualizer</RootNamespace>
-    <AssemblyName>AltCover.Visualizer</AssemblyName>
-    <PackAsTool>True</PackAsTool>
-    <ToolCommandName>altcover.visualizer</ToolCommandName>
-    <Name>AltCover.Visualizer</Name>
-    <GlobalDefineConstants>GUI;$(TOGGLE)</GlobalDefineConstants>
-    <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
-    <NoWarn>$(NoWarn);NU1901;NU1902;NU1903</NoWarn>
-    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903</MSBuildWarningsAsMessages>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<RootNamespace>AltCover.Visualizer</RootNamespace>
+		<AssemblyName>AltCover.Visualizer</AssemblyName>
+		<PackAsTool>True</PackAsTool>
+		<ToolCommandName>altcover.visualizer</ToolCommandName>
+		<Name>AltCover.Visualizer</Name>
+		<GlobalDefineConstants>GUI;$(TOGGLE)</GlobalDefineConstants>
+		<UseStandardResourceNames>True</UseStandardResourceNames>
+		<Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="DotnetToolSettings.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Prepare.ps1" />
-    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <EmbeddedResource Include="Visualizer3.glade" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Browser.fs" />
-    <Compile Include="Persistence.fs" />
-    <Compile Include="Handler.fs" />
-    <Compile Include="Visualizer.fs" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="DotnetToolSettings.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Prepare.ps1" />
+		<Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+		<Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+		<EmbeddedResource Include="Visualizer3.glade" />
+		<Compile Include="AssemblyInfo.fs" />
+		<Compile Include="Browser.fs" />
+		<Compile Include="Persistence.fs" />
+		<Compile Include="Handler.fs" />
+		<Compile Include="Visualizer.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="GtkSharp" />
-    <PackageReference Include="Mono.Options" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="GtkSharp" />
+		<PackageReference Include="Mono.Options" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
+	</ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="pwsh -NoProfile Prepare.ps1" />
-  </Target>
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<Exec Command="pwsh -NoProfile Prepare.ps1" />
+	</Target>
 </Project>

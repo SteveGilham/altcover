@@ -1,57 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <NoWarn>NU1902,NU1903,NU1904</NoWarn>
-    <MSBuildWarningsAsMessages>NU1901;NU1902;NU1903;NU1904</MSBuildWarningsAsMessages>
-  </PropertyGroup>
+	<PropertyGroup>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
-    <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
-    <Compile Include="..\AltCover.Engine\NativeJson.fs" Link="NativeJson.fs" />
-    <Compile Include="..\AltCover.Engine\Abstract.fs" Link="Abstract.fs" />
-    <Compile Include="..\AltCover.Engine\Primitive.fs" Link="Primitive.fs" />
-    <Compile Include="..\AltCover.Engine\TypeSafe.fs" Link="TypeSafe.fs" />
-    <Compile Include="..\AltCover.Engine\AltCover.fs" Link="AltCover.fs" />
-    <Compile Include="..\AltCover.Engine\Args.fs" Link="Args.fs" />
-    <Compile Include="..\AltCover.Fake.DotNet.Testing.AltCover\AltCoverCommand.fs" Link="AltCoverCommand.fs" />
-    <Compile Include="..\AltCover.DotNet\DotNet.fs" Link="DotNet.fs" />
-    <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
-    <Compile Include="actions.fs" />
-    <Compile Include="targets.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
+		<Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
+		<Compile Include="..\AltCover.Engine\NativeJson.fs" Link="NativeJson.fs" />
+		<Compile Include="..\AltCover.Engine\Abstract.fs" Link="Abstract.fs" />
+		<Compile Include="..\AltCover.Engine\Primitive.fs" Link="Primitive.fs" />
+		<Compile Include="..\AltCover.Engine\TypeSafe.fs" Link="TypeSafe.fs" />
+		<Compile Include="..\AltCover.Engine\AltCover.fs" Link="AltCover.fs" />
+		<Compile Include="..\AltCover.Engine\Args.fs" Link="Args.fs" />
+		<Compile Include="..\AltCover.Fake.DotNet.Testing.AltCover\AltCoverCommand.fs" Link="AltCoverCommand.fs" />
+		<Compile Include="..\AltCover.DotNet\DotNet.fs" Link="DotNet.fs" />
+		<Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
+		<Compile Include="actions.fs" />
+		<Compile Include="targets.fs" />
+		<Compile Include="Program.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AltCode.Fake.DotNet.Gendarme" />
-    <PackageReference Include="BlackFox.Commandline" />
-    <PackageReference Include="BlackFox.VsWhere" />
-    <PackageReference Include="Fake.Core.environment" />
-    <PackageReference Include="Fake.Core.process" />
-    <PackageReference Include="Fake.Core.Target" />
-    <PackageReference Include="Fake.dotNet.AssemblyInfoFile" />
-    <PackageReference Include="Fake.dotNet.Cli" />
-    <PackageReference Include="Fake.dotNet.fxcop" />
-    <PackageReference Include="Fake.dotNet.msbuild" />
-    <PackageReference Include="Fake.dotNet.testing.coverlet" />
-    <PackageReference Include="Fake.dotNet.testing.nunit" />
-    <PackageReference Include="Fake.dotNet.testing.opencover" />
-    <PackageReference Include="Fake.dotNet.testing.xunit2" />
-    <PackageReference Include="Fake.IO.FileSystem" />
-    <PackageReference Include="Fake.Testing.ReportGenerator" />
-    <PackageReference Include="Fake.Tools.git" />
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="FuChu" />
-    <PackageReference Include="Markdig" />
-    <PackageReference Include="NUnit" />
-    <PackageReference Include="Unquote" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AltCode.Fake.DotNet.Gendarme" />
+		<PackageReference Include="BlackFox.Commandline" />
+		<PackageReference Include="BlackFox.VsWhere" />
+		<PackageReference Include="Fake.Core.Environment" />
+		<PackageReference Include="Fake.Core.Process" />
+		<PackageReference Include="Fake.Core.Target" />
+		<PackageReference Include="Fake.dotNet.AssemblyInfoFile" />
+		<PackageReference Include="Fake.DotNet.Cli" />
+		<PackageReference Include="Fake.DotNet.FxCop" />
+		<PackageReference Include="Fake.DotNet.MSBuild" />
+		<PackageReference Include="Fake.DotNet.Testing.coverlet" />
+		<PackageReference Include="Fake.DotNet.Testing.nunit" />
+		<PackageReference Include="Fake.DotNet.Testing.opencover" />
+		<PackageReference Include="Fake.DotNet.Testing.xunit2" />
+		<PackageReference Include="Fake.IO.FileSystem" />
+		<PackageReference Include="Fake.Testing.ReportGenerator" />
+		<PackageReference Include="Fake.Tools.git" />
+		<PackageReference Include="FSharp.Core">
+			<ExcludeAssets>contentfiles</ExcludeAssets>
+		</PackageReference>
+		<PackageReference Include="FuChu" />
+		<PackageReference Include="Markdig" />
+		<PackageReference Include="NUnit" />
+		<PackageReference Include="Unquote" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Manatee.Json">
-      <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<Reference Include="Manatee.Json">
+			<HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 </Project>

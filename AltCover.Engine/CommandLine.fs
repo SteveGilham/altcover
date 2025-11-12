@@ -6,8 +6,6 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Linq
-open System.Reflection
-open System.Resources
 open System.Security
 open System.Security.Cryptography
 open System.Text.RegularExpressions
@@ -500,6 +498,6 @@ module internal CommandLine =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.CommandLine/I/transform@294::Invoke(System.String[])",
+                              "AltCover.CommandLine/I/transform@292::Invoke(System.String[])",
                             Justification = "Inlined library code")>]
 ()

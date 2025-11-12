@@ -4,7 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.DataCollector</AssemblyName>
-    <NoWarn>$(NoWarn);1701;1702;NU1603</NoWarn>
     <DocumentationFile />
   </PropertyGroup>
 

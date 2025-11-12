@@ -720,7 +720,7 @@ module Visitor =
   [<Test>]
   let CSharpNestedMethods () =
     let sample5 =
-      sample24path.Replace("24", "5").Replace("net9.0", "netstandard2.0")
+      sample24path.Replace("24", "5").Replace("net10.0", "netstandard2.0")
 
     use def =
       AssemblyResolver.ReadAssembly(sample5)
@@ -2834,7 +2834,7 @@ module Visitor =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net9.0/Sample4.dll")
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll")
 
       "Main"
       |> (Regex
@@ -2863,7 +2863,7 @@ module Visitor =
 
       let nativeJson =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("Sample4.native.json", StringComparison.Ordinal)
+        |> Seq.find _.EndsWith("Sample4-10.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
@@ -3139,7 +3139,7 @@ module Visitor =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("net9.0", "netstandard2.0")
+        .Replace("net10.0", "netstandard2.0")
 
     let path6 =
       sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
@@ -4818,9 +4818,9 @@ module Visitor =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net9.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net9.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net10.0 not built")
 
     try
       "Program"

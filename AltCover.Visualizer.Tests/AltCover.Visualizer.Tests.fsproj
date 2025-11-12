@@ -1,67 +1,66 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.Tests.Visualizer</AssemblyName>
     <GlobalDefineConstants>GUI</GlobalDefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'!='net472'">
-    <NoWarn>988</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)'!='net472'">
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
-    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
-      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
-    </Reference>
-    <PackageReference Include="coverlet.collector">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Mono.Cecil" />
-    <PackageReference Include="FSharp.Core">
-      <ExcludeAssets>contentfiles</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Expecto" Condition="'$(TargetFramework)' != 'net472'" />
+		<PackageReference Include="Expecto.TestResults" Condition="'$(TargetFramework)' != 'net472'" />
+		<PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
+		<Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
+			<HintPath>..\ThirdParty\Unquote.dll</HintPath>
+		</Reference>
+		<PackageReference Include="coverlet.collector">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="NUnit" Condition="'$(TargetFramework)' != 'net472'" />
+		<PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="YoloDev.Expecto.TestSdk" Condition="'$(TargetFramework)' != 'net472'" />
+		<PackageReference Include="Mono.Cecil" />
+		<PackageReference Include="FSharp.Core">
+			<ExcludeAssets>contentfiles</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\Cobertura_altcover.xml" Link="Reports\Cobertura_altcover.xml" />
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\Cobertura_coverlet.xml" Link="Reports\Cobertura_coverlet.xml" />
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\NCover1.5.8.xml" Link="Reports\NCover1.5.8.xml" />
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover.xml" Link="Reports\OpenCover.xml" />
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCoverWithTrackedMethods.xml" Link="Reports\OpenCoverWithTrackedMethods.xml" />
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover_altcover.xml" Link="Reports\OpenCover_altcover.xml" />
-    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover_coverlet.xml" Link="Reports\OpenCover_coverlet.xml" />
-    <EmbeddedResource Include="..\AltCover.TestData\Results\Cobertura_coverlet.ncover.xml" Link="Results\Cobertura_coverlet.ncover.xml"/>
-    <Compile Include="..\AltCover.TestData\AssemblyInfo.fs">
-      <Link>AssemblyInfo.fs</Link>
-    </Compile>
-    <Compile Include="..\_Generated\AssemblyVersion.fs">
-      <Link>AssemblyVersion.fs</Link>
-    </Compile>
-    <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
-    <Compile Include="..\AltCover.Engine\Abstraction.fs" Link="Abstraction.fs" />
-    <Compile Include="..\AltCover.TestData\TestCommon.fs" Link="TestCommon.fs" />
-    <Compile Include="UICommonTests.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\Cobertura_altcover.xml" Link="Reports\Cobertura_altcover.xml" />
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\Cobertura_coverlet.xml" Link="Reports\Cobertura_coverlet.xml" />
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\NCover1.5.8.xml" Link="Reports\NCover1.5.8.xml" />
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover.xml" Link="Reports\OpenCover.xml" />
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCoverWithTrackedMethods.xml" Link="Reports\OpenCoverWithTrackedMethods.xml" />
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover_altcover.xml" Link="Reports\OpenCover_altcover.xml" />
+		<EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover_coverlet.xml" Link="Reports\OpenCover_coverlet.xml" />
+		<EmbeddedResource Include="..\AltCover.TestData\Results\Cobertura_coverlet.ncover.xml" Link="Results\Cobertura_coverlet.ncover.xml" />
+		<Compile Include="..\AltCover.TestData\AssemblyInfo.fs">
+			<Link>AssemblyInfo.fs</Link>
+		</Compile>
+		<Compile Include="..\_Generated\AssemblyVersion.fs">
+			<Link>AssemblyVersion.fs</Link>
+		</Compile>
+		<Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
+		<Compile Include="..\AltCover.Engine\Abstraction.fs" Link="Abstraction.fs" />
+		<Compile Include="..\AltCover.TestData\TestCommon.fs" Link="TestCommon.fs" />
+		<Compile Include="UICommonTests.fs" />
+		<Compile Include="Program.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
+	</ItemGroup>
 </Project>
