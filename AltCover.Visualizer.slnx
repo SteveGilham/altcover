@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Build Items/">
     <File Path=".config/dotnet-tools.json" />
+    <File Path=".github/workflows/main.yml" />
     <File Path="Build/actions.fs" />
     <File Path="Build/AddStrongName.fsx" />
     <File Path="Build/AltCover.nuspec" />
