@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net10.0;netstandard2.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>AltCover.Cake</RootNamespace>
     <AssemblyName>AltCover.Cake</AssemblyName>
@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cake.Common" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <PackageReference Include="Cake.Core" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageReference Include="Cake.Common" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Cake.Core" Condition="'$(TargetFramework)' == 'net10.0'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

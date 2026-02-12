@@ -402,7 +402,7 @@ module Targets =
         >> common
       ) with
         NoBuild = true
-        Framework = fwk // Some "net10.0"
+        Framework = fwk // Some "net11.0"
         Configuration = DotNet.BuildConfiguration.Debug }
 
   let defaultDotNetTestCommandLine fwk project =
@@ -419,7 +419,7 @@ module Targets =
         Configuration = DotNet.BuildConfiguration.Debug
         ResultsDirectory = Some report
         NoBuild = true
-        Framework = Some "net10.0"
+        Framework = Some "net11.0"
         Settings = Some "./_Generated/coverletArgs.runsettings"
         Collect = Some "XPlat Code Coverage" }
     |> (testWithCLITaggedArguments tag)
@@ -927,7 +927,7 @@ module Targets =
         "./Samples/Sample28/SourceGenerators.slnx" ]
       |> Seq.iter dotnetBuildDebug
 
-      Shell.copy "./_SourceLink" (!!"./_Binaries/Sample14/Debug+AnyCPU/net10.0/*"))
+      Shell.copy "./_SourceLink" (!!"./_Binaries/Sample14/Debug+AnyCPU/net11.0/*"))
 
   let buildMonoSamples =
     (fun () ->
@@ -1077,10 +1077,10 @@ module Targets =
          [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
            "_Binaries/AltCover.Base/Debug+AnyCPU/netstandard2.0/AltCover.Base.dll" ])
         ("./Build/build-rules.xml",
-         [ "$Binaries/Setup/Debug+AnyCPU/net10.0/Setup.dll"
-           "$Binaries/Build/Debug+AnyCPU/net10.0/Build.dll" ])
+         [ "$Binaries/Setup/Debug+AnyCPU/net11.0/Setup.dll"
+           "$Binaries/Build/Debug+AnyCPU/net11.0/Build.dll" ])
         ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover/Debug+AnyCPU/net8.0/AltCover.dll"
+         [ "_Binaries/AltCover/Debug+AnyCPU/net10.0/AltCover.dll"
            "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
            "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
            "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
@@ -1088,16 +1088,16 @@ module Targets =
            "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
            "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
            "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
-           "_Binaries/AltCover.Visualizer3/Debug+AnyCPU/net8.0/AltCover.Visualizer.dll" // GTK3 (obsolete)
-           "_Binaries/AltCover.Cake/Debug+AnyCPU/net8.0/AltCover.Cake.dll" // Cake 2+
+           "_Binaries/AltCover.Visualizer3/Debug+AnyCPU/net10.0/AltCover.Visualizer.dll" // GTK3 (obsolete)
+           "_Binaries/AltCover.Cake/Debug+AnyCPU/net10.0/AltCover.Cake.dll" // Cake 2+
            "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
         ("./Build/common-rules.xml", // Framework builds
          [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" // framework builds
            "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
         ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net8.0/AltCover.Visualizer.dll" ])
+         [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net10.0/AltCover.Visualizer.dll" ])
         //("./Build/common-rules.xml",
-        // [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net8.0/AltCover.Visualizer.dll" ])
+        // [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net10.0/AltCover.Visualizer.dll" ])
         ("./Build/csharp-rules.xml",
          [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
            "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
@@ -1354,11 +1354,11 @@ module Targets =
                     nugetCache
                     @@ "cake.common/"
                        + (ddItem "cake.common")
-                       + "/lib/net8.0"
+                       + "/lib/net10.0"
                     nugetCache
                     @@ "cake.core/"
                        + (ddItem "cake.core")
-                       + "/lib/net8.0"
+                       + "/lib/net10.0"
                     nugetCache
                     @@ "communitytoolkit.diagnostics/"
                        + (ddItem "communitytoolkit.diagnostics")
@@ -1634,7 +1634,7 @@ module Targets =
         DotNet.build (fun p ->
           { p.WithCommon dotnetOptions with
               Configuration = DotNet.BuildConfiguration.Debug
-              Framework = Some "net10.0" }
+              Framework = Some "net11.0" }
           |> (buildWithCLITaggedArguments "Coverlet"))
       ))
 
@@ -2030,7 +2030,7 @@ module Targets =
           DotNet.test
             (fun to' ->
               { to'.WithCommon(withWorkingDirectoryVM testdir) with
-                  Framework = Some "net10.0"
+                  Framework = Some "net11.0"
                   NoBuild = false }
                 .WithAltCoverOptions
                 prep
@@ -2051,7 +2051,7 @@ module Targets =
           if File.Exists report then
             report
           else
-            report.Replace(".xml", ".net10.0.xml"))
+            report.Replace(".xml", ".net11.0.xml"))
         |> List.filter (fun f -> File.Exists f && f.Contains("Visualizer") |> not)
 
       let pester =
@@ -2078,7 +2078,7 @@ module Targets =
            if File.Exists report then
              report
            else
-             report.Replace(".xml", ".net10.0.xml"))
+             report.Replace(".xml", ".net11.0.xml"))
          |> List.filter (fun f -> File.Exists f && f.Contains("Visualizer")))
 
       uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
@@ -2137,14 +2137,14 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let altcover =
-        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
       let simpleReport =
         (Path.getFullName "./_Reports")
         @@ ("AltCoverFSharpTests.xml")
 
       let sampleRoot =
-        Path.getFullName "_Binaries/FSharpTests_Sample7/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/FSharpTests_Sample7/Debug+AnyCPU/net11.0"
 
       // Test the --inplace operation
       Shell.cleanDir sampleRoot
@@ -2247,14 +2247,14 @@ module Targets =
       |> File.delete
 
       let altcover =
-        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
       let simpleReport =
         (Path.getFullName "./_Reports")
         @@ ("AltCoverAsyncAwaitTests.xml")
 
       let sampleRoot =
-        Path.getFullName "_Binaries/AsyncAwaitTests_Sample24/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/AsyncAwaitTests_Sample24/Debug+AnyCPU/net11.0"
 
       // Test the --inplace operation
       Shell.cleanDir sampleRoot
@@ -2262,7 +2262,7 @@ module Targets =
       "Sample24.csproj"
       |> DotNet.test (fun o ->
         { o.WithCommon(withWorkingDirectoryVM "Samples/Sample24") with
-            Framework = Some "net10.0"
+            Framework = Some "net11.0"
             Configuration = DotNet.BuildConfiguration.Debug }
         |> (testWithCLITaggedArguments "AsyncAwaitTests"))
 
@@ -2292,7 +2292,7 @@ module Targets =
         Path.getFullName "./Samples/Sample24/Sample24.csproj"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample24
+        defaultDotNetTestCommandLine (Some "net11.0") sample24
 
       let collect =
         AltCover.CollectOptions.Primitive
@@ -2337,7 +2337,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let altcover =
-        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
       [ ("Sample27", 18); ("Sample30", 27) ]
       |> List.iter (fun (sample, methodcount) ->
@@ -2348,7 +2348,7 @@ module Targets =
         let sampleRoot =
           Path.getFullName "./_Binaries/FSAsyncTests_"
           + sample
-          + "/Debug+AnyCPU/net10.0"
+          + "/Debug+AnyCPU/net11.0"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
@@ -2356,7 +2356,7 @@ module Targets =
         sample + ".fsproj"
         |> DotNet.test (fun o ->
           { o.WithCommon(withWorkingDirectoryVM ("Samples/" + sample)) with
-              Framework = Some "net10.0"
+              Framework = Some "net11.0"
               Configuration = DotNet.BuildConfiguration.Debug }
           |> (testWithCLITaggedArguments "FSAsyncTests"))
 
@@ -2395,7 +2395,7 @@ module Targets =
           + ".fsproj"
 
         let (dotnetexe, args) =
-          defaultDotNetTestCommandLine (Some "net10.0") sampled
+          defaultDotNetTestCommandLine (Some "net11.0") sampled
 
         let collect =
           AltCover.CollectOptions.Primitive
@@ -2445,17 +2445,17 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let altcover =
-        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
       let simpleReport =
         (Path.getFullName "./_Reports")
         @@ ("AltCoverFSharpTypesDotNetRunner.xml")
 
       let sampleRoot =
-        Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net11.0"
 
       let instrumented =
-        Path.getFullName "_Binaries/FSharpTypesDotNetRunner_Sample2/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/FSharpTypesDotNetRunner_Sample2/Debug+AnyCPU/net11.0"
 
       // Instrument the code
       let prep =
@@ -2491,7 +2491,7 @@ module Targets =
         Path.getFullName "./Samples/Sample2/Sample2.fsproj"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample2
+        defaultDotNetTestCommandLine (Some "net11.0") sample2
 
       let collect =
         AltCover.CollectOptions.Primitive
@@ -2522,7 +2522,7 @@ module Targets =
       |> Seq.iter File.Delete
 
       let altcover =
-        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
       let simpleReport =
         (Path.getFullName "./_Reports")
@@ -2538,7 +2538,7 @@ module Targets =
 
       let sampleRoot =
         Path.getFullName
-          "_Binaries/FSharpTypesDotNetCollecter_Sample2/Debug+AnyCPU/net10.0"
+          "_Binaries/FSharpTypesDotNetCollecter_Sample2/Debug+AnyCPU/net11.0"
 
       printfn "Build and test normally"
       Shell.cleanDir sampleRoot
@@ -2546,7 +2546,7 @@ module Targets =
       "Sample2.fsproj"
       |> DotNet.test (fun o ->
         { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
-            Framework = Some "net10.0"
+            Framework = Some "net11.0"
             Configuration = DotNet.BuildConfiguration.Debug }
         |> (testWithCLITaggedArguments "FSharpTypesDotNetCollecter"))
 
@@ -2591,7 +2591,7 @@ module Targets =
       "Sample2.fsproj"
       |> DotNet.test (fun o ->
         { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
-            Framework = Some "net10.0"
+            Framework = Some "net11.0"
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = true }
         |> (testWithCLITaggedArguments "FSharpTypesDotNetCollecter"))
@@ -2752,7 +2752,7 @@ module Targets =
       let i = Path.getFullName "./_Mono/Sample1"
 
       let altcover =
-        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+        Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
       let prep =
         AltCover.PrepareOptions.Primitive(
@@ -2790,7 +2790,7 @@ module Targets =
         Path.getFullName "./_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
 
       let i =
-        Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net10.0"
+        Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net11.0"
 
       let prep =
         AltCover.PrepareOptions.Primitive(
@@ -2806,7 +2806,7 @@ module Targets =
         |> AltCoverCommand.Prepare
 
       { AltCoverCommand.Options.Create prep with
-          ToolPath = "_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
+          ToolPath = "_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
           ToolType = dotnetAltcover
           WorkingDirectory = "." }
       |> AltCoverCommand.run
@@ -2833,7 +2833,7 @@ module Targets =
         Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472"
 
       let sampleRoot =
-        Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/net11.0"
 
       let instrumented =
         Path.getFullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
@@ -3104,10 +3104,10 @@ module Targets =
         @@ ("RecordResumeTestDotNet.xml")
 
       let binRoot =
-        Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net8.0"
+        Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net10.0"
 
       let sampleRoot =
-        Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net11.0"
 
       let instrumented =
         "__RecordResumeTestDotNet"
@@ -3332,7 +3332,7 @@ module Targets =
         otherFiles
         |> List.map (fun (a, b, c) ->
           let text =
-            File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/net8.0/any")
+            File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/net10.0/any")
 
           let name =
             (Path.getFullName "./_Intermediate/global")
@@ -3369,7 +3369,7 @@ module Targets =
         |> Seq.toList
 
       let cake2Files where =
-        (!!"./_Binaries/AltCover.Cake/Release+AnyCPU/net8.0/AltCover.C*.*")
+        (!!"./_Binaries/AltCover.Cake/Release+AnyCPU/net10.0/AltCover.C*.*")
         |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
         |> Seq.toList
 
@@ -3454,8 +3454,8 @@ module Targets =
            None) ]
 
       let globalFiles =
-        (!!"./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.*")
-        |> Seq.map (fun x -> (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
+        (!!"./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.*")
+        |> Seq.map (fun x -> (x, Some("tools/net10.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       let publishV =
@@ -3476,12 +3476,12 @@ module Targets =
         [ (!!"./AltCover.Visualizer/DotnetToolSettings.xml") ]
         |> Seq.concat
         |> Seq.map (fun x -> // Avalonia
-          (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
+          (x, Some("tools/net10.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       let auxFiles =
-        (!!"./_Binaries/AltCover/Release+AnyCPU/net8.0/*.xml")
-        |> Seq.map (fun x -> (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
+        (!!"./_Binaries/AltCover/Release+AnyCPU/net10.0/*.xml")
+        |> Seq.map (fun x -> (x, Some("tools/net10.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       printfn "Executing on %A" Environment.OSVersion
@@ -3490,10 +3490,10 @@ module Targets =
           [ applicationFiles
             resourceFiles "tools/net472/"
             libFiles "tools/net472/"
-            netcoreFiles "tools/net8.0"
-            poshFiles "tools/net8.0/"
-            poshHelpFiles "tools/net8.0/"
-            dataFiles "tools/net8.0/"
+            netcoreFiles "tools/net10.0"
+            poshFiles "tools/net10.0/"
+            poshHelpFiles "tools/net10.0/"
+            dataFiles "tools/net10.0/"
             monitorFiles "lib/netstandard2.0/"
             otherFiles
             housekeeping ],
@@ -3520,7 +3520,7 @@ module Targets =
          "./_Generated/altcover.api.nuspec",
          "altcover.api")
         (List.concat
-          [ cake2Files "lib/net8.0/"
+          [ cake2Files "lib/net10.0/"
             cake0files
             housekeeping ],
          [ ("AltCover.Api", version) ],
@@ -3530,11 +3530,11 @@ module Targets =
 
         (List.concat
           [ globalFiles
-            netcoreFiles "tools/net8.0/any"
-            poshFiles "tools/net8.0/any/"
-            poshHelpFiles "tools/net8.0/any/"
-            dataFiles "tools/net8.0/any/"
-            monitorFiles "tools/net8.0/any/"
+            netcoreFiles "tools/net10.0/any"
+            poshFiles "tools/net10.0/any/"
+            poshHelpFiles "tools/net10.0/any/"
+            dataFiles "tools/net10.0/any/"
+            monitorFiles "tools/net10.0/any/"
             [ (Path.getFullName "Build/README.global.md", Some "", None)
               (Path.getFullName "./_Binaries/README.global.html", Some "", None) ]
             auxFiles
@@ -3546,7 +3546,7 @@ module Targets =
          "altcover.global")
 
         (List.concat
-          [ vizFiles "tools/net8.0/any" // Avalonia
+          [ vizFiles "tools/net10.0/any" // Avalonia
             [ (Path.getFullName "Build/README.visualizer.md", Some "", None)
               (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None) ]
             auxVFiles
@@ -3679,7 +3679,7 @@ module Targets =
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
                 true
-              Framework = Some "net8.0" })
+              Framework = Some "net10.0" })
         netcoresource
 
       DotNet.publish
@@ -3691,7 +3691,7 @@ module Targets =
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
                 true
-              Framework = Some "net8.0" })
+              Framework = Some "net10.0" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
       // dotnet tooling mods
@@ -3822,13 +3822,13 @@ module Targets =
         + p.ToLowerInvariant()
         + "/"
         + (toolPackages.Item p)
-        + "/lib/net8.0/"
+        + "/lib/net10.0/"
 
       let unpacked =
         "./_Packaging.api/Unpack/lib/netstandard2.0/"
 
       let uncake =
-        "./_Binaries/AltCover.Cake/Release+AnyCPU/net8.0/"
+        "./_Binaries/AltCover.Cake/Release+AnyCPU/net10.0/"
 
       Shell.copyFile (unpacked + "AltCover.Cake.dll") (uncake + "AltCover.Cake.dll")
       Shell.copyFile (unpacked + "AltCover.Cake.xml") (uncake + "AltCover.Cake.xml")
@@ -3923,7 +3923,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let unpackapi =
         Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
@@ -4148,7 +4148,7 @@ module Targets =
         @@ ("ReleaseDotNetWithFramework.xml")
 
       let sampleRoot =
-        Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net10.0"
+        Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net11.0"
 
       let instrumented =
         sampleRoot
@@ -4189,7 +4189,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/ReleaseMonoWithDotNet.xml"
@@ -4228,7 +4228,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/ReleaseDotNetWithDotNet.xml"
@@ -4237,7 +4237,7 @@ module Targets =
         Path.getFullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
 
       let i =
-        Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net10.0"
+        Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/net11.0"
 
       let prep =
         AltCover.PrepareOptions.Primitive(
@@ -4272,17 +4272,17 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
 
       let o =
         Path.getFullName
-          "./_Binaries/ReleaseFSharpTypesDotNetRunner_Sample2/Debug+AnyCPU/net10.0"
+          "./_Binaries/ReleaseFSharpTypesDotNetRunner_Sample2/Debug+AnyCPU/net11.0"
 
       let i =
-        Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net11.0"
 
       Shell.cleanDir o
 
@@ -4320,10 +4320,10 @@ module Targets =
         Path.getFullName "./Samples/Sample2/Sample2.fsproj"
 
       let runner =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0/AltCover.dll"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0/AltCover.dll"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample2
+        defaultDotNetTestCommandLine (Some "net11.0") sample2
 
       // Run
       let collect =
@@ -4349,17 +4349,17 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
 
       let o =
         Path.getFullName
-          "./_Binaries/ReleaseXUnitFSharpTypesDotNetRunner_Sample4/Debug+AnyCPU/net10.0"
+          "./_Binaries/ReleaseXUnitFSharpTypesDotNetRunner_Sample4/Debug+AnyCPU/net11.0"
 
       let i =
-        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net11.0"
 
       Shell.cleanDir o
 
@@ -4393,10 +4393,10 @@ module Targets =
         Path.getFullName "./Samples/Sample4/Sample4.fsproj"
 
       let runner =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0/AltCover.dll"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0/AltCover.dll"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample4
+        defaultDotNetTestCommandLine (Some "net11.0") sample4
 
       // Run
       let collect =
@@ -4427,16 +4427,16 @@ module Targets =
       Directory.ensure reportDir
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
 
       let o =
-        Path.getFullName "./_Binaries/OpenCoverForPester_Sample18/Debug+AnyCPU/net10.0"
+        Path.getFullName "./_Binaries/OpenCoverForPester_Sample18/Debug+AnyCPU/net11.0"
 
       let i =
-        Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net11.0"
 
       Shell.cleanDir o
 
@@ -4470,10 +4470,10 @@ module Targets =
         Path.getFullName "./Samples/Sample18/Sample18.fsproj"
 
       let runner =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0/AltCover.dll"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0/AltCover.dll"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample
+        defaultDotNetTestCommandLine (Some "net11.0") sample
 
       // Run
       let collect =
@@ -4521,7 +4521,7 @@ module Targets =
       Shell.copyFile target covxml
 
       let binary =
-        "_Binaries/CoverletForPester_Sample18/Debug+AnyCPU/net10.0/Sample18.dll"
+        "_Binaries/CoverletForPester_Sample18/Debug+AnyCPU/net11.0/Sample18.dll"
 
       let binaryTarget =
         reportDir @@ "Sample18.dll"
@@ -4529,7 +4529,7 @@ module Targets =
       Shell.copyFile binaryTarget binary
 
       let binary2 =
-        "_Binaries/CoverletForPester_Sample18/Debug+AnyCPU/net10.0/Sample18.pdb"
+        "_Binaries/CoverletForPester_Sample18/Debug+AnyCPU/net11.0/Sample18.pdb"
 
       let binary2Target =
         reportDir @@ "Sample18.pdb"
@@ -4541,7 +4541,7 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/ShowStatic.xml"
@@ -4557,10 +4557,10 @@ module Targets =
 
       let o =
         Path.getFullName
-          "./_Binaries/ReleaseXUnitFSharpTypesShowVisualized_Sample4/Debug+AnyCPU/net10.0"
+          "./_Binaries/ReleaseXUnitFSharpTypesShowVisualized_Sample4/Debug+AnyCPU/net11.0"
 
       let i =
-        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net11.0"
 
       Shell.cleanDir o
 
@@ -4732,10 +4732,10 @@ module Targets =
         Path.getFullName "./Samples/Sample4/Sample4.fsproj"
 
       let runner =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0/AltCover.dll"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0/AltCover.dll"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample4
+        defaultDotNetTestCommandLine (Some "net11.0") sample4
 
       // Run
       let collect =
@@ -4783,17 +4783,17 @@ module Targets =
       Directory.ensure "./_Reports"
 
       let unpack =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0"
 
       let x =
         Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
 
       let o =
         Path.getFullName
-          "./_Binaries/ReleaseXUnitFSharpTypesDotNetFullRunner_Sample4/Debug+AnyCPU/net10.0"
+          "./_Binaries/ReleaseXUnitFSharpTypesDotNetFullRunner_Sample4/Debug+AnyCPU/net11.0"
 
       let i =
-        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net11.0"
 
       Shell.cleanDir o
       let before = Actions.ticksNow ()
@@ -4827,10 +4827,10 @@ module Targets =
         Path.getFullName "./Samples/Sample4/Sample4.fsproj"
 
       let runner =
-        Path.getFullName "_Packaging/Unpack/tools/net8.0/AltCover.dll"
+        Path.getFullName "_Packaging/Unpack/tools/net10.0/AltCover.dll"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample4
+        defaultDotNetTestCommandLine (Some "net11.0") sample4
 
       // Run
       let collect =
@@ -4862,10 +4862,10 @@ module Targets =
         Path.getFullName "./_Reports/JsonReporting.json"
 
       let o =
-        Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/net10.0"
+        Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/net11.0"
 
       let i =
-        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net10.0"
+        Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/net11.0"
 
       Shell.cleanDir o
       let before = Actions.ticksNow ()
@@ -4934,7 +4934,7 @@ module Targets =
         Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
 
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine (Some "net10.0") sample4
+        defaultDotNetTestCommandLine (Some "net11.0") sample4
 
       // Run
       let collect =
@@ -5143,7 +5143,7 @@ module Targets =
           fsproj.Descendants(XName.Get("TargetFrameworks"))
           |> Seq.head
 
-        targets.SetValue "net10.0"
+        targets.SetValue "net11.0"
         targets.Name <- (XName.Get("TargetFramework"))
 
         let pack =
@@ -5338,7 +5338,7 @@ module Targets =
           fsproj.Descendants(XName.Get("TargetFrameworks"))
           |> Seq.head
 
-        let netTarget = "net10.0"
+        let netTarget = "net11.0"
         targets.Name <- (XName.Get("TargetFramework"))
 
         targets.SetValue netTarget
@@ -5494,7 +5494,7 @@ module Targets =
             |> Seq.concat
             |> Seq.head
 
-          targets.SetValue "net10.0"
+          targets.SetValue "net11.0"
           targets.Name <- (XName.Get("TargetFramework"))
           targets.AddAfterSelf(XElement(XName.Get "DocumentationFile"))
 
@@ -5572,7 +5572,7 @@ module Targets =
           "_DotnetTest.fsproj"
 
         assertCopied (
-          "_Binaries/_DotnetTest/Debug+AnyCPU/net10.0/__Instrumented__DotnetTest"
+          "_Binaries/_DotnetTest/Debug+AnyCPU/net11.0/__Instrumented__DotnetTest"
         )
 
         DotNet.test
@@ -5589,7 +5589,7 @@ module Targets =
           "_DotnetTestJson.fsproj" // TODO validate output as per JsonReporting
 
         assertCopied (
-          "_Binaries/_DotnetTestJson/Debug+AnyCPU/net10.0/__Instrumented__DotnetTestJson"
+          "_Binaries/_DotnetTestJson/Debug+AnyCPU/net11.0/__Instrumented__DotnetTestJson"
         )
 
         let x =
@@ -5668,10 +5668,10 @@ module Targets =
         Assert.That(xx0 |> File.Exists |> not, xx0 + " should not be present")
 
         Assert.That(
-          "./_DotnetTestFailInstrumentation/bin/Debug/net10.0/dotnettest.dll.txt"
+          "./_DotnetTestFailInstrumentation/bin/Debug/net11.0/dotnettest.dll.txt"
           |> File.Exists
           |> not,
-          "./_DotnetTestFailInstrumentation/bin/Debug/net10.0/dotnettest.dll.txt should not be present"
+          "./_DotnetTestFailInstrumentation/bin/Debug/net11.0/dotnettest.dll.txt should not be present"
         )
 
         try
@@ -5694,10 +5694,10 @@ module Targets =
         Assert.That(xx0a |> File.Exists |> not, xx0a + " should not be present")
 
         Assert.That(
-          "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net10.0/dotnettest.dll.txt"
+          "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net11.0/dotnettest.dll.txt"
           |> File.Exists
           |> not,
-          "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net10.0/dotnettest.dll.txt should not be present"
+          "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net11.0/dotnettest.dll.txt should not be present"
         )
 
         printfn "optest failing test ------------------------------------------------"
@@ -5746,9 +5746,9 @@ module Targets =
           printfn "Caught expected exception"
 
         Assert.That(
-          "./_Binaries/_DotnetTestFail/Debug+AnyCPU/net10.0/_DotnetTestFail.dll.txt"
+          "./_Binaries/_DotnetTestFail/Debug+AnyCPU/net11.0/_DotnetTestFail.dll.txt"
           |> File.Exists,
-          "./_Binaries/_DotnetTestFail/Debug+AnyCPU/net10.0/_DotnetTestFail.dll.txt should exist"
+          "./_Binaries/_DotnetTestFail/Debug+AnyCPU/net11.0/_DotnetTestFail.dll.txt should exist"
         )
 
         do
@@ -5787,7 +5787,7 @@ module Targets =
 
         let filepath =
           Path.GetFullPath
-            "./_Binaries/_DotnetTestFailInPlace/Debug+AnyCPU/net10.0/_DotnetTestFailInPlace.dll.txt"
+            "./_Binaries/_DotnetTestFailInPlace/Debug+AnyCPU/net11.0/_DotnetTestFailInPlace.dll.txt"
 
         Assert.That(filepath |> File.Exists, filepath + " should exist")
 
@@ -5858,9 +5858,9 @@ module Targets =
           printfn "Caught expected exception"
 
         Assert.That(
-          "./_Binaries/_DotnetTestFailFast/Debug+AnyCPU/net10.0/_DotnetTestFailFast.dll.txt"
+          "./_Binaries/_DotnetTestFailFast/Debug+AnyCPU/net11.0/_DotnetTestFailFast.dll.txt"
           |> File.Exists,
-          "./_Binaries/_DotnetTestFailFast/Debug+AnyCPU/net10.0/_DotnetTestFailFast.dll.txt should exist"
+          "./_Binaries/_DotnetTestFailFast/Debug+AnyCPU/net11.0/_DotnetTestFailFast.dll.txt should exist"
         )
 
         do
@@ -5898,9 +5898,9 @@ module Targets =
           printfn "Caught expected exception"
 
         Assert.That(
-          "./_Binaries/_DotnetTestFailFastInPlace/Debug+AnyCPU/net10.0/_DotnetTestFailFastInPlace.dll.txt"
+          "./_Binaries/_DotnetTestFailFastInPlace/Debug+AnyCPU/net11.0/_DotnetTestFailFastInPlace.dll.txt"
           |> File.Exists,
-          "./_Binaries/_DotnetTestFailFastInPlace/Debug+AnyCPU/net10.0/_DotnetTestFailFastInPlace.dll.txt should exist"
+          "./_Binaries/_DotnetTestFailFastInPlace/Debug+AnyCPU/net11.0/_DotnetTestFailFastInPlace.dll.txt should exist"
         )
 
         do
@@ -6418,7 +6418,7 @@ module Targets =
           csproj.Descendants(XName.Get("TargetFramework"))
           |> Seq.head
 
-        target.SetValue "net10.0"
+        target.SetValue "net11.0"
 
         let pack =
           csproj.Descendants(XName.Get("PackageReference"))
@@ -6764,7 +6764,7 @@ module Targets =
           fsproj.Descendants(XName.Get("TargetFrameworks"))
           |> Seq.head
 
-        targets.SetValue "net10.0"
+        targets.SetValue "net11.0"
         targets.AddAfterSelf(XElement(XName.Get "DocumentationFile"))
         targets.Name <- (XName.Get("TargetFramework"))
 
@@ -6813,7 +6813,7 @@ module Targets =
           Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
 
         let o =
-          Path.getFullName "./_Binaries/_DotnetGlobalTest/Debug+AnyCPU/net10.0"
+          Path.getFullName "./_Binaries/_DotnetGlobalTest/Debug+AnyCPU/net11.0"
 
         let r = Path.Combine(o, Path.GetFileName x)
 
@@ -6852,7 +6852,7 @@ module Targets =
         printfn "Execute the instrumented tests"
 
         let (dotnetexe, args) =
-          defaultDotNetTestCommandLine (Some "net10.0") String.Empty
+          defaultDotNetTestCommandLine (Some "net11.0") String.Empty
 
         let collect =
           AltCover.CollectOptions.Primitive
