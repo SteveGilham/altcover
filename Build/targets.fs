@@ -923,11 +923,20 @@ module Targets =
       [ "./AltCover.slnx"
         "./AltCover.Visualizer.slnx"
         "./MCS.slnx"
-        "./Samples/Sample14/Sample14.slnx"
         "./Samples/Sample28/SourceGenerators.slnx" ]
       |> Seq.iter dotnetBuildDebug
 
-      Shell.copy "./_SourceLink" (!!"./_Binaries/Sample14/Debug+AnyCPU/net10.0/*"))
+      DotNet.publish
+        (fun options ->
+          { options with
+              OutputPath = Some "./_SourceLink"
+              Configuration = DotNet.BuildConfiguration.Debug
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.ConsoleLogParameters = []
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
+                true
+              Framework = Some "net10.0" })
+        "./Samples/Sample14/Sample14/Sample14.csproj")
 
   let buildMonoSamples =
     (fun () ->
