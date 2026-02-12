@@ -80,10 +80,6 @@
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="16.0.461" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Mono.Cecil" />
   </ItemGroup>
 

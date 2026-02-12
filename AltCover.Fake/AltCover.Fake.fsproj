@@ -24,10 +24,6 @@
   <ItemGroup>
     <PackageReference Include="FAKE.Core.Trace" />
     <PackageReference Include="FAKE.DotNet.Cli" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>

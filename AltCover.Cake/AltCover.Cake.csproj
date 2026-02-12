@@ -29,10 +29,6 @@
   <ItemGroup>
     <PackageReference Include="Cake.Common" Condition="'$(TargetFramework)' == 'net8.0'" />
     <PackageReference Include="Cake.Core" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

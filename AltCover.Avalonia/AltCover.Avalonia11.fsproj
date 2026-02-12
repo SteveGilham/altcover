@@ -50,10 +50,6 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Themes.Simple" />
     <PackageReference Include="MessageBox.Avalonia" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Mono.Options" />
     <PackageReference Include="System.Reactive.Core" />
     <PackageReference Include="FSharp.Core">
