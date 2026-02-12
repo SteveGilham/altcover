@@ -93,3 +93,4 @@ ThirdParty/BlackFox.CommandLine.9.dll
 ThirdParty/BlackFox.CommandLine.il
 ThirdParty/FSharpOptimizationData.BlackFox.CommandLine
 ThirdParty/FSharpSignatureData.BlackFox.CommandLine
+*.tmp
