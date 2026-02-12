@@ -4339,7 +4339,7 @@ module Visitor =
       CoverageParameters.theReportFormat <- None
       CoverageParameters.coverstyle <- CoverStyle.All
 
-  let AddTrackingForMain xml =
+  let AddTrackingForMain (xml:string) =
     let resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith(xml, StringComparison.Ordinal)
