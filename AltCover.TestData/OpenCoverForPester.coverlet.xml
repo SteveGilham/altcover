@@ -194,7 +194,7 @@
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="True" isSetter="False" isStatic="True" crapScore="2">
               <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100663345</MetadataToken>
+              <MetadataToken>100663347</MetadataToken>
               <Name>System.Int32 Tests.DU/MyClass::get_Property()</Name>
               <FileRef uid="1" />
               <SequencePoints>
