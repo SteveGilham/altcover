@@ -16,6 +16,7 @@ open Avalonia.Controls.Presenters
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
+open Avalonia.Media.Text
 open Avalonia.Threading
 
 type Thickness = Avalonia.Thickness
@@ -117,6 +118,11 @@ type MainWindow() as this =
 
   [<NonSerialized>]
   let icons = Icons(iconMaker)
+
+  let addNode (leaf: bool) (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) (icon: Lazy<Bitmap>) (pc: string) (name: string) (tip: string option) : CoverageTreeContext<List<TreeViewItem>, TreeViewItem> =
+    let newrow = makeNewRow pc leaf name icon
+    (context.Row.Items).Add newrow
+    { context with Row = newrow }
 
   let getIcon name =
     let iconstype = icons.GetType()
@@ -334,12 +340,12 @@ type MainWindow() as this =
     let visibleName =
       (context.Row.Header :?> StackPanel).Tag.ToString()
 
-    let tagByCoverage (buff: TextPresenter) (lines: FormattedTextLine list) (n: CodeTag) =
+    let tagByCoverage (buff: StyledTextPresenter) (lines: TextLine list) (fullText: string) (n: CodeTag) =
       let start =
         (n.Column - 1)
         + (lines
            |> Seq.take (n.Line - 1)
-           |> Seq.sumBy _.Length)
+           |> Seq.sumBy (fun l -> l.Length))
 
       let ec =
         if n.LineOnly then
@@ -354,9 +360,7 @@ type MainWindow() as this =
            |> Seq.take (n.EndLine - 1)
            |> Seq.sumBy (fun l -> l.Length))
 
-      FormattedTextStyleSpan(
-        start,
-        finish - start,
+      let brush =
         match n.Style with
         | Exemption.Visited -> visited
         | Exemption.Automatic -> automatic
@@ -364,12 +368,13 @@ type MainWindow() as this =
         | Exemption.Excluded -> excluded
         | Exemption.StaticAnalysis -> staticAnalysis
         | _ -> notVisited
-      )
+
+      { Text = fullText.Substring(start, finish - start); Foreground = brush }
 
     let markBranches
       (root: XPathNavigator)
       (stack: StackPanel)
-      (lines: FormattedTextLine list)
+      (lines: TextLine list)
       (file: Source)
       =
       let branches =
@@ -395,26 +400,24 @@ type MainWindow() as this =
 
     let markCoverage
       (root: XPathNavigator)
-      (textBox: TextPresenter)
-      (text2: TextPresenter)
-      (lines: FormattedTextLine list)
+      (textBox: StyledTextPresenter)
+      (text2: StyledTextPresenter)
+      (lines: TextLine list)
       info
+      (fullText: string)
       =
       let tags =
         HandlerCommon.TagCoverage root info lines.Length
 
       let formats =
-        tags |> List.map (tagByCoverage textBox lines)
+        tags |> List.map (tagByCoverage textBox lines fullText)
 
       let linemark =
         tags
         |> HandlerCommon.TagLines visited notVisited
         |> List.map (fun (l, tag) ->
-          let start =
-            (l - 1) * (7 + Environment.NewLine.Length)
-
           // mark the line number column
-          FormattedTextStyleSpan(start, 7, tag))
+          { Text = sprintf "%6d " l; Foreground = tag })
 
       (formats, linemark)
 
@@ -440,11 +443,30 @@ type MainWindow() as this =
       let showSource (info: Source) (line: int) =
         this.CatchAllAndWarn(fun () ->
           this.UpdateTextFonts text text2
-          text.Text <- info.ReadAllText().Replace('\t', '\u2192')
+          let fullText = info.ReadAllText().Replace('\t', '\u2192')
+          text.Text <- fullText
+
+          let font = text.FontFamily
+          let fontSize = text.FontSize
+          let fontWeight = text.FontWeight
+          let fontStyle = text.FontStyle
+
+          let textLayout =
+            TextLayout(
+              text.Text,
+              font,
+              fontSize,
+              Brushes.Black, // Placeholder, will need to adjust for styling
+              Avalonia.Media.TextAlignment.Left,
+              Avalonia.Media.TextWrapping.NoWrap,
+              Avalonia.Media.FlowDirection.LeftToRight,
+              double.PositiveInfinity,
+              double.PositiveInfinity
+            )
 
           // get line count
           let textLines =
-            text.FormattedText.GetLines() |> Seq.toList
+            textLayout.TextLines |> Seq.toList
 
           text2.Text <-
             String.Join(
@@ -461,7 +483,7 @@ type MainWindow() as this =
           root.MoveToRoot()
 
           let (formats, linemark) =
-            markCoverage root text text2 textLines info
+            markCoverage root text text2 textLines info fullText
 
           let stack =
             this.FindControl<StackPanel>("Branches")
@@ -475,11 +497,9 @@ type MainWindow() as this =
 
             Dispatcher.UIThread.Post(fun _ ->
               // apply formatting on UI thread -- TODO
-              text.FormattedText.Spans <- formats
-              text.Tag <- formats
+              text.StyledText <- formats
               text.InvalidateVisual()
-              text2.FormattedText.Spans <- linemark
-              text2.Tag <- linemark
+              text2.StyledText <- linemark
               text2.InvalidateVisual()
 
               let midpoint =
@@ -682,7 +702,8 @@ type MainWindow() as this =
       else
         row.Tag <- Expanded
 
-      row.Items <- l
+      row.Items.Clear()
+      l |> List.iter row.Items.Add
 
       row.Tapped
       |> Event.add (fun x ->
@@ -722,23 +743,13 @@ type MainWindow() as this =
         { Model = List<TreeViewItem>()
           Row = nullObject }
 
-      let addNode =
-        fun
-            leaf
-            (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
-            icon
-            pc
-            name
-            (tip: string option) ->
-          let newrow = makeNewRow pc leaf name icon
-          (context.Row.Items :?> List<TreeViewItem>).Add newrow
+      let addNodeFunc = fun context icon pc name tip -> addNode false context icon pc name tip
+      let addLeafNodeFunc = fun context icon pc name tip -> addNode true context icon pc name tip
 
-          tip
-          |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
+      let addNodeFunc = fun context icon pc name tip -> addNode false context icon pc name tip
+      let addLeafNodeFunc = fun context icon pc name tip -> addNode true context icon pc name tip
 
-          { context with Row = newrow }
-
-      let environment =
+      let environment : CoverageModelDisplay<List<TreeViewItem>, TreeViewItem, Bitmap> =
         { Icons = icons
           GetFileInfo =
             fun i ->
@@ -755,7 +766,7 @@ type MainWindow() as this =
                 let tree =
                   this.FindControl<TreeView>("Tree")
 
-                tree.Items <- Enumerable.Empty<TreeViewItem>()
+                tree.Items.Clear()
                 tree.InvalidateVisual()
                 this.UpdateMRU info.FullName false)
           UpdateUISuccess =
@@ -784,7 +795,8 @@ type MainWindow() as this =
 
               this.FindControl<StackPanel>("Branches").Children.Clear()
 
-              tree.Items <- auxModel.Model
+              tree.Items.Clear() // Clear existing items before adding new ones
+              auxModel.Model |> List.iter tree.Items.Add
               tree.InvalidateVisual()
 
               if info.IsNotNull then
@@ -794,7 +806,7 @@ type MainWindow() as this =
               let tree =
                 this.FindControl<TreeView>("Tree")
 
-              tree.Items <- Enumerable.Empty<TreeViewItem>()
+              tree.Items.Clear()
               tree.InvalidateVisual()
 
               let model = auxModel.Model
@@ -807,8 +819,8 @@ type MainWindow() as this =
 
               { Model = model; Row = row }
           TreeUIDispatch = Dispatcher.UIThread.Post
-          AddNode = (addNode false)
-          AddLeafNode = (addNode true)
+          AddNode = addNodeFunc
+          AddLeafNode = addLeafNodeFunc
           OnRowExpanded =
             (fun (row: TreeViewItem) (action: unit -> unit) ->
               row.Tag <- Unexpanded action)

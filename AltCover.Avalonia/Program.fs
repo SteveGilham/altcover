@@ -11,7 +11,7 @@ open Mono.Options
 module VisualizerMain =
 #if !NETSTANDARD2_0 // no AppBuilder here
   let BuildAvaloniaApp () =
-    AppBuilderBase<AppBuilder>
+    AppBuilder
       .Configure<App>()
       .UsePlatformDetect()
       .LogToTrace(LogEventLevel.Warning)
