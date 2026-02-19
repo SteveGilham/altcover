@@ -12,10 +12,7 @@ open GuiCommon
 
 open AltCover.FontSupport
 open Avalonia.Controls
-#if AVALONIA11
-#else
 open Avalonia.Controls.Presenters
-#endif
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
@@ -48,11 +45,7 @@ type AboutBox() as this =
       String.Format(
         Globalization.CultureInfo.CurrentCulture,
         Resource.GetResourceString("aboutVisualizer.Comments"),
-#if AVALONIA11
-        "AvaloniaUI v11"
-#else
         "AvaloniaUI"
-#endif
       )
 
     let copyright =
@@ -65,8 +58,6 @@ type AboutBox() as this =
 
     vslink.Text <- Resource.GetResourceString "aboutVisualizer.Copyright"
 
-#if AVALONIA11
-#else
     let vsLinkButton =
       this.FindControl<Button>("VSLinkButton")
 
@@ -74,15 +65,12 @@ type AboutBox() as this =
     |> Event.add (fun _ ->
       Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
         "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022")
-#endif
 
     let link =
       this.FindControl<TextBlock>("Link")
 
     link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"
 
-#if AVALONIA11
-#else
     let linkButton =
       this.FindControl<Button>("LinkButton")
 
@@ -90,7 +78,6 @@ type AboutBox() as this =
     |> Event.add (fun _ ->
       Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
         "http://www.github.com/SteveGilham/altcover")
-#endif
 
     this.FindControl<TabItem>("AboutDetails").Header <-
       Resource.GetResourceString "AboutDialog.About"
@@ -114,13 +101,6 @@ type AboutBox() as this =
 
     aboutClose.Content <- "OK"
 
-#if AVALONIA11
-type TextLine =
-  { Start: int
-    End: int
-    Brush: (SolidColorBrush * SolidColorBrush) option }
-#endif
-
 type MainWindow() as this =
   inherit Window()
   let mutable armed = false
@@ -130,12 +110,7 @@ type MainWindow() as this =
   let mutable coverageFiles: string list = []
 
   [<NonSerialized>]
-#if AVALONIA11
-  let ofd =
-    Avalonia.Platform.Storage.FilePickerOpenOptions()
-#else
   let ofd = OpenFileDialog()
-#endif
 
   // fsharplint:disable-next-line RedundantNewKeyword
   let iconMaker (x: Stream) = new Bitmap(x) // IDisposable
@@ -200,52 +175,6 @@ type MainWindow() as this =
   let excludedBG =
     SolidColorBrush.Parse "#F5F5F5" // Sky Blue on White Smoke
 
-#if AVALONIA11
-  [<SuppressMessage("Gendarme.Rules.Portability",
-                    "NewLineLiteralRule",
-                    Justification = "That is kind of the point...")>]
-  [<TailCall>]
-  let rec linesOfString (s: string) (start: int) (lines: TextLine list) =
-    let rn = s.IndexOf("\r\n", start)
-
-    if rn >= 0 then
-      linesOfString
-        s
-        (rn + 2)
-        ({ Start = start
-           End = rn + 2
-           Brush = None }
-         :: lines)
-    else
-      let r = s.IndexOf('\r', start)
-
-      if r >= 0 then
-        linesOfString
-          s
-          (r + 1)
-          ({ Start = start
-             End = r + 1
-             Brush = None }
-           :: lines)
-      else
-        let n = s.IndexOf('\n', start)
-
-        if n >= 0 then
-          linesOfString
-            s
-            (n + 1)
-            ({ Start = start
-               End = n + 1
-               Brush = None }
-             :: lines)
-        else
-          ({ Start = start
-             End = s.Length + 1
-             Brush = None }
-           :: lines)
-          |> List.rev
-#endif
-
   let makeTreeNode pc leaf name icon =
     let text = TextBlock()
     text.Text <- name
@@ -294,9 +223,6 @@ type MainWindow() as this =
                     "AvoidSwitchStatementsRule",
                     Justification = "This is FP, not OO")>]
   member private this.ShowMessageBox (status: MessageType) caption message =
-#if AVALONIA11
-    ()
-#else
     let dlg =
       MessageBox.Avalonia.DTO.MessageBoxCustomParamsWithImage()
 
@@ -325,7 +251,6 @@ type MainWindow() as this =
 
     // can we get this to tidy up after itself??
     mbox.ShowDialog(this) |> ignore
-#endif
 
   // Fill in the menu from the memory cache
   member private this.PopulateMenu() =
@@ -374,11 +299,7 @@ type MainWindow() as this =
          icons.Refresh)
         .Force()
 
-#if AVALONIA11
-  member private this.UpdateTextFonts (text: TextBlock) text2 =
-#else
   member private this.UpdateTextFonts (text: TextPresenter) text2 =
-#endif
     [ text; text2 ]
     |> List.iter (fun t ->
       let (_, logfont) =
@@ -413,13 +334,7 @@ type MainWindow() as this =
     let visibleName =
       (context.Row.Header :?> StackPanel).Tag.ToString()
 
-#if AVALONIA11
-    let tagByCoverage (buff: TextBlock) (lines: TextLine list) (n: CodeTag) =
-#else
     let tagByCoverage (buff: TextPresenter) (lines: FormattedTextLine list) (n: CodeTag) =
-#endif
-      // rubber hits the road -- TODO
-#if !AVALONIA11
       let start =
         (n.Column - 1)
         + (lines
@@ -450,44 +365,18 @@ type MainWindow() as this =
         | Exemption.StaticAnalysis -> staticAnalysis
         | _ -> notVisited
       )
-#else
-      let start =
-        (n.Column - 1) + lines.[n.Line - 1].Start
-
-      let finishLine = lines.[n.EndLine - 1]
-
-      let finish =
-        if n.LineOnly then
-          // coverlet-like case w/o column data
-          finishLine.End - 1
-        else
-          finishLine.Start + n.EndColumn - 1
-
-      ()
-#endif
 
     let markBranches
-#if AVALONIA11
-      (lineHeight: float)
-#endif
       (root: XPathNavigator)
       (stack: StackPanel)
-#if AVALONIA11
-      (lines: TextLine list)
-#else
       (lines: FormattedTextLine list)
-#endif
       (file: Source)
       =
       let branches =
         HandlerCommon.TagBranches root file
 
-#if AVALONIA11
-      let pad = (lineHeight - 16.0) / 2.0
-#else
       let h = (lines |> Seq.head).Height
       let pad = (h - 16.0) / 2.0
-#endif
       let margin = Thickness(0.0, pad)
 
       Dispatcher.UIThread.Post(fun _ ->
@@ -506,15 +395,9 @@ type MainWindow() as this =
 
     let markCoverage
       (root: XPathNavigator)
-#if AVALONIA11
-      (textBox: TextBlock)
-      (text2: TextBlock)
-      (lines: TextLine list)
-#else
       (textBox: TextPresenter)
       (text2: TextPresenter)
       (lines: FormattedTextLine list)
-#endif
       info
       =
       let tags =
@@ -525,41 +408,23 @@ type MainWindow() as this =
 
       let linemark =
         tags
-#if AVALONIA11
-        |> HandlerCommon.TagLines (visited, visitedBG) (notVisited, notVisitedBG)
-#else
         |> HandlerCommon.TagLines visited notVisited
-#endif
         |> List.map (fun (l, tag) ->
           let start =
             (l - 1) * (7 + Environment.NewLine.Length)
 
           // mark the line number column
-#if !AVALONIA11
           FormattedTextStyleSpan(start, 7, tag))
-#else
-          { Start = start
-            End = start + 7
-            Brush = Some tag })
-#endif
 
       (formats, linemark)
 
     context.Row.DoubleTapped
     |> Event.add (fun _ ->
       let text =
-#if AVALONIA11
-        this.FindControl<TextBlock>("Source")
-#else
         this.FindControl<TextPresenter>("Source")
-#endif
 
       let text2 =
-#if AVALONIA11
-        this.FindControl<TextBlock>("Lines")
-#else
         this.FindControl<TextPresenter>("Lines")
-#endif
 
       let scroller =
         this.FindControl<ScrollViewer>("Coverage")
@@ -578,27 +443,9 @@ type MainWindow() as this =
           text.Text <- info.ReadAllText().Replace('\t', '\u2192')
 
           // get line count
-#if !AVALONIA11
           let textLines =
             text.FormattedText.GetLines() |> Seq.toList
-#else
-          let t =
-            Typeface(text.FontFamily, text.FontStyle, text.FontWeight, text.FontStretch)
 
-          let format =
-            FormattedText(
-              text.Text,
-              CultureInfo.InvariantCulture,
-              FlowDirection.LeftToRight,
-              t,
-              text.FontSize,
-              this.Foreground
-            )
-
-          let textLines = linesOfString text.Text 0 []
-#endif
-
-#if !AVALONIA11
           text2.Text <-
             String.Join(
               Environment.NewLine,
@@ -610,30 +457,6 @@ type MainWindow() as this =
           let sample = textLines |> Seq.head
           let depth = sample.Height * float (line - 1)
 
-          //// get line height
-          //let h = (textLines |> Seq.head).Height
-          //let depth = h * float (line - 1)
-#else
-
-          let numbers =
-            textLines
-            |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i))
-
-          numbers
-          |> Seq.iter (fun l ->
-            let line = l + Environment.NewLine
-
-            let run =
-              Avalonia.Controls.Documents.Run(line)
-
-            text2.Inlines.Add run)
-
-          let h =
-            format.Height
-            / (textLines |> List.length |> float)
-
-          let depth = h * float (line - 1)
-#endif
           let root = xpath.Clone()
           root.MoveToRoot()
 
@@ -644,39 +467,18 @@ type MainWindow() as this =
             this.FindControl<StackPanel>("Branches")
 
           root.MoveToRoot()
-#if AVALONIA11
-          markBranches h root stack textLines info
-#else
+
           markBranches root stack textLines info
-#endif
 
           async {
             Threading.Thread.Sleep(300)
 
             Dispatcher.UIThread.Post(fun _ ->
               // apply formatting on UI thread -- TODO
-#if !AVALONIA11
               text.FormattedText.Spans <- formats
-#endif
               text.Tag <- formats
               text.InvalidateVisual()
-
-#if !AVALONIA11
               text2.FormattedText.Spans <- linemark
-#else
-              linemark
-              |> Seq.iter (fun mark ->
-                let index =
-                  mark.Start / (7 + Environment.NewLine.Length)
-
-                let span = text2.Inlines.[index]
-
-                match mark.Brush with
-                | None -> ()
-                | Some(f, b) ->
-                  span.Foreground <- f
-                  span.Background <- b)
-#endif
               text2.Tag <- linemark
               text2.InvalidateVisual()
 
@@ -698,15 +500,7 @@ type MainWindow() as this =
     Persistence.readGeometry this
     coverageFiles <- Persistence.readCoverageFiles ()
     this.PopulateMenu() |> ignore // no refresh at this point
-#if !AVALONIA11
     ofd.Directory <- Persistence.readFolder ()
-#else
-    let where = Persistence.readFolder ()
-
-    //if Directory.Exists where then
-    //  ofd.SuggestedStartLocation <-
-    //    new Avalonia.Platform.Storage.FileIO.BclStorageFolder(where)
-#endif
 
     ofd.Title <- Resource.GetResourceString "Open Coverage File"
     ofd.AllowMultiple <- false
@@ -715,23 +509,12 @@ type MainWindow() as this =
       (Resource.GetResourceString "SelectXml").Split([| '|' |])
       |> Seq.map (fun f ->
         let entry = f.Split([| '%' |])
-#if !AVALONIA11
         let filter = FileDialogFilter()
         filter.Name <- entry |> Seq.head
         filter.Extensions <- List(entry |> Seq.tail)
-#else
-        let filter =
-          Avalonia.Platform.Storage.FilePickerFileType(entry |> Seq.head)
-
-        filter.Patterns <- List(entry |> Seq.tail |> Seq.map (fun x -> "*." + x))
-#endif
         filter)
 
-#if AVALONIA11
-    ofd.FileTypeFilter <- List(filterBits)
-#else
     ofd.Filters <- List(filterBits)
-#endif
     this.Title <- "AltCover.Visualizer"
 
     let p =
@@ -743,18 +526,10 @@ type MainWindow() as this =
       font.ToString() |> Persistence.saveFont
 
       let text =
-#if AVALONIA11
-        this.FindControl<TextBlock>("Source")
-#else
         this.FindControl<TextPresenter>("Source")
-#endif
 
       let text2 =
-#if AVALONIA11
-        this.FindControl<TextBlock>("Lines")
-#else
         this.FindControl<TextPresenter>("Lines")
-#endif
 
       this.UpdateTextFonts text text2
 
@@ -764,41 +539,15 @@ type MainWindow() as this =
         t.Text <- String.Empty
         t.Text <- tmp
 
-      // reapply saved formatting on UI thread --TODO
-#if !AVALONIA11
-
+        // reapply saved formatting on UI thread --TODO
         t.FormattedText.Spans <-
           match t.Tag with
           | :? (list<FormattedTextStyleSpan>) as l -> l
-          | _ -> []
-#endif
-      )
+          | _ -> [])
 
       // recompute line height for new font
-#if !AVALONIA11
       let h =
         (text.FormattedText.GetLines() |> Seq.head).Height
-#else
-      let tf =
-        Typeface(text.FontFamily, text.FontStyle, text.FontWeight, text.FontStretch)
-
-      let format =
-        FormattedText(
-          text.Text,
-          CultureInfo.InvariantCulture,
-          FlowDirection.LeftToRight,
-          tf,
-          text.FontSize,
-          this.Foreground
-        )
-
-      let textLines = linesOfString text.Text 0 []
-
-      // first guess
-      let h =
-        format.Height
-        / (textLines |> List.length |> float)
-#endif
 
       let pad = (h - 16.0) / 2.0
       let margin = Thickness(0.0, pad)
@@ -813,8 +562,6 @@ type MainWindow() as this =
     if isWindows then
       fontItem.IsVisible <- true
 
-#if AVALONIA11
-#else
       fontItem.Click
       |> Event.add (fun _ ->
 
@@ -823,7 +570,7 @@ type MainWindow() as this =
         Fonts.SelectWin32(Persistence.readFont (), hwnd)
         |> Option.ofObj
         |> Option.iter respondToFont)
-#endif
+
     else if Fonts.Wish().Any() then
       fontItem.IsVisible <- true
 
@@ -877,22 +624,12 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("ShowAbout").Click
     |> Event.add (fun _ -> AboutBox().ShowDialog(this) |> ignore)
 
-#if AVALONIA11
-    let openFile =
-      Event<Avalonia.Platform.Storage.IStorageFile option>()
-#else
     let openFile = Event<String option>()
-#endif
 
     this.FindControl<MenuItem>("Open").Click
     |> Event.add (fun _ ->
       async {
-#if AVALONIA11
-        (use s =
-          this.StorageProvider.OpenFilePickerAsync(ofd)
-#else
         (use s = ofd.ShowAsync(this)
-#endif
 
          s |> Async.AwaitTask |> Async.RunSynchronously)
         |> Option.ofObj
@@ -905,36 +642,12 @@ type MainWindow() as this =
       openFile.Publish
       |> Event.choose id
       |> Event.map (fun n ->
-#if AVALONIA11
-        //use temp = ofd.SuggestedStartLocation
-        //let ok, where = n.TryGetUri()
-        //let path = where.AbsolutePath
-
-        //if ok then
-        //  ofd.SuggestedStartLocation <-
-        //    new Avalonia.Platform.Storage.FileIO.BclStorageFolder(
-        //      Path.GetDirectoryName path)
-#else
         ofd.Directory <- Path.GetDirectoryName n
-#endif
 
         if Persistence.save then
-#if AVALONIA11
-          //let ok, where =
-          //  ofd.SuggestedStartLocation.TryGetUri()
-
-          //if ok then
-          //  Persistence.saveFolder where.AbsolutePath
-          ()
-#else
           Persistence.saveFolder ofd.Directory
-#endif
 
-#if AVALONIA11
-        //justOpened <- path
-#else
         justOpened <- n
-#endif
         -1)
 
     let select =
@@ -969,11 +682,7 @@ type MainWindow() as this =
       else
         row.Tag <- Expanded
 
-#if AVALONIA11
-      //"AvaloniaUI v11"
-#else
       row.Items <- l
-#endif
 
       row.Tapped
       |> Event.add (fun x ->
@@ -994,11 +703,7 @@ type MainWindow() as this =
         let remargin (t: TreeViewItem) =
           if t.HeaderPresenter.IsNotNull then
             let hp =
-#if AVALONIA11
-              t.HeaderPresenter
-#else
               t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
-#endif
 
             let grid = hp.Parent :?> Grid
             grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
@@ -1026,12 +731,8 @@ type MainWindow() as this =
             name
             (tip: string option) ->
           let newrow = makeNewRow pc leaf name icon
-
-#if AVALONIA11
-
-#else
           (context.Row.Items :?> List<TreeViewItem>).Add newrow
-#endif
+
           tip
           |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
 
@@ -1054,11 +755,7 @@ type MainWindow() as this =
                 let tree =
                   this.FindControl<TreeView>("Tree")
 
-#if AVALONIA11
-
-#else
                 tree.Items <- Enumerable.Empty<TreeViewItem>()
-#endif
                 tree.InvalidateVisual()
                 this.UpdateMRU info.FullName false)
           UpdateUISuccess =
@@ -1072,37 +769,22 @@ type MainWindow() as this =
               |> Seq.iter _.Dispose()
 
               let t1 =
-#if AVALONIA11
-                this.FindControl<TextBlock>("Source")
-#else
                 this.FindControl<TextPresenter>("Source")
-#endif
 
               let t2 =
-#if AVALONIA11
-                this.FindControl<TextBlock>("Lines")
-#else
                 this.FindControl<TextPresenter>("Lines")
-#endif
 
               [ t1; t2 ]
               |> Seq.iter (fun t ->
                 t.Text <- String.Empty
                 // clear format stashes -- TODO
-#if !AVALONIA11
                 let ft = t.FormattedText
                 ft.Spans <- []
-                t.Tag <- ft.Spans
-#endif
-              )
+                t.Tag <- ft.Spans)
 
               this.FindControl<StackPanel>("Branches").Children.Clear()
 
-#if AVALONIA11
-
-#else
               tree.Items <- auxModel.Model
-#endif
               tree.InvalidateVisual()
 
               if info.IsNotNull then
@@ -1112,11 +794,7 @@ type MainWindow() as this =
               let tree =
                 this.FindControl<TreeView>("Tree")
 
-#if AVALONIA11
-
-#else
               tree.Items <- Enumerable.Empty<TreeViewItem>()
-#endif
               tree.InvalidateVisual()
 
               let model = auxModel.Model
@@ -1150,13 +828,6 @@ type MainWindow() as this =
 
     member self.ShowMessageOnGuiThread mtype message = self.DisplayMessage mtype message
 
-#if AVALONIA11
-[<assembly: SuppressMessage("Gendarme.Rules.Smells",
-                            "AvoidLargeClassesRule",
-                            Scope = "type", // TypeDefinition
-                            Target = "AltCover.MainWindow",
-                            Justification = "God Object, alas")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidSwitchStatementsRule",
                             Scope = "member", // MethodDefinition

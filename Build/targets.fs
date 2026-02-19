@@ -1104,9 +1104,7 @@ module Targets =
          [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" // framework builds
            "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
         ("./Build/common-rules.xml",
-         [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net8.0/AltCover.Visualizer.dll" ])
-        //("./Build/common-rules.xml",
-        // [ "_Binaries/AltCover.Avalonia11/Debug+AnyCPU/net8.0/AltCover.Visualizer.dll" ])
+         [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net10.0/AltCover.Visualizer.dll" ])
         ("./Build/csharp-rules.xml",
          [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
            "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
@@ -3485,7 +3483,7 @@ module Targets =
         [ (!!"./AltCover.Visualizer/DotnetToolSettings.xml") ]
         |> Seq.concat
         |> Seq.map (fun x -> // Avalonia
-          (x, Some("tools/net8.0/any/" + Path.GetFileName x), None))
+          (x, Some("tools/net10.0/any/" + Path.GetFileName x), None))
         |> Seq.toList
 
       let auxFiles =
@@ -3555,7 +3553,7 @@ module Targets =
          "altcover.global")
 
         (List.concat
-          [ vizFiles "tools/net8.0/any" // Avalonia
+          [ vizFiles "tools/net10.0/any" // Avalonia
             [ (Path.getFullName "Build/README.visualizer.md", Some "", None)
               (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None) ]
             auxVFiles
@@ -3700,7 +3698,7 @@ module Targets =
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
               Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
                 true
-              Framework = Some "net8.0" })
+              Framework = Some "net10.0" })
         (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
       // dotnet tooling mods

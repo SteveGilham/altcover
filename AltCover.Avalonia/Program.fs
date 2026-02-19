@@ -10,15 +10,11 @@ open Mono.Options
 
 module VisualizerMain =
 #if !NETSTANDARD2_0 // no AppBuilder here
-#if AVALONIA11
-
-#else
   let BuildAvaloniaApp () =
     AppBuilderBase<AppBuilder>
       .Configure<App>()
       .UsePlatformDetect()
       .LogToTrace(LogEventLevel.Warning)
-#endif
 #endif
 
   [<EntryPoint>]
@@ -37,35 +33,11 @@ module VisualizerMain =
     options.Parse(arguments) |> ignore
 
 #if !NETSTANDARD2_0
-#if AVALONIA11
-    0
-#else
     BuildAvaloniaApp().StartWithClassicDesktopLifetime(arguments)
-#endif
 #else
     0
 #endif
 
-#if AVALONIA11
-[<assembly: SuppressMessage("Gendarme.Rules.Security",
-                            "StaticConstructorsShouldBePrivateRule",
-                            Scope = "type", // TypeDefinition
-                            Target =
-                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.AboutBox.xaml",
-                            Justification = "Generated Code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Security",
-                            "StaticConstructorsShouldBePrivateRule",
-                            Scope = "type", // TypeDefinition
-                            Target =
-                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.App11.xaml",
-                            Justification = "Generated Code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Security",
-                            "StaticConstructorsShouldBePrivateRule",
-                            Scope = "type", // TypeDefinition
-                            Target =
-                              "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.MainWindow11.xaml",
-                            Justification = "Generated Code")>]
-#else
 [<assembly: SuppressMessage("Gendarme.Rules.Security",
                             "StaticConstructorsShouldBePrivateRule",
                             Scope = "type", // TypeDefinition
@@ -84,14 +56,12 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
                             Justification = "Generated Code")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "AltCover.MainWindow::!XamlIlPopulate(System.IServiceProvider,AltCover.MainWindow)",
                             Justification = "Generated Code")>]
-#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Smells",
                             "AvoidLongMethodsRule",
                             Scope = "member", // MethodDefinition
@@ -116,7 +86,6 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
                             Justification = "Generated Code")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUncalledPrivateCodeRule",
                             Scope = "member", // MethodDefinition
@@ -251,7 +220,6 @@ module VisualizerMain =
                             Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.XamlIlHelpers",
                             Justification = "Generated Code")>]
-#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
                             Scope = "type", // TypeDefinition
@@ -275,7 +243,6 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml",
                             Justification = "Generated Code")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "AvoidUnsealedUninheritedInternalTypeRule",
                             Scope = "type", // TypeDefinition
@@ -346,13 +313,11 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!AvaloniaResources/NamespaceInfo:/AltCover.MainWindow11.xaml",
                             Justification = "Generated Code")>]
-#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Design",
                             "ConsiderUsingStaticTypeRule",
                             Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource",
                             Justification = "Generated Code")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Design",
                             "ConsiderUsingStaticTypeRule",
                             Scope = "type", // TypeDefinition
@@ -424,13 +389,11 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
                             Justification = "Generated Code")>]
-#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "type", // TypeDefinition
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource",
                             Justification = "Generated Code")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
@@ -494,7 +457,6 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.XamlIlContext/ParentStackEnumerable/Enumerator::MoveNext()",
                             Justification = "Generated Code")>]
-#if !AVALONIA11
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition
@@ -513,7 +475,6 @@ module VisualizerMain =
                             Target =
                               "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.MainWindow.xaml::.ctor()",
                             Justification = "Generated Code")>]
-#endif
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
                             "UseStringEmptyRule",
                             Scope = "member", // MethodDefinition

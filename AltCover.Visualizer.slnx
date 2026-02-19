@@ -31,7 +31,6 @@
     </Project>
   </Folder>
   <Project Path="AltCover.Avalonia/AltCover.Avalonia.fsproj" />
-  <Project Path="AltCover.Avalonia/AltCover.Avalonia11.fsproj" />
   <Project Path="AltCover.FontSupport/AltCover.FontSupport.csproj" />
   <Project Path="AltCover.UICommon/AltCover.UICommon.fsproj" />
   <Project Path="AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj">
