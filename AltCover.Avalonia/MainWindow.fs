@@ -16,8 +16,10 @@ open Avalonia.Controls.Presenters
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
-open Avalonia.Media.Text
+open Avalonia.Media.Imaging
+open Avalonia.Media.TextFormatting
 open Avalonia.Threading
+open Avalonia.Platform.Storage
 
 type Thickness = Avalonia.Thickness
 
@@ -33,6 +35,26 @@ type AboutBox() as this =
   do this.InitializeComponent()
 
   member this.InitializeComponent() =
+    let openUrl (url: string) =
+      async {
+        match (TopLevel.GetTopLevel(this) |> Option.ofObj) with
+        | Some topLevel ->
+          match topLevel.Launcher |> Option.ofObj with
+          | Some launcher ->
+            let! success = launcher.LaunchUriAsync(Uri(url)) |> Async.AwaitTask
+            if not success then
+              // Log or display an error if launching failed
+              this.DisplayMessage MessageType.Error (sprintf "Failed to open URL: %s" url)
+          | None ->
+            // Fallback for desktop platforms if Launcher is unexpectedly null
+            let info = new System.Diagnostics.ProcessStartInfo(url)
+            info.UseShellExecute <- true
+            System.Diagnostics.Process.Start(info) |> ignore
+        | None ->
+          // Handle case where TopLevel is not available
+          this.DisplayMessage MessageType.Error (sprintf "Cannot open URL: TopLevel is null for %s" url)
+      } |> Async.Start
+
     AvaloniaXamlLoader.Load(this)
     this.CanResize <- false
 
@@ -64,8 +86,7 @@ type AboutBox() as this =
 
     vsLinkButton.Click
     |> Event.add (fun _ ->
-      Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
-        "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022")
+      openUrl "https://learn.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library?view=vs-2022")
 
     let link =
       this.FindControl<TextBlock>("Link")
@@ -77,8 +98,7 @@ type AboutBox() as this =
 
     linkButton.Click
     |> Event.add (fun _ ->
-      Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
-        "http://www.github.com/SteveGilham/altcover")
+      openUrl "http://www.github.com/SteveGilham/altcover")
 
     this.FindControl<TabItem>("AboutDetails").Header <-
       Resource.GetResourceString "AboutDialog.About"
@@ -110,28 +130,11 @@ type MainWindow() as this =
   [<NonSerialized>]
   let mutable coverageFiles: string list = []
 
-  [<NonSerialized>]
-  let ofd = OpenFileDialog()
-
   // fsharplint:disable-next-line RedundantNewKeyword
   let iconMaker (x: Stream) = new Bitmap(x) // IDisposable
 
   [<NonSerialized>]
   let icons = Icons(iconMaker)
-
-  let addNode (leaf: bool) (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) (icon: Lazy<Bitmap>) (pc: string) (name: string) (tip: string option) : CoverageTreeContext<List<TreeViewItem>, TreeViewItem> =
-    let newrow = makeNewRow pc leaf name icon
-    (context.Row.Items).Add newrow
-    { context with Row = newrow }
-
-  let getIcon name =
-    let iconstype = icons.GetType()
-    let named = iconstype.GetProperty(name)
-
-    let value =
-      named.GetValue(icons) :?> Lazy<Bitmap>
-
-    value.Force()
 
   [<NonSerialized>]
   let visited =
@@ -460,8 +463,8 @@ type MainWindow() as this =
               Avalonia.Media.TextAlignment.Left,
               Avalonia.Media.TextWrapping.NoWrap,
               Avalonia.Media.FlowDirection.LeftToRight,
-              double.PositiveInfinity,
-              double.PositiveInfinity
+              Double.PositiveInfinity,
+              Double.PositiveInfinity
             )
 
           // get line count
@@ -649,12 +652,18 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Open").Click
     |> Event.add (fun _ ->
       async {
-        (use s = ofd.ShowAsync(this)
-
-         s |> Async.AwaitTask |> Async.RunSynchronously)
-        |> Option.ofObj
-        |> Option.map (_.FirstOrDefault() >> Option.ofObj)
-        |> Option.iter openFile.Trigger
+        match (TopLevel.GetTopLevel(this) |> Option.ofObj) with
+        | Some topLevel ->
+          let pickerOptions = FilePickerOpenOptions(AllowMultiple = false, Title = Resource.GetResourceString "Open Coverage File")
+          let! files = topLevel.StorageProvider.OpenFilePickerAsync(pickerOptions) |> Async.AwaitTask
+          match files |> Seq.tryHead with
+          | Some file ->
+            let path = file.Path.LocalPath
+            openFile.Trigger (Some path)
+          | None ->
+            openFile.Trigger None
+        | None ->
+          this.DisplayMessage MessageType.Error "Cannot open file dialog: TopLevel is null"
       }
       |> Async.Start)
 
@@ -681,6 +690,20 @@ type MainWindow() as this =
       this.FindControl<MenuItem>("Refresh").Click
       |> Event.map (fun _ -> 0)
 
+  let getIcon name =
+    let iconstype = icons.GetType()
+    let named = iconstype.GetProperty(name)
+
+    let value =
+      named.GetValue(icons) :?> Lazy<Bitmap>
+
+    value.Force()
+
+    let addNode (leaf: bool) (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) (icon: Lazy<Bitmap>) (pc: string) (name: string) (tip: string option) : CoverageTreeContext<List<TreeViewItem>, TreeViewItem> =
+      let newrow = makeNewRow pc leaf name icon
+      (context.Row.Items).Add newrow
+      { context with Row = newrow }
+    and
     let makeNewRow note leaf name (anIcon: Lazy<Bitmap>) =
       let row = TreeViewItem()
       let l = List<TreeViewItem>()
@@ -742,9 +765,6 @@ type MainWindow() as this =
       let mutable auxModel =
         { Model = List<TreeViewItem>()
           Row = nullObject }
-
-      let addNodeFunc = fun context icon pc name tip -> addNode false context icon pc name tip
-      let addLeafNodeFunc = fun context icon pc name tip -> addNode true context icon pc name tip
 
       let addNodeFunc = fun context icon pc name tip -> addNode false context icon pc name tip
       let addLeafNodeFunc = fun context icon pc name tip -> addNode true context icon pc name tip
