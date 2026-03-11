@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <TargetFrameworks>net11.0;net472</TargetFrameworks>
     <AssemblyName>Sample12</AssemblyName>
   </PropertyGroup>
 
