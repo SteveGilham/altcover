@@ -300,7 +300,7 @@ module Targets =
   let coverletcollector =
     ("./packages/"
      + (packageVersion "coverlet.collector")
-     + "/build/netstandard2.0/coverlet.collector.dll")
+     + "/build/net8.0/coverlet.collector.dll")
     |> Path.getFullName
 
   let cliArguments =

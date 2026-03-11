@@ -7,16 +7,16 @@
     <PackageVersion Include="altcover" Version="9.0.102" />
     <PackageVersion Include="AltCover.Api" Version="9.0.102" />
     <PackageVersion Include="AltCover.Fake" Version="9.0.102" />
-    <PackageVersion Include="Avalonia" Version="11.3.11" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.11" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.11" />
-    <PackageVersion Include="Avalonia.Themes.Simple" Version="11.3.11" />
+    <PackageVersion Include="Avalonia" Version="11.3.12" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.12" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.12" />
+    <PackageVersion Include="Avalonia.Themes.Simple" Version="11.3.12" />
     <PackageVersion Include="BlackFox.CommandLine" Version="1.0.0" />
     <PackageVersion Include="BlackFox.VsWhere" Version="1.1.0" />
     <PackageVersion Include="Cake.Common" Version="6.0.0" />
     <PackageVersion Include="Cake.Core" Version="6.0.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="coverlet.collector" Version="8.0.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.2" />
     <PackageVersion Include="Expecto" Version="10.2.3" />
@@ -38,12 +38,12 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="6.1.4" />
     <PackageVersion Include="Fake.Tools.git" Version="6.1.4" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="10.0.103" />
+    <PackageVersion Include="FSharp.Core" Version="11.0.100" />
     <PackageVersion Include="FsUnit" Version="7.1.1" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
-    <PackageVersion Include="Markdig" Version="0.45.0" />
+    <PackageVersion Include="Markdig" Version="1.1.1" />
     <PackageVersion Include="ILRepack" Version="2.0.44" />
     <PackageVersion Include="MessageBox.Avalonia" Version="3.3.1.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
@@ -51,9 +51,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
-    <PackageVersion Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.103" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
+    <PackageVersion Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.200" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.3.0" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.6" />
     <PackageVersion Include="Mono.CSharp" Version="4.0.0.143" />
     <PackageVersion Include="Mono.Options" Version="6.12.0.148" />
@@ -62,7 +62,7 @@
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.8.38-alpha" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NuGet.CommandLine" Version="7.3.0" />
-    <PackageVersion Include="NUnit" Version="4.4.0" />
+    <PackageVersion Include="NUnit" Version="4.5.1" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" Version="3.12.0" />
@@ -71,10 +71,10 @@
     <PackageVersion Include="OpenCover" Version="4.7.1221" />
     <PackageVersion Include="Pester" Version="5.7.1" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
-    <PackageVersion Include="System.Collections.Immutable" Version="10.0.3" />
+    <PackageVersion Include="System.Collections.Immutable" Version="10.0.4" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
     <PackageVersion Include="System.Reactive.Core" Version="6.1.0" />
-    <PackageVersion Include="System.Security.Permissions" Version="10.0.3" />
+    <PackageVersion Include="System.Security.Permissions" Version="10.0.4" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <PackageVersion Include="Unquote" Version="7.0.1" />
     <PackageVersion Include="XmlDoc2CmdletDoc" Version="0.4.0-dotnetcore0001" />
