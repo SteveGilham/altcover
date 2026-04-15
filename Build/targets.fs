@@ -6793,9 +6793,7 @@ module Targets =
             { dotnetOptions o' with
                 WorkingDirectory = working })
           "tool"
-          ("install -g altcover.global --add-source "
-           + (Path.getFullName "./_Packaging.global")
-           + " --version "
+          ("install -g altcover.global --version "
            + version)
           "Installed"
 
