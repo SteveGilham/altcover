@@ -11,6 +11,9 @@ on:
     branches:
     - master
 
+permissions:
+  contents: read
+
 # per https://www.meziantou.net/how-to-cancel-github-workflows-when-pushing-new-commits-on-a-branch.htm
 # https://docs.github.com/en/actions/learn-github-actions/expressions
 # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
