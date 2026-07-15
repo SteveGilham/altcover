@@ -1256,4 +1256,30 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             Target =
                               "AltCover.OpenCover/Pipe #4 stage #1 at line 753@754::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.OpenCover/mergeMethods@881-1::Invoke(System.Tuple`2<System.String,System.Collections.Generic.IEnumerable`1<System.Xml.Linq.XElement>>)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.OpenCover/Pipe #1 stage #2 at line 1146@1146::Invoke(System.Xml.Linq.XElement)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1809:AvoidExcessiveLocals",
+                            Scope = "member",
+                            Target =
+                              "AltCover.OpenCover+mergeMethods@881-1.#Invoke(System.Tuple`2<System.String,System.Collections.Generic.IEnumerable`1<System.Xml.Linq.XElement>>)",
+                            Justification = "Just as above")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1809:AvoidExcessiveLocals",
+                            Scope = "member",
+                            Target =
+                              "AltCover.OpenCover+Pipe #1 stage #2 at line 1146@1146.#Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Just as above")>]
 ()

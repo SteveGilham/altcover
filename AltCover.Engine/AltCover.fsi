@@ -354,6 +354,8 @@ namespace AltCoverFake.DotNet.Testing
   ///<summary>
   /// Destinations for user level output
   ///</summary>
+    [<NoComparison;
+      NoEquality>]
     type LoggingOptions =
       ///<summary>
       /// <para>Options expressed as an F# "stringly" typed record</para>

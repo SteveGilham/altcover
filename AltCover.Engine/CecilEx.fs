@@ -112,6 +112,9 @@ type internal AssemblyResolver() as self =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification = "New at F# 11pv6 : Refactoring TODO")>]
   static member internal ResolveFromNugetCache _ (y: AssemblyNameReference) =
     let name = y.ToString()
 
@@ -378,6 +381,6 @@ module internal CecilExtension =
                             "InstantiateArgumentExceptionCorrectlyRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.AssemblyResolver/candidate@167::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.String>)",
+                              "AltCover.AssemblyResolver/candidate@170::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.String>)",
                             Justification = "code inlined")>]
 ()

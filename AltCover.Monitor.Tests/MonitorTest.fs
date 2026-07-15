@@ -16,7 +16,7 @@ module MonitorTests =
       [ (261, 0) ] // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net10.0.xml"
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net11.0.xml"
       ),
       [ (260, 37); (260, 36) ] ]
     |> List.filter (fst >> File.Exists)
@@ -95,7 +95,9 @@ module MonitorTests =
     // use the observed miniumum from other runs which is far less than (expectedCodes |> List.min)
     let minExpectedCode = 112
     // Allow some headroom to absorb minor toolchain changes
-    let maxExpectedCodeWithSlack = (expectedCodes |> List.max) + 10
+    let maxExpectedCodeWithSlack =
+      (expectedCodes |> List.max) + 10
+
     let expectedBranches = (24, 38) // as historically observed
 
     test'
@@ -105,10 +107,11 @@ module MonitorTests =
         && branch > fst expectedBranches
         && branch < snd expectedBranches
       @>
-      (sprintf "%s%sGot %A; expected codes in [%d..%d], branches in %A"
-         xml
-         (Environment.NewLine)
-         result
-         minExpectedCode
-         maxExpectedCodeWithSlack
-         expectedBranches)
+      (sprintf
+        "%s%sGot %A; expected codes in [%d..%d], branches in %A"
+        xml
+        (Environment.NewLine)
+        result
+        minExpectedCode
+        maxExpectedCodeWithSlack
+        expectedBranches)

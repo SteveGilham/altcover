@@ -8,6 +8,7 @@ namespace AltCover
 ///<summary>
 /// This represents the various operations available
 ///</summary>
+[<RequireQualifiedAccess>]
 module Command = begin
 // ```
 // This represents the various operations available

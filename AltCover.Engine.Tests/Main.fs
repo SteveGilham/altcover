@@ -3812,7 +3812,7 @@ module Main =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net10.0")
+      Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/net11.0")
 
     let key0 =
       Path.Combine(here, "Build/SelfTest.snk")

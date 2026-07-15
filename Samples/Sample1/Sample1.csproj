@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0;net20</TargetFrameworks>
+    <TargetFrameworks>net11.0;net20</TargetFrameworks>
     <AssemblyName>Sample1</AssemblyName>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>

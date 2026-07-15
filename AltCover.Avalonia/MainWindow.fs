@@ -1163,4 +1163,16 @@ type MainWindow() as this =
                             Target =
                               "AltCover.MainWindow/tagByCoverage@423::Invoke(Avalonia.Controls.Presenters.TextPresenter,Microsoft.FSharp.Collections.FSharpList`1<Avalonia.Media.FormattedTextLine>,AltCover.GuiCommon/CodeTag)",
                             Justification = "Wrong paradigm")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$MainWindow::<sumBy>__debug@427(Microsoft.FSharp.Core.FSharpFunc`2<Avalonia.Media.FormattedTextLine,System.Int32>,System.Collections.Generic.IEnumerable`1<Avalonia.Media.FormattedTextLine>)",
+                            Justification = "Compiler generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "<StartupCode$AltCover-Visualizer>.$MainWindow::<sumBy>__debug@440-1(Microsoft.FSharp.Core.FSharpFunc`2<Avalonia.Media.FormattedTextLine,System.Int32>,System.Collections.Generic.IEnumerable`1<Avalonia.Media.FormattedTextLine>)",
+                            Justification = "Compiler generated code")>]
 ()
