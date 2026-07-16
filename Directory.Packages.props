@@ -38,13 +38,13 @@
     <PackageVersion Include="Fake.Testing.ReportGenerator" Version="6.1.4" />
     <PackageVersion Include="Fake.Tools.git" Version="6.1.4" />
     <PackageVersion Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageVersion Include="FSharp.Core" Version="10.0.103" />
+    <PackageVersion Include="FSharp.Core" Version="10.1.302" />
     <PackageVersion Include="FsUnit" Version="7.1.1" />
     <PackageVersion Include="FuChu" Version="1.1.0" />
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="Markdig" Version="1.1.1" />
-    <PackageVersion Include="ILRepack" Version="2.0.44" />
+    <PackageVersion Include="ILRepack" Version="2.0.46" />
     <PackageVersion Include="MessageBox.Avalonia" Version="3.3.1.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.10.4" />
