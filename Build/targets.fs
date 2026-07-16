@@ -6793,8 +6793,7 @@ module Targets =
             { dotnetOptions o' with
                 WorkingDirectory = working })
           "tool"
-          ("install -g altcover.global --version "
-           + version)
+          ("install -g altcover.global --version " + version)
           "Installed"
 
         Actions.RunDotnet
