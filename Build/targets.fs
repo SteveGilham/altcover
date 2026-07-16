@@ -1430,7 +1430,7 @@ module Targets =
                     nugetCache
                     @@ "microsoft.testplatform.objectmodel/"
                        + (ddItem "microsoft.testplatform.objectmodel")
-                       + "/lib/netstandard1.5"
+                       + "/lib/netstandard2.0"
                     nugetCache
                     @@ "microsoft.netframework.referenceassemblies.net472/"
                        + "1.0.3" // assume all increment versions in step
@@ -6793,8 +6793,7 @@ module Targets =
             { dotnetOptions o' with
                 WorkingDirectory = working })
           "tool"
-          ("install -g altcover.global --version "
-           + version)
+          ("install -g altcover.global --version " + version)
           "Installed"
 
         Actions.RunDotnet
