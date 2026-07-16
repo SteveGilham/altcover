@@ -3939,7 +3939,7 @@ module Main =
       let expected =
         [ "AltCover.Recorder.g.dll"
           "FSharp.Core.dll"
-          "Newtonsoft.Json.dll"
+          //"Newtonsoft.Json.dll"
           "Sample4.deps.json"
           "Sample4.dll"
           "Sample4.runtimeconfig.json"

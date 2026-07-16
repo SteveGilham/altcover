@@ -51,9 +51,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <!-- PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" / -->
-    <PackageVersion Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.202" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.4.0" />
+    <PackageVersion Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.302" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.8.1" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.6" />
     <PackageVersion Include="Mono.CSharp" Version="4.0.0.143" />
     <PackageVersion Include="Mono.Options" Version="6.12.0.148" />
@@ -61,7 +61,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="3.2.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.8.38-alpha" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="NuGet.CommandLine" Version="7.3.1" />
+    <PackageVersion Include="NuGet.CommandLine" Version="7.6.0" />
     <PackageVersion Include="NUnit" Version="4.5.1" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
