@@ -4339,7 +4339,7 @@ module Visitor =
       CoverageParameters.theReportFormat <- None
       CoverageParameters.coverstyle <- CoverStyle.All
 
-  let AddTrackingForMain (xml:string) =
+  let AddTrackingForMain (xml: string) =
     let resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith(xml, StringComparison.Ordinal)
@@ -4818,7 +4818,10 @@ module Visitor =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll")
+      Path.Combine(
+        SolutionDir(),
+        "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll"
+      )
 
     Assert.That(File.Exists sample21, "Test file Sample21 for net10.0 not built")
 
