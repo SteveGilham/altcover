@@ -2220,7 +2220,7 @@ module Targets =
         coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
         |> Seq.toList
 
-      Assert.That(refs |> Seq.length, Is.EqualTo 56, "ref count wrong")
+      Assert.That(refs |> Seq.length, Is.EqualTo 59, "ref count wrong")
 
       refs
       |> Seq.iter (fun tmr ->
@@ -2348,7 +2348,7 @@ module Targets =
       let altcover =
         Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net10.0/AltCover.dll"
 
-      [ ("Sample27", 18); ("Sample30", 27) ]
+      [ ("Sample27", 18); ("Sample30", 62) ] // massive changes at net11pv6
       |> List.iter (fun (sample, methodcount) ->
         let simpleReport =
           (Path.getFullName "./_Reports")
