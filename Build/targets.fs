@@ -5264,7 +5264,9 @@ module Targets =
         [ "altcover.api" ]
         |> List.iter (fun f ->
           let folder = (nugetCache @@ f) @@ version
-          let f' = (nugetCache @@ f) @@ ("0.0.0.0." + version)
+
+          let f' =
+            (nugetCache @@ f) @@ ("0.0.0.0." + version)
 
           Shell.mkdir folder
           Shell.rename f' folder))
@@ -6974,7 +6976,10 @@ module Targets =
       finally
         let folder =
           (nugetCache @@ "altcover.api") @@ version
-        let f' = (nugetCache @@ "altcover.api") @@ ("0.0.0." + version)
+
+        let f' =
+          (nugetCache @@ "altcover.api")
+          @@ ("0.0.0." + version)
 
         Shell.mkdir folder
         Shell.rename f' folder)
