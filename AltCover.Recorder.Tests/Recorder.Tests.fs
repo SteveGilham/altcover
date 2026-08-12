@@ -1256,8 +1256,9 @@ module AltCoverTests =
   let failsaferelease () =
     try
       Instance.I.mutex.ReleaseMutex()
-    with :? ApplicationException ->
-      ()
+    with
+    | :? ApplicationException
+    | :? InvalidOperationException -> ()
 
   let trywithrelease<'a when 'a :> exn> f = trywith f failsaferelease
 
