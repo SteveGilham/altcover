@@ -343,4 +343,11 @@ module Extensions =
                             Target =
                               "AltCover.Transformer/lineOnly@158::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Transformer/transformFromCobertura@89-2::Invoke(System.Xml.Linq.XElement)",
+                            Justification =
+                              "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 ()

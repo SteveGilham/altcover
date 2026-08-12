@@ -347,4 +347,10 @@ module internal ProgramDatabase =
                             Target =
                               "AltCover.ProgramDatabase/I/construct@163::Invoke(System.String,System.Object[])",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.ProgramDatabase/readSymbols@322::Invoke(System.String)",
+                            Justification = "Ownership passes to the module object")>]
 ()

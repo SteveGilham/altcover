@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <TargetFrameworks>net11.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Engine.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -80,7 +80,7 @@
     <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.json" />
     <EmbeddedResource Include="..\AltCover.TestData\Sample4.coverlet.lcov" />
     <EmbeddedResource Include="..\AltCover.TestData\Sample4.native.json" />
-    <EmbeddedResource Include="..\AltCover.TestData\Sample4-10.native.json" />		
+    <EmbeddedResource Include="..\AltCover.TestData\Sample4-11.native.json" />		
     <EmbeddedResource Include="..\AltCover.TestData\Sample4.syntheticvisits.native.json" />
     <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.cobertura" />
     <EmbeddedResource Include="..\AltCover.TestData\Sample4FullTracking.json" />
