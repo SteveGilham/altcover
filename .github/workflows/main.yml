@@ -30,10 +30,10 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v7.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         global-json-file: global.json
         cache: true
@@ -67,10 +67,10 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         global-json-file: global.json
         cache: true
