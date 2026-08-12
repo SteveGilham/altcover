@@ -1240,6 +1240,7 @@ module Targets =
         [ "-Microsoft.Design#CA1020" // small namespaces
           "-Microsoft.Naming#CA1702" // compound naming pedantry
           "-Microsoft.Naming#CA1704" // spelling pedantry
+          "-Microsoft.Performance#CA1809" // excessive (compiler generated) locals
           "-Microsoft.Usage#CA2243" ] // :AttributeStringLiteralsShouldParseCorrectly"
 
       let minimalRules =

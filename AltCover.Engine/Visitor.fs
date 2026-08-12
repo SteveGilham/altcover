@@ -1724,7 +1724,7 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1584-2::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1584-3::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",

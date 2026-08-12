@@ -371,14 +371,14 @@ module internal Filter =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter/I/Pipe #1 stage #2 at line 292@292::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Filter/I/Pipe #1 stage #2 at line 298@298::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification =
                               "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter/I/Pipe #2 stage #2 at line 303@303::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Filter/I/Pipe #2 stage #2 at line 307@307::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification =
                               "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 ()

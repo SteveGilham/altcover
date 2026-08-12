@@ -17,7 +17,7 @@
       "rollForward": false
     },
     "altcode.gendarme-tool": {
-      "version": "2026.2.11.18114",
+      "version": "2026.8.12.15560",
       "commands": [
         "gendarme"
       ],
