@@ -36,11 +36,12 @@ namespace AltCover.Recorder
     {
       get
       {
-        var dir = String.Empty;
+        var fallback = Path.Combine(Environment.CurrentDirectory, "AltCover.Recorder.g.dll");
         var location = Assembly.GetExecutingAssembly().Location;
-        if (!string.IsNullOrEmpty(location)) dir = Path.GetDirectoryName(location);
-        if (string.IsNullOrEmpty(dir)) dir = Environment.CurrentDirectory; // net20-safe
-        return CanonicalPath(Path.Combine(dir, ReportFile));
+        if (!string.IsNullOrEmpty(location)) location = fallback;
+        return CanonicalPath(Path.Combine(
+            Path.GetDirectoryName(location),
+            ReportFile));
       }
     }
 
