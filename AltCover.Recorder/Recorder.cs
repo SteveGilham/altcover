@@ -36,7 +36,9 @@ namespace AltCover.Recorder
     {
       get
       {
-        var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        var dir = String.Empty;
+        var location = Assembly.GetExecutingAssembly().Location;
+        if (!string.IsNullOrEmpty(location)) dir = Path.GetDirectoryName(location);
         if (string.IsNullOrEmpty(dir)) dir = Environment.CurrentDirectory; // net20-safe
         return CanonicalPath(Path.Combine(dir, ReportFile));
       }
