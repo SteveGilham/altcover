@@ -36,9 +36,17 @@ namespace AltCover.Recorder
     {
       get
       {
-        var fallback = Path.Combine(Environment.CurrentDirectory, "AltCover.Recorder.g.dll");
+        // Location for visit data - co-located with recorder in "portable"
         var location = Assembly.GetExecutingAssembly().Location;
-        if (!string.IsNullOrEmpty(location)) location = fallback;
+
+        // Allow an override from the environment
+        var fromEnv = Environment.GetEnvironmentVariable("ALTCOVER_REPORT_FILE");
+        if (!string.IsNullOrEmpty(fromEnv)) location = fromEnv;
+
+        // If the override is not set, or the assembly is memory only, use the current directory as fallback
+        if (string.IsNullOrEmpty(location)) location = Path.Combine(Environment.CurrentDirectory, Path.GetFileName(ReportFile));
+
+        // If not portable, use the hard-coded, otherwise use the fallback
         return CanonicalPath(Path.Combine(
             Path.GetDirectoryName(location),
             ReportFile));
