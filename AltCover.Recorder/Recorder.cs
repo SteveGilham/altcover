@@ -36,9 +36,10 @@ namespace AltCover.Recorder
     {
       get
       {
-        var fallback = Path.Combine(Environment.CurrentDirectory, "AltCover.Recorder.g.dll");
+        var fromEnv = Environment.GetEnvironmentVariable("ALTCOVER_REPORT_FILE");
+        if (string.IsNullOrEmpty(fromEnv) || !File.Exists(fromEnv)) fromEnv = Path.Combine(Environment.CurrentDirectory, Path.GetFileName(ReportFile));
         var location = Assembly.GetExecutingAssembly().Location;
-        if (!string.IsNullOrEmpty(location)) location = fallback;
+        if (string.IsNullOrEmpty(location)) location = fromEnv;
         return CanonicalPath(Path.Combine(
             Path.GetDirectoryName(location),
             ReportFile));
