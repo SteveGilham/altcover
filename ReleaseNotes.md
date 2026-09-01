@@ -5,6 +5,10 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Indori series release 3)
 
+* Fix issue #266 - allow an environment variable `ALTCOVER_REPORT_FILE` to supply a report file full path location for `--portable` mode. 
+  * If not set, co-locate with the recorder assembly, and if that assembly is loaded from memory and has no location, expect it in the current directory. 
+	* This fallback series is arranged to protect from null path exceptions (but not self-inflicted ones from invalid `ALTCOVER_REPORT_FILE` values) for the default case where the report file full path is stored in the recorder assembly but memory-loaded assemblies are used.
+
 # 9.0.102 (Indori series release 2)
 * Net10.0 support
 * Fix issue #238 - some symbol errors cause instrumentation to abort rather than skip that assembly.
