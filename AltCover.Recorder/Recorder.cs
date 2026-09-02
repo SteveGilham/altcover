@@ -504,7 +504,11 @@ namespace AltCover.Recorder
               }
             }
 
-            if (!any) return;
+            // add a paranoia check for the file to write existing, as the --portable case gives no guarantee that the file is there
+            var basePath = ReportFilePath;
+            var activePath = basePath + ((CoverageFormat & ReportFormat.Zipped) != 0 ? ".zip" : String.Empty);
+
+            if (!any || !File.Exists(activePath)) return;
 
             WithMutex(own =>
               {
@@ -515,7 +519,7 @@ namespace AltCover.Recorder
                   own,
                   counts,
                   CoverageFormat,
-                  ReportFilePath,
+                  basePath,
                   null
                   );
 
