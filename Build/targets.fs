@@ -6589,17 +6589,18 @@ module Targets =
 
           test
             <@
-              (found, "first") = ([ "1"
-                                    "4"
-                                    "3"
-                                    "1"
-                                    "2"
-                                    "1"
-                                    "1"
-                                    "1"
-                                    "5"
-                                    "5" ],
-                                  "first")
+              (found, "first") =
+                ([ "1"
+                   "4"
+                   "3"
+                   "1"
+                   "2"
+                   "1"
+                   "1"
+                   "1"
+                   "5"
+                   "5" ],
+                 "first")
             @>
 
         let p1 =
@@ -6647,15 +6648,16 @@ module Targets =
 
           test
             <@
-              (found, "second") = ([ "1"
-                                     "4"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "5"
-                                     "5" ],
-                                   "second")
+              (found, "second") =
+                ([ "1"
+                   "4"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "5"
+                   "5" ],
+                 "second")
             @>
 
         let p1 =
@@ -6703,15 +6705,16 @@ module Targets =
 
           test
             <@
-              (found, "single") = ([ "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1" ],
-                                   "single")
+              (found, "single") =
+                ([ "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1" ],
+                 "single")
             @>
 
         // Issue 98 optest

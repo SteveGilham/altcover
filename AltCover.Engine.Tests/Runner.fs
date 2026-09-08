@@ -6534,11 +6534,13 @@ module Runner =
           .Replace('\r', '\u00FF')
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")
-          .Trim([| '\u00FF' |]) = expected
-          .Replace('\r', '\u00FF')
-          .Replace('\n', '\u00FF')
-          .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |])
+          =
+          expected
+            .Replace('\r', '\u00FF')
+            .Replace('\n', '\u00FF')
+            .Replace("\u00FF\u00FF", "\u00FF")
+            .Trim([| '\u00FF' |])
       @>
 
   [<Test>]

@@ -265,7 +265,9 @@ module internal Filter =
                 ) // (x.ConstructorArguments |> Seq.head).Value
 
               (arg1 :?> SourceConstructFlags)
-              &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
+              &&& SourceConstructFlags.KindMask
+                =
+                SourceConstructFlags.Field)
           else
             false
 
@@ -371,14 +373,14 @@ module internal Filter =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter/I/Pipe #1 stage #2 at line 298@298::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Filter/I/Pipe #1 stage #2 at line 300@300::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification =
                               "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Filter/I/Pipe #2 stage #2 at line 307@307::Invoke(Mono.Cecil.Cil.Instruction)",
+                              "AltCover.Filter/I/Pipe #2 stage #2 at line 309@309::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification =
                               "System.String System.String::Replace(System.String,System.String,System.StringComparison) Not available at netstandard2.0")>]
 ()

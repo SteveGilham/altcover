@@ -199,8 +199,8 @@ module internal Counter =
           "driverVersion",
           "AltCover.Recorder "
           + System.Diagnostics.FileVersionInfo
-            .GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location)
-            .FileVersion
+              .GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location)
+              .FileVersion
         )
 
       let moduleNodes =

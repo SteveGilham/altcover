@@ -57,16 +57,18 @@ module Visitor =
 
       test
         <@
-          Main.I.canonicalReportPath () = (Path.Combine(toward, "test.xml")
-                                           |> Canonical.canonicalPath)
+          Main.I.canonicalReportPath () =
+            (Path.Combine(toward, "test.xml")
+             |> Canonical.canonicalPath)
         @>
 
       CoverageParameters.inplace.Value <- true
 
       test
         <@
-          Main.I.canonicalReportPath () = (Path.Combine(from, "test.xml")
-                                           |> Canonical.canonicalPath)
+          Main.I.canonicalReportPath () =
+            (Path.Combine(from, "test.xml")
+             |> Canonical.canonicalPath)
         @>
 
     finally
@@ -136,9 +138,10 @@ module Visitor =
 
     test
       <@
-        result = [ Exemption.StaticAnalysis
-                   Exemption.None
-                   Exemption.None ]
+        result =
+          [ Exemption.StaticAnalysis
+            Exemption.None
+            Exemption.None ]
       @>
 
   [<Test>]
@@ -182,9 +185,10 @@ module Visitor =
 
       test
         <@
-          result = [ Exemption.StaticAnalysis
-                     Exemption.Automatic
-                     Exemption.Automatic ]
+          result =
+            [ Exemption.StaticAnalysis
+              Exemption.Automatic
+              Exemption.Automatic ]
         @>
     finally
       CoverageParameters.showGenerated.Value <- false
@@ -876,8 +880,10 @@ module Visitor =
     methods
     |> List.map Some
     |> List.zip (containing |> Seq.toList)
-    |> List.iteri // Issue #43
-      (fun i (x, y) ->
+    |> List.iteri
+      (fun  // Issue #43
+           i
+           (x, y) ->
         Assert.That(
           y,
           x |> Option.map toName |> Is.Not.EqualTo,
@@ -2568,8 +2574,8 @@ module Visitor =
 
       test
         <@
-          CoverageParameters.configurationHash = Some
-            "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
+          CoverageParameters.configurationHash =
+            Some "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
         @>
     finally
       CoverageParameters.nameFilters.Clear()
@@ -2790,12 +2796,12 @@ module Visitor =
       // snd > 1 => partial class at least
       test
         <@
-          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                          1)
-                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                         ("<Module>", 10)
-                         ("Example", 2) ]
+          classcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 10)
+              ("Example", 2) ]
         @>
 
       let mcount =
@@ -2806,11 +2812,12 @@ module Visitor =
       // snd > 1 => inlined method at least
       test
         <@
-          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                     ("<Module>", 2)
-                     ("Example", 2) ]
+          mcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 2)
+              ("Example", 2) ]
         @>
 
     finally
@@ -2994,12 +3001,12 @@ module Visitor =
       // snd > 1 => partial class at least
       test
         <@
-          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                          1)
-                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                         ("<Module>", 10)
-                         ("Example", 2) ]
+          classcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 10)
+              ("Example", 2) ]
         @>
 
       let mcount =
@@ -3027,11 +3034,12 @@ module Visitor =
       // snd > 1 => inlined method at least
       test
         <@
-          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                     ("<Module>", 2)
-                     ("Example", 2) ]
+          mcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 2)
+              ("Example", 2) ]
         @>
     finally
       CoverageParameters.nameFilters.Clear()
@@ -3085,22 +3093,23 @@ module Visitor =
 
       test
         <@
-          embeds = [ 1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     0
-                     0
-                     0
-                     0
-                     0
-                     0
-                     0 ]
+          embeds =
+            [ 1
+              1
+              1
+              1
+              1
+              1
+              1
+              1
+              1
+              0
+              0
+              0
+              0
+              0
+              0
+              0 ]
         @>
 
     finally
@@ -3206,9 +3215,10 @@ module Visitor =
 
       test
         <@
-          names2 = [ "bytes"
-                     "makeThing"
-                     "testMakeThing" ]
+          names2 =
+            [ "bytes"
+              "makeThing"
+              "testMakeThing" ]
         @>
 
       { Scope = Attribute
@@ -3359,11 +3369,12 @@ module Visitor =
 
       test
         <@
-          names7 = [ "Sample6.Module.F1"
-                     "Sample6.Module.F2"
-                     "Sample6.Module+FI@11T.Invoke"
-                     "Sample6.Module+FII@12T.Invoke"
-                     "Sample6.Module+F1@19.Invoke" ]
+          names7 =
+            [ "Sample6.Module.F1"
+              "Sample6.Module.F2"
+              "Sample6.Module+FI@11T.Invoke"
+              "Sample6.Module+FII@12T.Invoke"
+              "Sample6.Module+F1@19.Invoke" ]
         @>
 
       CoverageParameters.topLevel.Clear()
@@ -4206,12 +4217,12 @@ module Visitor =
       // snd > 1 => partial class at least
       test
         <@
-          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                          1)
-                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                         ("<Module>", 10)
-                         ("Example", 2) ]
+          classcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 10)
+              ("Example", 2) ]
         @>
 
       let mcount =
@@ -4222,11 +4233,12 @@ module Visitor =
       // snd > 1 => inlined method at least
       test
         <@
-          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                     ("<Module>", 2)
-                     ("Example", 2) ]
+          mcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 2)
+              ("Example", 2) ]
         @>
 
     finally
@@ -4794,9 +4806,10 @@ module Visitor =
 
       test
         <@
-          classes = [ "Sample21.Product"
-                      "Sample21.Tests"
-                      "Sample21.Traditional" ]
+          classes =
+            [ "Sample21.Product"
+              "Sample21.Tests"
+              "Sample21.Traditional" ]
         @>
 
       let expectedMethods =

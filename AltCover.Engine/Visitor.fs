@@ -607,7 +607,9 @@ module internal Visitor =
 
         response.ContentLength > 0L
         && (response :?> System.Net.HttpWebResponse).StatusCode
-           |> int < 400
+           |> int
+            <
+            400
       with :? WebException ->
         false
 
@@ -659,7 +661,9 @@ module internal Visitor =
              x ||| 2
            else
              x)
-         0) = 3
+         0)
+        =
+        3
 
     let internal significant (m: MethodDefinition) =
       [ Filter.isFSharpInternal
@@ -786,10 +790,8 @@ module internal Visitor =
 
           JsonValue
             .Parse(c)
-            .Object.["documents"].Object.ToDictionary(
-              (fun kv -> kv.Key),
-              (fun kv -> kv.Value.String)
-            ))
+            .Object.["documents"].Object
+            .ToDictionary((fun kv -> kv.Key), (fun kv -> kv.Value.String)))
 
       [ x ]
       |> Seq.takeWhile (fun _ -> x.Inspection <> Inspections.Ignore)
@@ -1724,13 +1726,13 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1584-3::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1586-3::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1477@1477::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1479@1479::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",

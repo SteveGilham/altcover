@@ -66,7 +66,7 @@ module DU =
     M.monitor (4, 0)
     test <@ returnBar "s" = Bar "s" @>
     M.monitor (11, 1)
-    test <@ (Foo 10).as_bar () = Bar "10" @>
+    test <@ (Foo 10).as_bar() = Bar "10" @>
     M.monitor (16, 2)
 
 #if !NET472
