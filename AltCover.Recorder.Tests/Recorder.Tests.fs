@@ -580,7 +580,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeIssue71Wrapper<KeyNotFoundException> (unique, pair)
+    invokeIssue71Wrapper<KeyNotFoundException>(unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -591,7 +591,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeIssue71Wrapper<NullReferenceException> (unique, pair)
+    invokeIssue71Wrapper<NullReferenceException>(unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -602,7 +602,7 @@ module AltCoverTests =
     let unique =
       System.Guid.NewGuid().ToString()
 
-    invokeIssue71Wrapper<ArgumentNullException> (unique, pair)
+    invokeIssue71Wrapper<ArgumentNullException>(unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -615,7 +615,7 @@ module AltCoverTests =
 
     let exn =
       Assert.Throws<InvalidOperationException>(fun () ->
-        invokeIssue71Wrapper<InvalidOperationException> (unique, pair))
+        invokeIssue71Wrapper<InvalidOperationException>(unique, pair))
 
     Assert.That(pair |> Seq.head, Is.False)
     Assert.That(pair |> Seq.last, Is.False)
@@ -1256,8 +1256,9 @@ module AltCoverTests =
   let failsaferelease () =
     try
       Instance.I.mutex.ReleaseMutex()
-    with :? ApplicationException ->
-      ()
+    with
+    | :? ApplicationException
+    | :? InvalidOperationException -> ()
 
   let trywithrelease<'a when 'a :> exn> f = trywith f failsaferelease
 
@@ -1274,12 +1275,12 @@ module AltCoverTests =
 
     Assert.That(flag, Is.True)
 
-    trywithrelease<InvalidOperationException> (fun () ->
+    trywithrelease<InvalidOperationException>(fun () ->
       InvalidOperationException() |> raise)
 
     Instance.I.mutex.WaitOne(1000) |> ignore
 
-    trywithrelease<InvalidOperationException> (fun () ->
+    trywithrelease<InvalidOperationException>(fun () ->
       InvalidOperationException() |> raise)
 
   let internal makeStreamTrace s1 =

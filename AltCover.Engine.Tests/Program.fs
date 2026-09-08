@@ -220,17 +220,20 @@ module ExpectoMain =
       "Visitor.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyleWithTracking"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle"
-      Tests.Visitor.ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle,
+      Tests.Visitor
+        .ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle"
-      Tests.Visitor.ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle,
+      Tests.Visitor
+        .ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle"
-      Tests.Visitor.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle,
+      Tests.Visitor
+        .ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle"
       Tests.Visitor.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle,
       "Visitor.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle"

@@ -281,8 +281,8 @@ module ExpectoTestCommon =
           |> Seq.find (fun i ->
             i.OpCode = OpCodes.Call
             && i.Operand
-              .GetType()
-              .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
+                .GetType()
+                .Name.Equals("MethodDefinition", StringComparison.Ordinal)))
         >> (fun i ->
           let m = (i.Operand :?> MethodDefinition)
           m.DeclaringType.FullName + "::" + m.Name)

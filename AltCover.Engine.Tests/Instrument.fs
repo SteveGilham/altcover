@@ -2978,18 +2978,14 @@ has been prefixed with Ldc_I4_1 (1 byte)
 
       test
         <@
-          string result.RecordingMethodRef.Push = (visit
-                                                   |> Seq.skip 1
-                                                   |> Seq.head
-                                                   |> string)
+          string result.RecordingMethodRef.Push =
+            (visit |> Seq.skip 1 |> Seq.head |> string)
         @>
 
       test
         <@
-          string result.RecordingMethodRef.Pop = (visit
-                                                  |> Seq.skip 2
-                                                  |> Seq.head
-                                                  |> string)
+          string result.RecordingMethodRef.Pop =
+            (visit |> Seq.skip 2 |> Seq.head |> string)
         @>
 
       test
@@ -2998,13 +2994,15 @@ has been prefixed with Ldc_I4_1 (1 byte)
               RecordingMethodRef =
                 { Visit = null
                   Push = null
-                  Pop = null } } = { state' with
-                                       ModuleId = def.MainModule.Mvid.ToString()
-                                       RecordingMethod = visit
-                                       RecordingMethodRef =
-                                         { Visit = null
-                                           Push = null
-                                           Pop = null } }
+                  Pop = null } }
+            =
+            { state' with
+                ModuleId = def.MainModule.Mvid.ToString()
+                RecordingMethod = visit
+                RecordingMethodRef =
+                  { Visit = null
+                    Push = null
+                    Pop = null } }
         @>
     finally
       CoverageParameters.theReportFormat <- None

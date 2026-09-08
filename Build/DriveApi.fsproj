@@ -10,8 +10,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AltCover.Api" VersionOverride="9.0.1" />
-		<PackageReference Include="AltCover.Fake" VersionOverride="9.0.1" />
+		<PackageReference Include="AltCover.Api" VersionOverride="9.0.102" />
+		<PackageReference Include="AltCover.Fake" VersionOverride="9.0.102" />
 		<PackageReference Include="Fake.Core.Target" />
 		<PackageReference Include="Fake.DotNet.Cli" />
 		<PackageReference Include="System.Collections.Immutable" />

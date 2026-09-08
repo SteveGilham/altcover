@@ -586,7 +586,9 @@ module internal Main =
 
                     let pureIL =
                       def.MainModule.Attributes
-                      &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly
+                      &&& ModuleAttributes.ILOnly
+                        =
+                        ModuleAttributes.ILOnly
 
                     let ok = symbols && passesFilter && pureIL
 

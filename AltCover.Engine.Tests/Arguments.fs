@@ -36,12 +36,13 @@ module Arguments =
 
     test
       <@
-        instance |> Args.collect = [ "Runner"
-                                     "-t"
-                                     "23"
-                                     "--collect"
-                                     "-q"
-                                     "-q" ]
+        instance |> Args.collect =
+          [ "Runner"
+            "-t"
+            "23"
+            "--collect"
+            "-q"
+            "-q" ]
       @>
     // hack
     let rerun =
@@ -53,12 +54,13 @@ module Arguments =
 
     test
       <@
-        rerun |> Args.collect = [ "Runner"
-                                  "-t"
-                                  "23"
-                                  "--collect"
-                                  "-q"
-                                  "-q" ]
+        rerun |> Args.collect =
+          [ "Runner"
+            "-t"
+            "23"
+            "--collect"
+            "-q"
+            "-q" ]
       @>
 
   [<Test>]
@@ -100,15 +102,16 @@ module Arguments =
 
     test
       <@
-        instance |> Args.collect = [ "Runner"
-                                     "-x"
-                                     "dotnet"
-                                     "-t"
-                                     "S23B16M7C3"
-                                     "-p"
-                                     "/agent/"
-                                     "--summary:BOC"
-                                     "--verbose" ]
+        instance |> Args.collect =
+          [ "Runner"
+            "-x"
+            "dotnet"
+            "-t"
+            "S23B16M7C3"
+            "-p"
+            "/agent/"
+            "--summary:BOC"
+            "--verbose" ]
       @>
 
     let validate = instance.WhatIf(false)
@@ -116,7 +119,8 @@ module Arguments =
 
     test
       <@
-        validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 -p /agent/ --summary:BOC --verbose"
+        validate.ToString() =
+          "altcover Runner -x dotnet -t S23B16M7C3 -p /agent/ --summary:BOC --verbose"
       @>
 
   [<Test>]
@@ -249,22 +253,23 @@ module Arguments =
 
     test
       <@
-        rendered = [ "-i"
-                     here
-                     "-o"
-                     here
-                     "-y"
-                     here
-                     "-d"
-                     location
-                     "-p"
-                     "ok"
-                     "-c"
-                     "[Fact]"
-                     "--reportFormat"
-                     "OpenCover"
-                     "--inplace"
-                     "--save" ]
+        rendered =
+          [ "-i"
+            here
+            "-o"
+            here
+            "-y"
+            here
+            "-d"
+            location
+            "-p"
+            "ok"
+            "-c"
+            "[Fact]"
+            "--reportFormat"
+            "OpenCover"
+            "--inplace"
+            "--save" ]
       @>
 
     // hack
@@ -278,22 +283,23 @@ module Arguments =
 
     test
       <@
-        rendered = [ "-i"
-                     here
-                     "-o"
-                     here
-                     "-y"
-                     here
-                     "-d"
-                     location
-                     "-p"
-                     "ok"
-                     "-c"
-                     "[Fact]"
-                     "--reportFormat"
-                     "OpenCover"
-                     "--inplace"
-                     "--save" ]
+        rendered =
+          [ "-i"
+            here
+            "-o"
+            here
+            "-y"
+            here
+            "-d"
+            location
+            "-p"
+            "ok"
+            "-c"
+            "[Fact]"
+            "--reportFormat"
+            "OpenCover"
+            "--inplace"
+            "--save" ]
       @>
 
   [<Test>]
@@ -380,16 +386,17 @@ module Arguments =
 
     test
       <@
-        validate = "altcover -i "
-                   + here
-                   + " -o "
-                   + here
-                   + " -y "
-                   + here
-                   + " -d "
-                   + location
-                   + " -p ok -c [Fact] -c [System.SerializableAttribute] -c "
-                   + "Tests.Arguments.TypeSafePrepareOptionsCanBeValidated -c Test --reportFormat OpenCover --inplace --save --methodpoint"
+        validate =
+          "altcover -i "
+          + here
+          + " -o "
+          + here
+          + " -y "
+          + here
+          + " -d "
+          + location
+          + " -p ok -c [Fact] -c [System.SerializableAttribute] -c "
+          + "Tests.Arguments.TypeSafePrepareOptionsCanBeValidated -c Test --reportFormat OpenCover --inplace --save --methodpoint"
       @>
 
   [<Test>]
@@ -423,21 +430,23 @@ module Arguments =
     test
       <@
         (AltCover.PrepareOptions.TypeSafe subject)
-        |> Args.prepare = [ "-i"
-                            here
-                            "-o"
-                            here
-                            "-y"
-                            here
-                            "-d"
-                            location
-                            "-p"
-                            "ok"
-                            "--reportFormat"
-                            "NCover"
-                            "--save"
-                            "--"
-                            "[Fact]" ]
+        |> Args.prepare
+          =
+          [ "-i"
+            here
+            "-o"
+            here
+            "-y"
+            here
+            "-d"
+            location
+            "-p"
+            "ok"
+            "--reportFormat"
+            "NCover"
+            "--save"
+            "--"
+            "[Fact]" ]
       @>
 
   [<Test>]
@@ -511,14 +520,15 @@ module Arguments =
 
     test
       <@
-        rendered = [ "-c"
-                     "0"
-                     "--reportFormat"
-                     "OpenCover"
-                     "--save"
-                     "--all"
-                     "--linecover"
-                     "--branchcover" ]
+        rendered =
+          [ "-c"
+            "0"
+            "--reportFormat"
+            "OpenCover"
+            "--save"
+            "--all"
+            "--linecover"
+            "--branchcover" ]
       @>
 
   [<Test>]

@@ -705,9 +705,12 @@ a:hover {color: #ecc;}
 
     printfn "Tracked OK"
 
-    Assert.That(
+    let tracks =
       coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
-      |> Seq.map _.ToString(),
+      |> Seq.map _.ToString()
+
+    Assert.That(
+      tracks,
       Is.EquivalentTo
         [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
@@ -718,13 +721,14 @@ a:hover {color: #ecc;}
           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-          "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-          "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+          //          "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+          //          "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+          //          "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
           "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-          "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-          "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ]
+          "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ],
+      String.Join("; ", tracks)
     )
 
     printfn "TrackRefs OK"

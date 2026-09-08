@@ -11,6 +11,9 @@ on:
     branches:
     - master
 
+permissions:
+  contents: read
+
 # per https://www.meziantou.net/how-to-cancel-github-workflows-when-pushing-new-commits-on-a-branch.htm
 # https://docs.github.com/en/actions/learn-github-actions/expressions
 # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
@@ -27,10 +30,10 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         global-json-file: global.json
         cache: true
@@ -48,11 +51,11 @@ jobs:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
       run: dotnet run --project ./Build/Build.fsproj
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v7
       with:
           name: nupkgs
           path: _Packagin*/*.nupkg
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v7
       if: failure()
       with:
           name: reports.windows
@@ -64,10 +67,10 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         global-json-file: global.json
         cache: true
@@ -84,7 +87,7 @@ jobs:
       run: dotnet run --project ./Build/Setup.fsproj
     - name: Build
       run: dotnet run --project ./Build/Build.fsproj
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v7
       if: failure()
       with:
           name: reports.linux

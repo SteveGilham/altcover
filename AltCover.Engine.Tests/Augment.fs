@@ -29,7 +29,9 @@ module Augment =
       <@
         [ 1..255 ]
         |> Seq.map Exemption.OfInt
-        |> Seq.tryFind (fun x -> x <> Exemption.Visited) = None
+        |> Seq.tryFind (fun x -> x <> Exemption.Visited)
+          =
+          None
       @>
 
   [<Test>]
@@ -38,10 +40,12 @@ module Augment =
       <@
         [ 0..5 ]
         |> Seq.map ((~-) >> Exemption.OfInt)
-        |> Seq.toList = [ Exemption.None
-                          Exemption.Declared
-                          Exemption.Automatic
-                          Exemption.StaticAnalysis
-                          Exemption.Excluded
-                          Exemption.None ]
+        |> Seq.toList
+          =
+          [ Exemption.None
+            Exemption.Declared
+            Exemption.Automatic
+            Exemption.StaticAnalysis
+            Exemption.Excluded
+            Exemption.None ]
       @>

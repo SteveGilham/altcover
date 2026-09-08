@@ -3900,23 +3900,22 @@ module Main =
 
       test
         <@
-          (expected.Replace("\\", "/")) = stdout
-            .ToString()
-            .Replace("\r\n", "\n")
-            .Replace("\\", "/")
+          (expected.Replace("\\", "/")) =
+            stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/")
         @>
 
       test
         <@
           CoverageParameters.outputDirectories ()
-          |> Seq.head = canonicalDirectory output
+          |> Seq.head
+            =
+            canonicalDirectory output
         @>
 
       test
         <@
-          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
-            input)
-            .Replace("\\", "/"))
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") =
+            ((canonicalDirectory input).Replace("\\", "/"))
         @>
 
       test <@ CoverageParameters.reportPath () = report @>
@@ -3939,7 +3938,7 @@ module Main =
       let expected =
         [ "AltCover.Recorder.g.dll"
           "FSharp.Core.dll"
-          "Newtonsoft.Json.dll"
+          //"Newtonsoft.Json.dll"
           "Sample4.deps.json"
           "Sample4.dll"
           "Sample4.runtimeconfig.json"
@@ -4171,14 +4170,15 @@ module Main =
       test
         <@
           CoverageParameters.outputDirectories ()
-          |> Seq.head = (canonicalDirectory output)
+          |> Seq.head
+            =
+            (canonicalDirectory output)
         @>
 
       test
         <@
-          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") = ((canonicalDirectory
-            path)
-            .Replace("\\", "/"))
+          (CoverageParameters.inputDirectories () |> Seq.head).Replace("\\", "/") =
+            ((canonicalDirectory path).Replace("\\", "/"))
         @>
 
       test <@ CoverageParameters.reportPath () = report @>

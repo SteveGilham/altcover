@@ -74,7 +74,9 @@ module CommandLine =
               Output.error :> obj
               Output.usage :> obj ]
             |> List.zip first
-            |> List.map (fun (a, b) -> Object.ReferenceEquals(a, b)) = expect
+            |> List.map (fun (a, b) -> Object.ReferenceEquals(a, b))
+              =
+              expect
           @>
 
         test <@ stdout.ToString().Trim().Replace(Environment.NewLine, "|") = toOut @>

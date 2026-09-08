@@ -251,7 +251,7 @@ module internal Instrument =
           + (key.PublicKey
              |> Seq.toArray
              |> BitConverter.ToString)
-            .Replace("-", String.Empty)
+              .Replace("-", String.Empty)
 
       let attrtype = va |> Seq.tryHead
 

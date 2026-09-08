@@ -33,13 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\ThirdParty\ziplib.net20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>

@@ -33,6 +33,7 @@
     <rules include="*"
            from="Gendarme.Rules.Naming.dll" />
     <rules include="*"
+           exclude="AvoidLargeNumberOfLocalVariablesRule"
            from="Gendarme.Rules.Performance.dll" />
     <!-- AltCover is operationally tested on Mono;
          System.Xml.Schema.Extensions::Validate seems to be there now -->

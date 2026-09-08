@@ -6,7 +6,7 @@
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
-		<NoWarn  Condition="'$(TargetFramework)'!='net472'">$(NoWarn);NU1702</NoWarn>
+		<NoWarn Condition="'$(TargetFramework)'!='net472'">$(NoWarn);NU1702</NoWarn>
 	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

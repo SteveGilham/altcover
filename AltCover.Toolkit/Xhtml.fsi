@@ -8,6 +8,7 @@ namespace AltCover
   /// <summary>
   /// <para>Functions for building HTML-based reports</para>
   /// </summary>
+  [<RequireQualifiedAccess>]
   module Xhtml = begin
     /// <summary>
     /// <para type="synopsis">Generates a simple HTML report from coverage data.</para>

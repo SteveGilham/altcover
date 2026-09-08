@@ -25,9 +25,9 @@ module internal Report =
             "profilerVersion".X,
             "AltCover "
             + (System.Diagnostics.FileVersionInfo.GetVersionInfo(
-              System.Reflection.Assembly.GetExecutingAssembly().Location
-            ))
-              .FileVersion
+                System.Reflection.Assembly.GetExecutingAssembly().Location
+              ))
+                .FileVersion
           ),
           XAttribute("driverVersion".X, 0),
           XAttribute(
