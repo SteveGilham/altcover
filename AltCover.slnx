@@ -15,6 +15,7 @@
     <File Path="Build/AddStrongName.fsx" />
     <File Path="Build/AltCover.nuspec" />
     <File Path="Build/Apply-Xslt.ps1" />
+    <File Path="Build/build-rules.xml" />
     <File Path="Build/build.cake" />
     <File Path="Build/build.fsx" />
     <File Path="Build/common-rules.xml" />

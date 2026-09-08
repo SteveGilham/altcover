@@ -14,3 +14,15 @@ Covering instrument.fs line 574
   +		r	{nunit.framework, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb}	Mono.Cecil.AssemblyNameReference
 
   from {Sample2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a}
+
+
+sl8/implicitsl10 - the first entry is absent with  explicit 10.0.10x
+
+sourcelink id {cc110556-a091-4d38-9fec-25ab9a351a6a} token 0x0003
+166 chrs
+
+binary id {b5feec05-8cd0-4a83-96da-466284bb4bd8} token 0x0004
+621 bytes 118 101 114 115
+
+binary id {7e4d4708-096e-4c5c-aeda-cb10ba6a740d} token 0x0005
+9296 bytes 77 105 99 114 ...

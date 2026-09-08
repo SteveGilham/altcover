@@ -57,16 +57,18 @@ module Visitor =
 
       test
         <@
-          Main.I.canonicalReportPath () = (Path.Combine(toward, "test.xml")
-                                           |> Canonical.canonicalPath)
+          Main.I.canonicalReportPath () =
+            (Path.Combine(toward, "test.xml")
+             |> Canonical.canonicalPath)
         @>
 
       CoverageParameters.inplace.Value <- true
 
       test
         <@
-          Main.I.canonicalReportPath () = (Path.Combine(from, "test.xml")
-                                           |> Canonical.canonicalPath)
+          Main.I.canonicalReportPath () =
+            (Path.Combine(from, "test.xml")
+             |> Canonical.canonicalPath)
         @>
 
     finally
@@ -136,9 +138,10 @@ module Visitor =
 
     test
       <@
-        result = [ Exemption.StaticAnalysis
-                   Exemption.None
-                   Exemption.None ]
+        result =
+          [ Exemption.StaticAnalysis
+            Exemption.None
+            Exemption.None ]
       @>
 
   [<Test>]
@@ -182,9 +185,10 @@ module Visitor =
 
       test
         <@
-          result = [ Exemption.StaticAnalysis
-                     Exemption.Automatic
-                     Exemption.Automatic ]
+          result =
+            [ Exemption.StaticAnalysis
+              Exemption.Automatic
+              Exemption.Automatic ]
         @>
     finally
       CoverageParameters.showGenerated.Value <- false
@@ -876,8 +880,10 @@ module Visitor =
     methods
     |> List.map Some
     |> List.zip (containing |> Seq.toList)
-    |> List.iteri // Issue #43
-      (fun i (x, y) ->
+    |> List.iteri
+      (fun  // Issue #43
+           i
+           (x, y) ->
         Assert.That(
           y,
           x |> Option.map toName |> Is.Not.EqualTo,
@@ -1014,53 +1020,52 @@ module Visitor =
       |> Seq.toList
 
     let expected =
-      [ None //Microsoft.FSharp.Collections.FSharpList`1<System.Int32> Sample6.Module::F1(Microsoft.FSharp.Collections.FSharpList`1<System.Object>)
-        None //Microsoft.FSharp.Core.Unit[] Sample6.Module::F2(Microsoft.FSharp.Collections.FSharpList`1<System.String>)
-        Some "Module::F1" //*//System.Void Sample6.Module/aux@9::.ctor()
-        Some "Module::F1" //*//System.Int32 Sample6.Module/aux@9::Invoke(System.Int32)
-        Some "Module::F1" //*//System.Void Sample6.Module/aux@9::.cctor()
-        Some "FI@11T::Invoke" //System.Void Sample6.Module/FII@12::.ctor()
-        Some "FI@11T::Invoke" //System.Object Sample6.Module/FII@12::Specialize()
-        Some "FII@12::Specialize" //System.Void Sample6.Module/FII@12T::.ctor(Sample6.Module/FII@12)
-        Some "FII@12::Specialize" //System.Int32 Sample6.Module/FII@12T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>,System.Int32)
-        Some "Module::F1" //System.Void Sample6.Module/FI@11::.ctor()
-        Some "Module::F1" //System.Object Sample6.Module/FI@11::Specialize()
-        Some "FI@11::Specialize" //System.Void Sample6.Module/FI@11T::.ctor(Sample6.Module/FI@11)
-        Some "FI@11::Specialize" //System.Int32 Sample6.Module/FI@11T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
-        Some "Module::F1" //*//System.Void Sample6.Module/F1@17::.ctor()
-        Some "Module::F1" //*//System.Void Sample6.Module/F1@17::Invoke()
-        Some "Module::F1" //*//System.Void Sample6.Module/F1@17::.cctor()
-        Some "fetchUrlAsync@27-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@27-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)"
-        Some "fetchUrlAsync@25-3::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@25-3::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)"
-        Some "fetchUrlAsync@25-2::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@25-2::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)"
-        Some "fetchUrlAsync@24-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@24-1::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)"
-        Some "fetchUrlAsync@24-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-6::.ctor(Microsoft.FSharp.Control.FSharpAsync`1<System.Net.WebResponse>,Microsoft.FSharp.Core.FSharpFunc`2<System.Net.WebResponse,Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit>>)"
-        Some "fetchUrlAsync@24-1::Invoke" //"Microsoft.FSharp.Control.AsyncReturn Sample6.Module/fetchUrlAsync@23-6::Invoke(Microsoft.FSharp.Control.AsyncActivation`1<Microsoft.FSharp.Core.Unit>)"
-        Some "fetchUrlAsync@23::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
-        Some "fetchUrlAsync@23::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)"
-        Some "Module::F2" //*//"System.Void Sample6.Module/fetchUrlAsync@21::.ctor()"
-        Some "Module::F2" //*//"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)"
-        Some "Module::F2" ] //*//"System.Void Sample6.Module/fetchUrlAsync@21::.cctor()"
+      [ None //Microsoft.FSharp.Collections.FSharpList`1<System.Int32> Sample6.Module::F1(Microsoft.FSharp.Collections.FSharpList`1<a>) 0
+        None //Microsoft.FSharp.Core.Unit[] Sample6.Module::F2(Microsoft.FSharp.Collections.FSharpList`1<System.String>) 1
+        Some "Module::F1" //System.Void Sample6.Module/aux@9::.ctor() 2
+        Some "Module::F1" //System.Int32 Sample6.Module/aux@9::Invoke(System.Int32) 3
+        Some "Module::F1" //System.Void Sample6.Module/aux@9::.cctor() 4
+        Some "Module::F1" //System.Void Sample6.Module/FI@11::.ctor(Microsoft.FSharp.Core.FSharpFunc`2<System.Int32,System.Int32>) 5
+        Some "Module::F1" //System.Object Sample6.Module/FI@11::Specialize() 6
+        Some "FI@11::Specialize" //System.Void Sample6.Module/FI@11T::.ctor(Microsoft.FSharp.Core.FSharpFunc`2<System.Int32,System.Int32>,Sample6.Module/FI@11) 7
+        Some "FI@11::Specialize" //System.Int32 Sample6.Module/FI@11T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>) 8
+        Some "FI@11T::Invoke" //System.Void Sample6.Module/FII@12::.ctor(Microsoft.FSharp.Core.FSharpFunc`2<System.Int32,System.Int32>) 9
+        Some "FI@11T::Invoke" //System.Object Sample6.Module/FII@12::Specialize() 10
+        Some "FII@12::Specialize" //System.Void Sample6.Module/FII@12T::.ctor(Microsoft.FSharp.Core.FSharpFunc`2<System.Int32,System.Int32>,Sample6.Module/FII@12) 11
+        Some "FII@12::Specialize" //System.Int32 Sample6.Module/FII@12T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<c>,System.Int32) 12
+        Some "Module::F1" //System.Void Sample6.Module/F1@19::.ctor() 13
+        Some "Module::F1" //System.Int32 Sample6.Module/F1@19::Invoke(a) 14
+        Some "Module::F1" //System.Void Sample6.Module/F1@19::.cctor() 15
+        Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@23::.ctor() 16
+        Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23::Invoke(System.String) 17
+        Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@23::.cctor() 18
+        Some "fetchUrlAsync@23::Invoke" //System.Void Sample6.Module/fetchUrlAsync@24-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder) 19
+        Some "fetchUrlAsync@23::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@24-1::Invoke(Microsoft.FSharp.Core.Unit) 20
+        Some "fetchUrlAsync@25-2::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder) 21
+        Some "fetchUrlAsync@25-2::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-3::Invoke(System.Net.WebResponse) 22
+        Some "fetchUrlAsync@24-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder) 23
+        Some "fetchUrlAsync@24-1::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-2::Invoke(System.Net.WebResponse) 24
+        Some "fetchUrlAsync@24-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-6::.ctor(Microsoft.FSharp.Control.FSharpAsync`1<System.Net.WebResponse>,Microsoft.FSharp.Core.FSharpFunc`2<System.Net.WebResponse,Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit>>) 25
+        Some "fetchUrlAsync@24-1::Invoke" //Microsoft.FSharp.Control.AsyncReturn Sample6.Module/fetchUrlAsync@25-6::Invoke(Microsoft.FSharp.Control.AsyncActivation`1<Microsoft.FSharp.Core.Unit>) 26
+        Some "fetchUrlAsync@25-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@27-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder) 27
+        Some "fetchUrlAsync@25-3::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@27-4::Invoke(System.IO.Stream) 28
+        Some "fetchUrlAsync@27-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@28-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder) 29
+        Some "fetchUrlAsync@27-4::Invoke" ] // Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@28-5::Invoke(System.IO.StreamReader) 30
 
-    //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
-    //Assert.That (result, Is.EquivalentTo expected)
+    //methods
+    //|> Seq.iter (fun x -> printfn "%A" x.FullName)
+
     //result
     //|> List.zip methods
-    //|> List.iteri
-    //     (fun i (x, y) ->
-    //       printfn "%A %A %d" y x i)
+    //|> List.iteri (fun i (x, y) -> printfn "%A %A %d" y x i)
 
     //result
     //|> List.zip expected
     //|> List.mapi (fun i x -> (i, x))
-    //|> List.filter (fun (_, (x,y)) -> x <> y)
-    //|> List.iter
-    //     (fun (i, (x, y)) ->
-    //       printfn "%A %A %d" y x i)
+    //|> List.filter (fun (_, (x, y)) -> x <> y)
+    //|> List.iter (fun (i, (x, y)) -> printfn "%A %A %d" y x i)
+
+    Assert.That(result, Is.EquivalentTo expected)
 
     Assert.Multiple(fun () ->
       result
@@ -2569,8 +2574,8 @@ module Visitor =
 
       test
         <@
-          CoverageParameters.configurationHash = Some
-            "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
+          CoverageParameters.configurationHash =
+            Some "UYZ+0a5G0Qzl3yx3ivPJjoKwu/Wb8OnzVaBLMTTKNzA="
         @>
     finally
       CoverageParameters.nameFilters.Clear()
@@ -2791,12 +2796,12 @@ module Visitor =
       // snd > 1 => partial class at least
       test
         <@
-          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                          1)
-                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                         ("<Module>", 10)
-                         ("Example", 2) ]
+          classcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 10)
+              ("Example", 2) ]
         @>
 
       let mcount =
@@ -2807,11 +2812,12 @@ module Visitor =
       // snd > 1 => inlined method at least
       test
         <@
-          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                     ("<Module>", 2)
-                     ("Example", 2) ]
+          mcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 2)
+              ("Example", 2) ]
         @>
 
     finally
@@ -2863,7 +2869,7 @@ module Visitor =
 
       let nativeJson =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find _.EndsWith("Sample4-10.native.json", StringComparison.Ordinal)
+        |> Seq.find _.EndsWith("Sample4-11.native.json", StringComparison.Ordinal)
 
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
@@ -2891,7 +2897,8 @@ module Visitor =
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |]),
-        Is.EqualTo expected
+        Is.EqualTo expected,
+        result
       )
     finally
       CoverageParameters.trackingNames.Clear()
@@ -2994,12 +3001,12 @@ module Visitor =
       // snd > 1 => partial class at least
       test
         <@
-          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                          1)
-                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                         ("<Module>", 10)
-                         ("Example", 2) ]
+          classcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 10)
+              ("Example", 2) ]
         @>
 
       let mcount =
@@ -3027,11 +3034,12 @@ module Visitor =
       // snd > 1 => inlined method at least
       test
         <@
-          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                     ("<Module>", 2)
-                     ("Example", 2) ]
+          mcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 2)
+              ("Example", 2) ]
         @>
     finally
       CoverageParameters.nameFilters.Clear()
@@ -3085,22 +3093,23 @@ module Visitor =
 
       test
         <@
-          embeds = [ 1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     1
-                     0
-                     0
-                     0
-                     0
-                     0
-                     0
-                     0 ]
+          embeds =
+            [ 1
+              1
+              1
+              1
+              1
+              1
+              1
+              1
+              1
+              0
+              0
+              0
+              0
+              0
+              0
+              0 ]
         @>
 
     finally
@@ -3206,9 +3215,10 @@ module Visitor =
 
       test
         <@
-          names2 = [ "bytes"
-                     "makeThing"
-                     "testMakeThing" ]
+          names2 =
+            [ "bytes"
+              "makeThing"
+              "testMakeThing" ]
         @>
 
       { Scope = Attribute
@@ -3359,11 +3369,12 @@ module Visitor =
 
       test
         <@
-          names7 = [ "Sample6.Module.F1"
-                     "Sample6.Module.F2"
-                     "Sample6.Module+FII@12T.Invoke"
-                     "Sample6.Module+FI@11T.Invoke"
-                     "Sample6.Module+F1@19.Invoke" ]
+          names7 =
+            [ "Sample6.Module.F1"
+              "Sample6.Module.F2"
+              "Sample6.Module+FI@11T.Invoke"
+              "Sample6.Module+FII@12T.Invoke"
+              "Sample6.Module+F1@19.Invoke" ]
         @>
 
       CoverageParameters.topLevel.Clear()
@@ -4206,12 +4217,12 @@ module Visitor =
       // snd > 1 => partial class at least
       test
         <@
-          classcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                         ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException",
-                          1)
-                         ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                         ("<Module>", 10)
-                         ("Example", 2) ]
+          classcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 10)
+              ("Example", 2) ]
         @>
 
       let mcount =
@@ -4222,11 +4233,12 @@ module Visitor =
       // snd > 1 => inlined method at least
       test
         <@
-          mcount = [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
-                     ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
-                     ("<CrtImplementationDetails>.ModuleUninitializer", 1)
-                     ("<Module>", 2)
-                     ("Example", 2) ]
+          mcount =
+            [ ("<CrtImplementationDetails>.ModuleLoadException", 1)
+              ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1)
+              ("<CrtImplementationDetails>.ModuleUninitializer", 1)
+              ("<Module>", 2)
+              ("Example", 2) ]
         @>
 
     finally
@@ -4339,7 +4351,7 @@ module Visitor =
       CoverageParameters.theReportFormat <- None
       CoverageParameters.coverstyle <- CoverStyle.All
 
-  let AddTrackingForMain xml =
+  let AddTrackingForMain (xml: string) =
     let resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find _.EndsWith(xml, StringComparison.Ordinal)
@@ -4794,9 +4806,10 @@ module Visitor =
 
       test
         <@
-          classes = [ "Sample21.Product"
-                      "Sample21.Tests"
-                      "Sample21.Traditional" ]
+          classes =
+            [ "Sample21.Product"
+              "Sample21.Tests"
+              "Sample21.Traditional" ]
         @>
 
       let expectedMethods =
@@ -4818,7 +4831,10 @@ module Visitor =
       OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll")
+      Path.Combine(
+        SolutionDir(),
+        "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll"
+      )
 
     Assert.That(File.Exists sample21, "Test file Sample21 for net10.0 not built")
 
@@ -4913,9 +4929,20 @@ module Visitor =
     Assert.That(doc.Descendants(xn "Module") |> Seq.length, Is.EqualTo 1)
     Assert.That(doc.Descendants(xn "File") |> Seq.length, Is.GreaterThan 1)
 
-    doc.Descendants(xn "File")
+    let mutable prev = Int32.MinValue
+
+    let files =
+      doc.Descendants(xn "File")
+      |> Seq.map (fun e -> e.Attribute(xn "uid").Value)
+
+    let dump = String.Join("; ", files)
+
+    files
     |> Seq.iteri (fun i x ->
-      Assert.That(x.Attribute(xn "uid").Value, Is.EqualTo(string (1 + i))))
+      let id = x |> Int32.Parse
+
+      test' <@ id > prev @> dump)
+  //      Assert.That(, Is.EqualTo(string (1 + i))))
 
   let monoBaseline =
     "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>

@@ -66,7 +66,9 @@ module OpenCover =
                   |> List.partition (fun b ->
                     b.Attribute(XName.Get "offsetend").Value
                     |> Int32.TryParse
-                    |> snd < next)
+                    |> snd
+                      <
+                      next)
 
                 kill |> Seq.iter _.Remove()
                 keep
@@ -1209,7 +1211,8 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     | [ x ] -> XDocument x
     | _ -> mergeDocuments inputs
 
-  [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
+  [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices
+                                                          .MethodImplOptions.NoInlining)>]
   let JsonToXml (document: string) =
     let json =
       document |> NativeJson.fromJsonText
@@ -1254,6 +1257,6 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.OpenCover/Pipe #4 stage #1 at line 753@754::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                              "AltCover.OpenCover/Pipe #4 stage #1 at line 755@756::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

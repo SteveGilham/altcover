@@ -5,3 +5,4 @@
 & dotnet tool update coveralls.net
 & dotnet tool update nbgv
 & dotnet tool update -g fantomas
+& dotnet tool update -g powershell

@@ -23,9 +23,5 @@
 
 	<ItemGroup>
 		<PackageReference Include="Fake.Core.Process" Condition="'$(TargetFramework)' != 'net472'" />
-		<PackageReference Include="Microsoft.SourceLink.GitHub">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-		</PackageReference>
 	</ItemGroup>
 </Project>

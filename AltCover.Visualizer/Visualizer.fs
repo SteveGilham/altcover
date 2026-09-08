@@ -986,7 +986,8 @@ module private Gui =
       selector.Font <- Persistence.readFont ()
 
       if
-        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok
+        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
+          ResponseType.Ok
       then
         let font = selector.Font
 #else
@@ -997,7 +998,8 @@ module private Gui =
       |> ignore
 
       if
-        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok
+        Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
+          ResponseType.Ok
       then
         let font = selector.FontName
 #endif

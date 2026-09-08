@@ -300,7 +300,7 @@ module Targets =
   let coverletcollector =
     ("./packages/"
      + (packageVersion "coverlet.collector")
-     + "/build/netstandard2.0/coverlet.collector.dll")
+     + "/build/net8.0/coverlet.collector.dll")
     |> Path.getFullName
 
   let cliArguments =
@@ -923,11 +923,20 @@ module Targets =
       [ "./AltCover.slnx"
         "./AltCover.Visualizer.slnx"
         "./MCS.slnx"
-        "./Samples/Sample14/Sample14.slnx"
         "./Samples/Sample28/SourceGenerators.slnx" ]
       |> Seq.iter dotnetBuildDebug
 
-      Shell.copy "./_SourceLink" (!!"./_Binaries/Sample14/Debug+AnyCPU/net10.0/*"))
+      DotNet.publish
+        (fun options ->
+          { options with
+              OutputPath = Some "./_SourceLink"
+              Configuration = DotNet.BuildConfiguration.Debug
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.ConsoleLogParameters = []
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DistributedLoggers = None
+              Fake.DotNet.DotNet.PublishOptions.MSBuildParams.DisableInternalBinLog =
+                true
+              Framework = Some "net10.0" })
+        "./Samples/Sample14/Sample14/Sample14.csproj")
 
   let buildMonoSamples =
     (fun () ->
@@ -1231,6 +1240,7 @@ module Targets =
         [ "-Microsoft.Design#CA1020" // small namespaces
           "-Microsoft.Naming#CA1702" // compound naming pedantry
           "-Microsoft.Naming#CA1704" // spelling pedantry
+          "-Microsoft.Performance#CA1809" // excessive (compiler generated) locals
           "-Microsoft.Usage#CA2243" ] // :AttributeStringLiteralsShouldParseCorrectly"
 
       let minimalRules =
@@ -1421,7 +1431,7 @@ module Targets =
                     nugetCache
                     @@ "microsoft.testplatform.objectmodel/"
                        + (ddItem "microsoft.testplatform.objectmodel")
-                       + "/lib/netstandard1.5"
+                       + "/lib/netstandard2.0"
                     nugetCache
                     @@ "microsoft.netframework.referenceassemblies.net472/"
                        + "1.0.3" // assume all increment versions in step
@@ -2211,7 +2221,7 @@ module Targets =
         coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
         |> Seq.toList
 
-      Assert.That(refs |> Seq.length, Is.EqualTo 56, "ref count wrong")
+      Assert.That(refs |> Seq.length, Is.EqualTo 59, "ref count wrong")
 
       refs
       |> Seq.iter (fun tmr ->
@@ -2339,7 +2349,7 @@ module Targets =
       let altcover =
         Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net8.0/AltCover.dll"
 
-      [ ("Sample27", 18); ("Sample30", 27) ]
+      [ ("Sample27", 18); ("Sample30", 62) ] // massive changes at net11pv6
       |> List.iter (fun (sample, methodcount) ->
         let simpleReport =
           (Path.getFullName "./_Reports")
@@ -6579,17 +6589,18 @@ module Targets =
 
           test
             <@
-              (found, "first") = ([ "1"
-                                    "4"
-                                    "3"
-                                    "1"
-                                    "2"
-                                    "1"
-                                    "1"
-                                    "1"
-                                    "5"
-                                    "5" ],
-                                  "first")
+              (found, "first") =
+                ([ "1"
+                   "4"
+                   "3"
+                   "1"
+                   "2"
+                   "1"
+                   "1"
+                   "1"
+                   "5"
+                   "5" ],
+                 "first")
             @>
 
         let p1 =
@@ -6637,15 +6648,16 @@ module Targets =
 
           test
             <@
-              (found, "second") = ([ "1"
-                                     "4"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "5"
-                                     "5" ],
-                                   "second")
+              (found, "second") =
+                ([ "1"
+                   "4"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "5"
+                   "5" ],
+                 "second")
             @>
 
         let p1 =
@@ -6693,15 +6705,16 @@ module Targets =
 
           test
             <@
-              (found, "single") = ([ "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1"
-                                     "1" ],
-                                   "single")
+              (found, "single") =
+                ([ "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1"
+                   "1" ],
+                 "single")
             @>
 
         // Issue 98 optest
@@ -6784,10 +6797,7 @@ module Targets =
             { dotnetOptions o' with
                 WorkingDirectory = working })
           "tool"
-          ("install -g altcover.global --add-source "
-           + (Path.getFullName "./_Packaging.global")
-           + " --version "
-           + version)
+          ("install -g altcover.global --version " + version)
           "Installed"
 
         Actions.RunDotnet

@@ -335,7 +335,7 @@ module Extensions =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",
                             Target =
-                              "AltCover.Transformer/transformFromCobertura@89-1::Invoke(System.Xml.Linq.XElement)",
+                              "AltCover.Transformer/transformFromCobertura@89-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
@@ -343,4 +343,5 @@ module Extensions =
                             Target =
                               "AltCover.Transformer/lineOnly@158::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
+
 ()

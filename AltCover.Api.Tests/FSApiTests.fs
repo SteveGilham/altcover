@@ -1066,11 +1066,9 @@ module FSApiTests =
 
       test
         <@
-          result = (String.Join(
-                      Environment.NewLine,
-                      [ "Info"; "Warn"; "Echo"; "Verbose" ]
-                    ),
-                    "Failure")
+          result =
+            (String.Join(Environment.NewLine, [ "Info"; "Warn"; "Echo"; "Verbose" ]),
+             "Failure")
         @>
     finally
       Console.SetOut(fst saved)
@@ -1201,8 +1199,8 @@ module FSApiTests =
     NUnit.Framework.Assert.Multiple(fun () ->
       testWithFallback
         <@
-          (optionsFragments) |> List.length = ((optionNames |> List.length)
-                                               - (optionCases + 1))
+          (optionsFragments) |> List.length =
+            ((optionNames |> List.length) - (optionCases + 1))
         @>
         (optionsFragments |> List.length)
         (Is.EqualTo((optionNames |> List.length) - (1 + optionCases)))
@@ -1264,7 +1262,8 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep coll combined =
+          "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let tprep = TypeSafe.PrepareOptions.Create()
@@ -1274,7 +1273,8 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep2 coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep2 coll combined =
+          "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let pprep2 = Options.Prepare()
@@ -1291,7 +1291,8 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep2 coll2 combined2 = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep2 coll2 combined2 =
+          "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let coll1 =
@@ -1301,7 +1302,8 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep coll1 combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep coll1 combined =
+          "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
     let coll2 =
@@ -1317,7 +1319,8 @@ module FSApiTests =
 
     test
       <@
-        DotNet.ToTestArguments prep2 coll2 combined = "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
+        DotNet.ToTestArguments prep2 coll2 combined =
+          "/p:AltCover=\"true\" /p:AltCoverDependencyList=\"nonesuch.dll|\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\""
       @>
 
   [<Test>]
@@ -1390,7 +1393,8 @@ module FSApiTests =
 
     test
       <@
-        summary.ToString() = "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />"
+        summary.ToString() =
+          "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />"
       @>
 
   // TODO -- recursive validation
@@ -1422,7 +1426,8 @@ module FSApiTests =
 
     test
       <@
-        summary.ToString().Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />"
+        summary.ToString().Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") =
+          "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />"
       @>
 
 // TODO -- recursive validation
