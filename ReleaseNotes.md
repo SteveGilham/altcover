@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Indori series release 3)
+# (Indori series release 4)
+
+# 9.0.145 (Indori series release 3)
 
 * Fix issue #266 - allow an environment variable `ALTCOVER_REPORT_FILE` to supply a report file full path location for `--portable` mode. 
   * If not set, co-locate with the recorder assembly, and if that assembly is loaded from memory and has no location, expect it in the current directory. 
