@@ -815,7 +815,7 @@ module internal Main =
           Assembly.GetExecutingAssembly().Location
           |> Path.GetDirectoryName
 
-        [ "../net8.0"
+        [ "../net10.0"
           "../netstandard2.0"
           "../any" ]
         |> Seq.map (fun d ->
