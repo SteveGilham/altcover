@@ -2,3 +2,5 @@
 *.fsi
 Abstract.fs
 Recorder.fs
+# and some generated code with #if combos
+*.Version.fs
