@@ -5,3 +5,7 @@ updates:
     schedule:
       interval: "weekly" # check for action update every week
       day: "wednesday"
+  - package-ecosystem: "nuget"   # Enable version updates for nuget 
+    directory: "/Build"
+    schedule:
+      interval: "daily"  # Check the nuget registry for updates every day (weekdays) schedule: 
