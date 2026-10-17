@@ -24,7 +24,7 @@
     <PackageVersion Include="FAKE.Core.Environment" Version="6.1.4" />
     <PackageVersion Include="FAKE.Core.Process" Version="6.1.4" />
     <PackageVersion Include="FAKE.Core.Trace" Version="6.1.4" />
-    <PackageVersion Include="Fake.Core.Target" Version="6.1.4" />
+    <PackageVersion Include="Fake.Core.Target" Version="6.2.0" />
     <PackageVersion Include="Fake.dotNet.AssemblyInfoFile" Version="6.1.4" />
     <PackageVersion Include="FAKE.DotNet.Cli" Version="6.1.4" />
     <PackageVersion Include="Fake.dotNet.fxcop" Version="6.1.4" />
