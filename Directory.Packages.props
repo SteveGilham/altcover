@@ -16,7 +16,7 @@
     <PackageVersion Include="Cake.Common" Version="6.0.0" />
     <PackageVersion Include="Cake.Core" Version="6.0.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
-    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
     <PackageVersion Include="Expecto" Version="11.1.0" />
