@@ -24,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="FAKE.Core.Trace" />
     <PackageReference Include="FAKE.DotNet.Cli" />
+    <PackageReference Include="Fake.DotNet.NuGet" />
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>

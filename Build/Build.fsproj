@@ -31,6 +31,7 @@
 		<PackageReference Include="Fake.DotNet.Cli" />
 		<PackageReference Include="Fake.DotNet.FxCop" />
 		<PackageReference Include="Fake.DotNet.MSBuild" />
+		<PackageReference Include="Fake.DotNet.NuGet" />
 		<PackageReference Include="Fake.DotNet.Testing.coverlet" />
 		<PackageReference Include="Fake.DotNet.Testing.nunit" />
 		<PackageReference Include="Fake.DotNet.Testing.opencover" />

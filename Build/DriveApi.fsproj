@@ -15,6 +15,7 @@
 		<PackageReference Include="AltCover.Fake" VersionOverride="4.0.655" />
 		<PackageReference Include="Fake.Core.Target" />
 		<PackageReference Include="Fake.DotNet.Cli" />
+		<PackageReference Include="Fake.DotNet.NuGet" />
 		<PackageReference Include="System.Collections.Immutable" />
 		<PackageReference Include="Unquote" />
 	</ItemGroup>
