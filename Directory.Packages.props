@@ -69,7 +69,7 @@
     <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->
     <PackageVersion Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" Version="3.22.0" />
     <PackageVersion Include="OpenCover" Version="4.7.1221" />
-    <PackageVersion Include="Pester" Version="6.0.0" />
+    <PackageVersion Include="Pester" Version="6.2.0" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
     <PackageVersion Include="System.Collections.Immutable" Version="10.0.13" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
