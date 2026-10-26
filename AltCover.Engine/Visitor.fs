@@ -1740,4 +1740,11 @@ module internal Visitor =
                             Target =
                               "AltCover.Visitor/I/finish@1256::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
                             Justification = "Inlined library code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Visitor/I/Pipe #2 stage #3 at line 1351@1355-2::Invoke(System.Int32,AltCover.GoTo)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
 ()

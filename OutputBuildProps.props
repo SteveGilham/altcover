@@ -13,7 +13,7 @@
     <KeyDir>$(MSBuildThisFileDirectory)Build\</KeyDir>
     <InfrastructureKey>$(KeyDir)Infrastructure.snk</InfrastructureKey>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
-    <OtherFlags>--keyfile:$(InfrastructureKey) --strict-indentation+</OtherFlags>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
     <RollForward>Major</RollForward>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

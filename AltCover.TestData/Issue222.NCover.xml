@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
 <coverage profilerVersion="AltCover 8.8.68.14092" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
-  <module moduleId="022ee631-200a-4ec4-890a-b810c827cc4d" name="altcover/_Binaries/sample32/Debug+AnyCPU/net8.0/Sample32.dll" assembly="Sample32" assemblyIdentity="Sample32, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+  <module moduleId="022ee631-200a-4ec4-890a-b810c827cc4d" name="altcover/_Binaries/sample32/Debug+AnyCPU/net10.0/Sample32.dll" assembly="Sample32" assemblyIdentity="Sample32, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
     <method name="Main" class="Sample32.Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Void Sample32.Program.Main(System.String[])">
       <seqpnt visitcount="0" line="8" column="5" endline="8" endcolumn="6" excluded="false" document="altcover/Samples/Sample32/Program.cs" />
       <seqpnt visitcount="0" line="9" column="7" endline="9" endcolumn="42" excluded="false" document="altcover/Samples/Sample32/Program.cs" />

@@ -1168,12 +1168,11 @@ type MainWindow() as this =
                             Scope = "member", // MethodDefinition
                             Target =
                               "<StartupCode$AltCover-Visualizer>.$MainWindow::<sumBy>__debug@427(Microsoft.FSharp.Core.FSharpFunc`2<Avalonia.Media.FormattedTextLine,System.Int32>,System.Collections.Generic.IEnumerable`1<Avalonia.Media.FormattedTextLine>)",
-                            Justification = "Compiler nonsense")>]
+                            Justification = "Compiler generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
                             Scope = "member", // MethodDefinition
                             Target =
                               "<StartupCode$AltCover-Visualizer>.$MainWindow::<sumBy>__debug@440-1(Microsoft.FSharp.Core.FSharpFunc`2<Avalonia.Media.FormattedTextLine,System.Int32>,System.Collections.Generic.IEnumerable`1<Avalonia.Media.FormattedTextLine>)",
-                            Justification = "Compiler nonsense")>]
-
+                            Justification = "Compiler generated code")>]
 ()
