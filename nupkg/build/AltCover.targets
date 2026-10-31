@@ -1,10 +1,12 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
+    <AltCoverNetFrameworkEngine>$(MSBuildThisFileDirectory)../tools/net472/AltCover.Engine.dll</AltCoverNetFrameworkEngine>
     <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../tools/net8.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
     <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
-    <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
-    <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
+    <AltCoverEngine Condition="'$(MSBuildRuntimeType)' == 'Full' AND Exists('$(AltCoverNetFrameworkEngine)')">$(AltCoverNetFrameworkEngine)</AltCoverEngine>
+    <AltCoverEngine Condition="'$(AltCoverEngine)' == '' AND Exists('$(AltCoverNetStdEngine)')">$(AltCoverNetStdEngine)</AltCoverEngine>
+    <AltCoverEngine Condition="'$(AltCoverEngine)' == '' AND Exists('$(AltCoverNetCoreEngine)')">$(AltCoverNetCoreEngine)</AltCoverEngine>
     <AltCoverOutputRoot Condition="'$(AltCoverOutputRoot)' == ''">$(TargetDir)</AltCoverOutputRoot>
     <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(AltCoverOutputRoot), '__Instrumented'))</AltCoverInstrumentedDirectory>
     <AltCoverSavedDirectory>$([System.IO.Path]::Combine($(AltCoverOutputRoot), '__Saved'))</AltCoverSavedDirectory>
