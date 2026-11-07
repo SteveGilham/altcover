@@ -231,4 +231,17 @@ module internal Lcov =
                             Target =
                               "AltCover.Lcov/Pipe #1 stage #1 at line 167@167::Invoke(System.String)",
                             Justification = "Compiler generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Lcov/Pipe #1 stage #1 at line 167@167::Invoke(System.String)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1809:AvoidExcessiveLocals",
+                            Scope = "member",
+                            Target =
+                              "AltCover.Lcov+Pipe #1 stage #1 at line 167@167.#Invoke(System.String)",
+                            Justification = "Compiler generated")>]
 ()

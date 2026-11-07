@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
 <coverage profilerVersion="AltCover 8.8.149.49679" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
-  <module moduleId="f7f80a77-e131-f5c7-da33-cd3b6036778a" name="C:\Users\email\Documents\Github\altcover\_Binaries\FSharpTypesDotNetCollecter_Sample2\Debug+AnyCPU\net8.0\__Saved\Sample2.dll" assembly="Sample2" assemblyIdentity="Sample2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+  <module moduleId="f7f80a77-e131-f5c7-da33-cd3b6036778a" name="C:\Users\email\Documents\Github\altcover\_Binaries\FSharpTypesDotNetCollecter_Sample2\Debug+AnyCPU\net10.0\__Saved\Sample2.dll" assembly="Sample2" assemblyIdentity="Sample2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
     <method name="main" class="N.Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Int32 N.Program.main(System.String[])">
       <seqpnt visitcount="0" line="63" column="16" endline="63" endcolumn="17" excluded="false" document="C:\Users\email\Documents\Github\altcover\Samples\Sample2\Sample2.fs" />
     </method>

@@ -676,6 +676,10 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Inlined library code")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidLargeNumberOfLocalVariablesRule",
+                      Justification =
+                        "New at F# 11pv6 : Possibly as above, Refactoring TODO")>]
     let internal standardSummary
       (reportDocument: DocumentType)
       (format: ReportFormat)

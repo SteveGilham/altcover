@@ -5,7 +5,7 @@
     <source>altcover/Samples/Sample32</source>
   </sources>
   <packages>
-    <package name="altcover/_Binaries/sample32/Debug+AnyCPU/net8.0/Sample32.dll" line-rate="0" branch-rate="1" complexity="1">
+    <package name="altcover/_Binaries/sample32/Debug+AnyCPU/net10.0/Sample32.dll" line-rate="0" branch-rate="1" complexity="1">
       <classes>
         <class name="Sample32.Program" filename="Program.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>

@@ -724,7 +724,7 @@ module Visitor =
   [<Test>]
   let CSharpNestedMethods () =
     let sample5 =
-      sample24path.Replace("24", "5").Replace("net10.0", "netstandard2.0")
+      sample24path.Replace("24", "5").Replace("net11.0", "netstandard2.0")
 
     use def =
       AssemblyResolver.ReadAssembly(sample5)
@@ -2840,7 +2840,7 @@ module Visitor =
         Main.I.selectReportGenerator ()
 
       let path =
-        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net10.0/Sample4.dll")
+        Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net11.0/Sample4.dll")
 
       "Main"
       |> (Regex
@@ -3148,7 +3148,7 @@ module Visitor =
       sample4path
         .Replace("4", "5")
         .Replace("572", "472")
-        .Replace("net10.0", "netstandard2.0")
+        .Replace("net11.0", "netstandard2.0")
 
     let path6 =
       sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
@@ -4833,10 +4833,10 @@ module Visitor =
     let sample21 =
       Path.Combine(
         SolutionDir(),
-        "./_Binaries/Sample21/Debug+AnyCPU/net10.0/Sample21.dll"
+        "./_Binaries/Sample21/Debug+AnyCPU/net11.0/Sample21.dll"
       )
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net10.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net11.0 not built")
 
     try
       "Program"
@@ -4915,7 +4915,7 @@ module Visitor =
     let path =
       Path.Combine(
         SolutionDir(),
-        "_Binaries/AltCover/Debug+AnyCPU/net8.0/AltCover.Engine.dll"
+        "_Binaries/AltCover/Debug+AnyCPU/net10.0/AltCover.Engine.dll"
       )
 
     Visitor.visit

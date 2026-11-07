@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AltCoverNetFrameworkEngine>$(MSBuildThisFileDirectory)../tools/net472/AltCover.Engine.dll</AltCoverNetFrameworkEngine>
-    <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../tools/net8.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
+    <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../tools/net10.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
     <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
     <AltCoverEngine Condition="'$(MSBuildRuntimeType)' == 'Full' AND Exists('$(AltCoverNetFrameworkEngine)')">$(AltCoverNetFrameworkEngine)</AltCoverEngine>
     <AltCoverEngine Condition="'$(AltCoverEngine)' == '' AND Exists('$(AltCoverNetStdEngine)')">$(AltCoverNetStdEngine)</AltCoverEngine>

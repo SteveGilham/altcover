@@ -49,6 +49,10 @@ module AltCoverCommand =
 
       AltCover.Primitive copy
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification =
+                      "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
   let internal setCollectCommandLine (args: string seq) collect =
     match collect with
     | AltCover.Primitive p -> AltCover.Primitive { p with CommandLine = args }
@@ -81,6 +85,10 @@ module AltCoverCommand =
               | [] -> TypeSafe.NoCommand
               | _ -> TypeSafe.CommandArguments newargs }
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification =
+                      "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
   let internal setPrepareCommandLine
     (args: string seq)
     (prepare: AltCover.PrepareOptions)
@@ -348,12 +356,12 @@ module AltCoverCommand =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 77@77::Invoke(System.String)",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 81@81::Invoke(System.String)",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 139@139::Invoke(System.String)",
+                              "AltCoverFake.DotNet.Testing.AltCoverCommand/Pipe #2 stage #1 at line 147@147::Invoke(System.String)",
                             Justification = "Generated code")>]
 ()

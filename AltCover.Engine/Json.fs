@@ -557,3 +557,31 @@ module internal Json =
          | ReportFormat.NCover -> ncoverToJson
          | _ -> opencoverToJson))
     |> NativeJson.toText
+
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Json/opencoverToJson@333-2::Invoke(System.Xml.Linq.XElement)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Json/opencoverToJson@375-4::Invoke(System.Xml.Linq.XElement)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidLargeNumberOfLocalVariablesRule",
+                            Scope = "member", // MethodDefinition
+                            Target =
+                              "AltCover.Json/opencoverToJson@455-5::Invoke(System.Xml.Linq.XElement)",
+                            Justification =
+                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "OverrideValueTypeDefaultsRule",
+                            Scope = "type", // TypeDefinition
+                            Target = "AltCover.NativeJson/T_128Bytes@",
+                            Justification = "New at F# 11pv6 : compiler generated/inlined")>]
+()

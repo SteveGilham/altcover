@@ -3,6 +3,7 @@
 open System
 
 open Mono.Cecil
+open System.Diagnostics.CodeAnalysis
 
 [<RequireQualifiedAccess>]
 module internal Naming =
@@ -58,6 +59,10 @@ module internal Naming =
       (I.suffixIfNotIsNullOrWhiteSpace def.Namespace ".")
       + I.typeName def
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification =
+                      "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
   let internal fullMethodName (def: MethodDefinition) =
     let parameters =
       String.Join(
