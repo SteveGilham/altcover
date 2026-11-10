@@ -13,8 +13,8 @@
     <PackageVersion Include="Avalonia.Themes.Simple" Version="11.3.12" />
     <PackageVersion Include="BlackFox.CommandLine" Version="1.0.0" />
     <PackageVersion Include="BlackFox.VsWhere" Version="1.1.0" />
-    <PackageVersion Include="Cake.Common" Version="6.3.0" />
-    <PackageVersion Include="Cake.Core" Version="6.3.0" />
+    <PackageVersion Include="Cake.Common" Version="6.0.0" />
+    <PackageVersion Include="Cake.Core" Version="6.0.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="CsvTextFieldParser" Version="1.2.2" />
