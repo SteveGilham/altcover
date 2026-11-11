@@ -15,6 +15,10 @@
     <Compile Include="..\..\..\_SourceLink\Class2.cs" Link="Class2.cs" />
     <Compile Include="$(TEMP)\Sample14.SourceLink.Class3.cs" Link="Class3.cs" Condition="'$(OS)' == 'Windows_NT'" />
     <Compile Include="/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs" Link="Class3.cs" Condition="'$(OS)' != 'Windows_NT'" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Condition="'$(OS)' != 'Windows_NT'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
   </ItemGroup>
 
 </Project>
