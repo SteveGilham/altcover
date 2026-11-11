@@ -64,6 +64,7 @@
     <PackageReference Include="FSharp.Core">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>
