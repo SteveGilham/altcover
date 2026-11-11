@@ -3551,6 +3551,9 @@ module Visitor =
       let map =
         Visitor.sourceLinkDocuments |> Option.get
 
+      map.Keys
+      |> Seq.iter (printfn "SourceLink Key: %s")
+
       map.Values |> Seq.iter (printfn "SourceLink: %s")
 
       let url =
