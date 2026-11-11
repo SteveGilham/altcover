@@ -3561,7 +3561,7 @@ module Visitor =
         (makeDocument document).Descendants(XName.Get "seqpnt")
         |> Seq.map _.Attribute(XName.Get "document").Value
         |> Seq.distinct
-        |> Seq.filter _.StartsWith("https://", StringComparison.Ordinal)
+        //|> Seq.filter _.StartsWith("https://", StringComparison.Ordinal)
         |> Seq.sort
         |> Seq.toList
 
