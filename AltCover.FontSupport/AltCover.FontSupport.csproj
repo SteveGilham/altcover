@@ -23,5 +23,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Fake.Core.Process" Condition="'$(TargetFramework)' != 'net472'" />
+		<PackageReference Include="System.Collections.Immutable" />
 	</ItemGroup>
 </Project>

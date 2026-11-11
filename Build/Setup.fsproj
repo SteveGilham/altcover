@@ -15,5 +15,6 @@
 		<PackageReference Include="Fake.DotNet.Cli" />
 		<PackageReference Include="Fake.DotNet.NuGet" />
 		<PackageReference Include="Fake.IO.FileSystem" />
+		<PackageReference Include="System.Collections.Immutable" />
 	</ItemGroup>
 </Project>
