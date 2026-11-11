@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="6.2.0.211" />
+    <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="6.2.0.229" />
     <PackageVersion Include="AltCode.Dixon" Version="2026.6.22.13110" />
     <PackageVersion Include="altcode.gendarme" Version="2026.8.12.15560" />
     <PackageVersion Include="altcover" Version="9.0.102" />
@@ -61,7 +61,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="3.2.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.8.38-alpha" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="NuGet.CommandLine" Version="7.9.0" />
+    <PackageVersion Include="NuGet.CommandLine" Version="8.0.0" />
     <PackageVersion Include="NUnit" Version="5.0.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
@@ -71,7 +71,7 @@
     <PackageVersion Include="OpenCover" Version="4.7.1221" />
     <PackageVersion Include="Pester" Version="6.2.0" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
-    <PackageVersion Include="System.Collections.Immutable" Version="10.0.14" />
+    <PackageVersion Include="System.Collections.Immutable" Version="11.0.0" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
     <PackageVersion Include="System.Reactive.Core" Version="6.1.0" />
     <PackageVersion Include="System.Security.Permissions" Version="10.0.10" />
