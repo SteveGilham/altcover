@@ -1,0 +1,47 @@
+Linux
+
+SourceLink Key: /home/runner/work/altcover/altcover/*
+SourceLink Key: /home/runner/work/altcover/altcover/Samples/Sample5/Class1.cs
+SourceLink Key: /home/runner/work/altcover/altcover/Samples/Sample14/Sample14/Program.cs
+SourceLink Key: /home/runner/work/altcover/altcover/_SourceLink/Class2.cs
+
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/b56f4260c47d2cab5a4fb0005e8663ff97ce9c19/*
+SourceLink: /home/runner/work/altcover/altcover/Samples/Sample5/Class1.cs
+SourceLink: /home/runner/work/altcover/altcover/Samples/Sample14/Sample14/Program.cs
+SourceLink: /home/runner/work/altcover/altcover/_SourceLink/Class2.cs
+
+< "/home/runner/work/altcover/altcover/Samples/Sample14/Sample14/Program.cs", "/home/runner/work/altcover/altcover/Samples/Sample5/Class1.cs", "/home/runner/work/altcover/altcover/_SourceLink/Class2.cs", "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs" >
+
+
+Windows
+
+SourceLink Key: D:\a\altcover\altcover\*
+SourceLink Key: D:\a\altcover\altcover\Samples\Sample5\Class1.cs
+SourceLink Key: D:\a\altcover\altcover\Samples\Sample14\Sample14\Program.cs
+SourceLink Key: D:\a\altcover\altcover\_SourceLink\Class2.cs
+SourceLink Key: C:\Users\runneradmin\AppData\Local\Temp\Sample14.SourceLink.Class3.cs
+
+
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/a3c97c4ee67b9c82223ec78dea9ef2a7156a94b3/*
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/a3c97c4ee67b9c82223ec78dea9ef2a7156a94b3/Samples/Sample5/Class1.cs
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/a3c97c4ee67b9c82223ec78dea9ef2a7156a94b3/Samples/Sample14/Sample14/Program.cs
+SourceLink: D:\a\altcover\altcover\_SourceLink\Class2.cs
+SourceLink: C:\Users\runneradmin\AppData\Local\Temp\Sample14.SourceLink.Class3.cs
+
+
+
+"C:\Users\runneradmin\AppData\Local\Temp\Sample14.SourceLink.Class3.cs", "D:\a\altcover\altcover\_SourceLink\Class2.cs", "https://raw.githubusercontent.com/SteveGilham/altcover/b56f4260c47d2cab5a4fb0005e8663ff97ce9c19/Samples/Sample14/Sample14/Program.cs", "https://raw.githubusercontent.com/SteveGilham/altcover/b56f4260c47d2cab5a4fb0005e8663ff97ce9c19/Samples/Sample5/Class1.cs" 
+
+
+SourceLink Key: D:\a\altcover\altcover\*
+SourceLink Key: D:\a\altcover\altcover\Samples\Sample5\Class1.cs
+SourceLink Key: D:\a\altcover\altcover\Samples\Sample14\Sample14\Program.cs
+SourceLink Key: D:\a\altcover\altcover\_SourceLink\Class2.cs
+SourceLink Key: C:\Users\runneradmin\AppData\Local\Temp\Sample14.SourceLink.Class3.cs
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/ea05e2a2588b190da371889accaf949bd6a56d99/*
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/ea05e2a2588b190da371889accaf949bd6a56d99/Samples/Sample5/Class1.cs
+SourceLink: https://raw.githubusercontent.com/SteveGilham/altcover/ea05e2a2588b190da371889accaf949bd6a56d99/Samples/Sample14/Sample14/Program.cs
+SourceLink: D:\a\altcover\altcover\_SourceLink\Class2.cs
+SourceLink: C:\Users\runneradmin\AppData\Local\Temp\Sample14.SourceLink.Class3.cs
+
+"C:\Users\runneradmin\AppData\Local\Temp\Sample14.SourceLink.Class3.cs", "D:\a\altcover\altcover\_SourceLink\Class2.cs", "https://raw.githubusercontent.com/SteveGilham/altcover/ea05e2a2588b190da371889accaf949bd6a56d99/Samples/Sample14/Sample14/Program.cs", "https://raw.githubusercontent.com/SteveGilham/altcover/ea05e2a2588b190da371889accaf949bd6a56d99/Samples/Sample5/Class1.cs"
