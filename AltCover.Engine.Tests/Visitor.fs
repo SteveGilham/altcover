@@ -3528,7 +3528,7 @@ module Visitor =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_SourceLink/Sample14.dll")
+      Path.Combine(here, "AltCover.TestData/Sample14.dll")
 
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
@@ -3991,7 +3991,7 @@ module Visitor =
     let here = SolutionDir()
 
     let path =
-      Path.Combine(here, "_SourceLink/Sample14.dll")
+      Path.Combine(here, "AltCover.TestData/Sample14.dll")
 
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
