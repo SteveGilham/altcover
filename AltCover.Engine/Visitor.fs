@@ -617,6 +617,13 @@ module internal Visitor =
       dict.Keys
       |> Seq.filter (fun x -> x |> Path.GetFileName == "*")
       |> Seq.map (fun x ->
+        printfn
+          "x %s, rel %s"
+          x
+          (getRelativeDirectoryPath
+            (x |> Path.GetDirectoryName)
+            (file |> Path.GetDirectoryName))
+
         (x,
          getRelativeDirectoryPath
            (x |> Path.GetDirectoryName)
@@ -787,6 +794,8 @@ module internal Visitor =
         |> Option.map (fun i ->
           let c =
             (i :?> SourceLinkDebugInformation).Content
+
+          printfn "Sourcelink record %A" c
 
           JsonValue
             .Parse(c)

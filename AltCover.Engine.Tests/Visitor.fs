@@ -3551,6 +3551,8 @@ module Visitor =
       let map =
         Visitor.sourceLinkDocuments |> Option.get
 
+      printfn "map %A" map
+
       let url =
         map.Values
         |> Seq.find _.EndsWith("*", StringComparison.Ordinal)
