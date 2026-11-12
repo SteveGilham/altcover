@@ -1741,7 +1741,7 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 14889@1488::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1488@1488::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
