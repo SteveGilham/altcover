@@ -1735,13 +1735,13 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1586-3::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1595-3::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1479@1479::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 14889@1488::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
