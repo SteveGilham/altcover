@@ -605,6 +605,8 @@ module internal Visitor =
       try
         use response = request.GetResponse()
 
+        printfn "response %A" response
+
         response.ContentLength > 0L
         && (response :?> System.Net.HttpWebResponse).StatusCode
            |> int
@@ -640,11 +642,17 @@ module internal Visitor =
 
       match find with
       | Some(best, relative) ->
+
+        printfn "best %s, rel %s" best relative
+
         let replacement =
           Path.Combine(relative, Path.GetFileName(file)).Replace('\\', '/')
 
         let url =
           dict.[best].Replace("*", replacement)
+
+        let uri = Uri(url)
+        printfn "url %s %A %A" url uri (exists uri)
 
         let map =
           if Uri(url) |> exists then url else file
@@ -1735,13 +1743,13 @@ module internal Visitor =
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1595-3::Invoke(AltCover.SeqPnt)",
+                              "AltCover.Visitor/I/sp@1603-3::Invoke(AltCover.SeqPnt)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1488@1488::Invoke(AltCover.GoTo)",
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1496@1496::Invoke(AltCover.GoTo)",
                             Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
                             "InstantiateArgumentExceptionCorrectlyRule",
