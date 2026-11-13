@@ -57,6 +57,7 @@ module Targets =
     { p with
         MethodFilter =
           "WaitForExitCustom"
+          :: "createHttp"
           :: (p.MethodFilter |> Seq.toList)
         AssemblyFilter =
           [ @"\.DataCollector"
@@ -74,13 +75,15 @@ module Targets =
             "Microsoft"
             "<Start"
             "ICSharpCode"
-            "UnitTestStub" ]
+            "UnitTestStub"
+            "SourceLink" ]
           @ (p.TypeFilter |> Seq.toList) }
 
   let AltCoverFilterTypeSafe (p: TypeSafe.PrepareOptions) =
     { p with
         MethodFilter =
-          [ TypeSafe.Raw "WaitForExitCustom" ]
+          [ TypeSafe.Raw "WaitForExitCustom"
+            TypeSafe.Raw "createHttp" ]
           |> p.MethodFilter.Join
         AssemblyFilter =
           [ @"\.DataCollector"
@@ -97,14 +100,16 @@ module Targets =
             "ICSharpCode"
             "<Start"
             "UnitTestStub"
-            "SolutionRoot" ]
+            "SolutionRoot"
+            "SourceLink" ]
           |> Seq.map TypeSafe.Raw
           |> p.TypeFilter.Join }
 
   let AltCoverFilterX (p: Primitive.PrepareOptions) =
     { p with
         MethodFilter =
-          "WaitForExitCustom"
+          "createHttp"
+          :: "WaitForExitCustom"
           :: (p.MethodFilter |> Seq.toList)
         AssemblyFilter =
           [ @"\.DataCollector"
@@ -119,13 +124,15 @@ module Targets =
             "Microsoft"
             "ICSharpCode"
             "<Start"
-            "UnitTestStub" ]
+            "UnitTestStub"
+            "SourceLink" ]
           @ (p.TypeFilter |> Seq.toList) }
 
   let AltCoverFilterXTypeSafe (p: TypeSafe.PrepareOptions) =
     { p with
         MethodFilter =
-          [ TypeSafe.Raw "WaitForExitCustom" ]
+          [ TypeSafe.Raw "WaitForExitCustom"
+            TypeSafe.Raw "createHttp" ]
           |> p.MethodFilter.Join
         AssemblyFilter =
           [ @"\.DataCollector"
@@ -142,7 +149,8 @@ module Targets =
             "ICSharpCode"
             "<Start"
             "UnitTestStub"
-            "SolutionRoot" ]
+            "SolutionRoot"
+            "SourceLink" ]
           |> Seq.map TypeSafe.Raw
           |> p.TypeFilter.Join }
 

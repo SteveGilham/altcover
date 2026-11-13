@@ -3517,6 +3517,12 @@ module Visitor =
     let empty = Dictionary<string, string>()
     test <@ Visitor.I.locateMatch file empty = file @>
 
+  let InjectSourceLink (uri: Uri) =
+    let path = uri.ToString()
+
+    path.EndsWith("Samples/Sample14/Sample14/Program.cs", StringComparison.Ordinal)
+    || path.EndsWith("Samples/Sample5/Class1.cs", StringComparison.Ordinal)
+
   [<Test>]
   let ShouldGenerateExpectedXmlReportWithSourceLink () =
     let visitor, document =
@@ -3531,10 +3537,12 @@ module Visitor =
       Path.Combine(here, "_SourceLink/Sample14.dll")
 
     maybeIgnore (fun () -> path |> File.Exists |> not)
+    let save = Visitor.I.exists
 
     try
       CoverageParameters.sourcelink.Value <- true
       CoverageParameters.staticFilter <- Some StaticFilter.NoFilter
+      Visitor.I.exists <- InjectSourceLink
 
       Visitor.visit
         [ visitor ]
@@ -3591,6 +3599,7 @@ module Visitor =
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.sourcelink.Value <- false
       CoverageParameters.staticFilter <- None
+      Visitor.I.exists <- save
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter () =
@@ -3994,10 +4003,12 @@ module Visitor =
       Path.Combine(here, "_SourceLink/Sample14.dll")
 
     maybeIgnore (fun () -> path |> File.Exists |> not)
+    let save = Visitor.I.exists
 
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       CoverageParameters.sourcelink.Value <- true
+      Visitor.I.exists <- InjectSourceLink
 
       Visitor.visit
         [ visitor ]
@@ -4051,6 +4062,7 @@ module Visitor =
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.sourcelink.Value <- false
       CoverageParameters.theReportFormat <- None
+      Visitor.I.exists <- save
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle () =

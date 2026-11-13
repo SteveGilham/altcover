@@ -221,6 +221,23 @@ type internal SequenceType =
   | Genuine
   | FakeAtReturn
 
+[<ExcludeFromCodeCoverage; RequireQualifiedAccess>]
+module internal SourceLink =
+  let internal exists (url: Uri) =
+    let request = createHttp (url)
+    request.Method <- "HEAD"
+
+    try
+      use response = request.GetResponse()
+
+      response.ContentLength > 0L
+      && (response :?> System.Net.HttpWebResponse).StatusCode
+         |> int
+          <
+          400
+    with :? WebException ->
+      false
+
 [<RequireQualifiedAccess>]
 module internal KeyStore =
   let private hash = sha1Hash ()
@@ -598,20 +615,8 @@ module internal Visitor =
           .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), canon)).ToString())
           .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
-    let internal exists (url: Uri) =
-      let request = createHttp (url)
-      request.Method <- "HEAD"
-
-      try
-        use response = request.GetResponse()
-
-        response.ContentLength > 0L
-        && (response :?> System.Net.HttpWebResponse).StatusCode
-           |> int
-            <
-            400
-      with :? WebException ->
-        false
+    let mutable internal exists =
+      SourceLink.exists
 
     let internal findClosestMatch file (dict: Dictionary<string, string>) =
       dict.Keys
@@ -1704,47 +1709,22 @@ module internal Visitor =
       | (true, url) -> url
       | _ -> I.locateMatch file dict
 
-[<assembly: SuppressMessage("Gendarme.Rules.Smells",
-                            "AvoidMessageChainsRule",
-                            Scope = "member",
-                            Target =
-                              "AltCover.Visitor/I/generated@1411::Invoke(Mono.Cecil.Cil.Instruction)",
-                            Justification = "No direct call available")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "InstantiateArgumentExceptionCorrectlyRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.Visitor/I/start@1250::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
-                            Justification = "Inlined library code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "InstantiateArgumentExceptionCorrectlyRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.Visitor/I/start@1253::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
-                            Justification = "Inlined library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/sp@1586-3::Invoke(AltCover.SeqPnt)",
-                            Justification = "Inlined library code")>]
+                              "AltCover.Visitor/I/sp@1591-3::Invoke(AltCover.SeqPnt)",
+                            Justification = "Compiler generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1479@1479::Invoke(AltCover.GoTo)",
-                            Justification = "Inlined library code")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "InstantiateArgumentExceptionCorrectlyRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.Visitor/I/finish@1256::Invoke(Microsoft.FSharp.Core.FSharpFunc`2<Mono.Cecil.Cil.Instruction,System.Int32>,Microsoft.FSharp.Collections.FSharpList`1<Mono.Cecil.Cil.Instruction>)",
-                            Justification = "Inlined library code")>]
+                              "AltCover.Visitor/I/Pipe #2 stage #10 at line 1484@1484::Invoke(AltCover.GoTo)",
+                            Justification = "Compiler generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Performance",
-                            "AvoidLargeNumberOfLocalVariablesRule",
+                            "AvoidUncalledPrivateCodeRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.Visitor/I/Pipe #2 stage #3 at line 1351@1355-2::Invoke(System.Int32,AltCover.GoTo)",
-                            Justification =
-                              "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+                              "AltCover.Visitor/I::set_exists(Microsoft.FSharp.Core.FSharpFunc`2<System.Uri,System.Boolean>)",
+                            Justification = "Unit test interface")>]
 ()

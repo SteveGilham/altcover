@@ -22,6 +22,7 @@ module Compatibility =
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "RemoveDependenceOnObsoleteCodeRule",
                     Justification = "netstandard 2.0/net472")>]
+  [<ExcludeFromCodeCoverage>]
   let internal createHttp (path: Uri) =
     WebRequest.CreateHttp(path) :> WebRequest
 
