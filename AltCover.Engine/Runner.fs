@@ -1539,28 +1539,3 @@ module internal Runner =
       CommandLine.reportErrors "Collection" false
       value
 
-[<assembly: SuppressMessage("Microsoft.Naming",
-                            "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                            Scope = "member",
-                            Target = "AltCover.TeamCityFormat+Tags.#B",
-                            MessageId = "B",
-                            Justification = "TeamCity notation")>]
-[<assembly: SuppressMessage("Microsoft.Naming",
-                            "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                            Scope = "member",
-                            Target = "AltCover.TeamCityFormat+Tags.#R",
-                            MessageId = "R",
-                            Justification = "TeamCity notation")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
-                            "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.Threshold/parts@132-2::Invoke(System.Tuple`2<System.String,System.String>)",
-                            Justification = "Generated comparison")>]
-[<assembly: SuppressMessage("Gendarme.Rules.Smells",
-                            "AvoidSwitchStatementsRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.SummaryFormat/Factory@64::Invoke(AltCover.SummaryFormat,System.Char)",
-                            Justification = "Wrong paradigm, old chap")>]
-()

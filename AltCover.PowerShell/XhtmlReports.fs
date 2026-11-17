@@ -188,10 +188,3 @@ type ConvertToSourceMapCommand(outputFolder: String) =
       Directory.SetCurrentDirectory here
 #endif
 
-[<assembly: SuppressMessage("Gendarme.Rules.Naming",
-                            "UseCorrectCasingRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.Commands.ConvertToBarChartCommand/w@87::get_Encoding()",
-                            Justification = "it's a property")>]
-()
