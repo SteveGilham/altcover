@@ -173,6 +173,13 @@ module DotNet =
   // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
   // "GetVersion" //=true|false` to emit the current AltCover version
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification =
+                      "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+  [<SuppressMessage("Microsoft.Performance",
+                    "CA1809:AvoidExcessiveLocals",
+                    Justification = "just as above")>]
   let ToTestPropertiesList
     (prepare: Abstract.IPrepareOptions)
     (collect: Abstract.ICollectOptions)

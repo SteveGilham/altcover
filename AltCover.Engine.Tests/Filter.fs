@@ -309,13 +309,13 @@ module ACFilter = // Avoid expecto name clash
       && (not (t.FullName.Contains("Coverlet.Core.Instrumentation")))) // exclude the many compiler generted chaff classes
     |> Seq.iter (fun t ->
       Assert.That(
-        Filter.``match`` t (ff (FilterScope.Attribute, Regex "Exclu", Exclude)),
+        Filter.``match`` t (ff (FilterScope.Attribute, Regex "Platform", Exclude)),
         Is.True,
         t.FullName
       )
 
       Assert.That(
-        Filter.``match`` t (ff (FilterScope.Attribute, Regex "Exclu", Include)),
+        Filter.``match`` t (ff (FilterScope.Attribute, Regex "Platform", Include)),
         Is.False,
         t.FullName
       ))

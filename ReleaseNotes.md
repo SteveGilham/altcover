@@ -3,7 +3,15 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Indori series release 3)
+# (Indori series release 4)
+
+* Net11.0 support - maintenance release
+* Fix issue #299 - Select correct AltCover binaries when testing with VSTest under MSBuild for .Net Framework
+* Move to Fake 6.2.0 for all purposes, ending legacy support for 6.1.x
+* [BREAKING] Minimum platforms for the tools and API are `net472`, `netstandard2.0` and `net10.0`. *NOTE* the recorder assembly still targets `net20` (or `net46` when `async` is detected)
+* [NOT YET SUPPORTED] The `dotnet test` integration still only intercepts VSTest calls; support for the newer testing framework option **is still TODO** [issue #270]
+
+# 9.0.145 (Indori series release 3)
 
 * Fix issue #266 - allow an environment variable `ALTCOVER_REPORT_FILE` to supply a report file full path location for `--portable` mode. 
   * If not set, co-locate with the recorder assembly, and if that assembly is loaded from memory and has no location, expect it in the current directory. 
