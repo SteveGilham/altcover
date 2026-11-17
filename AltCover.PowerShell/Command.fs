@@ -699,6 +699,13 @@ type InvokeAltCoverCommand() =
         SummaryFormat = String(formatString)
         Verbosity = self.Verbosity }
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidLargeNumberOfLocalVariablesRule",
+                    Justification =
+                      "New at F# 11pv6 : Possibly compiler generated/inlined, Refactoring TODO")>]
+  [<SuppressMessage("Microsoft.Performance",
+                    "CA1809:AvoidExcessiveLocals",
+                    Justification = "just as above")>]
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
 

@@ -35,7 +35,7 @@
            exclude="UseCorrectCasingRule | AvoidNonAlphanumericIdentifierRule"
            from="Gendarme.Rules.Naming.dll" />
     <rules include="*"
-           exclude="AvoidLargeNumberOfLocalVariablesRule | AvoidUncalledPrivateCodeRule | AvoidRepetitiveCallsToPropertiesRule | AvoidReturningArraysOnPropertiesRule | AvoidUnusedParametersRule | UseStringEmptyRule | PreferCharOverloadRule"
+           exclude="OverrideValueTypeDefaultsRule | AvoidLargeNumberOfLocalVariablesRule | AvoidUncalledPrivateCodeRule | AvoidRepetitiveCallsToPropertiesRule | AvoidReturningArraysOnPropertiesRule | AvoidUnusedParametersRule | UseStringEmptyRule | PreferCharOverloadRule"
            from="Gendarme.Rules.Performance.dll" />
     <!-- AltCover is operationally tested on Mono;
          System.Xml.Schema.Extensions::Validate seems to be there now -->

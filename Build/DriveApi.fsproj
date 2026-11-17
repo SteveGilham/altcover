@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>net11.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -10,8 +10,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AltCover.Api" VersionOverride="9.0.102" />
-		<PackageReference Include="AltCover.Fake" VersionOverride="9.0.102" />
+		<!-- It writes the latest, but needs a valid version -->
+		<PackageReference Include="AltCover.Api" VersionOverride="4.0.600" />
+		<PackageReference Include="AltCover.Fake" VersionOverride="4.0.655" />
 		<PackageReference Include="Fake.Core.Target" />
 		<PackageReference Include="Fake.DotNet.Cli" />
 		<PackageReference Include="System.Collections.Immutable" />

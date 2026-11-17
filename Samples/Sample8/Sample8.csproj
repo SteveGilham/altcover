@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0;net20</TargetFrameworks>
+    <TargetFrameworks>net11.0;net20</TargetFrameworks>
     <AssemblyName>Sample8</AssemblyName>
     <ApplicationIcon>$(ProjectDir)../../AltCover/AltCover.ico</ApplicationIcon>
     <DebugType>embedded</DebugType>

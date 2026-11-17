@@ -1,7 +1,7 @@
 ﻿       <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <TargetFrameworks>net11.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Monitor.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -20,6 +20,7 @@
     <PackageReference Include="NUnit" VersionOverride="3.14.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="Unquote" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>

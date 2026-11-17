@@ -3,7 +3,7 @@
 open System
 open System.Reflection
 
-[<NUnit.Framework.IncludeExcludeAttribute>]
+[<NUnit.Framework.PlatformAttribute>]
 type ProxyObject() =
   inherit MarshalByRefObject()
 

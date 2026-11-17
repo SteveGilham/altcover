@@ -81,6 +81,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="16.0.461" />
     <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
   <ItemGroup>

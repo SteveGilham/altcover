@@ -16,7 +16,7 @@ module MonitorTests =
       [ (261, 0) ] // 0 because NCover format
       Path.Combine(
         AltCover.SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net10.0.xml"
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net11.0.xml"
       ),
       [ (260, 37); (260, 36) ] ]
     |> List.filter (fst >> File.Exists)
