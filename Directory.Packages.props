@@ -4,9 +4,9 @@
     <PackageVersion Include="AltCode.Fake.DotNet.Gendarme" Version="6.2.0.229" />
     <PackageVersion Include="AltCode.Dixon" Version="2026.6.22.13110" />
     <PackageVersion Include="altcode.gendarme" Version="2026.8.12.15560" />
-    <PackageVersion Include="altcover" Version="9.0.145" />
-    <PackageVersion Include="AltCover.Api" Version="9.0.145" />
-    <PackageVersion Include="AltCover.Fake" Version="9.0.145" />
+    <PackageVersion Include="altcover" Version="9.0.184" />
+    <PackageVersion Include="AltCover.Api" Version="9.0.184" />
+    <PackageVersion Include="AltCover.Fake" Version="9.0.184" />
     <PackageVersion Include="Avalonia" Version="11.3.12" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.12" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.12" />
