@@ -28,6 +28,9 @@ concurrency:
 
 jobs:
   windows:
+    permissions:
+      id-token: write
+      contents: read
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v7.0.1
@@ -46,10 +49,21 @@ jobs:
       run: dotnet tool restore
     - name: Setup
       run: dotnet run --project ./Build/Setup.fsproj
+
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
+      ## Note: The NuGet/login action uses OIDC to get a temporary API key for NuGet.org, which is valid for 1 hour.
+    - name: Store API token
+      run: echo "NUGET_API_TOKEN=${{steps.login.outputs.NUGET_API_KEY}}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
     - name: Build
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
+        NUGET_USER: ${{ secrets.NUGET_USER }}
       run: dotnet run --project ./Build/Build.fsproj
     - uses: actions/upload-artifact@v7
       with:
