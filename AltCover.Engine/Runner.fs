@@ -234,9 +234,6 @@ module internal Runner =
 
       write line
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
     let internal contains o l = l |> Seq.contains o
 
     [<SuppressMessage("Gendarme.Rules.Maintainability",
@@ -316,12 +313,6 @@ module internal Runner =
         "0" // crap
         "0" ] // altcrap
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "In inlined library code")>]
-    [<SuppressMessage("Gendarme.Rules.Performance",
-                      "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "In inlined library code")>]
     let internal emitAltCrapScore go (methods: XElement seq) =
       let value =
         (methods
@@ -547,9 +538,6 @@ module internal Runner =
       |> Option.map (makeOpenCoverSummary report)
       |> Option.defaultValue defaultSummary
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
     let internal jsonSummary (json: NativeJson.Modules) =
       let summarise go (vc: int) (nc: int) key =
 

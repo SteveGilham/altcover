@@ -157,7 +157,6 @@ namespace AltCover.Recorder
       return maybe && !Token.Equals("AltCover", StringComparison.Ordinal);
     }
 
-    //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     internal static bool supervision = IsSupervised();
 
     [SuppressMessage("Gendarme.Rules.Smells",

@@ -1160,9 +1160,6 @@ module internal Instrument =
         Maker: MethodDefinition }
 
     // make the assembly net46 targeted
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
     let framework46 (make: MethodDefinition) (r: AssemblyDefinition) =
       let constructor =
         make.Body.Instructions

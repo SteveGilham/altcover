@@ -23,12 +23,6 @@ module internal LCov =
 
   module internal I =
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Gendarme.Rules.Performance",
-                      "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "Library method inlined")>]
     let internal lineOfPartialMethod (m: XElement * XElement seq) =
       let (_, s) = m
 
@@ -40,12 +34,6 @@ module internal LCov =
       )
       |> Seq.min
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Library method inlined")>]
-    [<SuppressMessage("Gendarme.Rules.Performance",
-                      "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "Library method inlined")>]
     let internal slOfPartialMethod (m: XElement * XElement seq) =
       let (_, s) = m
 
