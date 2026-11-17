@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace AltCover.Recorder
 {
   using System;
+  using System.Collections;
   using System.Collections.Generic;
   using System.Diagnostics;
   using System.IO;
@@ -310,17 +311,17 @@ namespace AltCover.Recorder
       /// </summary>
       internal static Dictionary<string, Dictionary<int, PointVisit>> visits = MakeVisits();
 
-      internal static Dictionary<string, Dictionary<Sampled, bool>> MakeSamples()
+      internal static Dictionary<string, Hashtable> MakeSamples()
       {
-        var d = new Dictionary<string, Dictionary<Sampled, bool>>();
+        var d = new Dictionary<string, Hashtable>();
         foreach (var item in Modules)
         {
-          d.Add(item, new Dictionary<Sampled, bool>());
+          d.Add(item, new Hashtable());
         }
         return d;
       }
 
-      internal static Dictionary<string, Dictionary<Sampled, bool>> samples = MakeSamples();
+      internal static Dictionary<string, Hashtable> samples = MakeSamples();
 
       internal static bool isRunner = false;
 
