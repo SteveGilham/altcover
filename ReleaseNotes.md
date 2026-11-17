@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Indori series release 4)
+# (Indori series release 5)
+
+# 9.0.184 (Indori series release 4)
 
 * Net11.0 support - maintenance release
 * Fix issue #299 - Select correct AltCover binaries when testing with VSTest under MSBuild for .Net Framework
