@@ -3,7 +3,9 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide and 
 read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
-# (Indori series release 5)
+# (Indori series release 6)
+
+# 9.0.189 (Indori series release 5)
 
 * Fix issue #309 - resolve a long standing lurking race condition when starting coverage recording
 
