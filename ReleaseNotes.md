@@ -5,6 +5,8 @@ read the FAQ : https://github.com/SteveGilham/altcover/wiki/FAQ
 
 # (Indori series release 5)
 
+* Fix issue #309 - resolve a long standing lurking race condition when starting coverage recording
+
 # 9.0.184 (Indori series release 4)
 
 * Net11.0 support - maintenance release
