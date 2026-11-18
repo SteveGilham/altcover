@@ -334,24 +334,6 @@ module AltCoverCommand =
 
     runCore options withMono
 
-[<assembly: SuppressMessage("Microsoft.Performance",
-                            "CA1823:AvoidUnusedPrivateFields",
-                            Scope = "member",
-                            Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@302T.#monoPath",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance",
-                            "CA1823:AvoidUnusedPrivateFields",
-                            Scope = "member",
-                            Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@302T.#options",
-                            Justification = "Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance",
-                            "CA1823:AvoidUnusedPrivateFields",
-                            Scope = "member",
-                            Target =
-                              "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@253T.#options",
-                            Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Naming",
                             "UseCorrectCasingRule",
                             Scope = "member", // MethodDefinition

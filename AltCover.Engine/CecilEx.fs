@@ -377,10 +377,3 @@ module internal CecilExtension =
       i.OpCode <- OpCodes.Nop
       i.Operand <- nullObject)
 
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "InstantiateArgumentExceptionCorrectlyRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.AssemblyResolver/candidate@170::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.String>)",
-                            Justification = "code inlined")>]
-()
