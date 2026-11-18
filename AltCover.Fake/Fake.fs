@@ -72,12 +72,6 @@ open AltCoverFake.DotNet
 open AltCover.Shared
 #endif
 
-[<SuppressMessage("Gendarme.Rules.Exceptions",
-                  "InstantiateArgumentExceptionCorrectlyRule",
-                  Justification = "Inlines Array functions")>]
-[<SuppressMessage("Microsoft.Naming",
-                  "CA1724",
-                  Justification = "clash with '<StartupCode$ type")>]
 [<AutoOpen>]
 module DotNet =
   open Fake.DotNet

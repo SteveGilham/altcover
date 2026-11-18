@@ -832,9 +832,6 @@ module
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
-  [<SuppressMessage("Gendarme.Rules.Exceptions",
-                    "InstantiateArgumentExceptionCorrectlyRule",
-                    Justification = "Library method inlined")>]
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidLongMethodsRule",
                     Justification = "Expanded by fantomas -- TODO refactor")>]
@@ -1519,7 +1516,7 @@ type internal DocumentType =
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition
                             Target =
-                              "AltCover.NativeJson/getMethodRecord@1289::Invoke(AltCover.NativeJson/JsonContext,System.String,Mono.Cecil.Cil.Document)",
+                              "AltCover.NativeJson/getMethodRecord@1286::Invoke(AltCover.NativeJson/JsonContext,System.String,Mono.Cecil.Cil.Document)",
                             Justification = "not at netstandard2.0")>]
 ()
 #endif

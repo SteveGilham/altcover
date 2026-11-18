@@ -74,12 +74,6 @@ module internal Cobertura =
       | [] -> String.Empty
       | _ -> path |> Seq.head
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-                      "InstantiateArgumentExceptionCorrectlyRule",
-                      Justification = "Compiler inlines")>]
-    [<SuppressMessage("Gendarme.Rules.Performance",
-                      "AvoidRepetitiveCallsToPropertiesRule",
-                      Justification = "Compiler inlines")>]
     let extractSource (values: ((string * string seq) * string list) seq) =
       let starter = values |> Seq.head
 

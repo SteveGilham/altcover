@@ -363,12 +363,6 @@ module internal Filter =
          x.AttributeType.FullName
          == typeof<CompilerGeneratedAttribute>.FullName)
 
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "InstantiateArgumentExceptionCorrectlyRule",
-                            Scope = "member", // MethodDefinition
-                            Target =
-                              "AltCover.Filter/I/Pipe #2 stage #2 at line 175@175::Invoke(Mono.Cecil.CustomAttribute)",
-                            Justification = "Inlined from library code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member", // MethodDefinition

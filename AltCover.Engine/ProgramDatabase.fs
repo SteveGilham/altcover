@@ -341,12 +341,6 @@ module internal ProgramDatabase =
     |> Seq.distinctBy _.Url
     |> Seq.toList
 
-[<assembly: SuppressMessage("Gendarme.Rules.Exceptions",
-                            "InstantiateArgumentExceptionCorrectlyRule",
-                            Scope = "member",
-                            Target =
-                              "AltCover.ProgramDatabase/I/construct@163::Invoke(System.String,System.Object[])",
-                            Justification = "Compiler generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Correctness",
                             "EnsureLocalDisposalRule",
                             Scope = "member", // MethodDefinition
