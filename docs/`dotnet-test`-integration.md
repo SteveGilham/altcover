@@ -18,6 +18,19 @@ dotnet test /p:AltCover=true
 In the default operation it will produce OpenCover format output in a file `coverage.xml` (or in the case of multiple target frameworks, and from release 4.0.600, files of the form `coverage.$(TargetFramework).xml` for each such target) in your project directory.
 And if you want more control over what happens to the files, then is is still possible to use `AltCover` in its original, explicit, mode -- just don't use the `/p:AltCover=true` switch.
 
+## Microsoft.Testing.Platform
+
+When `global.json` selects `"test": { "runner": "Microsoft.Testing.Platform" }` (.NET 10 SDK or later), `dotnet test` does not run the `VSTest` target. Instead, for each target framework, `/p:AltCover=true` instruments the build output into `__Instrumented_$(TargetFramework)_$(ProjectName)` under `/p:AltCoverOutputRoot` (default `$(TargetDir)`) and runs the test application under `AltCover Runner`, which collects the coverage and applies `/p:AltCoverThreshold` after the application exits. This needs the `altcover` package. `altcover.api` does not include the runner, so with a supported launch it stops the run with an error.
+
+* The project must set `IsTestProject` to `true` in the project file or in a `Directory.Build.props` file, because NuGet imports the AltCover build files before `Directory.Build.targets`. `Microsoft.NET.Test.Sdk` sets it, but some test frameworks do not when they run on Microsoft.Testing.Platform. Without it, `/p:AltCover=true` does nothing.
+* Only the default launch of the test application is supported: the apphost, or `dotnet exec` of the target path when `UseAppHost` is `false`. Arguments after the target path are kept. For any other `RunCommand` or `RunArguments` (for example a .NET Framework target), AltCover writes a warning and the tests of that target framework run without coverage.
+* `/p:AltCoverInPlace=true` is not supported. With a supported launch, it stops the run with an error.
+* `/p:AltCoverFailFast` and `/p:AltCoverShowSummary` have no effect. `/p:AltCoverVerbosity` sets the output of `AltCover Runner`, which `dotnet test` shows when a test application fails. At the default `Info`, it includes the command line of the test application and the coverage summary.
+* The return code of `AltCover Runner` is the larger of the return code of the test application and the threshold shortfall, as for `AltCover Runner --threshold`. `dotnet test` reads that number as a Microsoft.Testing.Platform exit code. So its message can name another cause, a shortfall of exactly 8 (the code for "zero tests ran") does not fail the run, and a shortfall larger than 2 replaces the code for a failed test.
+* `dotnet test --list-tests` also runs under `AltCover Runner`. It overwrites the coverage report with the coverage of the discovery run, and applies `/p:AltCoverThreshold` to it.
+* `dotnet test --test-modules` does not build the project, so AltCover does not run.
+* `dotnet run /p:AltCover=true` on such a project also runs it under `AltCover Runner`.
+
 ## Other parameters
 
 * `/p:AltCoverSymbolDirectories=`"pipe `'|'` separated list of paths"

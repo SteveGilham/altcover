@@ -59,6 +59,9 @@ AltCover/Properties/launchSettings.json
 RegressionTesting/issue*/*.csproj
 RegressionTesting/*/coverage.xml
 RegressionTesting/issue20/NuGet.config
+RegressionTesting/issue270/NuGet.config
+RegressionTesting/issue270/coverage.net1?.0.xml
+RegressionTesting/issue270/coverage.net1?.0.xml.*.acv
 RegressionTesting/issue20/xunit-tests/coverage.xml
 RegressionTesting/issue20/xunit-tests/xunit-tests.csproj
 scratch/
