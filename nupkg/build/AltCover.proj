@@ -246,7 +246,7 @@
           Condition="'$(AltCoverTestingPlatformLaunch)' == 'true'"
           DependsOnTargets="AltCoverTestingPlatformPreFlight;AltCoverPreFlight;AltCoverRunPreparation">
     <ItemGroup>
-      <AltCoverTestingPlatformPackage Include="$(AltCoverPackages)" />
+      <AltCoverTestingPlatformPackage Include="$(AltCoverPackages.Split('|'))" />
       <AltCoverTestingPlatformPackage>
         <Argument>$([System.Text.RegularExpressions.Regex]::Replace('%(Identity)', '(\\+)$', '$1$1'))</Argument>
       </AltCoverTestingPlatformPackage>

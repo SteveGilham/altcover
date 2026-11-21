@@ -6248,9 +6248,7 @@ module Targets =
         proj.Save(issue270 @@ "issue270.csproj")
 
         let clean270 () =
-          !!(issue270 @@ "coverage.net1?.0.xml")
-          ++ (issue270 @@ "coverage.net1?.0.xml.*.acv")
-          |> File.deleteAll
+          !!(issue270 @@ "coverage.net1?.0.xml*") |> File.deleteAll
 
         let run270 extra =
           let result =
@@ -6405,6 +6403,13 @@ module Targets =
         let packages =
           Path.getFullName "./RegressionTesting" + separator + separator
 
+        let secondPackage =
+          Path.getFullName "./RegressionTesting/issue270"
+
+        // the form that AltCover.DotNet writes for a list property
+        let packageList =
+          packages + "|" + secondPackage + "|"
+
         let computed =
           DotNet.exec
             (withWorkingDirectoryOnly issue270
@@ -6416,7 +6421,7 @@ module Targets =
                "-p:TargetFramework=net10.0"
                "-p:UseAppHost=false"
                "-p:AltCover=true"
-               "-p:AltCoverPackages=" + packages
+               "-p:AltCoverPackages=" + packageList
                "-getProperty:RunArguments" ]
              |> Args.toWindowsCommandLine)
 
@@ -6434,8 +6439,8 @@ module Targets =
 
         Assert.That(
           computedOutput,
-          Does.Contain("-p \"" + escaped + "\""),
-          "the package root should keep its trailing separators"
+          Does.Contain("-p \"" + escaped + "\" -p \"" + secondPackage + "\" "),
+          "each package root should be one argument that keeps its trailing separators"
         )
 
         let (managed, _) =
@@ -6445,7 +6450,7 @@ module Targets =
               "-p:UseAppHost=false"
               "-p:AltCoverLcovReport=" + lcov
               "-p:AltCoverCobertura=" + cobertura
-              "-p:AltCoverPackages=" + packages ]
+              "-p:AltCoverPackages=" + packageList ]
 
         Assert.That(
           managed,
