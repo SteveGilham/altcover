@@ -6215,6 +6215,253 @@ module Targets =
           Is.EqualTo 2
         )
 
+        printfn
+          "Regression test issue 270 ------------------------------------------------"
+
+        let issue270 =
+          Path.getFullName "./RegressionTesting/issue270"
+
+        let config =
+          XDocument.Load "./Build/NuGet.config.dotnettest"
+
+        let repo =
+          config.Descendants(XName.Get("add")) |> Seq.head
+
+        repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+        config.Save(issue270 @@ "NuGet.config")
+
+        let proj =
+          XDocument.Load(issue270 @@ "issue270.xml")
+
+        let pack =
+          proj.Descendants(XName.Get("PackageReference"))
+          |> Seq.head
+
+        let inject =
+          XElement(
+            XName.Get "PackageReference",
+            XAttribute(XName.Get "Include", "altcover"),
+            XAttribute(XName.Get "VersionOverride", version)
+          )
+
+        pack.AddBeforeSelf inject
+        proj.Save(issue270 @@ "issue270.csproj")
+
+        let clean270 () =
+          !!(issue270 @@ "coverage.net1?.0.xml*") |> File.deleteAll
+
+        let run270 extra =
+          let result =
+            DotNet.exec
+              (withWorkingDirectoryOnly issue270
+               >> _.WithRedirectOutput(true))
+              "test"
+              ([ "--project"
+                 "issue270.csproj"
+                 "-p:AltCover=true"
+                 "-p:AltCoverAssemblyFilter=NUnit|Monitor|Microsoft|testhost" ]
+               @ extra
+               |> Args.toWindowsCommandLine)
+
+          let output =
+            String.Join(Environment.NewLine, result.Messages @ result.Errors)
+
+          printfn "%s" output
+          (result.ExitCode, output)
+
+        let visits tfm (methodName: string) =
+          let report =
+            issue270 @@ ("coverage." + tfm + ".xml")
+
+          Assert.That(File.Exists report, report + " should exist")
+
+          XDocument
+            .Load(report)
+            .Descendants(XName.Get "Method")
+          |> Seq.filter (fun m -> m.Element(XName.Get "Name").Value.Contains(methodName))
+          |> Seq.collect (fun m -> m.Descendants(XName.Get "SequencePoint"))
+          |> Seq.map (fun sp -> Int32.Parse(sp.Attribute(XName.Get "vc").Value))
+          |> Seq.toList
+
+        let assertVisits tfm =
+          let ternary = visits tfm "::Ternary("
+          let uncovered = visits tfm "::Uncovered("
+
+          Assert.That(ternary, Is.Not.Empty, tfm + " Ternary points")
+          Assert.That(ternary, Is.All.GreaterThan 0, tfm + " Ternary visits")
+          Assert.That(uncovered, Is.Not.Empty, tfm + " Uncovered points")
+          Assert.That(uncovered, Is.All.EqualTo 0, tfm + " Uncovered visits")
+
+        let sharedRoot =
+          Path.getFullName "./_Reports/issue270 root"
+
+        Shell.deleteDir sharedRoot
+        clean270 ()
+
+        let (passed, _) =
+          run270 [ "-p:AltCoverOutputRoot=" + sharedRoot ]
+
+        Assert.That(passed, Is.EqualTo 0, "MTP coverage run should pass")
+
+        [ "net10.0"; "net11.0" ]
+        |> List.iter (fun tfm ->
+          assertVisits tfm
+
+          let instrumented =
+            sharedRoot
+            @@ ("__Instrumented_" + tfm + "_issue270")
+            @@ "issue270.dll"
+
+          Assert.That(File.Exists instrumented, instrumented + " should exist"))
+
+        let net11Report =
+          issue270 @@ "coverage.net11.0.xml"
+
+        let net11Before = File.ReadAllBytes net11Report
+        File.WriteAllText(issue270 @@ "coverage.net10.0.xml", "stale")
+
+        let (skipped, skippedOutput) =
+          run270 [ "-p:Issue270CustomLaunch=net11.0" ]
+
+        Assert.That(skipped, Is.EqualTo 0, "MTP run with a skipped framework should pass")
+        assertVisits "net10.0"
+
+        Assert.That(
+          (File.ReadAllBytes net11Report = net11Before),
+          "the skipped framework should not touch its report"
+        )
+
+        Assert.That(
+          skippedOutput,
+          Does.Contain "AltCover does not collect coverage for issue270 (net11.0)"
+        )
+
+        [ "net10.0"; "net11.0" ]
+        |> List.iter (fun tfm ->
+          Assert.That(
+            skippedOutput,
+            Does.Match(
+              @"[\\/]" + tfm.Replace(".", @"\.") + @"[\\/]issue270\.dll \([^)]*\) passed"
+            ),
+            tfm + " should pass"
+          ))
+
+        clean270 ()
+
+        let (low, lowOutput) =
+          run270 [ "-p:AltCoverThreshold=100" ]
+
+        Assert.That(
+          low,
+          Is.Not.EqualTo 0,
+          "MTP coverage below the threshold should fail"
+        )
+
+        [ "net10.0"; "net11.0" ]
+        |> List.iter (fun tfm ->
+          assertVisits tfm
+
+          Assert.That(
+            lowOutput,
+            Does.Match(
+              @"[\\/]" + tfm.Replace(".", @"\.") + @"[\\/]issue270\.dll \([^)]*\) failed"
+            ),
+            tfm + " should fail"
+          ))
+
+        Assert.That(lowOutput, Does.Contain "below the threshold of 100%")
+
+        clean270 ()
+
+        let (inPlace, inPlaceOutput) =
+          run270 [ "-p:AltCoverInPlace=true" ]
+
+        Assert.That(
+          inPlace,
+          Is.Not.EqualTo 0,
+          "MTP in-place instrumentation should fail"
+        )
+
+        Assert.That(
+          inPlaceOutput,
+          Does.Contain
+            "AltCoverInPlace=true is not supported with Microsoft.Testing.Platform"
+        )
+
+        clean270 ()
+
+        let lcov =
+          Path.getFullName "./_Reports/issue270.lcov"
+
+        let cobertura =
+          Path.getFullName "./_Reports/issue270.cobertura.xml"
+
+        [ lcov; cobertura ] |> File.deleteAll
+
+        let separator = string Path.DirectorySeparatorChar
+
+        let packages =
+          Path.getFullName "./RegressionTesting" + separator + separator
+
+        let secondPackage =
+          Path.getFullName "./RegressionTesting/issue270"
+
+        // the form that AltCover.DotNet writes for a list property
+        let packageList =
+          packages + "|" + secondPackage + "|"
+
+        let computed =
+          DotNet.exec
+            (withWorkingDirectoryOnly issue270
+             >> _.WithRedirectOutput(true))
+            "msbuild"
+            ([ "issue270.csproj"
+               "-nologo"
+               "-t:ComputeRunArguments"
+               "-p:TargetFramework=net10.0"
+               "-p:UseAppHost=false"
+               "-p:AltCover=true"
+               "-p:AltCoverPackages=" + packageList
+               "-getProperty:RunArguments" ]
+             |> Args.toWindowsCommandLine)
+
+        let computedOutput =
+          String.Join(Environment.NewLine, computed.Messages @ computed.Errors)
+
+        Assert.That(computed.ExitCode, Is.EqualTo 0, computedOutput)
+
+        // a quoted argument keeps its trailing backslashes only when they are doubled
+        let escaped =
+          if separator = @"\" then
+            packages + separator + separator
+          else
+            packages
+
+        Assert.That(
+          computedOutput,
+          Does.Contain("-p \"" + escaped + "\" -p \"" + secondPackage + "\" "),
+          "each package root should be one argument that keeps its trailing separators"
+        )
+
+        let (managed, _) =
+          run270
+            [ "-f"
+              "net10.0"
+              "-p:UseAppHost=false"
+              "-p:AltCoverLcovReport=" + lcov
+              "-p:AltCoverCobertura=" + cobertura
+              "-p:AltCoverPackages=" + packageList ]
+
+        Assert.That(
+          managed,
+          Is.EqualTo 0,
+          "MTP run without an apphost should pass"
+        )
+
+        assertVisits "net10.0"
+        Assert.That(File.Exists lcov, lcov + " should exist")
+        Assert.That(File.Exists cobertura, cobertura + " should exist")
+
       finally
         let folder =
           (nugetCache @@ "altcover") @@ version

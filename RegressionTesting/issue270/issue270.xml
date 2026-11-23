@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <RollForward>Major</RollForward>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Data\Foo.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nunit" />
+    <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
+
+  <Target Name="Issue270CustomLaunch"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(Issue270CustomLaunch)' == '$(TargetFramework)'">
+    <PropertyGroup>
+      <RunCommand>$(DOTNET_HOST_PATH)</RunCommand>
+      <RunArguments>exec --roll-forward Major &quot;$(TargetPath)&quot;</RunArguments>
+    </PropertyGroup>
+  </Target>
+</Project>

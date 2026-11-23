@@ -218,4 +218,73 @@
                    Verbosity="$(AltCoverVerbosity)" />
     <CallTarget Targets="AltCoverTidy" />
   </Target>
+
+  <!-- Microsoft.Testing.Platform mode of dotnet test (SDK 10+) does not run the VSTest target.
+       It builds ComputeRunArguments for each target framework, then starts $(RunCommand) $(RunArguments) itself. -->
+  <Target Name="AltCoverTestingPlatform"
+          AfterTargets="ComputeRunArguments"
+          Condition="'$(AltCover)' == 'true' AND '$(IsTestingPlatformApplication)' == 'true' AND '$(TargetFramework)' != ''"
+          DependsOnTargets="AltCoverTestingPlatformLaunch">
+    <Warning Condition="'$(AltCoverTestingPlatformLaunch)' != 'true'"
+             Text="$(AltCoverTestingPlatformSkipped)" />
+  </Target>
+
+  <Target Name="AltCoverTestingPlatformLaunch">
+    <PropertyGroup>
+      <AltCoverTestingPlatformAppHost>$(TargetDir)$(AssemblyName)$(_NativeExecutableExtension)</AltCoverTestingPlatformAppHost>
+      <AltCoverTestingPlatformEntry>exec &quot;$(TargetPath)&quot;</AltCoverTestingPlatformEntry>
+      <AltCoverTestingPlatformLaunch>false</AltCoverTestingPlatformLaunch>
+      <AltCoverTestingPlatformLaunch Condition="'$(UseAppHost)' == 'true' AND '$(RunCommand)' == '$(AltCoverTestingPlatformAppHost)'">true</AltCoverTestingPlatformLaunch>
+      <AltCoverTestingPlatformLaunch Condition="'$(UseAppHost)' != 'true' AND '$(RunCommand)' != '' AND ('$(RunCommand)' == 'dotnet' OR '$(RunCommand)' == '$(DOTNET_HOST_PATH)') AND ('$(RunArguments)' == '$(AltCoverTestingPlatformEntry)' OR $(RunArguments.StartsWith('$(AltCoverTestingPlatformEntry) ')))">true</AltCoverTestingPlatformLaunch>
+      <AltCoverTestingPlatformSkipped>AltCover does not collect coverage for $(ProjectName) ($(TargetFramework)) with Microsoft.Testing.Platform, because its run command is not the SDK default apphost or 'dotnet exec' of the target path</AltCoverTestingPlatformSkipped>
+    </PropertyGroup>
+  </Target>
+
+  <!-- A skipped target framework prepares nothing, so it cannot change the report of another one -->
+  <Target Name="AltCoverTestingPlatformWrap"
+          AfterTargets="AltCoverTestingPlatform"
+          Condition="'$(AltCoverTestingPlatformLaunch)' == 'true'"
+          DependsOnTargets="AltCoverTestingPlatformPreFlight;AltCoverPreFlight;AltCoverRunPreparation">
+    <ItemGroup>
+      <AltCoverTestingPlatformPackage Include="$(AltCoverPackages.Split('|'))" />
+      <AltCoverTestingPlatformPackage>
+        <Argument>$([System.Text.RegularExpressions.Regex]::Replace('%(Identity)', '(\\+)$', '$1$1'))</Argument>
+      </AltCoverTestingPlatformPackage>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <AltCoverTestingPlatformDirectory>$([MSBuild]::EnsureTrailingSlash('$(AltCoverInstrumentedDirectory)_$(ProjectName)'))</AltCoverTestingPlatformDirectory>
+      <AltCoverTestingPlatformCommand Condition="'$(UseAppHost)' == 'true'">$(AltCoverTestingPlatformDirectory)$(AltCoverTestingPlatformAppHost.Substring($(TargetDir.Length)))</AltCoverTestingPlatformCommand>
+      <AltCoverTestingPlatformCommand Condition="'$(UseAppHost)' != 'true'">$(RunCommand)</AltCoverTestingPlatformCommand>
+      <AltCoverTestingPlatformArguments Condition="'$(UseAppHost)' == 'true'">$(RunArguments)</AltCoverTestingPlatformArguments>
+      <AltCoverTestingPlatformArguments Condition="'$(UseAppHost)' != 'true'">exec &quot;$(AltCoverTestingPlatformDirectory)$(TargetFileName)&quot;$(RunArguments.Substring($(AltCoverTestingPlatformEntry.Length)))</AltCoverTestingPlatformArguments>
+      <AltCoverTestingPlatformLcov>$([System.Text.RegularExpressions.Regex]::Replace('$(AltCoverLcovReport)', '(\\+)$', '$1$1'))</AltCoverTestingPlatformLcov>
+      <AltCoverTestingPlatformCobertura>$([System.Text.RegularExpressions.Regex]::Replace('$(AltCoverCobertura)', '(\\+)$', '$1$1'))</AltCoverTestingPlatformCobertura>
+      <AltCoverTestingPlatformOptions>Runner -r &quot;$(AltCoverTestingPlatformDirectory.TrimEnd('\').TrimEnd('/'))&quot; -x &quot;$(AltCoverTestingPlatformCommand)&quot;</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverVerbosity)' == 'Verbose' OR $([System.String]::Equals('$(AltCoverVerbosity)', '4'))">$(AltCoverTestingPlatformOptions) --verbose</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverVerbosity)' == 'Warning' OR $([System.String]::Equals('$(AltCoverVerbosity)', '2'))">$(AltCoverTestingPlatformOptions) -q</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverVerbosity)' == 'Error' OR $([System.String]::Equals('$(AltCoverVerbosity)', '1'))">$(AltCoverTestingPlatformOptions) -q -q</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverVerbosity)' == 'Off' OR $([System.String]::Equals('$(AltCoverVerbosity)', '0'))">$(AltCoverTestingPlatformOptions) -q -q -q</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverThreshold)' != ''">$(AltCoverTestingPlatformOptions) -t &quot;$(AltCoverThreshold)&quot;</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverLcovReport)' != ''">$(AltCoverTestingPlatformOptions) -l &quot;$(AltCoverTestingPlatformLcov)&quot;</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverCobertura)' != ''">$(AltCoverTestingPlatformOptions) -c &quot;$(AltCoverTestingPlatformCobertura)&quot;</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'@(AltCoverTestingPlatformPackage)' != ''">$(AltCoverTestingPlatformOptions) @(AltCoverTestingPlatformPackage->'-p &quot;%(Argument)&quot;', ' ')</AltCoverTestingPlatformOptions>
+      <AltCoverTestingPlatformOptions Condition="'$(AltCoverSummaryFormat)' != ''">$(AltCoverTestingPlatformOptions) --summary=$(AltCoverSummaryFormat)</AltCoverTestingPlatformOptions>
+      <RunCommand>$(DOTNET_HOST_PATH)</RunCommand>
+      <RunCommand Condition="'$(RunCommand)' == ''">dotnet</RunCommand>
+      <RunArguments>exec &quot;$(AltCoverTestingPlatformRunner)&quot; $(AltCoverTestingPlatformOptions) -- $(AltCoverTestingPlatformArguments)</RunArguments>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="AltCoverTestingPlatformPreFlight">
+    <PropertyGroup>
+      <AltCoverTestingPlatformRunner>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'tools', 'net10.0', 'AltCover.dll'))))</AltCoverTestingPlatformRunner>
+      <!-- the test applications of all target frameworks are prepared before any of them starts -->
+      <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(AltCoverOutputRoot), '__Instrumented_$(TargetFramework)'))</AltCoverInstrumentedDirectory>
+    </PropertyGroup>
+    <Error Condition="'$(AltCoverInPlace)' != 'false'"
+           Text="AltCoverInPlace=true is not supported with Microsoft.Testing.Platform, because no build step runs after the tests to restore the original assemblies" />
+    <Error Condition="!Exists('$(AltCoverTestingPlatformRunner)')"
+           Text="AltCover with Microsoft.Testing.Platform needs the AltCover runner at '$(AltCoverTestingPlatformRunner)', which the altcover package provides" />
+  </Target>
 </Project>
